@@ -1,0 +1,16 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>netcoreapp2.0</TargetFramework>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Sky\Sky.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="database\" />
+    <Folder Include="setting\" />
+  </ItemGroup>
+</Project>
