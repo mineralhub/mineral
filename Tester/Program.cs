@@ -20,9 +20,8 @@ namespace test
         static WalletAccount _randomAccount;
         static UInt256 _from = new UInt256(new byte[32] { 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 });
         static UInt256 _to = new UInt256(new byte[32] { 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 });
-        static int _genesisBlockTimestamp = 1526905792;
+        static int _genesisBlockTimestamp = DateTime.UtcNow.ToTimestamp();
         static Block _genesisBlock;
-
         static LocalNode _node;
 
         static void Main(string[] args)
