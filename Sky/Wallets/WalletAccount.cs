@@ -26,13 +26,7 @@ namespace Sky.Wallets
 
         public bool IsDelegate()
         {
-            List<DelegatorState> dgs = Blockchain.Instance.GetDelegateStateAll();
-            foreach (DelegatorState state in dgs)
-            {
-                if (state.AddressHash == AddressHash)
-                    return true;
-            }
-            return false;
+            return Blockchain.Instance.GetDelegateStateAll().First(p => p.AddressHash == AddressHash) != null;
         }
 
         public static string ToAddress(ECKey key)
