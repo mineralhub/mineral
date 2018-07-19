@@ -13,5 +13,39 @@
   "user": {
     "private_key":"5966fb562c39e8ad944470123f94421d3a1034862eeb518562d56766be3c6ebb",
     "witness":true
+  },
+  "genesisBlock": {
+    "account":[{
+      "address":"12AKRNHpFhDSBDD9rSn74VAzZSL3774PxQ",
+      "balance":"100000"
+    }, {
+      "address":"19mqdnsraLrBSHTupx9HcnmJrCryM5Jpjy",
+      "balance":"200000"
+    }, {
+      "address":"1889nUYazT9MhsqE4fxutq1dpyspHZEiaM",
+      "balance":"300000"
+    }, {
+      "address":"1CvKHaVAKsGGftTFZBdJRcxozxeQo7rXUk",
+      "balance":"400000"
+    }, {
+      "address":"12iMNgciNRutMSeu18iaByKYBPnk88Hcm1",
+      "balance":"500000"
+    }],
+    "delegate":[{
+      "name": "one",
+      "address":"12AKRNHpFhDSBDD9rSn74VAzZSL3774PxQ"
+    },{
+      "name": "two",
+      "address":"19mqdnsraLrBSHTupx9HcnmJrCryM5Jpjy"
+    },{
+      "name": "three",
+      "address":"1889nUYazT9MhsqE4fxutq1dpyspHZEiaM"
+    },{
+      "name": "four",
+      "address":"1CvKHaVAKsGGftTFZBdJRcxozxeQo7rXUk"
+    },{
+      "name": "five",
+      "address":"12iMNgciNRutMSeu18iaByKYBPnk88Hcm1"
+    }]
   }
 }

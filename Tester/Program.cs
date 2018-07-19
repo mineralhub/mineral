@@ -28,6 +28,16 @@ namespace test
         {
             try
             {
+                // Generate Address
+                /*
+                for (int i = 0 ; i < 5 ;++i)
+                {
+                    var account = new WalletAccount(Sky.Cryptography.Helper.SHA256(Encoding.ASCII.GetBytes((i+1).ToString())));
+                    Logger.Log((i+1).ToString());
+                    Logger.Log(account.Address);
+                }
+                return;
+                */
                 Config.Initialize();
 
                 Initialize();

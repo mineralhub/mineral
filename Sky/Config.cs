@@ -28,11 +28,30 @@ namespace Sky
         public bool Witness;
     }
 
+    public class DelegateConfig
+    {
+        public string Name;
+        public UInt160 Address;
+    }
+
+    public class AccountConfig
+    {
+        public UInt160 Address;
+        public Fixed8 Balance;
+    }
+
+    public class GenesisBlockConfig
+    {
+        public List<AccountConfig> Accounts;
+        public List<DelegateConfig> Delegates;
+    }
+
     public class Config
     {
         public static NetworkConfig Network;
         public static BlockConfig Block;
         public static UserConfig User;
+        public static GenesisBlockConfig GenesisBlock;
         public static byte AddressVersion = 0;
         public static byte StateVersion = 0;
 
@@ -79,6 +98,27 @@ namespace Sky
                 User = new UserConfig();
                 User.PrivateKey = user["private_key"].Value<string>().HexToBytes();
                 User.Witness = user["witness"].Value<bool>();
+
+                // GenesisBlock
+                JToken genesisBlock = jobj["genesisBlock"];
+                GenesisBlock = new GenesisBlockConfig();
+                GenesisBlock.Accounts = new List<AccountConfig>();
+                GenesisBlock.Delegates = new List<DelegateConfig>();
+                foreach (var v in genesisBlock["account"].ToArray())
+                {
+                    AccountConfig conf = new AccountConfig();
+                    conf.Address = Wallets.WalletAccount.ToAddressHash(v["address"].Value<string>());
+                    if (Fixed8.TryParse(v["balance"].ToString(), out conf.Balance) == false)
+                        throw new FormatException();
+                    GenesisBlock.Accounts.Add(conf);
+                }
+                foreach (var v in genesisBlock["delegate"].ToArray()) 
+                {
+                    DelegateConfig conf = new DelegateConfig();
+                    conf.Name = v["name"].Value<string>();
+                    conf.Address = Wallets.WalletAccount.ToAddressHash(v["address"].Value<string>());
+                    GenesisBlock.Delegates.Add(conf);
+                }
             }
             catch (Exception e)
             {
