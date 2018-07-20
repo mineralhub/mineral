@@ -13,7 +13,7 @@ namespace Sky.Network
         private static string _serviceUrl;
         public static readonly TimeSpan TimeOut = TimeSpan.FromSeconds(3);
 
-        public static bool Enable => string.IsNullOrEmpty(_serviceUrl);
+        public static bool Enable => string.IsNullOrEmpty(_serviceUrl) == false;
 
         public static bool Discovery()
         {
