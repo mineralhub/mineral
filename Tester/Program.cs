@@ -38,6 +38,7 @@ namespace test
                 }
                 return;
                 */
+                Logger.WriteConsole = true;
                 Config.Initialize();
 
                 Initialize();
