@@ -184,42 +184,35 @@ namespace Sky
             return new BigInteger(b);
         }
 
-        public static int GetSize<T>(this List<T> value)
+        private static int GetSize<T>(Type type, IEnumerable<T> value)
         {
-            int size = 0;
-            Type type = typeof(T);
             if (typeof(ISerializable).IsAssignableFrom(type))
             {
-                size = value.OfType<ISerializable>().Sum(p => p.Size);
+                return value.OfType<ISerializable>().Sum(p => p.Size);
             }
             else if (type.IsEnum)
             {
-                size = Marshal.SizeOf(Enum.GetUnderlyingType(type)) * value.Count;
+                return Marshal.SizeOf(Enum.GetUnderlyingType(type)) * value.Count();
             }
             else
             {
-                size = value.Count * Marshal.SizeOf<T>();
+                return value.Count() * Marshal.SizeOf<T>();
             }
-            return sizeof(int) + size;
+        }
+
+        public static int GetSize<T>(this List<T> value)
+        {
+            return sizeof(int) + GetSize(typeof(T), value);
         }
 
         public static int GetSize<T>(this T[] value)
         {
-            int size = 0;
-            Type type = typeof(T);
-            if (typeof(ISerializable).IsAssignableFrom(type))
-            {
-                size = value.OfType<ISerializable>().Sum(p => p.Size);
-            }
-            else if (type.IsEnum)
-            {
-                size = Marshal.SizeOf(Enum.GetUnderlyingType(type)) * value.Length;
-            }
-            else
-            {
-                size = value.Length * Marshal.SizeOf<T>();
-            }
-            return sizeof(int) + size;
+            return sizeof(int) + GetSize(typeof(T), value);
+        }
+
+        public static int GetSize<TKey, TValue>(this Dictionary<TKey, TValue> value)
+        {
+            return sizeof(int) + GetSize(typeof(TKey), value.Keys.ToList()) + GetSize(typeof(TValue), value.Values.ToList());
         }
 
         public static void WriteSerializable(this BinaryWriter writer, ISerializable value)
@@ -232,6 +225,17 @@ namespace Sky
             writer.Write(value.Count());
             foreach (T v in value)
                 writer.WriteSerializable(v);
+        }
+
+        public static void WriteSerializableDictonary<TKey, TValue>(this BinaryWriter writer, IEnumerable<KeyValuePair<TKey, TValue>> value) where TKey : ISerializable where TValue : ISerializable
+        {
+            writer.Write(value.Count());
+            var e = value.GetEnumerator();
+            while (e.MoveNext())
+            {
+                writer.WriteSerializable(e.Current.Key);
+                writer.WriteSerializable(e.Current.Value);
+            }
         }
 
         public static void WriteByteArray(this BinaryWriter writer, IEnumerable<byte> value)
@@ -258,6 +262,24 @@ namespace Sky
             {
                 list.Add(new T());
                 list[i].Deserialize(reader);
+            }
+            return list;
+        }
+
+        public static Dictionary<TKey, TValue> ReadSerializableDictionary<TKey, TValue>(this BinaryReader reader, int maxCount = int.MaxValue) where TKey : ISerializable, new() where TValue : ISerializable, new()
+        {
+            int count = reader.ReadInt32();
+            if (maxCount < count)
+                count = maxCount;
+
+            Dictionary<TKey, TValue> list = new Dictionary<TKey, TValue>(count);
+            for (int i = 0; i < count; ++i)
+            {
+                TKey k = new TKey();
+                TValue v = new TValue();
+                k.Deserialize(reader);
+                v.Deserialize(reader);
+                list.Add(k, v);
             }
             return list;
         }

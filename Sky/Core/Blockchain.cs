@@ -13,6 +13,7 @@ namespace Sky.Core
             _instance = chain;
         }
 
+        public event EventHandler<Block> PersistCompleted;
 
         public abstract Block GenesisBlock { get; }
         public abstract int CurrentBlockHeight { get; }
@@ -41,5 +42,10 @@ namespace Sky.Core
         public abstract AccountState GetAccountState(UInt160 addressHash);
         public abstract List<DelegatorState> GetDelegateStateAll();
         public abstract List<DelegatorState> GetDelegateStateMakers();
+
+        protected void OnPersistCompleted(Block block)
+        {
+            PersistCompleted?.Invoke(this, block);
+        }
     }
 }

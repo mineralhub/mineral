@@ -3,7 +3,7 @@ using System.IO;
 
 namespace Sky.Core
 {
-    public class RegisterDelegateTransaction : Transaction
+    public class RegisterDelegateTransaction : TransactionBase
     {
         public UInt160 Sender { get; private set; }
         public byte[] NameBytes { get; private set; }
@@ -13,8 +13,14 @@ namespace Sky.Core
         public RegisterDelegateTransaction()
         {
         }
-        public RegisterDelegateTransaction(short version, eTransactionType type, int timestamp, List<TransactionInput> inputs, List<TransactionOutput> outputs, List<MakerSignature> signatures, UInt160 sender, byte[] name)
-            : base(version, type, timestamp, inputs, outputs, signatures)
+
+        public RegisterDelegateTransaction(List<TransactionInput> inputs, List<TransactionOutput> outputs, List<MakerSignature> signatures)
+            : base(inputs, outputs, signatures)
+        {
+        }
+
+        public RegisterDelegateTransaction(List<TransactionInput> inputs, List<TransactionOutput> outputs, List<MakerSignature> signatures, UInt160 sender, byte[] name)
+            : base(inputs, outputs, signatures)
         {
             Sender = sender;
             NameBytes = name;

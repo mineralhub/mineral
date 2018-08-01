@@ -1,23 +1,39 @@
-﻿using Sky.Cryptography;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 
 namespace Sky.Core.DPos
 {
     public class DelegateTurnTable
     {
-        private Queue<ECKey> _table = new Queue<ECKey>();
-
-        public ECKey Front => _table.Peek();
+        private List<UInt160> _table = new List<UInt160>();
+        public int UpdateHeight { get; private set; }
         public int Count => _table.Count;
-        public ECKey Dequeue => _table.Dequeue();
 
-        public void Enqueue(ECKey key)
+        public void SetTable(List<UInt160> addressHashes)
         {
-            _table.Enqueue(key);
+            _table = addressHashes;
+        }
+
+        public void SetUpdateHeight(int height)
+        {
+            UpdateHeight = height;
+        }
+
+        public int RemainUpdate(int height)
+        {
+            return UpdateHeight + Config.RoundBlock - height;
+        }
+
+        public UInt160 GetTurn(int height)
+        {
+            int remain = RemainUpdate(height);
+            if (remain < 0)
+                return null;
+
+            return _table[(UpdateHeight - height) % Count];
         }
     }
 
-    public class DPos
+    public class DPos: Proof
     {
         public DelegateTurnTable TurnTable { get; protected set; }
 

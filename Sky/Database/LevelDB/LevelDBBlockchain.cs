@@ -242,7 +242,7 @@ namespace Sky.Database.LevelDB
             {
                 foreach (var group in tx.Inputs.GroupBy(p => p.PrevHash))
                 {
-                    UnspentCoinState state = _db.TryGet<UnspentCoinState>(options, DataEntryPrefix.ST_COIN, group.Key);
+                    UnspentCoinState state = _db.TryGet<UnspentCoinState>(options, DataEntryPrefix.ST_Coin, group.Key);
                     if (state == null)
                         return true;
                     if (group.Any(p => p.PrevIndex >= state.Items.Count || state.Items[p.PrevIndex].HasFlag(CoinState.Spent)))
@@ -299,7 +299,9 @@ namespace Sky.Database.LevelDB
         {
             WriteBatch batch = new WriteBatch();
             DbCache<UInt160, AccountState> accounts = new DbCache<UInt160, AccountState>(_db, DataEntryPrefix.ST_Account);
-            DbCache<DelegateKey, DelegatorState> delegators = new DbCache<DelegateKey, DelegatorState>(_db, DataEntryPrefix.ST_Delegator);
+            DbCache<UInt160, DelegatorState> delegators = new DbCache<UInt160, DelegatorState>(_db, DataEntryPrefix.ST_Delegator);
+            DbCache<UInt256, UnspentCoinState> unspentCoins = new DbCache<UInt256, UnspentCoinState>(_db, DataEntryPrefix.ST_Coin);
+            DbCache<UInt256, SpentCoinState> spentCoins = new DbCache<UInt256, SpentCoinState>(_db, DataEntryPrefix.ST_SpentCoin);
 
             long fee = block.Transactions.Sum(p => p.Fee).Value;
             batch.Put(SliceBuilder.Begin(DataEntryPrefix.DATA_Block).Add(block.Hash), SliceBuilder.Begin().Add(fee).Add(block.ToArray()));
@@ -333,24 +335,29 @@ namespace Sky.Database.LevelDB
                         break;
                     case eTransactionType.VoteTransaction:
                         {
-                            VoteTransaction vote = tx as VoteTransaction;
-                            DelegatorState delegator = delegators.TryGet(new DelegateKey(vote.Delegate));
-                            AccountState account = accounts.GetAndChange(vote.Sender, () => new AccountState(vote.Sender));
-                            delegator.VoteAddressHashes.Add(vote.Sender);
-                            account.SetVote(vote.Delegate);
+                            VoteTransaction voteTx = tx.Data as VoteTransaction;
+                            AccountState account = accounts.GetAndChange(voteTx.Sender, () => new AccountState(voteTx.Sender));
+                            foreach (var v in voteTx.Votes)
+                            {
+                                DelegatorState delegator = delegators.TryGet(v.Key);
+                                if (delegator.Votes.ContainsKey(voteTx.Sender))
+                                    delegator.Votes[voteTx.Sender] = v.Value;
+                                else
+                                    delegator.Votes.Add(voteTx.Sender, v.Value);
+                            }
+                            account.SetVote(voteTx.Votes);
                         }
                         break;
                     case eTransactionType.RegisterDelegateTransaction:
                         {
-                            RegisterDelegateTransaction dg = tx as RegisterDelegateTransaction;
-                            DelegatorState delegator = delegators.GetOrAdd(new DelegateKey(dg.NameBytes), () => new DelegatorState(dg.NameBytes));
-                            if (delegator.AddressHash == null)
-                                delegator.SetAddressHash(dg.Sender);
+                            RegisterDelegateTransaction delegateTx = tx.Data as RegisterDelegateTransaction;
+                            delegators.Add(delegateTx.Sender, new DelegatorState(delegateTx.Sender, delegateTx.NameBytes));
                         }
                         break;
                 }
             }
-            accounts.DeleteWhere((k, v) => !v.IsFrozen && v.Balance <= Fixed8.Zero && v.Vote == null);
+
+            accounts.DeleteWhere((k, v) => !v.IsFrozen && v.Balance <= Fixed8.Zero && v.Votes == null);
             accounts.Commit(batch);
             delegators.DeleteWhere((k, v) => v.AddressHash == null);
             delegators.Commit(batch);
@@ -385,9 +392,7 @@ namespace Sky.Database.LevelDB
                         continue;
                 }
                 Persist(block);
-                // calculate round
-
-                //
+                OnPersistCompleted(block);
                 lock (_blockCache)
                 {
                     _blockCache.Remove(hash);

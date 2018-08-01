@@ -1,30 +1,35 @@
-﻿using System;
+﻿using System.Collections.Generic;
 using System.IO;
-using System.Text;
 
 namespace Sky.Core
 {
-    public class VoteTransaction : Transaction
+    public class VoteTransaction : TransactionBase
     {
         public UInt160 Sender { get; private set; }
-        public byte[] Delegate { get; private set; }
-        public override int Size => base.Size + Sender.Size + Delegate.GetSize();
+        public Dictionary<UInt160, Fixed8> Votes { get; private set; }
+        public override int Size => base.Size + Sender.Size + Votes.GetSize();
 
         public VoteTransaction()
         {
         }
+
+        public VoteTransaction(List<TransactionInput> inputs, List<TransactionOutput> outputs, List<MakerSignature> signatures)
+            : base(inputs, outputs, signatures)
+        {
+        }
+
         public override void Deserialize(BinaryReader reader)
         {
             base.Deserialize(reader);
             Sender = reader.ReadSerializable<UInt160>();
-            Delegate = reader.ReadByteArray();
+            Votes = reader.ReadSerializableDictionary<UInt160, Fixed8>();
         }
 
         public override void Serialize(BinaryWriter writer)
         {
             base.Serialize(writer);
             writer.WriteSerializable(Sender);
-            writer.WriteByteArray(Delegate);
+            writer.WriteSerializableDictonary(Votes);
         }
 
         public override bool Verify()
@@ -32,8 +37,6 @@ namespace Sky.Core
             if (!base.Verify())
                 return false;
             if (Sender != References[0].AddressHash)
-                return false;
-            if (Delegate == null || Delegate.Length == 0)
                 return false;
             return true;
         }

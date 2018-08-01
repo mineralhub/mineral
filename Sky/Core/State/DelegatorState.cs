@@ -1,48 +1,43 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.IO;
-using System.Text;
 
 namespace Sky.Core
 {
     public class DelegatorState : StateBase
     {
-        public byte[] Name { get; private set; }
         public UInt160 AddressHash { get; private set; }
-        public List<UInt160> VoteAddressHashes { get; private set; }
+        public byte[] Name { get; private set; }
+        public Dictionary<UInt160, Fixed8> Votes { get; private set; }
 
-        public override int Size => base.Size + Name.GetSize() + AddressHash.Size + VoteAddressHashes.GetSize();
+        public override int Size => base.Size + AddressHash.Size + Name.GetSize() + Votes.GetSize();
 
         public DelegatorState()
         {
-            VoteAddressHashes = new List<UInt160>();
+            Votes = new Dictionary<UInt160, Fixed8>();
         }
 
-        public DelegatorState(byte[] name)
+        public DelegatorState(UInt160 addressHash, byte[] name)
             : this()
         {
+            AddressHash = addressHash;
             Name = name;
+            Votes = new Dictionary<UInt160, Fixed8>();
         }
 
         public override void Deserialize(BinaryReader reader)
         {
             base.Deserialize(reader);
-            Name = reader.ReadByteArray();
             AddressHash = reader.ReadSerializable<UInt160>();
-            VoteAddressHashes = reader.ReadSerializableArray<UInt160>();
+            Name = reader.ReadByteArray();
+            Votes = reader.ReadSerializableDictionary<UInt160, Fixed8>();
         }
 
         public override void Serialize(BinaryWriter writer)
         {
             base.Serialize(writer);
-            writer.WriteByteArray(Name);
             writer.WriteSerializable(AddressHash);
-            writer.WriteSerializableArray(VoteAddressHashes);
-        }
-
-        public void SetAddressHash(UInt160 addrHash)
-        {
-            AddressHash = addrHash;
+            writer.WriteByteArray(Name);
+            writer.WriteSerializableDictonary(Votes);
         }
     }
 }

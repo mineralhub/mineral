@@ -59,6 +59,8 @@ namespace Sky
         public const int ConnectPeerMax = 10;
         public const int WaitPeerMax = 20;
         public const uint MagicNumber = 16;
+        public const int MaxDelegate = 5;
+        public const int RoundBlock = 100;
         public static Fixed8 DefaultFee = Fixed8.One;
         public static Fixed8 RegisterDelegateFee = Fixed8.One * 10000;
         public static Fixed8 VoteFee = Fixed8.One;
@@ -96,7 +98,7 @@ namespace Sky
                 // User
                 JToken user = jobj["user"];
                 User = new UserConfig();
-                User.PrivateKey = user["private_key"].Value<string>().HexToBytes();
+                User.PrivateKey = System.Text.Encoding.UTF8.GetBytes(user["private_key"].Value<string>());
                 User.Witness = user["witness"].Value<bool>();
 
                 // GenesisBlock
