@@ -17,8 +17,7 @@ namespace Tester
     {
         short BlockVersion => Config.BlockVersion;
         int GenesisBlockTimestamp => Config.GenesisBlock.Timestamp;
-        WalletAccount _user;
-        WalletAccount _randomAccount;
+        WalletAccount _account;
         UInt256 _from = new UInt256(new byte[32] { 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 });
         UInt256 _to = new UInt256(new byte[32] { 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 });
         Block _genesisBlock;
@@ -50,7 +49,7 @@ namespace Tester
                 do
                 {
                     // delegator?
-                    if (!_user.IsDelegate())
+                    if (!_account.IsDelegate())
                         continue;
                     // my turn?
                     //if (dpos.TurnTable.Front != _user.AddressHash)
@@ -74,12 +73,8 @@ namespace Tester
         void Initialize()
         {
             Logger.Log("---------- Initialize ----------");
-            _user = new WalletAccount(Sky.Cryptography.Helper.SHA256(Config.User.PrivateKey));
-            _randomAccount = new WalletAccount(new ECKey(ECKey.Generate()).PrivateKey.D.ToByteArray());
+            _account = new WalletAccount(Sky.Cryptography.Helper.SHA256(Config.User.PrivateKey));
             _dpos = new DPos();
-
-            Logger.Log("random account private key : " + _randomAccount.Key.PrivateKey.D.ToByteArray().ToHexString());
-            Logger.Log("random account public key : " + _randomAccount.AddressHash);
 
             // create genesis block.
             {
@@ -173,7 +168,7 @@ namespace Tester
                 var txIn = new List<TransactionInput>();
                 var txOut = new List<TransactionOutput>
                 {
-                    new TransactionOutput(Config.BlockReward, _user.AddressHash)
+                    new TransactionOutput(Config.BlockReward, _account.AddressHash)
                 };
                 var txSign = new List<MakerSignature>();
                 txs.Add(new Transaction(0, eTransactionType.RewardTransaction, DateTime.UtcNow.ToTimestamp(), txIn, txOut, txSign));
@@ -198,7 +193,7 @@ namespace Tester
             }
             */
             var merkle = new MerkleTree(txs.Select(p => p.Hash).ToArray());
-            var blockHeader = new BlockHeader(previosBlock.Height + 1, BlockVersion, DateTime.UtcNow.ToTimestamp(), merkle.RootHash, previosBlock.Hash, _user.Key);
+            var blockHeader = new BlockHeader(previosBlock.Height + 1, BlockVersion, DateTime.UtcNow.ToTimestamp(), merkle.RootHash, previosBlock.Hash, _account.Key);
             return new Block(blockHeader, txs);
         }
 
@@ -211,7 +206,7 @@ namespace Tester
             {
                 for (int i = 0; i < tx.Outputs.Count; ++i)
                 {
-                    if (tx.Outputs[i].AddressHash == _user.AddressHash)
+                    if (tx.Outputs[i].AddressHash == _account.AddressHash)
                     {
                         txIn.Add(new TransactionInput(tx.Hash, (ushort)i));
                         value = tx.Outputs[i].Value;
@@ -224,8 +219,8 @@ namespace Tester
             if (txIn.Count == 0)
                 return null;
 
-            var txOut = new List<TransactionOutput> { new TransactionOutput(value - Config.VoteFee, _user.AddressHash) };
-            var txSign = new List<MakerSignature> { new MakerSignature(Sky.Cryptography.Helper.Sign(txIn[0].Hash.Data, _user.Key), _user.Key.PublicKey.ToByteArray()) };
+            var txOut = new List<TransactionOutput> { new TransactionOutput(value - Config.VoteFee, _account.AddressHash) };
+            var txSign = new List<MakerSignature> { new MakerSignature(Sky.Cryptography.Helper.Sign(txIn[0].Hash.Data, _account.Key), _account.Key.PublicKey.ToByteArray()) };
             return new VoteTransaction(txIn, txOut, txSign);
         }
 
@@ -276,11 +271,11 @@ namespace Tester
         void CheckAccount()
         {
             Logger.Log("---------- Check Account ----------");
-            Logger.Log("address : " + _user.Address + " length : " + _user.Address.Length);
-            Logger.Log("addressHash : " + _user.AddressHash + " byte size : " + _user.AddressHash.Size);
-            Logger.Log("pubkey : " + _user.Key.PublicKey.ToByteArray().ToHexString());
-            var hashToAddr = WalletAccount.ToAddress(_user.AddressHash);
-            Logger.Log("- check addressHash to address : " + (hashToAddr == _user.Address));
+            Logger.Log("address : " + _account.Address + " length : " + _account.Address.Length);
+            Logger.Log("addressHash : " + _account.AddressHash + " byte size : " + _account.AddressHash.Size);
+            Logger.Log("pubkey : " + _account.Key.PublicKey.ToByteArray().ToHexString());
+            var hashToAddr = WalletAccount.ToAddress(_account.AddressHash);
+            Logger.Log("- check addressHash to address : " + (hashToAddr == _account.Address));
             var generate = new ECKey(ECKey.Generate());
             Logger.Log("generate prikey : " + generate.PrivateKey.D.ToByteArray().ToHexString());
             Logger.Log("generate pubkey : " + generate.PublicKey.ToByteArray().ToHexString());
