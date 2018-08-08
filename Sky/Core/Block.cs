@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using Sky.Cryptography;
 
 namespace Sky.Core
@@ -88,7 +88,9 @@ namespace Sky.Core
 
         public string ToJson()
         {
-            return JsonConvert.SerializeObject(this, Formatting.Indented);
+            var json = new JObject();
+            json.Add("hash", Hash.ToString());
+            return json.ToString();
         }
     }
 }
