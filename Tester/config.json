@@ -1,4 +1,5 @@
 {
+  "block_version": 1,
   "address_version": 0,
   "state_version": 0,
   "network": {
@@ -42,6 +43,7 @@
         "name": "one",
         "address": "12AKRNHpFhDSBDD9rSn74VAzZSL3774PxQ"
       }
-    ]
+    ],
+    "timestamp": 1532051710
   }
 }
