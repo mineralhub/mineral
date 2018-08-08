@@ -15,12 +15,12 @@ namespace Tester
 {
     public class MainService
     {
-        short _version = 1;
+        short BlockVersion => Config.BlockVersion;
+        int GenesisBlockTimestamp => Config.GenesisBlock.Timestamp;
         WalletAccount _user;
         WalletAccount _randomAccount;
         UInt256 _from = new UInt256(new byte[32] { 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 });
         UInt256 _to = new UInt256(new byte[32] { 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 });
-        int _genesisBlockTimestamp = 1532051710;
         Block _genesisBlock;
         LocalNode _node;
         DPos _dpos;
@@ -94,16 +94,16 @@ namespace Tester
 
                 var txs = new List<Transaction>
                 {
-                    new Transaction(_version, eTransactionType.RewardTransaction, _genesisBlockTimestamp - 1, inputs, outputs, new List<MakerSignature>()),
+                    new Transaction(BlockVersion, eTransactionType.RewardTransaction, GenesisBlockTimestamp - 1, inputs, outputs, new List<MakerSignature>()),
                 };
 
                 Config.GenesisBlock.Delegates.ForEach(
                     p =>
                     {
                         txs.Add(new Transaction(
-                            _version,
+                            BlockVersion,
                             eTransactionType.RegisterDelegateTransaction,
-                            _genesisBlockTimestamp - 1,
+                            GenesisBlockTimestamp - 1,
                             new RegisterDelegateTransaction(
                             new List<TransactionInput>(),
                             new List<TransactionOutput>(),
@@ -114,7 +114,7 @@ namespace Tester
                     });
 
                 var merkle = new MerkleTree(txs.Select(p => p.Hash).ToArray());
-                var blockHeader = new BlockHeader(0, _version, _genesisBlockTimestamp, merkle.RootHash, UInt256.Zero, new MakerSignature());
+                var blockHeader = new BlockHeader(0, BlockVersion, GenesisBlockTimestamp, merkle.RootHash, UInt256.Zero, new MakerSignature());
                 _genesisBlock = new Block(blockHeader, txs);
             }
 
@@ -198,7 +198,7 @@ namespace Tester
             }
             */
             var merkle = new MerkleTree(txs.Select(p => p.Hash).ToArray());
-            var blockHeader = new BlockHeader(previosBlock.Height + 1, _version, DateTime.UtcNow.ToTimestamp(), merkle.RootHash, previosBlock.Hash, _user.Key);
+            var blockHeader = new BlockHeader(previosBlock.Height + 1, BlockVersion, DateTime.UtcNow.ToTimestamp(), merkle.RootHash, previosBlock.Hash, _user.Key);
             return new Block(blockHeader, txs);
         }
 
