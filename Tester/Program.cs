@@ -1,15 +1,7 @@
 ﻿using System;
 using System.Text;
 using System.IO;
-using System.Linq;
-using System.Threading;
-using System.Collections.Generic;
 using Sky;
-using Sky.Cryptography;
-using Sky.Core;
-using Sky.Wallets;
-using Sky.Core.DPos;
-using Sky.Network;
 
 namespace Tester
 {
