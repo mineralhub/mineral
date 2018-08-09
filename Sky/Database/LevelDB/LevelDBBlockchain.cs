@@ -61,7 +61,7 @@ namespace Sky.Database.LevelDB
 
                 IEnumerable<UInt256> headerHashes = _db.Find(options, SliceBuilder.Begin(DataEntryPrefix.IX_HeaderHashList), (k, v) =>
                 {
-                    using (MemoryStream ms = new MemoryStream())
+                    using (MemoryStream ms = new MemoryStream(v.ToArray(), false))
                     using (BinaryReader br = new BinaryReader(ms))
                     {
                         return new
@@ -74,9 +74,7 @@ namespace Sky.Database.LevelDB
 
                 foreach (UInt256 headerHash in headerHashes)
                 {
-                    if (!headerHash.Equals(genesisBlock.Hash))
-                        _headerIndices.Add(headerHash);
-
+                    _headerIndices.Add(headerHash);
                     ++_storedHeaderCount;
                 }
 
