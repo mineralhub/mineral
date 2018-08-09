@@ -296,8 +296,11 @@ namespace Tester
 
         void StartRpcServer()
         {
-            _rpcServer = new RpcServer(_node);
-            _rpcServer.Start(Config.Network.RpcPort);
+            if (0 < Config.Network.RpcPort)
+            {
+                _rpcServer = new RpcServer(_node);
+                _rpcServer.Start(Config.Network.RpcPort);                
+            }
         }
     }
 }
