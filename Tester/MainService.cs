@@ -64,10 +64,14 @@ namespace Tester
                         continue;
                     // create
                     Block block = CreateBlock();
+                    //System.Diagnostics.Stopwatch sw = new System.Diagnostics.Stopwatch();
+                    //sw.Start();
                     if (Blockchain.Instance.AddBlock(block))
                     {
                         //dpos.TurnTable.Enqueue(dpos.TurnTable.Dequeue);
                     }
+                    //sw.Stop();
+                    //Logger.Log("AddBlock Elapsed=" + sw.Elapsed);
                 }
                 while (false);
                 Thread.Sleep(100);
@@ -165,7 +169,6 @@ namespace Tester
         Block CreateBlock()
         {
             // translate trasnaction block.
-            Block previosBlock = Blockchain.Instance.GetBlock(Blockchain.Instance.CurrentBlockHash);
             var txs = new List<Transaction>();
             {
                 // block reward
@@ -197,7 +200,7 @@ namespace Tester
             }
             */
             var merkle = new MerkleTree(txs.Select(p => p.Hash).ToArray());
-            var blockHeader = new BlockHeader(previosBlock.Height + 1, BlockVersion, DateTime.UtcNow.ToTimestamp(), merkle.RootHash, previosBlock.Hash, _account.Key);
+            var blockHeader = new BlockHeader(Blockchain.Instance.CurrentHeaderHeight + 1, BlockVersion, DateTime.UtcNow.ToTimestamp(), merkle.RootHash, Blockchain.Instance.CurrentHeaderHash, _account.Key);
             return new Block(blockHeader, txs);
         }
 

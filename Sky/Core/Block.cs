@@ -78,8 +78,6 @@ namespace Sky.Core
                 return false;
             if (prev.Height + 1 != Height)
                 return false;
-            if (Header.Timestamp <= prev.Timestamp)
-                return false;
             foreach (Transaction tx in Transactions)
                 if (!tx.Verify())
                     return false;

@@ -107,6 +107,8 @@ namespace Sky.Database.LevelDB
                 }
                 _db.Write(WriteOptions.Default, batch);
                 _headerIndices.Add(genesisBlock.Hash);
+                _currentBlockHash = genesisBlock.Hash;
+                _currentHeaderHash = genesisBlock.Hash;
                 Persist(genesisBlock);
                 _db.Put(WriteOptions.Default, SliceBuilder.Begin(DataEntryPrefix.SYS_Version), Assembly.GetExecutingAssembly().GetName().Version.ToString());
             }
@@ -381,24 +383,27 @@ namespace Sky.Database.LevelDB
             {
                 _newBlockEvent.WaitOne();
 
-                UInt256 hash;
-                lock (_headerIndices)
+                while (!_disposed)
                 {
-                    if (_headerIndices.Count <= _currentBlockHeight + 1)
-                        continue;
-                    hash = _headerIndices[(int)_currentBlockHeight + 1];
-                }
-                Block block;
-                lock (_blockCache)
-                {
-                    if (!_blockCache.TryGetValue(hash, out block))
-                        continue;
-                }
-                Persist(block);
-                OnPersistCompleted(block);
-                lock (_blockCache)
-                {
-                    _blockCache.Remove(hash);
+                    UInt256 hash;
+                    lock (_headerIndices)
+                    {
+                        if (_headerIndices.Count <= _currentBlockHeight + 1)
+                            break;
+                        hash = _headerIndices[_currentBlockHeight + 1];
+                    }
+                    Block block;
+                    lock (_blockCache)
+                    {
+                        if (!_blockCache.TryGetValue(hash, out block))
+                            break;
+                    }
+                    Persist(block);
+                    OnPersistCompleted(block);
+                    lock (_blockCache)
+                    {
+                        _blockCache.Remove(hash);
+                    }
                 }
             }
         }
