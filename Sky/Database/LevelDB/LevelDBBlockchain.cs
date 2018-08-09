@@ -293,6 +293,9 @@ namespace Sky.Database.LevelDB
             }
             batch.Put(SliceBuilder.Begin(DataEntryPrefix.DATA_Block).Add(header.Hash), SliceBuilder.Begin().Add(0L).Add(header.ToArray()));
             batch.Put(SliceBuilder.Begin(DataEntryPrefix.SYS_CurrentHeader), SliceBuilder.Begin().Add(header.Hash).Add(header.Height));
+
+            _currentHeaderHeight = _headerIndices.Count - 1;
+            _currentHeaderHash = header.Hash;
         }
 
         private void Persist(Block block)
