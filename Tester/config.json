@@ -6,6 +6,7 @@
     "listen_address": "127.0.0.1",
     "tcp_port": 11255,
     "ws_port": 11256,
+    "rpc_port": 11257,
     "seed_list": [ "127.0.0.1:11355", "127.0.0.1:11455" ]
   },
   "block": {

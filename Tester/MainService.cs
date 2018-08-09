@@ -10,6 +10,7 @@ using Sky.Core;
 using Sky.Wallets;
 using Sky.Core.DPos;
 using Sky.Network;
+using Sky.Network.RPC;
 
 namespace Tester
 {
@@ -22,6 +23,7 @@ namespace Tester
         UInt256 _to = new UInt256(new byte[32] { 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 });
         Block _genesisBlock;
         LocalNode _node;
+        RpcServer _rpcServer;
         DPos _dpos;
 
         public void Run()
@@ -41,6 +43,8 @@ namespace Tester
 
             Initialize();
             CheckAccount();
+            StartLocalNode();
+            StartRpcServer();
             //                Config.GenesisBlock.Delegates.ForEach(p => dpos.TurnTable.Enqueue(p.Address));
             //                StartLocalNode();
 
@@ -285,6 +289,12 @@ namespace Tester
         {
             _node = new LocalNode();
             _node.Listen();
+        }
+
+        void StartRpcServer()
+        {
+            _rpcServer = new RpcServer(_node);
+            _rpcServer.Start(Config.Network.RpcPort);
         }
     }
 }

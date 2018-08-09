@@ -14,6 +14,7 @@ namespace Sky
         public string ListenAddress;
         public ushort TcpPort;
         public ushort WsPort;
+        public ushort RpcPort;
         public string[] SeedList;
     }
 
@@ -85,6 +86,7 @@ namespace Sky
             Network.ListenAddress = net["listen_address"].Value<string>();
             Network.TcpPort = net["tcp_port"].Value<ushort>();
             Network.WsPort = net["ws_port"].Value<ushort>();
+            Network.RpcPort = net["rpc_port"].Value<ushort>();
             Network.SeedList = net["seed_list"].Values<string>().ToArray();
 
             LocalAddresses = new HashSet<IPAddress>();
