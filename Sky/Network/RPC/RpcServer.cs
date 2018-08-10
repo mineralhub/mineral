@@ -59,22 +59,37 @@ namespace Sky.Network.RPC
             switch (method)
             {
                 case "getheight":
-                    JObject json = new JObject();
-                    json["blockHeight"] = Blockchain.Instance.CurrentBlockHeight;
-                    json["headerHeight"] = Blockchain.Instance.CurrentHeaderHeight;
-                    return json;
+                    {
+                        JObject json = new JObject();
+                        json["blockheight"] = Blockchain.Instance.CurrentBlockHeight;
+                        json["headerheight"] = Blockchain.Instance.CurrentHeaderHeight;
+                        return json;
+                    }
+                case "getcurrentblockhash":
+                    {
+                        JObject json = new JObject();
+                        json["hash"] = Blockchain.Instance.CurrentBlockHash.ToString();
+                        return json;
+                    }
                 case "getblock":
-                    Block block = null;
-                    if (parameters[0].Type == JTokenType.Integer)
-                        block = Blockchain.Instance.GetBlock(parameters[0].Value<int>());
-                    else
-                        block = Blockchain.Instance.GetBlock(UInt256.FromHexString(parameters[0].Value<string>()));
-                    return block.ToJson();
+                    {
+                        Block block = null;
+                        if (parameters[0].Type == JTokenType.Integer)
+                            block = Blockchain.Instance.GetBlock(parameters[0].Value<int>());
+                        else
+                            block = Blockchain.Instance.GetBlock(UInt256.FromHexString(parameters[0].Value<string>()));
+                        BlockHeader nextHeader = Blockchain.Instance.GetNextHeader(block.Hash);
+                        JObject json = block.ToJson();
+                        json["nextblockhash"] = nextHeader.Hash.ToString();
+                        return json;
+                    }
                 case "account":
-                    string address = parameters[0].Value<string>();
-                    UInt160 addressHash = Wallets.WalletAccount.ToAddressHash(address);
-                    AccountState state = Blockchain.Instance.GetAccountState(addressHash);
-                    return state.ToJson();
+                    {
+                        string address = parameters[0].Value<string>();
+                        UInt160 addressHash = Wallets.WalletAccount.ToAddressHash(address);
+                        AccountState state = Blockchain.Instance.GetAccountState(addressHash);
+                        return state.ToJson();
+                    }
             }
             return null;
         }

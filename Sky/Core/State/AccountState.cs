@@ -63,7 +63,7 @@ namespace Sky.Core
             json["address"] = Wallets.WalletAccount.ToAddress(AddressHash);
             json["frozen"] = IsFrozen;
             json["balance"] = Balance.ToString();
-            json["lockBalance"] = LockBalance.ToString();
+            json["lockbalance"] = LockBalance.ToString();
             JObject votes = new JObject();
             foreach (var v in Votes)
                 json[Wallets.WalletAccount.ToAddress(v.Key)] = v.Value.ToString();
