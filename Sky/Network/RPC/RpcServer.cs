@@ -56,15 +56,27 @@ namespace Sky.Network.RPC
 
         protected virtual JObject Process(string method, JArray parameters)
         {
-            JObject json = new JObject();
             switch (method)
             {
                 case "getheight":
+                    JObject json = new JObject();
                     json["blockHeight"] = Blockchain.Instance.CurrentBlockHeight;
                     json["headerHeight"] = Blockchain.Instance.CurrentHeaderHeight;
-                    break;
+                    return json;
+                case "getblock":
+                    Block block = null;
+                    if (parameters[0].Type == JTokenType.Integer)
+                        block = Blockchain.Instance.GetBlock(parameters[0].Value<int>());
+                    else
+                        block = Blockchain.Instance.GetBlock(UInt256.FromHexString(parameters[0].Value<string>()));
+                    return block.ToJson();
+                case "account":
+                    string address = parameters[0].Value<string>();
+                    UInt160 addressHash = Wallets.WalletAccount.ToAddressHash(address);
+                    AccountState state = Blockchain.Instance.GetAccountState(addressHash);
+                    return state.ToJson();
             }
-            return json;
+            return null;
         }
 
         async Task ProcessAsync(HttpContext context)

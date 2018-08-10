@@ -371,7 +371,7 @@ namespace Sky.Database.LevelDB
 
             StringBuilder sb = new StringBuilder();
             sb.AppendLine("persist block : " + block.Height);
-            sb.AppendLine(block.ToJson());
+            sb.AppendLine(block.ToJson().ToString());
             Logger.Log(sb.ToString());
         }
 

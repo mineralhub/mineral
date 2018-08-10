@@ -84,11 +84,11 @@ namespace Sky.Core
             return true;
         }
 
-        public string ToJson()
+        public JObject ToJson()
         {
             var json = new JObject();
             json.Add("hash", Hash.ToString());
-            return json.ToString();
+            return json;
         }
     }
 }

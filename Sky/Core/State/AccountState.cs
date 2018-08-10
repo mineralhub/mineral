@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using Newtonsoft.Json.Linq;
+using System.Collections.Generic;
 using System.IO;
 
 namespace Sky.Core
@@ -54,6 +55,20 @@ namespace Sky.Core
         public void SetVote(Dictionary<UInt160, Fixed8> vote)
         {
             Votes = vote;
+        }
+
+        public JObject ToJson()
+        {
+            JObject json = new JObject();
+            json["address"] = Wallets.WalletAccount.ToAddress(AddressHash);
+            json["frozen"] = IsFrozen;
+            json["balance"] = Balance.ToString();
+            json["lockBalance"] = LockBalance.ToString();
+            JObject votes = new JObject();
+            foreach (var v in Votes)
+                json[Wallets.WalletAccount.ToAddress(v.Key)] = v.Value.ToString();
+            json["votes"] = votes;
+            return json;
         }
     }
 }
