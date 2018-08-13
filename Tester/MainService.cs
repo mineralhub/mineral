@@ -42,7 +42,10 @@ namespace Tester
             Config.Initialize();
 
             Initialize();
-            CheckAccount();
+            if (ValidAccount() == false)
+                return;
+            if (ValidBlock() == false)
+                return;
             StartLocalNode();
             StartRpcServer();
             //                Config.GenesisBlock.Delegates.ForEach(p => dpos.TurnTable.Enqueue(p.Address));
@@ -275,17 +278,35 @@ namespace Tester
             _dpos.TurnTable.SetUpdateHeight(block.Height);
         }
 
-        void CheckAccount()
+        bool ValidAccount()
         {
             Logger.Log("---------- Check Account ----------");
             Logger.Log("address : " + _account.Address + " length : " + _account.Address.Length);
             Logger.Log("addressHash : " + _account.AddressHash + " byte size : " + _account.AddressHash.Size);
             Logger.Log("pubkey : " + _account.Key.PublicKey.ToByteArray().ToHexString());
             var hashToAddr = WalletAccount.ToAddress(_account.AddressHash);
-            Logger.Log("- check addressHash to address : " + (hashToAddr == _account.Address));
+            bool validHashToAddr = hashToAddr == _account.Address;
+            Logger.Log("- check addressHash to address : " + validHashToAddr);
+            if (!validHashToAddr)
+                return false;
             var generate = new ECKey(ECKey.Generate());
             Logger.Log("generate prikey : " + generate.PrivateKey.D.ToByteArray().ToHexString());
             Logger.Log("generate pubkey : " + generate.PublicKey.ToByteArray().ToHexString());
+            return true;
+        }
+
+        bool ValidBlock()
+        {
+            BlockHeader heightHeader = Blockchain.Instance.GetHeader(0);
+            BlockHeader hashHeader = Blockchain.Instance.GetHeader(heightHeader.Hash);
+            if (heightHeader == null || hashHeader == null)
+                return false;
+
+            Block heightBlock = Blockchain.Instance.GetBlock(0);
+            Block hashBlock = Blockchain.Instance.GetBlock(heightBlock.Hash);
+            if (heightBlock == null || hashBlock == null)
+                return false;
+            return true;
         }
 
         void StartLocalNode()
