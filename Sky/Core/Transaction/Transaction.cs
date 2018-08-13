@@ -56,19 +56,19 @@ namespace Sky.Core
             switch (Type)
             {
                 case eTransactionType.DataTransaction:
-                    Data = new DataTransaction(inputs, outputs, signatures);
+                    Data = new DataTransaction(this, inputs, outputs, signatures);
                     break;
                 case eTransactionType.VoteTransaction:
-                    Data = new VoteTransaction(inputs, outputs, signatures);
+                    Data = new VoteTransaction(this, inputs, outputs, signatures);
                     break;
                 case eTransactionType.RegisterDelegateTransaction:
-                    Data = new RegisterDelegateTransaction(inputs, outputs, signatures);
+                    Data = new RegisterDelegateTransaction(this, inputs, outputs, signatures);
                     break;
                 case eTransactionType.RewardTransaction:
-                    Data = new RewardTransaction(inputs, outputs, signatures);
+                    Data = new RewardTransaction(this, inputs, outputs, signatures);
                     break;
                 default:
-                    Data = new TransactionBase(inputs, outputs, signatures);
+                    Data = new TransactionBase(this, inputs, outputs, signatures);
                     break;
             }
         }
@@ -107,7 +107,7 @@ namespace Sky.Core
             Data.Serialize(writer);
         }
 
-        public virtual bool Verify()
+        public bool Verify()
         {
             if (Data.Verify() == false)
                 return false;

@@ -106,17 +106,16 @@ namespace Tester
                 Config.GenesisBlock.Delegates.ForEach(
                     p =>
                     {
-                        txs.Add(new Transaction(
-                            BlockVersion,
-                            eTransactionType.RegisterDelegateTransaction,
-                            GenesisBlockTimestamp - 1,
-                            new RegisterDelegateTransaction(
-                            new List<TransactionInput>(),
-                            new List<TransactionOutput>(),
-                            new List<MakerSignature>(),
-                            p.Address,
-                            Encoding.UTF8.GetBytes(p.Name)))
-                        );
+                        var tx = new Transaction(BlockVersion, 
+                                        eTransactionType.RegisterDelegateTransaction, 
+                                        GenesisBlockTimestamp - 1, 
+                                        new List<TransactionInput>(), 
+                                        new List<TransactionOutput>(), 
+                                        new List<MakerSignature>());
+                        var register = tx.Data as RegisterDelegateTransaction;
+                        register.Sender = p.Address;
+                        register.NameBytes = Encoding.UTF8.GetBytes(p.Name);
+                        txs.Add(tx);
                     });
 
                 var merkle = new MerkleTree(txs.Select(p => p.Hash).ToArray());
@@ -207,6 +206,7 @@ namespace Tester
             return new Block(blockHeader, txs);
         }
 
+        /*
         VoteTransaction CreateVoteTransaction()
         {
             // find genesis block input
@@ -233,6 +233,7 @@ namespace Tester
             var txSign = new List<MakerSignature> { new MakerSignature(Sky.Cryptography.Helper.Sign(txIn[0].Hash.Data, _account.Key), _account.Key.PublicKey.ToByteArray()) };
             return new VoteTransaction(txIn, txOut, txSign);
         }
+        */
 
         void PersistCompleted(object sender, Block block)
         {

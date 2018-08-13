@@ -13,8 +13,8 @@ namespace Sky.Core
         {
         }
 
-        public VoteTransaction(List<TransactionInput> inputs, List<TransactionOutput> outputs, List<MakerSignature> signatures)
-            : base(inputs, outputs, signatures)
+        public VoteTransaction(Transaction owner, List<TransactionInput> inputs, List<TransactionOutput> outputs, List<MakerSignature> signatures)
+            : base(owner, inputs, outputs, signatures)
         {
         }
 

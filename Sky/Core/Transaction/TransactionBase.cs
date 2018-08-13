@@ -12,6 +12,8 @@ namespace Sky.Core
         public List<MakerSignature> Signatures { get; protected set; }
         public UInt256 Hash => this.GetHash();
 
+        public Transaction Owner { get; private set; }
+
         // cache refs
         private List<TransactionOutput> _referense;
         public List<TransactionOutput> References
@@ -35,7 +37,7 @@ namespace Sky.Core
 
         public virtual int Size => Fee.Size + Outputs.GetSize();
 
-        public TransactionBase(List<TransactionInput> inputs, List<TransactionOutput> outputs, List<MakerSignature> signatures)
+        public TransactionBase(Transaction owner, List<TransactionInput> inputs, List<TransactionOutput> outputs, List<MakerSignature> signatures)
         {
             Inputs = inputs;
             Outputs = outputs;

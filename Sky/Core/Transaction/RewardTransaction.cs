@@ -4,8 +4,8 @@ namespace Sky.Core
 {
     public class RewardTransaction : TransactionBase
     {
-        public RewardTransaction(List<TransactionInput> inputs, List<TransactionOutput> outputs, List<MakerSignature> signatures)
-            : base(inputs, outputs, signatures)
+        public RewardTransaction(Transaction owner, List<TransactionInput> inputs, List<TransactionOutput> outputs, List<MakerSignature> signatures)
+            : base(owner, inputs, outputs, signatures)
         {
         }
 

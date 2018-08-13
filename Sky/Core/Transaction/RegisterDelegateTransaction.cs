@@ -5,8 +5,8 @@ namespace Sky.Core
 {
     public class RegisterDelegateTransaction : TransactionBase
     {
-        public UInt160 Sender { get; private set; }
-        public byte[] NameBytes { get; private set; }
+        public UInt160 Sender;
+        public byte[] NameBytes;
 
         public override int Size => base.Size + Sender.Size + NameBytes.GetSize();
 
@@ -14,16 +14,9 @@ namespace Sky.Core
         {
         }
 
-        public RegisterDelegateTransaction(List<TransactionInput> inputs, List<TransactionOutput> outputs, List<MakerSignature> signatures)
-            : base(inputs, outputs, signatures)
+        public RegisterDelegateTransaction(Transaction owner, List<TransactionInput> inputs, List<TransactionOutput> outputs, List<MakerSignature> signatures)
+            : base(owner, inputs, outputs, signatures)
         {
-        }
-
-        public RegisterDelegateTransaction(List<TransactionInput> inputs, List<TransactionOutput> outputs, List<MakerSignature> signatures, UInt160 sender, byte[] name)
-            : base(inputs, outputs, signatures)
-        {
-            Sender = sender;
-            NameBytes = name;
         }
 
         public override void CalcFee()
