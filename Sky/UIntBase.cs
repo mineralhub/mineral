@@ -66,7 +66,7 @@ namespace Sky
 
         public override string ToString()
         {
-            return _data.Reverse().ToHexString();
+            return _data.ToHexString();
         }
 
         public void Deserialize(BinaryReader reader)
