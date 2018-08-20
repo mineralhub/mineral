@@ -7,6 +7,7 @@ using System.Threading;
 using Sky;
 using Sky.Core;
 using System.Text;
+using Sky.Wallets;
 
 namespace Sky.Database.LevelDB
 {
@@ -305,65 +306,83 @@ namespace Sky.Database.LevelDB
             DbCache<UInt160, DelegatorState> delegators = new DbCache<UInt160, DelegatorState>(_db, DataEntryPrefix.ST_Delegator);
             DbCache<UInt256, UnspentCoinState> unspentCoins = new DbCache<UInt256, UnspentCoinState>(_db, DataEntryPrefix.ST_Coin);
             DbCache<UInt256, SpentCoinState> spentCoins = new DbCache<UInt256, SpentCoinState>(_db, DataEntryPrefix.ST_SpentCoin);
+            DbCache<UInt256, OtherSignTransactionState> otherSignTxs = new DbCache<UInt256, OtherSignTransactionState>(_db, DataEntryPrefix.ST_OtherSign);
+            DbCache<SerializeInteger, BlockTriggerState> blockTriggers = new DbCache<SerializeInteger, BlockTriggerState>(_db, DataEntryPrefix.ST_BlockTrigger);
 
             long fee = block.Transactions.Sum(p => p.Fee).Value;
             batch.Put(SliceBuilder.Begin(DataEntryPrefix.DATA_Block).Add(block.Hash), SliceBuilder.Begin().Add(fee).Add(block.ToArray()));
             foreach (Transaction tx in block.Transactions)
             {
                 batch.Put(SliceBuilder.Begin(DataEntryPrefix.DATA_Transaction).Add(tx.Hash), SliceBuilder.Begin().Add(block.Header.Height).Add(tx.ToArray()));
-                foreach (TransactionOutput output in tx.Outputs)
+                if (tx.Type != eTransactionType.OtherSignTransaction)
                 {
-                    AccountState account = accounts.GetAndChange(output.AddressHash, () => new AccountState(output.AddressHash));
-                    account.AddBalance(output.Value);
+                    foreach (TransactionOutput output in tx.Outputs)
+                        accounts.GetAndChange(output.AddressHash, () => new AccountState(output.AddressHash)).AddBalance(output.Value);;
                 }
 
-                int txHeight;
                 foreach (TransactionInput input in tx.Inputs)
                 {
-                    Transaction prevtx = GetTransaction(input.PrevHash, out txHeight);
-                    TransactionOutput prevOutput = prevtx.Outputs[input.PrevIndex];
-                    AccountState account = accounts.GetAndChange(prevOutput.AddressHash, () => new AccountState(prevOutput.AddressHash));
-                    account.AddBalance(-prevOutput.Value);
+                    TransactionOutput prevOutput = GetTransaction(input.PrevHash).Outputs[input.PrevIndex];
+                    accounts.GetAndChange(prevOutput.AddressHash, () => new AccountState(prevOutput.AddressHash)).AddBalance(-prevOutput.Value);
                 }
 
-                switch (tx.Type)
+                switch (tx.Data)
                 {
-                    case eTransactionType.RewardTransaction:
-                        break;
-                    case eTransactionType.DataTransaction:
+                    case VoteTransaction voteTx:
                         {
-                            //DataTransaction data = tx as DataTransaction;
-                            //data.Data
-                        }
-                        break;
-                    case eTransactionType.VoteTransaction:
-                        {
-                            VoteTransaction voteTx = tx.Data as VoteTransaction;
-                            AccountState account = accounts.GetAndChange(voteTx.Sender, () => new AccountState(voteTx.Sender));
                             foreach (var v in voteTx.Votes)
-                            {
-                                DelegatorState delegator = delegators.TryGet(v.Key);
-                                if (delegator.Votes.ContainsKey(voteTx.Sender))
-                                    delegator.Votes[voteTx.Sender] = v.Value;
-                                else
-                                    delegator.Votes.Add(voteTx.Sender, v.Value);
-                            }
-                            account.SetVote(voteTx.Votes);
+                                delegators.GetAndChange(v.Key)?.Vote(voteTx.Sender, v.Value);
+                            accounts.GetAndChange(voteTx.Sender, () => new AccountState(voteTx.Sender)).SetVote(voteTx.Votes);
                         }
                         break;
-                    case eTransactionType.RegisterDelegateTransaction:
+                    case RegisterDelegateTransaction delegateTx:
                         {
-                            RegisterDelegateTransaction delegateTx = tx.Data as RegisterDelegateTransaction;
                             delegators.Add(delegateTx.Sender, new DelegatorState(delegateTx.Sender, delegateTx.NameBytes));
                         }
                         break;
+                    case OtherSignTransaction osignTx:
+                        {
+                            blockTriggers.GetAndChange(new SerializeInteger(osignTx.ValidBlockHeight), () => new BlockTriggerState()).TransactionHashes.Add(osignTx.Hash);
+                            otherSignTxs.Add(osignTx.Hash, new OtherSignTransactionState(osignTx.Hash, osignTx.Others));
+                        }
+                        break;
+                    case SignTransaction signTx:
+                        {
+                            OtherSignTransactionState osignState = otherSignTxs.GetAndChange(signTx.SignTxHash);
+                            osignState.Sign(signTx.Signatures);
+                            if (osignState.RemainSign.Count == 0)
+                            {
+                                foreach (TransactionOutput output in tx.Outputs)
+                                    accounts.GetAndChange(output.AddressHash, () => new AccountState(output.AddressHash)).AddBalance(output.Value);;
+                                BlockTriggerState state = blockTriggers.GetAndChange(new SerializeInteger(signTx.Reference.ValidBlockHeight));
+                                state.TransactionHashes.Remove(signTx.SignTxHash);
+                            }
+                        }
+                        break;
                 }
+            }
+
+            BlockTriggerState blockTrigger = blockTriggers.TryGet(new SerializeInteger(block.Height));
+            if (blockTrigger != null)
+            {
+                foreach (UInt256 txhash in blockTrigger.TransactionHashes)
+                {
+                    Transaction tx = GetTransaction(txhash);
+                    foreach (TransactionInput input in tx.Inputs)
+                    {
+                        TransactionOutput prevOutput = GetTransaction(input.PrevHash).Outputs[input.PrevIndex];
+                        accounts.GetAndChange(prevOutput.AddressHash, () => new AccountState(prevOutput.AddressHash)).AddBalance(prevOutput.Value);
+                    }
+                }                
             }
 
             accounts.DeleteWhere((k, v) => !v.IsFrozen && v.Balance <= Fixed8.Zero && v.Votes == null);
             accounts.Commit(batch);
             delegators.DeleteWhere((k, v) => v.AddressHash == null);
             delegators.Commit(batch);
+            blockTriggers.DeleteWhere((k, v) => k <= block.Height);
+            blockTriggers.Commit(batch);
+            otherSignTxs.Commit(batch);
             batch.Put(SliceBuilder.Begin(DataEntryPrefix.SYS_CurrentBlock), SliceBuilder.Begin().Add(block.Hash).Add(block.Header.Height));
             _db.Write(WriteOptions.Default, batch);
             _currentBlockHeight = block.Header.Height;

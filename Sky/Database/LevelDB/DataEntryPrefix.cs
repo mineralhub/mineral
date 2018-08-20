@@ -9,6 +9,8 @@
         public const byte ST_Delegator = 0x41;
         public const byte ST_Coin = 0x44;
         public const byte ST_SpentCoin = 0x45;
+        public const byte ST_BlockTrigger = 0x46;
+        public const byte ST_OtherSign = 0x47;
 
         public const byte IX_HeaderHashList = 0x80;
 

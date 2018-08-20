@@ -11,6 +11,11 @@ namespace Sky.Database.LevelDB
             batch.Delete(SliceBuilder.Begin(prefix).Add(key));
         }
 
+        public static void Delete(this WriteBatch batch, byte prefix, int key)
+        {
+            batch.Delete(SliceBuilder.Begin(prefix).Add(key));
+        }
+
         public static IEnumerable<T> Find<T>(this DB db, ReadOptions options, byte prefix) where T : class, ISerializable, new()
         {
             return Find(db, options, SliceBuilder.Begin(prefix), (k, v) => v.ToArray().Serializable<T>());
@@ -43,6 +48,11 @@ namespace Sky.Database.LevelDB
         }
 
         public static void Put(this WriteBatch batch, byte prefix, ISerializable key, ISerializable value)
+        {
+            batch.Put(SliceBuilder.Begin(prefix).Add(key), value.ToArray());
+        }
+
+        public static void Put(this WriteBatch batch, byte prefix, int key, ISerializable value)
         {
             batch.Put(SliceBuilder.Begin(prefix).Add(key), value.ToArray());
         }

@@ -31,9 +31,14 @@ namespace Sky.Wallets
 
         public static string ToAddress(ECKey key)
         {
+            return ToAddress(key.PublicKey.ToByteArray(false));
+        }
+
+        public static string ToAddress(byte[] pubkey)
+        {
             byte[] data = new byte[21];
             data[0] = Config.AddressVersion;
-            Buffer.BlockCopy(key.PublicKey.ToByteArray(false).SHA256().RIPEMD160(), 0, data, 1, 20);
+            Buffer.BlockCopy(pubkey.SHA256().RIPEMD160(), 0, data, 1, 20);
             return data.Base58CheckEncode();
         }
 
@@ -45,6 +50,23 @@ namespace Sky.Wallets
             if (data[0] != Config.AddressVersion)
                 throw new FormatException();
             return new UInt160(data.Skip(1).ToArray());
+        }
+
+        public static bool IsAddress(string address)
+        {
+            try
+            {
+                byte[] data = address.Base58CheckDecode();
+                if (data.Length != 21)
+                    throw new FormatException();
+                if (data[0] != Config.AddressVersion)
+                    throw new FormatException();
+                return true;
+            }
+            catch 
+            {
+                return false;
+            }
         }
 
         public static string ToAddress(UInt160 addressHash)

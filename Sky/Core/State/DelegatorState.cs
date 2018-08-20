@@ -17,7 +17,6 @@ namespace Sky.Core
         }
 
         public DelegatorState(UInt160 addressHash, byte[] name)
-            : this()
         {
             AddressHash = addressHash;
             Name = name;
@@ -38,6 +37,14 @@ namespace Sky.Core
             writer.WriteSerializable(AddressHash);
             writer.WriteByteArray(Name);
             writer.WriteSerializableDictonary(Votes);
+        }
+
+        public void Vote(UInt160 addressHash, Fixed8 value)
+        {
+            if (Votes.ContainsKey(addressHash))
+                Votes[addressHash] = value;
+            else
+                Votes.Add(addressHash, value);
         }
     }
 }

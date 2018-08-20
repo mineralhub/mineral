@@ -25,7 +25,7 @@ namespace Sky.Core
             Version = version;
             Type = type;
             Timestamp = timestamp;
-            MallocBaseTrasnaction(inputs, outputs, signatures);
+            MallocTrasnactionData(inputs, outputs, signatures);
         }
 
         public Transaction(short version, eTransactionType type, int timestamp, TransactionBase txData)
@@ -51,7 +51,7 @@ namespace Sky.Core
             }
         }
 
-        private void MallocBaseTrasnaction(List<TransactionInput> inputs = null, List<TransactionOutput> outputs = null, List<MakerSignature> signatures = null)
+        private void MallocTrasnactionData(List<TransactionInput> inputs = null, List<TransactionOutput> outputs = null, List<MakerSignature> signatures = null)
         {
             switch (Type)
             {
@@ -78,7 +78,7 @@ namespace Sky.Core
             Version = reader.ReadInt16();
             Type = (eTransactionType)reader.ReadInt16();
             Timestamp = reader.ReadInt32();
-            MallocBaseTrasnaction();
+            MallocTrasnactionData();
             Data.DeserializeUnsigned(reader);
         }
 
@@ -95,7 +95,7 @@ namespace Sky.Core
             Version = reader.ReadInt16();
             Type = (eTransactionType)reader.ReadInt16();
             Timestamp = reader.ReadInt32();
-            MallocBaseTrasnaction();
+            MallocTrasnactionData();
             Data.Deserialize(reader);
         }
 
