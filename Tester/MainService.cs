@@ -290,6 +290,10 @@ namespace Tester
             Logger.Log("- check addressHash to address : " + validHashToAddr);
             if (!validHashToAddr)
                 return false;
+            bool validAddress = WalletAccount.IsAddress(_account.Address);
+            Logger.Log("check is address : " + validAddress);
+            if (!validAddress)
+                return false;
             var generate = new ECKey(ECKey.Generate());
             Logger.Log("generate prikey : " + generate.PrivateKey.D.ToByteArray().ToHexString());
             Logger.Log("generate pubkey : " + generate.PublicKey.ToByteArray().ToHexString());

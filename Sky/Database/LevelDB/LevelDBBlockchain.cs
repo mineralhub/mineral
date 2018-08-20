@@ -7,7 +7,6 @@ using System.Threading;
 using Sky;
 using Sky.Core;
 using System.Text;
-using Sky.Wallets;
 
 namespace Sky.Database.LevelDB
 {
