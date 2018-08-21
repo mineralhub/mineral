@@ -1,29 +1,35 @@
-﻿using System.Collections.Generic;
+﻿using System.IO;
 
 namespace Sky.Core
 {
     public class RewardTransaction : TransactionBase
     {
-        public RewardTransaction(Transaction owner, List<TransactionInput> inputs, List<TransactionOutput> outputs, List<MakerSignature> signatures)
-            : base(owner, inputs, outputs, signatures)
-        {
-        }
+        public Fixed8 Reward;
+
+        public override int Size => base.Size + Reward.Size;
 
         public override void CalcFee()
         {
             Fee = Fixed8.Zero;
         }
 
+        public override void Deserialize(BinaryReader reader)
+        {
+            base.Deserialize(reader);
+            Reward = reader.ReadSerializable<Fixed8>();
+        }
+
+        public override void Serialize(BinaryWriter writer)
+        {
+            base.Serialize(writer);
+            writer.WriteSerializable(Reward);
+        }
+
         public override bool Verify()
         {
-            // zero input
-            if (0 < Inputs.Count)
+            if (!base.Verify())
                 return false;
-            // single output
-            if (1 < Outputs.Count)
-                return false;
-            // block reward
-            if (Outputs[0].Value != Config.BlockReward)
+            if (Reward != Config.BlockReward)
                 return false;
             return true;
         }

@@ -89,32 +89,40 @@ namespace Tester
 
             // create genesis block.
             {
-                var inputs = new List<TransactionInput>();
-                var outputs = new List<TransactionOutput>();
-
+                List<TransferTransaction> transTxs = new List<TransferTransaction>();
                 Config.GenesisBlock.Accounts.ForEach(
                     p =>
                     {
-                        outputs.Add(new TransactionOutput(p.Balance, p.Address));
+                        transTxs.Add(new TransferTransaction
+                        {
+                            From = UInt160.Zero,
+                            To = p.Address,
+                            Amount = p.Balance
+                        });
                     });
 
-                var txs = new List<Transaction>
+                var txs = new List<Transaction>();
+                foreach (var trans in transTxs)
                 {
-                    new Transaction(BlockVersion, eTransactionType.RewardTransaction, GenesisBlockTimestamp - 1, inputs, outputs, new List<MakerSignature>()),
-                };
+                    var tx = new Transaction(eTransactionType.TransferTransaction,
+                                    GenesisBlockTimestamp - 1,
+                                    trans);
+                    tx.Signature = new MakerSignature();
+                    txs.Add(tx);
+                }
 
                 Config.GenesisBlock.Delegates.ForEach(
                     p =>
                     {
-                        var tx = new Transaction(BlockVersion, 
-                                        eTransactionType.RegisterDelegateTransaction, 
-                                        GenesisBlockTimestamp - 1, 
-                                        new List<TransactionInput>(), 
-                                        new List<TransactionOutput>(), 
-                                        new List<MakerSignature>());
-                        var register = tx.Data as RegisterDelegateTransaction;
-                        register.Sender = p.Address;
-                        register.NameBytes = Encoding.UTF8.GetBytes(p.Name);
+                        var register = new RegisterDelegateTransaction
+                        {
+                            NameBytes = Encoding.UTF8.GetBytes(p.Name),
+                            From = p.Address
+                        };
+                        var tx = new Transaction(eTransactionType.RegisterDelegateTransaction,
+                                                 GenesisBlockTimestamp - 1,
+                                                 register);
+                        tx.Signature = new MakerSignature();
                         txs.Add(tx);
                     });
 
@@ -150,7 +158,6 @@ namespace Tester
             Logger.Log("genesis block tx. hash : " + genesisBlockTx.Hash);
 
             WalletIndexer.SetInstance(new Sky.Database.LevelDB.LevelDBWalletIndexer("./output-wallet-index"));
-
             UpdateTurnTable();
             /*
             var accounts = new List<UInt160> { _delegator.AddressHash, _randomAccount.AddressHash };
@@ -174,33 +181,19 @@ namespace Tester
             var txs = new List<Transaction>();
             {
                 // block reward
-                var txIn = new List<TransactionInput>();
-                var txOut = new List<TransactionOutput>
+                RewardTransaction rewardTx = new RewardTransaction
                 {
-                    new TransactionOutput(Config.BlockReward, _account.AddressHash)
+                    From = _account.AddressHash,
+                    Reward = Config.BlockReward
                 };
-                var txSign = new List<MakerSignature>();
-                txs.Add(new Transaction(0, eTransactionType.RewardTransaction, DateTime.UtcNow.ToTimestamp(), txIn, txOut, txSign));
+                var tx = new Transaction(
+                    eTransactionType.RewardTransaction,
+                    DateTime.UtcNow.ToTimestamp(),
+                    rewardTx
+                );
+                tx.Sign(_account);
+                txs.Add(tx);
             }
-            /*
-            {
-                // translate
-                var txIn = new List<TransactionInput>
-                {
-                    new TransactionInput(previosBlock.Transactions[0].Hash, 0)
-                };
-                var txOut = new List<TransactionOutput>
-                {
-                    new TransactionOutput(Fixed8.One, _randomAccount.AddressHash),
-                    new TransactionOutput(Config.BlockReward - Fixed8.One - Config.DefaultFee, _user.AddressHash)
-                };
-                var txSign = new List<MakerSignature>
-                {
-                    new MakerSignature(Sky.Cryptography.Helper.Sign(txIn[0].Hash.Data, _user.Key), _user.Key.PublicKey.ToByteArray())
-                };
-                txs.Add(new Transaction(0, eTransactionType.DataTransaction, DateTime.UtcNow.ToTimestamp(), txIn, txOut, txSign));
-            }
-            */
             var merkle = new MerkleTree(txs.Select(p => p.Hash).ToArray());
             var blockHeader = new BlockHeader(Blockchain.Instance.CurrentHeaderHeight + 1, BlockVersion, DateTime.UtcNow.ToTimestamp(), merkle.RootHash, Blockchain.Instance.CurrentHeaderHash, _account.Key);
             return new Block(blockHeader, txs);
@@ -306,7 +299,6 @@ namespace Tester
             BlockHeader hashHeader = Blockchain.Instance.GetHeader(heightHeader.Hash);
             if (heightHeader == null || hashHeader == null)
                 return false;
-
             Block heightBlock = Blockchain.Instance.GetBlock(0);
             Block hashBlock = Blockchain.Instance.GetBlock(heightBlock.Hash);
             if (heightBlock == null || hashBlock == null)

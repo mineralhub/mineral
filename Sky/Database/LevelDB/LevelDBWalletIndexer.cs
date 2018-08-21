@@ -10,7 +10,6 @@ namespace Sky.Database.LevelDB
 {
     public class LevelDBWalletIndexer : WalletIndexer
     {
-
         // height, group(addressHash)
         private Dictionary<int, HashSet<UInt160>> _accountGroup = new Dictionary<int, HashSet<UInt160>>();
 
@@ -157,42 +156,50 @@ namespace Sky.Database.LevelDB
         {
             foreach (Transaction tx in block.Transactions)
             {
-                Dictionary<UInt160, List<Fixed8>> changed = new Dictionary<UInt160, List<Fixed8>>();
-                for (ushort i = 0; i < tx.Outputs.Count; ++i)
+                HashSet<UInt160> changed = new HashSet<UInt160>();
+                if (accounts.Contains(tx.From) && !changed.Contains(tx.From))
+                    changed.Add(tx.From);
+                switch (tx.Data)
                 {
-                    TransactionOutput output = tx.Outputs[i];
-                    if (accounts.Contains(output.AddressHash))
-                    {
-                        if (!changed.ContainsKey(output.AddressHash))
-                            changed.Add(output.AddressHash, new List<Fixed8>());
-                        changed[output.AddressHash].Add(output.Value);
-                        _accountTracked[output.AddressHash].Add(tx.Hash);
-                    }
+                    case TransferTransaction transTx:
+                        {
+                            if (accounts.Contains(transTx.To) && !changed.Contains(transTx.To))
+                                changed.Add(transTx.To);
+                        }
+                        break;
+                    case VoteTransaction voteTx:
+                        {
+                            foreach (UInt160 addr in voteTx.Votes.Keys)
+                            {
+                                if (accounts.Contains(addr) && !changed.Contains(addr))
+                                    changed.Add(addr);
+                            }
+                        }
+                        break;
+                    case OtherSignTransaction osignTx:
+                        {
+                            if (accounts.Contains(osignTx.To) && !changed.Contains(osignTx.To))
+                                changed.Add(osignTx.To);
+                        }
+                        break;
+                    case SignTransaction signTx:
+                        {
+                            OtherSignTransaction osignTx = Blockchain.Instance.GetTransaction(signTx.SignTxHash).Data as OtherSignTransaction;
+                            if (accounts.Contains(osignTx.From) && !changed.Contains(osignTx.From))
+                                changed.Add(osignTx.From);
+                            if (accounts.Contains(osignTx.To) && !changed.Contains(osignTx.To))
+                                changed.Add(osignTx.To);
+                        }
+                        break;
                 }
-                foreach (var input in tx.Inputs)
-                {
-                    var prevTx = Blockchain.Instance.GetTransaction(input.PrevHash);
-                    var addrHash = prevTx.Outputs[input.PrevIndex].AddressHash;
-                    if (accounts.Contains(addrHash))
-                    {
-                        if (!changed.ContainsKey(addrHash))
-                            changed.Add(addrHash, new List<Fixed8>());
-                        _accountTracked[addrHash].Add(tx.Hash);
-                        changed[addrHash].Add(-prevTx.Outputs[input.PrevIndex].Value);
-                    }
-                }
-
                 if (0 < changed.Count)
                 {
-                    foreach (UInt160 account in changed.Keys) 
+                    foreach (UInt160 account in changed) 
                         batch.Put(SliceBuilder.Begin(WIDataEntryPrefix.ST_Transaction).Add(account).Add(tx.Hash), false);
 
-                    BalanceChange?.Invoke(this, new BalanceEventArgs
+                    TransactionEvent?.Invoke(this, new TransactionEventArgs
                     {
-                        Transaction = tx,
-                        ChangedAccount = changed,
-                        Height = block.Height,
-                        Time = block.Header.Timestamp
+                        Transaction = tx
                     });
                 }
             }

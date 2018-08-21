@@ -1,6 +1,7 @@
 ﻿using Newtonsoft.Json.Linq;
-using System.Collections.Generic;
+using System;
 using System.IO;
+using System.Collections.Generic;
 
 namespace Sky.Core
 {
@@ -11,6 +12,7 @@ namespace Sky.Core
         public Fixed8 Balance { get; private set; }
         public Fixed8 LockBalance { get; private set; }
         public Dictionary<UInt160, Fixed8> Votes { get; private set; }
+        public UInt64 Nonce { get; private set; }
 
         public override int Size => base.Size + AddressHash.Size + sizeof(bool) + Balance.Size;
 
@@ -50,6 +52,11 @@ namespace Sky.Core
         public void AddBalance(Fixed8 value)
         {
             Balance += value;
+        }
+
+        public UInt64 AddNonce()
+        {
+            return ++Nonce;
         }
 
         public void SetVote(Dictionary<UInt160, Fixed8> vote)

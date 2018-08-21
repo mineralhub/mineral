@@ -38,7 +38,6 @@ namespace Sky.Core
 
         public abstract Transaction GetTransaction(UInt256 hash, out int height);
 
-        public abstract bool IsDoubleSpend(Transaction tx);
         public abstract AccountState GetAccountState(UInt160 addressHash);
         public abstract List<DelegatorState> GetDelegateStateAll();
         public abstract List<DelegatorState> GetDelegateStateMakers();

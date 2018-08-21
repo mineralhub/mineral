@@ -1,7 +1,6 @@
 ﻿using Sky.Core;
 using Sky.Cryptography;
 using System;
-using System.Collections.Generic;
 using System.Linq;
 
 namespace Sky.Wallets

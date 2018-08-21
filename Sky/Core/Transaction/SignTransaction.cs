@@ -1,5 +1,4 @@
-﻿using System.Collections.Generic;
-using System.IO;
+﻿using System.IO;
 
 namespace Sky.Core
 {
@@ -19,11 +18,7 @@ namespace Sky.Core
             }
         }
 
-        
-        public SignTransaction(Transaction owner, List<TransactionInput> inputs, List<TransactionOutput> outputs, List<MakerSignature> signatures)
-            : base(owner, inputs, outputs, signatures)
-        {
-        }
+        public override int Size => base.Size + SignTxHash.Size;
 
         public override void Deserialize(BinaryReader reader)
         {
@@ -47,12 +42,8 @@ namespace Sky.Core
                 return false;
 
             OtherSignTransaction osignTx = tx.Data as OtherSignTransaction;
-            foreach (MakerSignature sign in Signatures)
-            {
-                string addr = Wallets.WalletAccount.ToAddress(sign.Pubkey);
-                if (osignTx.Others.Contains(addr))
-                    return true;
-            }
+            if (osignTx.Others.Contains(Wallets.WalletAccount.ToAddress(Owner.Signature.Pubkey)))
+                return true;
             return false;
         }
     }

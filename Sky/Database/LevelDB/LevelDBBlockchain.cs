@@ -232,26 +232,6 @@ namespace Sky.Database.LevelDB
             }
         }
 
-        public override bool IsDoubleSpend(Transaction tx)
-        {
-            if (tx.Inputs.Count == 0)
-                return false;
-
-            ReadOptions options = new ReadOptions();
-            using (options.Snapshot = _db.GetSnapshot())
-            {
-                foreach (var group in tx.Inputs.GroupBy(p => p.PrevHash))
-                {
-                    UnspentCoinState state = _db.TryGet<UnspentCoinState>(options, DataEntryPrefix.ST_Coin, group.Key);
-                    if (state == null)
-                        return true;
-                    if (group.Any(p => p.PrevIndex >= state.Items.Count || state.Items[p.PrevIndex].HasFlag(CoinState.Spent)))
-                        return true;
-                }
-            }
-            return false;
-        }
-
         public override AccountState GetAccountState(UInt160 addressHash)
         {
             return _db.TryGet<AccountState>(ReadOptions.Default, DataEntryPrefix.ST_Account, addressHash);
@@ -303,8 +283,6 @@ namespace Sky.Database.LevelDB
             WriteBatch batch = new WriteBatch();
             DbCache<UInt160, AccountState> accounts = new DbCache<UInt160, AccountState>(_db, DataEntryPrefix.ST_Account);
             DbCache<UInt160, DelegatorState> delegators = new DbCache<UInt160, DelegatorState>(_db, DataEntryPrefix.ST_Delegator);
-            DbCache<UInt256, UnspentCoinState> unspentCoins = new DbCache<UInt256, UnspentCoinState>(_db, DataEntryPrefix.ST_Coin);
-            DbCache<UInt256, SpentCoinState> spentCoins = new DbCache<UInt256, SpentCoinState>(_db, DataEntryPrefix.ST_SpentCoin);
             DbCache<UInt256, OtherSignTransactionState> otherSignTxs = new DbCache<UInt256, OtherSignTransactionState>(_db, DataEntryPrefix.ST_OtherSign);
             DbCache<SerializeInteger, BlockTriggerState> blockTriggers = new DbCache<SerializeInteger, BlockTriggerState>(_db, DataEntryPrefix.ST_BlockTrigger);
 
@@ -313,34 +291,39 @@ namespace Sky.Database.LevelDB
             foreach (Transaction tx in block.Transactions)
             {
                 batch.Put(SliceBuilder.Begin(DataEntryPrefix.DATA_Transaction).Add(tx.Hash), SliceBuilder.Begin().Add(block.Header.Height).Add(tx.ToArray()));
-                if (tx.Type != eTransactionType.OtherSignTransaction)
-                {
-                    foreach (TransactionOutput output in tx.Outputs)
-                        accounts.GetAndChange(output.AddressHash, () => new AccountState(output.AddressHash)).AddBalance(output.Value);;
-                }
 
-                foreach (TransactionInput input in tx.Inputs)
-                {
-                    TransactionOutput prevOutput = GetTransaction(input.PrevHash).Outputs[input.PrevIndex];
-                    accounts.GetAndChange(prevOutput.AddressHash, () => new AccountState(prevOutput.AddressHash)).AddBalance(-prevOutput.Value);
-                }
-
+                AccountState from = accounts.GetAndChange(tx.From, () => new AccountState(tx.From));
+                if (Fixed8.Zero < tx.Fee)
+                    from.AddBalance(-tx.Fee);
+                
                 switch (tx.Data)
                 {
+                    case RewardTransaction rewardTx:
+                        {
+                            from.AddBalance(rewardTx.Reward);
+                        }
+                        break;
+                    case TransferTransaction transTx:
+                        {
+                            from.AddBalance(-transTx.Amount);
+                            accounts.GetAndChange(transTx.To, () => new AccountState(transTx.To)).AddBalance(transTx.Amount);
+                        }
+                        break;
                     case VoteTransaction voteTx:
                         {
                             foreach (var v in voteTx.Votes)
-                                delegators.GetAndChange(v.Key)?.Vote(voteTx.Sender, v.Value);
-                            accounts.GetAndChange(voteTx.Sender, () => new AccountState(voteTx.Sender)).SetVote(voteTx.Votes);
+                                delegators.GetAndChange(v.Key)?.Vote(voteTx.From, v.Value);
+                            accounts.GetAndChange(voteTx.From, () => new AccountState(voteTx.From)).SetVote(voteTx.Votes);
                         }
                         break;
                     case RegisterDelegateTransaction delegateTx:
                         {
-                            delegators.Add(delegateTx.Sender, new DelegatorState(delegateTx.Sender, delegateTx.NameBytes));
+                            delegators.Add(delegateTx.From, new DelegatorState(delegateTx.From, delegateTx.NameBytes));
                         }
                         break;
                     case OtherSignTransaction osignTx:
                         {
+                            from.AddBalance(-osignTx.Amount);
                             blockTriggers.GetAndChange(new SerializeInteger(osignTx.ValidBlockHeight), () => new BlockTriggerState()).TransactionHashes.Add(osignTx.Hash);
                             otherSignTxs.Add(osignTx.Hash, new OtherSignTransactionState(osignTx.Hash, osignTx.Others));
                         }
@@ -348,11 +331,11 @@ namespace Sky.Database.LevelDB
                     case SignTransaction signTx:
                         {
                             OtherSignTransactionState osignState = otherSignTxs.GetAndChange(signTx.SignTxHash);
-                            osignState.Sign(signTx.Signatures);
+                            osignState.Sign(signTx.Owner.Signature);
                             if (osignState.RemainSign.Count == 0)
                             {
-                                foreach (TransactionOutput output in tx.Outputs)
-                                    accounts.GetAndChange(output.AddressHash, () => new AccountState(output.AddressHash)).AddBalance(output.Value);;
+                                OtherSignTransaction osignTx = GetTransaction(osignState.TxHash).Data as OtherSignTransaction;
+                                accounts.GetAndChange(osignTx.To, () => new AccountState(osignTx.To)).AddBalance(osignTx.Amount);
                                 BlockTriggerState state = blockTriggers.GetAndChange(new SerializeInteger(signTx.Reference.ValidBlockHeight));
                                 state.TransactionHashes.Remove(signTx.SignTxHash);
                             }
@@ -367,10 +350,13 @@ namespace Sky.Database.LevelDB
                 foreach (UInt256 txhash in blockTrigger.TransactionHashes)
                 {
                     Transaction tx = GetTransaction(txhash);
-                    foreach (TransactionInput input in tx.Inputs)
+                    switch (tx.Data)
                     {
-                        TransactionOutput prevOutput = GetTransaction(input.PrevHash).Outputs[input.PrevIndex];
-                        accounts.GetAndChange(prevOutput.AddressHash, () => new AccountState(prevOutput.AddressHash)).AddBalance(prevOutput.Value);
+                        case OtherSignTransaction osignTx:
+                            {
+                                accounts.GetAndChange(osignTx.From).AddBalance(osignTx.Amount);
+                            }
+                            break;
                     }
                 }                
             }

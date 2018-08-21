@@ -5,18 +5,18 @@ namespace Sky.Core
 {
     public class OtherSignTransaction : TransactionBase
     {
+        public UInt160 To { get; private set; }
+        public Fixed8 Amount { get; private set; }
         public HashSet<string> Others;
         public int ValidBlockHeight;
 
-        public OtherSignTransaction(Transaction owner, List<TransactionInput> inputs, List<TransactionOutput> outputs, List<MakerSignature> signatures)
-            : base(owner, inputs, outputs, signatures)
-        {
-            Others = new HashSet<string>();
-        }
+        public override int Size => base.Size + To.Size + Amount.Size + Others.GetSize() + sizeof(int);
 
         public override void Deserialize(BinaryReader reader)
         {
             base.Deserialize(reader);
+            To = reader.ReadSerializable<UInt160>();
+            Amount = reader.ReadSerializable<Fixed8>();
             Others = reader.ReadStringHashSet();
             ValidBlockHeight = reader.ReadInt32();
         }
@@ -24,8 +24,15 @@ namespace Sky.Core
         public override void Serialize(BinaryWriter writer)
         {
             base.Serialize(writer);
+            writer.WriteSerializable(To);
+            writer.WriteSerializable(Amount);
             writer.WriteStringHashSet(Others);
             writer.Write(ValidBlockHeight);
+        }
+
+        public override void CalcFee()
+        {
+            Fee = Config.DefaultFee;
         }
 
         public override bool Verify()

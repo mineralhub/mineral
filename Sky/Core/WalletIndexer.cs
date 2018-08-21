@@ -5,18 +5,15 @@ namespace Sky.Core
 {
     public abstract class WalletIndexer
     {
-        public class BalanceEventArgs : EventArgs
+        public class TransactionEventArgs : EventArgs
         {
             public Transaction Transaction;
-            public Dictionary<UInt160, List<Fixed8>> ChangedAccount; // addressHash, added balance
-            public int Height;
-            public int Time;
         }
 
         static private WalletIndexer _instance = null;
         static public WalletIndexer Instance => _instance;
 
-        public EventHandler<BalanceEventArgs> BalanceChange;
+        public EventHandler<TransactionEventArgs> TransactionEvent;
         public EventHandler<int> CompletedProcessBlock;
 
         protected object SyncRoot = new object();

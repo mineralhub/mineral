@@ -1,43 +1,46 @@
-﻿using System.IO;
-using System.Collections.Generic;
+﻿using System;
+using System.IO;
 using Sky.Cryptography;
 using System.Text;
+using Sky.Wallets;
 
 namespace Sky.Core
 {
     public class Transaction : IVerifiable
     {
-        public short Version { get; protected set; }
-        public eTransactionType Type { get; protected set; }
-        public int Timestamp { get; protected set; }
-        public TransactionBase Data { get; protected set; }
-        public Fixed8 Fee => Data.Fee;
-        public List<TransactionInput> Inputs => Data.Inputs;
-        public List<TransactionOutput> Outputs => Data.Outputs;
-        public List<MakerSignature> Signature => Data.Signatures;
-        public List<TransactionOutput> References => Data.References;
+        public short Version;
+        public eTransactionType Type;
+        public int Timestamp;
+        public UInt64 AccountNonce;
+        public TransactionBase Data;
+        public MakerSignature Signature;
 
-        public virtual int Size => sizeof(eTransactionType) + sizeof(short) + sizeof(int) + Data.Size;
+        public UInt160 From => Data.From;
+        public Fixed8 Fee => Data.Fee;
+
+        public virtual int Size => sizeof(short) + sizeof(eTransactionType) + sizeof(int) + Data.Size + Signature.Size;
         public UInt256 Hash => this.GetHash();
 
-        public Transaction(short version, eTransactionType type, int timestamp, List<TransactionInput> inputs, List<TransactionOutput> outputs, List<MakerSignature> signatures)
+        public Transaction(eTransactionType type, int timestamp)
         {
-            Version = version;
+            Version = Config.TransactionVersion;
             Type = type;
             Timestamp = timestamp;
-            MallocTrasnactionData(inputs, outputs, signatures);
+            MallocTrasnactionData();
         }
 
-        public Transaction(short version, eTransactionType type, int timestamp, TransactionBase txData)
+        public Transaction(eTransactionType type, int timestamp, TransactionBase txData)
         {
-            Version = version;
+            Version = Config.TransactionVersion;
             Type = type;
             Timestamp = timestamp;
             Data = txData;
+            Data.Owner = this;
         }
 
         public Transaction()
         {
+            Version = Config.TransactionVersion;
         }
 
         static public Transaction DeserializeFrom(byte[] value, int offset = 0)
@@ -51,26 +54,38 @@ namespace Sky.Core
             }
         }
 
-        private void MallocTrasnactionData(List<TransactionInput> inputs = null, List<TransactionOutput> outputs = null, List<MakerSignature> signatures = null)
+        public byte[] ToUnsignedArray()
+        {
+            using (MemoryStream ms = new MemoryStream())
+            using (BinaryWriter writer = new BinaryWriter(ms, Encoding.UTF8))
+            {
+                SerializeUnsigned(writer);
+                writer.Flush();
+                return ms.ToArray();
+            }
+        }
+
+        private void MallocTrasnactionData()
         {
             switch (Type)
             {
-                case eTransactionType.DataTransaction:
-                    Data = new DataTransaction(this, inputs, outputs, signatures);
+                case eTransactionType.TransferTransaction:
+                    Data = new TransferTransaction();
                     break;
                 case eTransactionType.VoteTransaction:
-                    Data = new VoteTransaction(this, inputs, outputs, signatures);
+                    Data = new VoteTransaction();
                     break;
                 case eTransactionType.RegisterDelegateTransaction:
-                    Data = new RegisterDelegateTransaction(this, inputs, outputs, signatures);
+                    Data = new RegisterDelegateTransaction();
                     break;
                 case eTransactionType.RewardTransaction:
-                    Data = new RewardTransaction(this, inputs, outputs, signatures);
+                    Data = new RewardTransaction();
                     break;
                 default:
-                    Data = new TransactionBase(this, inputs, outputs, signatures);
+                    Data = new TransactionBase();
                     break;
             }
+            Data.Owner = this;
         }
 
         public void DeserializeUnsigned(BinaryReader reader)
@@ -78,8 +93,9 @@ namespace Sky.Core
             Version = reader.ReadInt16();
             Type = (eTransactionType)reader.ReadInt16();
             Timestamp = reader.ReadInt32();
+            AccountNonce = reader.ReadUInt64();
             MallocTrasnactionData();
-            Data.DeserializeUnsigned(reader);
+            Data.Deserialize(reader);
         }
 
         public void SerializeUnsigned(BinaryWriter writer)
@@ -87,32 +103,36 @@ namespace Sky.Core
             writer.Write(Version);
             writer.Write((short)Type);
             writer.Write(Timestamp);
-            Data.SerializeUnsigned(writer);
+            writer.Write(AccountNonce);
+            Data.Serialize(writer);
         }
 
         public virtual void Deserialize(BinaryReader reader)
         {
-            Version = reader.ReadInt16();
-            Type = (eTransactionType)reader.ReadInt16();
-            Timestamp = reader.ReadInt32();
-            MallocTrasnactionData();
-            Data.Deserialize(reader);
+            DeserializeUnsigned(reader);
+            Signature = reader.ReadSerializable<MakerSignature>();
         }
 
         public virtual void Serialize(BinaryWriter writer)
         {
-            writer.Write(Version);
-            writer.Write((short)Type);
-            writer.Write(Timestamp);
-            Data.Serialize(writer);
+            SerializeUnsigned(writer);
+            writer.WriteSerializable(Signature);
+        }
+
+        public void Sign(WalletAccount account)
+        {
+            Sign(account.Key);
+        }
+
+        public void Sign(ECKey key)
+        {
+            AccountNonce = Data.FromAccountState == null ? 0 : Data.FromAccountState.Nonce;
+            Signature = new MakerSignature(Cryptography.Helper.Sign(ToUnsignedArray(), key), key.PublicKey.ToByteArray());
         }
 
         public bool Verify()
         {
             if (Data.Verify() == false)
-                return false;
-            // blockchain database spent
-            if (Blockchain.Instance.IsDoubleSpend(this))
                 return false;
             return true;
         }

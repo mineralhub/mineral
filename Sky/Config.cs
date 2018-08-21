@@ -55,6 +55,7 @@ namespace Sky
         public static UserConfig User;
         public static GenesisBlockConfig GenesisBlock;
         public static short BlockVersion = 0;
+        public static short TransactionVersion = 0;
         public static byte AddressVersion = 0;
         public static byte StateVersion = 0;
 
