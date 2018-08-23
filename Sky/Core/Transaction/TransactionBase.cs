@@ -1,6 +1,7 @@
 ﻿using System;
 using System.IO;
 using Sky.Cryptography;
+using Newtonsoft.Json.Linq;
 
 namespace Sky.Core
 {
@@ -10,7 +11,6 @@ namespace Sky.Core
         public UInt160 From;
 
         public Transaction Owner;
-        public UInt256 Hash => this.GetHash();
 
         private AccountState _fromAccountState;
         public AccountState FromAccountState 
@@ -41,8 +41,6 @@ namespace Sky.Core
                 return false;
             if (FromAccountState == null)
                 return false;
-            if (FromAccountState.Nonce != Owner.AccountNonce)
-                return false;
             FromAccountState.AddBalance(-Fee);
             if (FromAccountState.Balance < Fixed8.Zero)
                 return false;
@@ -66,6 +64,14 @@ namespace Sky.Core
         public virtual void CalcFee()
         {
             Fee = Config.DefaultFee;
+        }
+
+        public virtual JObject ToJson()
+        {
+            JObject json = new JObject();
+            json["fee"] = Fee.Value;
+            json["from"] = From.ToString();
+            return json;
         }
     }
 }

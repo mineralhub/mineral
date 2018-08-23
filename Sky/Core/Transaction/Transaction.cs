@@ -3,6 +3,7 @@ using System.IO;
 using Sky.Cryptography;
 using System.Text;
 using Sky.Wallets;
+using Newtonsoft.Json.Linq;
 
 namespace Sky.Core
 {
@@ -134,7 +135,22 @@ namespace Sky.Core
         {
             if (Data.Verify() == false)
                 return false;
+            if (Data.FromAccountState.Nonce != AccountNonce)
+                return false;
             return true;
+        }
+
+        public JObject ToJson()
+        {
+            JObject json = new JObject();
+            json["version"] = Version;
+            json["type"] = (short)Type;
+            json["timestamp"] = Timestamp;
+            json["accountnonce"] = AccountNonce;
+            json["data"] = Data.ToJson();
+            json["signature"] = Signature.ToJson();
+            json["hash"] = Hash.ToString();
+            return json;
         }
     }
 }

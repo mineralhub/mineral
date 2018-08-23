@@ -86,8 +86,13 @@ namespace Sky.Core
 
         public JObject ToJson()
         {
-            var json = new JObject();
-            json.Add("hash", Hash.ToString());
+            JObject json = new JObject();
+            json["header"] = Header.ToJson();
+            JArray transactions = new JArray();
+            foreach (var v in Transactions)
+                transactions.Add(v.ToJson());
+            json["transactions"] = transactions;
+            json["hash"] = Hash.ToString();
             return json;
         }
     }

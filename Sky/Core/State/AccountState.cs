@@ -37,6 +37,7 @@ namespace Sky.Core
             Balance = reader.ReadSerializable<Fixed8>();
             LockBalance = reader.ReadSerializable<Fixed8>();
             Votes = reader.ReadSerializableDictionary<UInt160, Fixed8>();
+            Nonce = reader.ReadUInt64();
         }
 
         public override void Serialize(BinaryWriter writer)
@@ -47,6 +48,7 @@ namespace Sky.Core
             writer.WriteSerializable(Balance);
             writer.WriteSerializable(LockBalance);
             writer.WriteSerializableDictonary(Votes);
+            writer.Write(Nonce);
         }
 
         public void AddBalance(Fixed8 value)
@@ -75,6 +77,7 @@ namespace Sky.Core
             foreach (var v in Votes)
                 json[Wallets.WalletAccount.ToAddress(v.Key)] = v.Value.ToString();
             json["votes"] = votes;
+            json["nonce"] = Nonce;
             return json;
         }
     }

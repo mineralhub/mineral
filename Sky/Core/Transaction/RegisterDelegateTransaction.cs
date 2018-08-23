@@ -1,4 +1,5 @@
 ﻿using System.IO;
+using Newtonsoft.Json.Linq;
 
 namespace Sky.Core
 {
@@ -32,6 +33,13 @@ namespace Sky.Core
             if (NameBytes == null || NameBytes.Length == 0)
                 return false;
             return true;
+        }
+
+        public override JObject ToJson()
+        {
+            JObject json = base.ToJson();
+            json["namebytes"] = NameBytes;
+            return json;
         }
     }
 }

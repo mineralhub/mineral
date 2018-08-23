@@ -1,5 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.IO;
+using System.Linq;
+using Newtonsoft.Json.Linq;
 
 namespace Sky.Core
 {
@@ -25,6 +27,16 @@ namespace Sky.Core
             if (!base.Verify())
                 return false;
             return true;
+        }
+
+        public override JObject ToJson()
+        {
+            JObject json = base.ToJson();
+            JArray votes = new JArray();
+            foreach (var v in Votes)
+                votes[v.Key] = v.Value.Value;
+            json["votes"] = votes;
+            return json;
         }
     }
 }

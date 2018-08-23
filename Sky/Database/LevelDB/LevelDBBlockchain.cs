@@ -295,6 +295,7 @@ namespace Sky.Database.LevelDB
                 AccountState from = accounts.GetAndChange(tx.From, () => new AccountState(tx.From));
                 if (Fixed8.Zero < tx.Fee)
                     from.AddBalance(-tx.Fee);
+                from.AddNonce();
                 
                 switch (tx.Data)
                 {
@@ -324,8 +325,8 @@ namespace Sky.Database.LevelDB
                     case OtherSignTransaction osignTx:
                         {
                             from.AddBalance(-osignTx.Amount);
-                            blockTriggers.GetAndChange(new SerializeInteger(osignTx.ValidBlockHeight), () => new BlockTriggerState()).TransactionHashes.Add(osignTx.Hash);
-                            otherSignTxs.Add(osignTx.Hash, new OtherSignTransactionState(osignTx.Hash, osignTx.Others));
+                            blockTriggers.GetAndChange(new SerializeInteger(osignTx.ValidBlockHeight), () => new BlockTriggerState()).TransactionHashes.Add(osignTx.Owner.Hash);
+                            otherSignTxs.Add(osignTx.Owner.Hash, new OtherSignTransactionState(osignTx.Owner.Hash, osignTx.Others));
                         }
                         break;
                     case SignTransaction signTx:

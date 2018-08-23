@@ -1,4 +1,5 @@
-﻿using System.IO;
+﻿using Newtonsoft.Json.Linq;
+using System.IO;
 
 namespace Sky.Core
 {
@@ -29,6 +30,14 @@ namespace Sky.Core
         {
             writer.WriteByteArray(Signature);
             writer.WriteByteArray(Pubkey);
+        }
+
+        public JObject ToJson()
+        {
+            JObject json = new JObject();
+            json["signature"] = Signature;
+            json["pubkey"] = Pubkey;
+            return json;
         }
     }
 }

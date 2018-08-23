@@ -1,4 +1,5 @@
 ﻿using System.IO;
+using Newtonsoft.Json.Linq;
 
 namespace Sky.Core
 {
@@ -45,6 +46,13 @@ namespace Sky.Core
             if (osignTx.Others.Contains(Wallets.WalletAccount.ToAddress(Owner.Signature.Pubkey)))
                 return true;
             return false;
+        }
+
+        public override JObject ToJson()
+        {
+            JObject json = base.ToJson();
+            json["signtxhash"] = SignTxHash.ToString();
+            return json;
         }
     }
 }

@@ -1,12 +1,13 @@
 ﻿using System.IO;
 using Sky.Cryptography;
+using Newtonsoft.Json.Linq;
 
 namespace Sky.Core
 {
     public class BlockHeader : IVerifiable
     {
-        protected UInt256 _merkleRoot = null;
         protected UInt256 _prevHash = null;
+        protected UInt256 _merkleRoot = null;
         protected int _version = 0;
         protected int _timestamp = 0;
         protected int _height = 0;
@@ -95,6 +96,18 @@ namespace Sky.Core
             if (Blockchain.Instance.ContainsBlock(Hash))
                 return false;
             return true;
+        }
+
+        public JObject ToJson()
+        {
+            JObject json = new JObject();
+            json["prevhash"] = PrevHash.ToString();
+            json["merkleroot"] = MerkleRoot.ToString();
+            json["version"] = Version;
+            json["timestamp"] = Timestamp;
+            json["height"] = Height;
+            json["signature"] = Signature.ToJson();
+            return json;
         }
     }
 }

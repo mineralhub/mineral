@@ -1,4 +1,5 @@
 ﻿using System.IO;
+using Newtonsoft.Json.Linq;
 
 namespace Sky.Core
 {
@@ -36,6 +37,14 @@ namespace Sky.Core
             if (FromAccountState.Balance < Fixed8.Zero)
                 return false;
             return true;
+        }
+
+        public override JObject ToJson()
+        {
+            JObject json = base.ToJson();
+            json["to"] = To.ToString();
+            json["amount"] = Amount.Value;
+            return json;
         }
     }
 }
