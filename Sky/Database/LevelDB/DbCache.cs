@@ -224,5 +224,14 @@ namespace Sky.Database.LevelDB
             });
             return value;
         }
+
+        public bool ContainsKey(TKey key)
+        {
+            if (_cache.ContainsKey(key))
+                return true;
+
+            TValue value = TryGetInternal(key);
+            return value != null;
+        }
     }
 }

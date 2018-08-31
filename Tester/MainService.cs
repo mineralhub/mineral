@@ -116,7 +116,7 @@ namespace Tester
                     {
                         var register = new RegisterDelegateTransaction
                         {
-                            NameBytes = Encoding.UTF8.GetBytes(p.Name),
+                            Name = Encoding.UTF8.GetBytes(p.Name),
                             From = p.Address
                         };
                         var tx = new Transaction(eTransactionType.RegisterDelegateTransaction,

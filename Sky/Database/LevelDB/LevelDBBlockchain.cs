@@ -7,6 +7,7 @@ using System.Threading;
 using Sky;
 using Sky.Core;
 using System.Text;
+using Sky.Database.CacheStorage;
 
 namespace Sky.Database.LevelDB
 {
@@ -239,7 +240,7 @@ namespace Sky.Database.LevelDB
 
         public override List<DelegatorState> GetDelegateStateAll()
         {
-            return new List<DelegatorState>(_db.Find<DelegatorState>(ReadOptions.Default, DataEntryPrefix.ST_Delegator));
+            return new List<DelegatorState>(_db.Find<DelegatorState>(ReadOptions.Default, DataEntryPrefix.ST_Delegate));
         }
 
         public override List<DelegatorState> GetDelegateStateMakers()
@@ -281,10 +282,10 @@ namespace Sky.Database.LevelDB
         private void Persist(Block block)
         {
             WriteBatch batch = new WriteBatch();
-            DbCache<UInt160, AccountState> accounts = new DbCache<UInt160, AccountState>(_db, DataEntryPrefix.ST_Account);
-            DbCache<UInt160, DelegatorState> delegators = new DbCache<UInt160, DelegatorState>(_db, DataEntryPrefix.ST_Delegator);
-            DbCache<UInt256, OtherSignTransactionState> otherSignTxs = new DbCache<UInt256, OtherSignTransactionState>(_db, DataEntryPrefix.ST_OtherSign);
-            DbCache<SerializeInteger, BlockTriggerState> blockTriggers = new DbCache<SerializeInteger, BlockTriggerState>(_db, DataEntryPrefix.ST_BlockTrigger);
+            AccountCacheStorage accounts = new AccountCacheStorage(_db);
+            DelegateCacheStorage delegates = new DelegateCacheStorage(_db);
+            OtherSignCacheStorage otherSignTxs = new OtherSignCacheStorage(_db);
+            BlockTriggerCacheStorage blockTriggers = new BlockTriggerCacheStorage(_db);
 
             long fee = block.Transactions.Sum(p => p.Fee).Value;
             batch.Put(SliceBuilder.Begin(DataEntryPrefix.DATA_Block).Add(block.Hash), SliceBuilder.Begin().Add(fee).Add(block.ToArray()));
@@ -292,7 +293,7 @@ namespace Sky.Database.LevelDB
             {
                 batch.Put(SliceBuilder.Begin(DataEntryPrefix.DATA_Transaction).Add(tx.Hash), SliceBuilder.Begin().Add(block.Header.Height).Add(tx.ToArray()));
 
-                AccountState from = accounts.GetAndChange(tx.From, () => new AccountState(tx.From));
+                AccountState from = accounts.GetAndChange(tx.From);
                 if (Fixed8.Zero < tx.Fee)
                     from.AddBalance(-tx.Fee);
                 from.AddNonce();
@@ -307,26 +308,25 @@ namespace Sky.Database.LevelDB
                     case TransferTransaction transTx:
                         {
                             from.AddBalance(-transTx.Amount);
-                            accounts.GetAndChange(transTx.To, () => new AccountState(transTx.To)).AddBalance(transTx.Amount);
+                            accounts.GetAndChange(transTx.To).AddBalance(transTx.Amount);
                         }
                         break;
                     case VoteTransaction voteTx:
                         {
-                            foreach (var v in voteTx.Votes)
-                                delegators.GetAndChange(v.Key)?.Vote(voteTx.From, v.Value);
-                            accounts.GetAndChange(voteTx.From, () => new AccountState(voteTx.From)).SetVote(voteTx.Votes);
+                            delegates.Vote(voteTx);
+                            accounts.GetAndChange(voteTx.From).SetVote(voteTx.Votes);
                         }
                         break;
-                    case RegisterDelegateTransaction delegateTx:
+                    case RegisterDelegateTransaction registerDelegateTx:
                         {
-                            delegators.Add(delegateTx.From, new DelegatorState(delegateTx.From, delegateTx.NameBytes));
+                            delegates.Add(registerDelegateTx.From, registerDelegateTx.Name);
                         }
                         break;
                     case OtherSignTransaction osignTx:
                         {
                             from.AddBalance(-osignTx.Amount);
-                            blockTriggers.GetAndChange(new SerializeInteger(osignTx.ValidBlockHeight), () => new BlockTriggerState()).TransactionHashes.Add(osignTx.Owner.Hash);
-                            otherSignTxs.Add(osignTx.Owner.Hash, new OtherSignTransactionState(osignTx.Owner.Hash, osignTx.Others));
+                            blockTriggers.GetAndChange(osignTx.ValidBlockHeight).TransactionHashes.Add(osignTx.Owner.Hash);
+                            otherSignTxs.Add(osignTx.Owner.Hash, osignTx.Others);
                         }
                         break;
                     case SignTransaction signTx:
@@ -336,8 +336,8 @@ namespace Sky.Database.LevelDB
                             if (osignState.RemainSign.Count == 0)
                             {
                                 OtherSignTransaction osignTx = GetTransaction(osignState.TxHash).Data as OtherSignTransaction;
-                                accounts.GetAndChange(osignTx.To, () => new AccountState(osignTx.To)).AddBalance(osignTx.Amount);
-                                BlockTriggerState state = blockTriggers.GetAndChange(new SerializeInteger(signTx.Reference.ValidBlockHeight));
+                                accounts.GetAndChange(osignTx.To).AddBalance(osignTx.Amount);
+                                BlockTriggerState state = blockTriggers.GetAndChange(signTx.Reference.ValidBlockHeight);
                                 state.TransactionHashes.Remove(signTx.SignTxHash);
                             }
                         }
@@ -345,7 +345,7 @@ namespace Sky.Database.LevelDB
                 }
             }
 
-            BlockTriggerState blockTrigger = blockTriggers.TryGet(new SerializeInteger(block.Height));
+            BlockTriggerState blockTrigger = blockTriggers.TryGet(block.Height);
             if (blockTrigger != null)
             {
                 foreach (UInt256 txhash in blockTrigger.TransactionHashes)
@@ -362,13 +362,12 @@ namespace Sky.Database.LevelDB
                 }                
             }
 
-            accounts.DeleteWhere((k, v) => !v.IsFrozen && v.Balance <= Fixed8.Zero && v.Votes == null);
+            accounts.Clean();
             accounts.Commit(batch);
-            delegators.DeleteWhere((k, v) => v.AddressHash == null);
-            delegators.Commit(batch);
-            blockTriggers.DeleteWhere((k, v) => k <= block.Height);
-            blockTriggers.Commit(batch);
+            delegates.Commit(batch);
             otherSignTxs.Commit(batch);
+            blockTriggers.Clean(block.Height);
+            blockTriggers.Commit(batch);
             batch.Put(SliceBuilder.Begin(DataEntryPrefix.SYS_CurrentBlock), SliceBuilder.Begin().Add(block.Hash).Add(block.Header.Height));
             _db.Write(WriteOptions.Default, batch);
             _currentBlockHeight = block.Header.Height;

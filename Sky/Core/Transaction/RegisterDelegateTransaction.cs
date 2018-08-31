@@ -5,9 +5,9 @@ namespace Sky.Core
 {
     public class RegisterDelegateTransaction : TransactionBase
     {
-        public byte[] NameBytes;
+        public byte[] Name;
 
-        public override int Size => base.Size + NameBytes.GetSize();
+        public override int Size => base.Size + Name.GetSize();
 
         public override void CalcFee()
         {
@@ -17,20 +17,20 @@ namespace Sky.Core
         public override void Deserialize(BinaryReader reader)
         {
             base.Deserialize(reader);
-            NameBytes = reader.ReadByteArray();
+            Name = reader.ReadByteArray();
         }
 
         public override void Serialize(BinaryWriter writer)
         {
             base.Serialize(writer);
-            writer.WriteByteArray(NameBytes);
+            writer.WriteByteArray(Name);
         }
 
         public override bool Verify()
         {
             if (!base.Verify())
                 return false;
-            if (NameBytes == null || NameBytes.Length == 0)
+            if (Name == null || Name.Length == 0)
                 return false;
             return true;
         }
@@ -38,7 +38,7 @@ namespace Sky.Core
         public override JObject ToJson()
         {
             JObject json = base.ToJson();
-            json["namebytes"] = NameBytes;
+            json["name"] = Name;
             return json;
         }
     }
