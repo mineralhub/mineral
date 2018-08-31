@@ -5,16 +5,16 @@ namespace Sky.Database.CacheStorage
 {
     internal class DelegateCacheStorage
     {
-        DbCache<UInt160, DelegatorState> _cache;
+        DbCache<UInt160, DelegateState> _cache;
 
         public DelegateCacheStorage(DB db)
         {
-            _cache = new DbCache<UInt160, DelegatorState>(db, DataEntryPrefix.ST_Delegate);
+            _cache = new DbCache<UInt160, DelegateState>(db, DataEntryPrefix.ST_Delegate);
         }
 
         public void Add(UInt160 key, byte[] name)
         {
-            _cache.Add(key, new DelegatorState(key, name));
+            _cache.Add(key, new DelegateState(key, name));
         }
 
         public void Vote(VoteTransaction tx)

@@ -39,8 +39,8 @@ namespace Sky.Core
         public abstract Transaction GetTransaction(UInt256 hash, out int height);
 
         public abstract AccountState GetAccountState(UInt160 addressHash);
-        public abstract List<DelegatorState> GetDelegateStateAll();
-        public abstract List<DelegatorState> GetDelegateStateMakers();
+        public abstract List<DelegateState> GetDelegateStateAll();
+        public abstract List<DelegateState> GetDelegateStateMakers();
 
         protected void OnPersistCompleted(Block block)
         {

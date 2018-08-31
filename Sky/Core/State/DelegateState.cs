@@ -3,7 +3,7 @@ using System.IO;
 
 namespace Sky.Core
 {
-    public class DelegatorState : StateBase
+    public class DelegateState : StateBase
     {
         public UInt160 AddressHash { get; private set; }
         public byte[] Name { get; private set; }
@@ -11,12 +11,12 @@ namespace Sky.Core
 
         public override int Size => base.Size + AddressHash.Size + Name.GetSize() + Votes.GetSize();
 
-        public DelegatorState()
+        public DelegateState()
         {
             Votes = new Dictionary<UInt160, Fixed8>();
         }
 
-        public DelegatorState(UInt160 addressHash, byte[] name)
+        public DelegateState(UInt160 addressHash, byte[] name)
         {
             AddressHash = addressHash;
             Name = name;

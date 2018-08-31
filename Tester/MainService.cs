@@ -246,7 +246,7 @@ namespace Tester
         void UpdateTurnTable(Block block)
         {
             // calculate turn table
-            List<DelegatorState> delegates = Blockchain.Instance.GetDelegateStateAll();
+            List<DelegateState> delegates = Blockchain.Instance.GetDelegateStateAll();
             delegates.Sort((x, y) =>
             {
                 var valueX = x.Votes.Sum(p => p.Value).Value;

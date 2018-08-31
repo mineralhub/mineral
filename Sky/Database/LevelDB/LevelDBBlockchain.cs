@@ -238,12 +238,12 @@ namespace Sky.Database.LevelDB
             return _db.TryGet<AccountState>(ReadOptions.Default, DataEntryPrefix.ST_Account, addressHash);
         }
 
-        public override List<DelegatorState> GetDelegateStateAll()
+        public override List<DelegateState> GetDelegateStateAll()
         {
-            return new List<DelegatorState>(_db.Find<DelegatorState>(ReadOptions.Default, DataEntryPrefix.ST_Delegate));
+            return new List<DelegateState>(_db.Find<DelegateState>(ReadOptions.Default, DataEntryPrefix.ST_Delegate));
         }
 
-        public override List<DelegatorState> GetDelegateStateMakers()
+        public override List<DelegateState> GetDelegateStateMakers()
         {
             throw new NotImplementedException();
         }
