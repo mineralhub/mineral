@@ -57,14 +57,14 @@ namespace Tester
                 {
                     // delegator?
                     if (!_account.IsDelegate())
-                        continue;
+                        break;
                     // my turn?
                     //if (dpos.TurnTable.Front != _user.AddressHash)
                     //    continue;
                     // create time?
                     var time = _dpos.CalcBlockTime(_genesisBlock.Header.Timestamp, Blockchain.Instance.CurrentBlockHeight + 1);
                     if (DateTime.UtcNow.ToTimestamp() < time)
-                        continue;
+                        break;
                     // create
                     Block block = CreateBlock();
                     //System.Diagnostics.Stopwatch sw = new System.Diagnostics.Stopwatch();
