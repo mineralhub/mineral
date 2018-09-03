@@ -7,6 +7,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Sky", "Sky\Sky.csproj", "{0
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Tester", "Tester\Tester.csproj", "{33CC5B60-380C-4A5F-BED2-CE5517C39854}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SkyCLI", "SkyCLI\SkyCLI.csproj", "{9E283914-4207-49A9-8A73-E3329866F01C}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -31,6 +33,14 @@ Global
 		{33CC5B60-380C-4A5F-BED2-CE5517C39854}.Release|Any CPU.Build.0 = Release|Any CPU
 		{33CC5B60-380C-4A5F-BED2-CE5517C39854}.Release|x64.ActiveCfg = Release|Any CPU
 		{33CC5B60-380C-4A5F-BED2-CE5517C39854}.Release|x64.Build.0 = Release|Any CPU
+		{9E283914-4207-49A9-8A73-E3329866F01C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{9E283914-4207-49A9-8A73-E3329866F01C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{9E283914-4207-49A9-8A73-E3329866F01C}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{9E283914-4207-49A9-8A73-E3329866F01C}.Debug|x64.Build.0 = Debug|Any CPU
+		{9E283914-4207-49A9-8A73-E3329866F01C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{9E283914-4207-49A9-8A73-E3329866F01C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{9E283914-4207-49A9-8A73-E3329866F01C}.Release|x64.ActiveCfg = Release|Any CPU
+		{9E283914-4207-49A9-8A73-E3329866F01C}.Release|x64.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
