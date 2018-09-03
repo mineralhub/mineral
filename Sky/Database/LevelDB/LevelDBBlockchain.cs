@@ -332,7 +332,7 @@ namespace Sky.Database.LevelDB
                     case SignTransaction signTx:
                         {
                             OtherSignTransactionState osignState = otherSignTxs.GetAndChange(signTx.SignTxHash);
-                            if (osignState.Sign(signTx.Owner.Signature) && osignState.RemainSign.Count == 0)
+                            if (osignState != null && osignState.Sign(signTx.Owner.Signature) && osignState.RemainSign.Count == 0)
                             {
                                 OtherSignTransaction osignTx = GetTransaction(osignState.TxHash).Data as OtherSignTransaction;
                                 accounts.GetAndChange(osignTx.To).AddBalance(osignTx.Amount);
