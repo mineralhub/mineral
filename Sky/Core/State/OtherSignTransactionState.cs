@@ -36,9 +36,9 @@ namespace Sky.Core
             writer.WriteStringHashSet(RemainSign);
         }
 
-        public void Sign(MakerSignature signature)
+        public bool Sign(MakerSignature signature)
         {
-            RemainSign.Remove(WalletAccount.ToAddress(signature.Pubkey));
+            return RemainSign.Remove(WalletAccount.ToAddress(signature.Pubkey));
         }
     }
 }

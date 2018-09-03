@@ -332,8 +332,7 @@ namespace Sky.Database.LevelDB
                     case SignTransaction signTx:
                         {
                             OtherSignTransactionState osignState = otherSignTxs.GetAndChange(signTx.SignTxHash);
-                            osignState.Sign(signTx.Owner.Signature);
-                            if (osignState.RemainSign.Count == 0)
+                            if (osignState.Sign(signTx.Owner.Signature) && osignState.RemainSign.Count == 0)
                             {
                                 OtherSignTransaction osignTx = GetTransaction(osignState.TxHash).Data as OtherSignTransaction;
                                 accounts.GetAndChange(osignTx.To).AddBalance(osignTx.Amount);
@@ -359,7 +358,7 @@ namespace Sky.Database.LevelDB
                             }
                             break;
                     }
-                }                
+                }
             }
 
             accounts.Clean();

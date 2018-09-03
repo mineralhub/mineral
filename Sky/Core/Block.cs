@@ -73,6 +73,8 @@ namespace Sky.Core
                 return false;
             if (1 < Transactions.Where(p => p.Type == eTransactionType.RewardTransaction).Count())
                 return false;
+            if (Header.MerkleRoot != new MerkleTree(Transactions.Select(p => p.Hash).ToArray()).RootHash)
+                return false;
             BlockHeader prev = Blockchain.Instance.GetHeader(Header.PrevHash);
             if (prev == null)
                 return false;
