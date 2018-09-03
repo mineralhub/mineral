@@ -1,6 +1,5 @@
 ﻿using System;
 using System.IO;
-using Sky.Cryptography;
 using Newtonsoft.Json.Linq;
 
 namespace Sky.Core
@@ -35,11 +34,13 @@ namespace Sky.Core
             
         }
 
-        public virtual bool Verify()
+        public virtual bool Verify(ulong accountNonce)
         {
             if (From == null)
                 return false;
             if (FromAccountState == null)
+                return false;
+            if (FromAccountState.Nonce != accountNonce)
                 return false;
             FromAccountState.AddBalance(-Fee);
             if (FromAccountState.Balance < Fixed8.Zero)

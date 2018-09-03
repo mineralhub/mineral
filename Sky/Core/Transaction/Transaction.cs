@@ -133,11 +133,7 @@ namespace Sky.Core
 
         public bool Verify()
         {
-            if (Data.Verify() == false)
-                return false;
-            if (Data.FromAccountState.Nonce != AccountNonce)
-                return false;
-            return true;
+            return Data.Verify(AccountNonce);
         }
 
         public JObject ToJson()

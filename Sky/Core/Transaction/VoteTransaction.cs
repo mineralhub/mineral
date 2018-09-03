@@ -22,9 +22,9 @@ namespace Sky.Core
             writer.WriteSerializableDictonary(Votes);
         }
 
-        public override bool Verify()
+        public override bool Verify(ulong accountNonce)
         {
-            if (!base.Verify())
+            if (!base.Verify(accountNonce))
                 return false;
             return true;
         }
