@@ -6,4 +6,6 @@
 /Tester/obj
 /Tester/bin/Debug/netcoreapp2.0
 /Sky/bin/Debug
+/SkyCLI/bin
+/SkyCLI/obj
 /.vs
