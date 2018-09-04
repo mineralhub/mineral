@@ -81,8 +81,9 @@ namespace Sky.Network
                             {
                                 _tcpListener.Start();
                                 Task.Run(() => AcceptPeersLoop());
-                            }
-                            catch (SocketException) { }
+								Task.Run(() => ConnectToPeersLoop());
+							}
+							catch (SocketException) { }
                         }
                         if (0 < wsPort)
                         {
@@ -150,9 +151,9 @@ namespace Sky.Network
                                 node.RequestAddrs();
                         }
                     }
-                    else if (Config.SeedList != null)
+                    else if (Config.Network.SeedList != null)
                     {
-                        var split = Config.SeedList.OfType<string>().Select(p => p.Split(':'));
+                        var split = Config.Network.SeedList.OfType<string>().Select(p => p.Split(':'));
                         tasks = split.Select(p => ConnectToPeerAsync(p[0], int.Parse(p[1]))).ToArray();
                     }
 
