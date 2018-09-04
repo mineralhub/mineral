@@ -26,7 +26,7 @@ namespace Sky.Core
         {
             if (!base.Verify(accountNonce))
                 return false;
-            return true;
+            return Votes.Select(p => p.Value).Sum() <= FromAccountState.LockBalance;
         }
 
         public override JObject ToJson()
