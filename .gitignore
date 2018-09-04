@@ -1,11 +1,20 @@
-﻿################################################################################
-# This .gitignore file was automatically created by Microsoft(R) Visual Studio.
-################################################################################
+﻿### ignore files
+.vs
 
-/Sky/obj
-/Tester/obj
-/Tester/bin/Debug/netcoreapp2.0
-/Sky/bin/Debug
+# sky
+Sky/obj/
+Sky/bin/
+
+# tester
+Tester/obj/
+Tester/bin/
+Tester/output-log
+Tester/output-database/
+Tester/output-wallet-index/
+
+# sky-cli
 /SkyCLI/bin
 /SkyCLI/obj
-/.vs
+
+# mac
+*.DS_Store
