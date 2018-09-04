@@ -29,7 +29,7 @@ namespace SkyCLI.Network
                 Console.WriteLine(e.Message);
             }
 
-            return respone_data != null ? JObject.Parse(respone_data) : null;
+            return JObject.Parse(respone_data);
         }
 
         public static JObject RequestPost(string url, string text)
@@ -52,7 +52,7 @@ namespace SkyCLI.Network
                 Console.WriteLine(e.Message);
             }
 
-            return respone_data != null ? JObject.Parse(respone_data) : null;
+            return JObject.Parse(respone_data);
         }
 
         public static async Task<JObject> RequestGetAnsyc(string url)
@@ -74,7 +74,7 @@ namespace SkyCLI.Network
                 Console.WriteLine(e.Message);
             }
 
-            return respone_data != null ? JObject.Parse(respone_data) : null;
+            return JObject.Parse(respone_data);
         }
 
         public static async Task<JObject> RequestPostAnsyc(string url, string text)
