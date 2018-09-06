@@ -158,6 +158,24 @@ namespace Sky.Database.LevelDB
             return true;
         }
 
+        public override bool AddBlockDirectly(Block block)
+        {
+            if (block.Height != CurrentBlockHeight + 1)
+                return false;
+            if (block.Height == _headerIndices.Count)
+            {
+                WriteBatch batch = new WriteBatch();
+                OnAddHeader(block.Header, batch);
+                _db.Write(WriteOptions.Default, batch);
+            }
+            lock (PersistLock)
+            {
+                Persist(block);
+                OnPersistCompleted(block);
+            }
+            return true;
+        }
+
         public override BlockHeader GetHeader(UInt256 hash)
         {
             lock (_headerCache)
@@ -399,8 +417,11 @@ namespace Sky.Database.LevelDB
                         if (!_blockCache.TryGetValue(hash, out block))
                             break;
                     }
-                    Persist(block);
-                    OnPersistCompleted(block);
+                    lock (PersistLock)
+                    {
+                        Persist(block);
+                        OnPersistCompleted(block);
+                    }
                     lock (_blockCache)
                     {
                         _blockCache.Remove(hash);

@@ -13,6 +13,7 @@ namespace Sky.Core
             _instance = chain;
         }
 
+        public object PersistLock { get; } = new object();
         public event EventHandler<Block> PersistCompleted;
 
         public abstract Block GenesisBlock { get; }
@@ -24,6 +25,7 @@ namespace Sky.Core
 
         public abstract void Dispose();
         public abstract bool AddBlock(Block block);
+        public abstract bool AddBlockDirectly(Block block);
         public abstract BlockHeader GetHeader(UInt256 hash);
         public abstract BlockHeader GetHeader(int height);
         public abstract BlockHeader GetNextHeader(UInt256 hash);
