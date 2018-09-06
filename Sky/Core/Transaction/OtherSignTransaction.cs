@@ -36,9 +36,9 @@ namespace Sky.Core
             Fee = Config.DefaultFee;
         }
 
-        public override bool Verify(ulong accountNonce)
+        public override bool Verify()
         {
-            if (!base.Verify(accountNonce))
+            if (!base.Verify())
                 return false;
 
             if (Others.Count == 0)

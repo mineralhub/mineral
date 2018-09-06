@@ -29,12 +29,11 @@ namespace Sky.Core
             writer.WriteSerializable(Amount);
         }
 
-        public override bool Verify(ulong accountNonce)
+        public override bool Verify()
         {
-            if (!base.Verify(accountNonce))
+            if (!base.Verify())
                 return false;
-            FromAccountState.AddBalance(-Amount);
-            if (FromAccountState.Balance < Fixed8.Zero)
+            if (FromAccountState.Balance - Amount < Fixed8.Zero)
                 return false;
             return true;
         }

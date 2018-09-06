@@ -13,6 +13,7 @@ namespace Sky.Database.LevelDB
 {
     public class LevelDBBlockchain : Blockchain
     {
+        private string _path;
         private DB _db;
 
         private List<UInt256> _headerIndices = new List<UInt256>();
@@ -40,12 +41,16 @@ namespace Sky.Database.LevelDB
 
         public LevelDBBlockchain(string path, Block genesisBlock)
         {
+            _path = path;
             _genesisBlock = genesisBlock;
+        }
 
+        public override void Run()
+        {
             Version version;
             Slice value;
             ReadOptions options = new ReadOptions { FillCache = false };
-            _db = DB.Open(path, new Options { CreateIfMissing = true });
+            _db = DB.Open(_path, new Options { CreateIfMissing = true });
             if (_db.TryGet(ReadOptions.Default, SliceBuilder.Begin(DataEntryPrefix.SYS_Version), out value) && Version.TryParse(value.ToString(), out version))
             {
                 value = _db.Get(options, SliceBuilder.Begin(DataEntryPrefix.SYS_CurrentBlock));
@@ -105,10 +110,10 @@ namespace Sky.Database.LevelDB
                         batch.Delete(it.Key());
                 }
                 _db.Write(WriteOptions.Default, batch);
-                _headerIndices.Add(genesisBlock.Hash);
-                _currentBlockHash = genesisBlock.Hash;
-                _currentHeaderHash = genesisBlock.Hash;
-                Persist(genesisBlock);
+                _headerIndices.Add(_genesisBlock.Hash);
+                _currentBlockHash = _genesisBlock.Hash;
+                _currentHeaderHash = _genesisBlock.Hash;
+                Persist(_genesisBlock);
                 _db.Put(WriteOptions.Default, SliceBuilder.Begin(DataEntryPrefix.SYS_Version), Assembly.GetExecutingAssembly().GetName().Version.ToString());
             }
 
@@ -307,6 +312,8 @@ namespace Sky.Database.LevelDB
 
             long fee = block.Transactions.Sum(p => p.Fee).Value;
             batch.Put(SliceBuilder.Begin(DataEntryPrefix.DATA_Block).Add(block.Hash), SliceBuilder.Begin().Add(fee).Add(block.ToArray()));
+            block.VerifyTransactions();
+
             foreach (Transaction tx in block.Transactions)
             {
                 batch.Put(SliceBuilder.Begin(DataEntryPrefix.DATA_Transaction).Add(tx.Hash), SliceBuilder.Begin().Add(block.Header.Height).Add(tx.ToArray()));
@@ -314,7 +321,15 @@ namespace Sky.Database.LevelDB
                 AccountState from = accounts.GetAndChange(tx.From);
                 if (Fixed8.Zero < tx.Fee)
                     from.AddBalance(-tx.Fee);
-                from.AddNonce();
+
+                if (tx.Verified == false)
+                {
+#if DEBUG
+                    throw new Exception("verified == false transaction. " + tx.ToJson());
+#else
+                    continue;
+#endif
+                }
                 
                 switch (tx.Data)
                 {

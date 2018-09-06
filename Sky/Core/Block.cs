@@ -81,9 +81,21 @@ namespace Sky.Core
             if (prev.Height + 1 != Height)
                 return false;
             foreach (Transaction tx in Transactions)
-                if (!tx.Verify())
+                if (!tx.VerifySignature())
                     return false;
             return true;
+        }
+
+        public void VerifyTransactions()
+        {
+            if (Blockchain.Instance.GenesisBlock == this)
+            {
+                foreach (Transaction tx in Transactions)
+                    tx.Verified = true;    
+                return;
+            }
+            foreach (Transaction tx in Transactions)
+                tx.Verify();
         }
 
         public JObject ToJson()

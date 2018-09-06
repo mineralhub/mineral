@@ -29,23 +29,13 @@ namespace Sky.Core
 
         public virtual int Size => Fee.Size + From.Size + sizeof(UInt64);
 
-        public TransactionBase()
-        {
-            
-        }
-
-        public virtual bool Verify(ulong accountNonce)
+        public virtual bool Verify()
         {
             if (From == null)
                 return false;
             if (FromAccountState == null)
                 return false;
-            if (FromAccountState.Nonce != accountNonce)
-                return false;
-            FromAccountState.AddBalance(-Fee);
-            if (FromAccountState.Balance < Fixed8.Zero)
-                return false;
-            if (!Cryptography.Helper.VerifySignature(Owner.Signature, Owner.ToUnsignedArray()))
+            if (FromAccountState.Balance - Fee < Fixed8.Zero)
                 return false;
             return true;
         }

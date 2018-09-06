@@ -33,9 +33,9 @@ namespace Sky.Core
             writer.WriteSerializable(SignTxHash);
         }
 
-        public override bool Verify(ulong accountNonce)
+        public override bool Verify()
         {
-            if (!base.Verify(accountNonce))
+            if (!base.Verify())
                 return false;
 
             Transaction tx = Blockchain.Instance.GetTransaction(SignTxHash);

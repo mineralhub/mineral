@@ -12,7 +12,6 @@ namespace Sky.Core
         public short Version;
         public eTransactionType Type;
         public int Timestamp;
-        public UInt64 AccountNonce;
         public TransactionBase Data;
         public MakerSignature Signature;
 
@@ -21,6 +20,8 @@ namespace Sky.Core
 
         public virtual int Size => sizeof(short) + sizeof(eTransactionType) + sizeof(int) + Data.Size + Signature.Size;
         public UInt256 Hash => this.GetHash();
+
+        public bool Verified;
 
         public Transaction(eTransactionType type, int timestamp)
         {
@@ -94,7 +95,6 @@ namespace Sky.Core
             Version = reader.ReadInt16();
             Type = (eTransactionType)reader.ReadInt16();
             Timestamp = reader.ReadInt32();
-            AccountNonce = reader.ReadUInt64();
             MallocTrasnactionData();
             Data.Deserialize(reader);
         }
@@ -104,7 +104,6 @@ namespace Sky.Core
             writer.Write(Version);
             writer.Write((short)Type);
             writer.Write(Timestamp);
-            writer.Write(AccountNonce);
             Data.Serialize(writer);
         }
 
@@ -127,13 +126,18 @@ namespace Sky.Core
 
         public void Sign(ECKey key)
         {
-            AccountNonce = Data.FromAccountState == null ? 0 : Data.FromAccountState.Nonce;
             Signature = new MakerSignature(Cryptography.Helper.Sign(ToUnsignedArray(), key), key.PublicKey.ToByteArray());
+        }
+
+        public bool VerifySignature()
+        {
+            return Cryptography.Helper.VerifySignature(Signature, ToUnsignedArray());
         }
 
         public bool Verify()
         {
-            return Data.Verify(AccountNonce);
+            Verified = Data.Verify();
+            return Verified;
         }
 
         public JObject ToJson()
@@ -142,10 +146,10 @@ namespace Sky.Core
             json["version"] = Version;
             json["type"] = (short)Type;
             json["timestamp"] = Timestamp;
-            json["accountnonce"] = AccountNonce;
             json["data"] = Data.ToJson();
             json["signature"] = Signature.ToJson();
             json["hash"] = Hash.ToString();
+            json["verified"] = Verified;
             return json;
         }
     }
