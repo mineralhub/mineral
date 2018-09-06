@@ -14,7 +14,8 @@
   </ItemGroup>
 
   <Target Name="PreBuild" BeforeTargets="PreBuildEvent">
-    <Exec Command="copy /y $(ProjectDir)config.json $(TargetDir)config.json" />
+    <Exec Command="copy /y $(ProjectDir)config.json $(TargetDir)config.json" Condition=" '$(OS)' == 'Windows_NT' "/>
+    <Exec Command="cp $(ProjectDir)config.json $(TargetDir)config.json" Condition=" '$(OS)' != 'Windows_NT' "/>
   </Target>
 
 </Project>
