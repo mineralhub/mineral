@@ -26,9 +26,9 @@ namespace Sky.Core
             writer.WriteByteArray(Name);
         }
 
-        public override bool Verify(ulong accountNonce)
+        public override bool Verify()
         {
-            if (!base.Verify(accountNonce))
+            if (!base.Verify())
                 return false;
             if (Name == null || Name.Length == 0)
                 return false;

@@ -66,19 +66,30 @@ namespace Tester
                     if (DateTime.UtcNow.ToTimestamp() < time)
                         break;
                     // create
-                    Block block = CreateBlock();
                     //System.Diagnostics.Stopwatch sw = new System.Diagnostics.Stopwatch();
                     //sw.Start();
-                    if (Blockchain.Instance.AddBlock(block))
-                    {
-                        //dpos.TurnTable.Enqueue(dpos.TurnTable.Dequeue);
-                    }
+                    CreateAndAddBlocks(1);
                     //sw.Stop();
                     //Logger.Log("AddBlock Elapsed=" + sw.Elapsed);
                 }
                 while (false);
                 Thread.Sleep(100);
             }
+        }
+
+        void CreateAndAddBlocks(int cnt)
+        {
+            List<Block> blocks = new List<Block>();
+            int height = Blockchain.Instance.CurrentHeaderHeight;
+            UInt256 prevhash = Blockchain.Instance.CurrentHeaderHash;
+            for (int i = 0; i < cnt; ++i)
+            {
+                Block block = CreateBlock(height + i, prevhash);
+                blocks.Add(block);
+                prevhash = block.Hash;
+            }
+            foreach (Block block in blocks)
+                Blockchain.Instance.AddBlock(block);
         }
 
         void Initialize()
@@ -153,6 +164,7 @@ namespace Tester
             Logger.Log("genesis block. hash : " + _genesisBlock.Hash);
             Blockchain.SetInstance(new Sky.Database.LevelDB.LevelDBBlockchain("./output-database", _genesisBlock));
             Blockchain.Instance.PersistCompleted += PersistCompleted;
+            Blockchain.Instance.Run();
 
             var genesisBlockTx = Blockchain.Instance.GetTransaction(_genesisBlock.Transactions[0].Hash);
             Logger.Log("genesis block tx. hash : " + genesisBlockTx.Hash);
@@ -175,7 +187,7 @@ namespace Tester
             */
         }
 
-        Block CreateBlock()
+        Block CreateBlock(int height, UInt256 prevhash)
         {
             // translate trasnaction block.
             var txs = new List<Transaction>();
@@ -195,7 +207,7 @@ namespace Tester
                 txs.Add(tx);
             }
             var merkle = new MerkleTree(txs.Select(p => p.Hash).ToArray());
-            var blockHeader = new BlockHeader(Blockchain.Instance.CurrentHeaderHeight + 1, BlockVersion, DateTime.UtcNow.ToTimestamp(), merkle.RootHash, Blockchain.Instance.CurrentHeaderHash, _account.Key);
+            var blockHeader = new BlockHeader(height + 1, BlockVersion, DateTime.UtcNow.ToTimestamp(), merkle.RootHash, prevhash, _account.Key);
             return new Block(blockHeader, txs);
         }
 

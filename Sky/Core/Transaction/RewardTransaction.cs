@@ -26,9 +26,9 @@ namespace Sky.Core
             writer.WriteSerializable(Reward);
         }
 
-        public override bool Verify(ulong accountNonce)
+        public override bool Verify()
         {
-            if (!base.Verify(accountNonce))
+            if (!base.Verify())
                 return false;
             if (Reward != Config.BlockReward)
                 return false;

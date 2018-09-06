@@ -23,6 +23,7 @@ namespace Sky.Core
         public abstract int CurrentHeaderHeight { get; }
         public abstract UInt256 CurrentHeaderHash { get; }
 
+        public abstract void Run();
         public abstract void Dispose();
         public abstract bool AddBlock(Block block);
         public abstract bool AddBlockDirectly(Block block);

@@ -1,6 +1,5 @@
 ﻿using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using Newtonsoft.Json.Linq;
 
 namespace Sky.Core
@@ -22,9 +21,9 @@ namespace Sky.Core
             writer.WriteSerializableDictonary(Votes);
         }
 
-        public override bool Verify(ulong accountNonce)
+        public override bool Verify()
         {
-            if (!base.Verify(accountNonce))
+            if (!base.Verify())
                 return false;
             return true;
         }
