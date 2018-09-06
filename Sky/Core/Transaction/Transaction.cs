@@ -1,5 +1,4 @@
-﻿using System;
-using System.IO;
+﻿using System.IO;
 using Sky.Cryptography;
 using System.Text;
 using Sky.Wallets;

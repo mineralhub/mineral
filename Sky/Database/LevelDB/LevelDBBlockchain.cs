@@ -312,7 +312,6 @@ namespace Sky.Database.LevelDB
 
             long fee = block.Transactions.Sum(p => p.Fee).Value;
             batch.Put(SliceBuilder.Begin(DataEntryPrefix.DATA_Block).Add(block.Hash), SliceBuilder.Begin().Add(fee).Add(block.ToArray()));
-            block.VerifyTransactions();
 
             foreach (Transaction tx in block.Transactions)
             {
@@ -321,8 +320,8 @@ namespace Sky.Database.LevelDB
                 AccountState from = accounts.GetAndChange(tx.From);
                 if (Fixed8.Zero < tx.Fee)
                     from.AddBalance(-tx.Fee);
-
-                if (tx.Verified == false)
+                
+                if (block != GenesisBlock && !tx.Verify())
                 {
 #if DEBUG
                     throw new Exception("verified == false transaction. " + tx.ToJson());

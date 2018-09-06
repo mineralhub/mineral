@@ -86,18 +86,6 @@ namespace Sky.Core
             return true;
         }
 
-        public void VerifyTransactions()
-        {
-            if (Blockchain.Instance.GenesisBlock == this)
-            {
-                foreach (Transaction tx in Transactions)
-                    tx.Verified = true;    
-                return;
-            }
-            foreach (Transaction tx in Transactions)
-                tx.Verify();
-        }
-
         public JObject ToJson()
         {
             JObject json = new JObject();
