@@ -40,13 +40,14 @@ namespace Sky.Core
         {
             if (!base.Verify())
                 return false;
-
+            if (From == To)
+                return false;
+            if (Amount < Fixed8.Satoshi)
+                return false;
             if (Others.Count == 0)
                 return false;
-
             if (ValidBlockHeight < Blockchain.Instance.CurrentBlockHeight)
                 return false;
-            
             foreach (string addr in Others)
             {
                 if (Wallets.WalletAccount.IsAddress(addr))

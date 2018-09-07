@@ -33,6 +33,10 @@ namespace Sky.Core
         {
             if (!base.Verify())
                 return false;
+            if (From == To)
+                return false;
+            if (Amount < Fixed8.Satoshi)
+                return false;
             if (FromAccountState.Balance - Amount < Fixed8.Zero)
                 return false;
             return true;
