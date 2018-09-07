@@ -15,20 +15,8 @@ namespace Sky.Core
         public UInt256 Hash => Header.GetHash();
         public int Height => Header.Height;
 
-        public Block(byte[] data, int index)
+        public Block()
         {
-            using (MemoryStream ms = new MemoryStream(data, index, data.Length - index, false))
-            using (BinaryReader br = new BinaryReader(ms))
-            {
-                try
-                {
-                    Deserialize(br);
-                }
-                catch (Exception e)
-                {
-                    throw e;
-                }
-            }
         }
 
         public Block(BlockHeader header, List<Transaction> transactions)
@@ -61,6 +49,43 @@ namespace Sky.Core
         {
             Header.Serialize(writer);
             writer.WriteSerializableArray(Transactions);
+        }
+
+        public byte[] Trim()
+        {
+            using (MemoryStream ms = new MemoryStream())
+            using (BinaryWriter writer = new BinaryWriter(ms))
+            {
+                Header.Serialize(writer);
+                writer.WriteSerializableArray(Transactions.Select(p => p.Hash).ToArray());
+                writer.Flush();
+                return ms.ToArray();
+            }
+        }
+
+        public static Block FromTrimmedData(byte[] data, int index, Func<UInt256, Transaction> txSelector)
+        {
+            Block block = new Block();
+            using (MemoryStream ms = new MemoryStream(data, index, data.Length - index, false))
+            using (BinaryReader reader = new BinaryReader(ms))
+            {
+                try
+                {
+                    block.Header = new BlockHeader();
+                    block.Header.Deserialize(reader);
+                    int count = reader.ReadInt32();
+                    block.Transactions = new List<Transaction>(count);
+                    for (int i = 0; i < count; ++i)
+                    {
+                        block.Transactions.Add(txSelector(reader.ReadSerializable<UInt256>()));
+                    }
+                    return block;
+                }
+                catch (Exception e)
+                {
+                    throw e;
+                }
+            }
         }
 
         public bool Verify()

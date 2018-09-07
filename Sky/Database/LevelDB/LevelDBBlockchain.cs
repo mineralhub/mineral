@@ -221,7 +221,7 @@ namespace Sky.Database.LevelDB
             Slice value;
             if (!_db.TryGet(ReadOptions.Default, SliceBuilder.Begin(DataEntryPrefix.DATA_Block).Add(hash), out value))
                 return null;
-            Block block = new Block(value.ToArray(), sizeof(long));
+            Block block = Block.FromTrimmedData(value.ToArray(), sizeof(long), p => GetTransaction(p));
             if (block.Transactions.Count == 0)
                 return null;
             return block;
@@ -311,7 +311,7 @@ namespace Sky.Database.LevelDB
             BlockTriggerCacheStorage blockTriggers = new BlockTriggerCacheStorage(_db);
 
             long fee = block.Transactions.Sum(p => p.Fee).Value;
-            batch.Put(SliceBuilder.Begin(DataEntryPrefix.DATA_Block).Add(block.Hash), SliceBuilder.Begin().Add(fee).Add(block.ToArray()));
+            batch.Put(SliceBuilder.Begin(DataEntryPrefix.DATA_Block).Add(block.Hash), SliceBuilder.Begin().Add(fee).Add(block.Trim()));
 
             foreach (Transaction tx in block.Transactions)
             {

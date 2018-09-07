@@ -18,7 +18,16 @@ namespace Sky.Core
         public Fixed8 Fee => Data.Fee;
 
         public virtual int Size => sizeof(short) + sizeof(eTransactionType) + sizeof(int) + Data.Size + Signature.Size;
-        public UInt256 Hash => this.GetHash();
+        private UInt256 _hash = null;
+        public UInt256 Hash
+        {
+            get
+            {
+                if (_hash == null)
+                    _hash = this.GetHash();
+                return _hash;
+            }
+        }
 
         public bool Verified;
 

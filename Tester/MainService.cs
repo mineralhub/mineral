@@ -150,25 +150,6 @@ namespace Tester
                 _genesisBlock = new Block(blockHeader, txs);
             }
 
-            {
-                byte[] bytes = null;
-                using (MemoryStream ms = new MemoryStream())
-                using (BinaryWriter bw = new BinaryWriter(ms))
-                {
-                    _genesisBlock.Serialize(bw);
-                    ms.Flush();
-                    bytes = ms.ToArray();
-                }
-
-                using (MemoryStream ms = new MemoryStream(bytes, false))
-                using (BinaryReader br = new BinaryReader(ms))
-                {
-                    Block serializeBlock = new Block(bytes, 0);
-                    Logger.Log("- serialize block test -");
-                    Logger.Log("compare block hash : " + (serializeBlock.Hash == _genesisBlock.Hash));
-                }
-            }
-
             Logger.Log("genesis block. hash : " + _genesisBlock.Hash);
             Blockchain.SetInstance(new Sky.Database.LevelDB.LevelDBBlockchain("./output-database", _genesisBlock));
             Blockchain.Instance.PersistCompleted += PersistCompleted;
