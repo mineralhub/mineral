@@ -41,5 +41,11 @@ namespace Sky.UnitTests
         {
             WalletAccount.ToAddressHash(_account.Address).Should().Be(_account.AddressHash);
         }
+
+        [TestMethod]
+        public void ValidAddress()
+        {
+            WalletAccount.IsAddress(_account.Address).Should().Be(true);
+        }
     }
 }
