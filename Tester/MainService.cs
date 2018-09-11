@@ -146,7 +146,15 @@ namespace Tester
                     });
 
                 var merkle = new MerkleTree(txs.Select(p => p.Hash).ToArray());
-                var blockHeader = new BlockHeader(0, BlockVersion, GenesisBlockTimestamp, merkle.RootHash, UInt256.Zero, new MakerSignature());
+                var blockHeader = new BlockHeader
+                {
+                    PrevHash = UInt256.Zero,
+                    MerkleRoot = merkle.RootHash,
+                    Version = BlockVersion,
+                    Timestamp = GenesisBlockTimestamp,
+                    Height = 0,
+                    Signature = new MakerSignature()
+                };
                 _genesisBlock = new Block(blockHeader, txs);
             }
 
@@ -196,7 +204,15 @@ namespace Tester
             txs.Insert(0, tx);
 
             var merkle = new MerkleTree(txs.Select(p => p.Hash).ToArray());
-            var blockHeader = new BlockHeader(height + 1, BlockVersion, DateTime.UtcNow.ToTimestamp(), merkle.RootHash, prevhash, _account.Key);
+            var blockHeader = new BlockHeader
+            {
+                PrevHash = prevhash,
+                MerkleRoot = merkle.RootHash,
+                Version = BlockVersion,
+                Timestamp = DateTime.UtcNow.ToTimestamp(),
+                Height = height + 1
+            };
+            blockHeader.Sign(_account.Key);
             return new Block(blockHeader, txs);
         }
 
