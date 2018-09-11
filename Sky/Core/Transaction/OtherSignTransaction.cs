@@ -46,6 +46,8 @@ namespace Sky.Core
                 return false;
             if (Others.Count == 0)
                 return false;
+            if (Config.OtherSignMaxLength < Others.Count)
+                return false;
             if (ValidBlockHeight < Blockchain.Instance.CurrentBlockHeight)
                 return false;
             foreach (string addr in Others)

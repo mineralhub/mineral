@@ -32,6 +32,8 @@ namespace Sky.Core
                 return false;
             if (Name == null || Name.Length == 0)
                 return false;
+            if (Config.DelegateNameMaxLength < Name.Length)
+                return false;
             return true;
         }
 
