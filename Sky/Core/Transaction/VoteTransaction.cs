@@ -6,7 +6,7 @@ namespace Sky.Core
 {
     public class VoteTransaction : TransactionBase
     {
-        public Dictionary<UInt160, Fixed8> Votes { get; private set; }
+        public Dictionary<UInt160, Fixed8> Votes;
         public override int Size => base.Size + Votes.GetSize();
 
         public override void Deserialize(BinaryReader reader)

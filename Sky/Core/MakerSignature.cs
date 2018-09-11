@@ -8,7 +8,7 @@ namespace Sky.Core
         public byte[] Signature { get; private set; }
         public byte[] Pubkey { get; private set; }
 
-        public int Size => Signature == null ? 0 : Signature.GetSize();
+        public int Size => Signature.GetSize() + Pubkey.GetSize();
 
         public MakerSignature()
         {

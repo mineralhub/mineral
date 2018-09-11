@@ -27,7 +27,7 @@ namespace Sky.Core
             }
         }
 
-        public virtual int Size => Fee.Size + From.Size + sizeof(UInt64);
+        public virtual int Size => Fee.Size + From.Size;
 
         public virtual bool Verify()
         {

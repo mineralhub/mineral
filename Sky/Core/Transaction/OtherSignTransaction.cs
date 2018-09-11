@@ -6,8 +6,8 @@ namespace Sky.Core
 {
     public class OtherSignTransaction : TransactionBase
     {
-        public UInt160 To { get; private set; }
-        public Fixed8 Amount { get; private set; }
+        public UInt160 To;
+        public Fixed8 Amount;
         public HashSet<string> Others;
         public int ValidBlockHeight;
 
