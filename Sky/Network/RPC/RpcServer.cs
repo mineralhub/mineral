@@ -12,6 +12,8 @@ using Microsoft.AspNetCore.ResponseCompression;
 using Microsoft.Extensions.DependencyInjection;
 using Newtonsoft.Json.Linq;
 using Sky.Core;
+using System.Collections.Generic;
+using Sky.Network.RPC.Command;
 
 namespace Sky.Network.RPC
 {
@@ -19,6 +21,29 @@ namespace Sky.Network.RPC
     {
         protected readonly LocalNode _localNode;
         IWebHost _host;
+
+        protected Dictionary<string, ProcessCommand.ProcessHandler> processHandler = new Dictionary<string, ProcessCommand.ProcessHandler>()
+        {
+            // Block
+            { RpcCommands.Block.GetBlock, new ProcessCommand.ProcessHandler(ProcessCommand.OnGetBlock) }
+            , { RpcCommands.Block.GetHeight, new ProcessCommand.ProcessHandler(ProcessCommand.OnGetHeight) }
+            , { RpcCommands.Block.GetCurrentBlockHash, new ProcessCommand.ProcessHandler(ProcessCommand.OnGetCurrentBlockHash) }
+
+            // Node
+            , { RpcCommands.Node.NodeList, new ProcessCommand.ProcessHandler(ProcessCommand.OnNodeList) }
+
+            // Wallet
+            , { RpcCommands.Wallet.CreateAccount, new ProcessCommand.ProcessHandler(ProcessCommand.OnCreateAccount) }
+            , { RpcCommands.Wallet.OpenAccount, new ProcessCommand.ProcessHandler(ProcessCommand.OnOpenAccount) }
+            , { RpcCommands.Wallet.CloseAccount, new ProcessCommand.ProcessHandler(ProcessCommand.OnCloseAccount) }
+            , { RpcCommands.Wallet.GetAccount, new ProcessCommand.ProcessHandler(ProcessCommand.OnGetAccount) }
+            , { RpcCommands.Wallet.GetAddress, new ProcessCommand.ProcessHandler(ProcessCommand.OnGetAddress) }
+            , { RpcCommands.Wallet.GetBalance, new ProcessCommand.ProcessHandler(ProcessCommand.OnGetBalance) }
+            , { RpcCommands.Wallet.SendTo, new ProcessCommand.ProcessHandler(ProcessCommand.OnSendTo) }
+            , { RpcCommands.Wallet.FreezeBalance, new ProcessCommand.ProcessHandler(ProcessCommand.OnFreezeBalance) }
+            , { RpcCommands.Wallet.UnfreezeBalance, new ProcessCommand.ProcessHandler(ProcessCommand.OnUnfreezeBalance) }
+            , { RpcCommands.Wallet.VoteWitness, new ProcessCommand.ProcessHandler(ProcessCommand.OnVoteWitness) }
+        };
 
         public RpcServer(LocalNode localNode)
         {
@@ -53,8 +78,11 @@ namespace Sky.Network.RPC
             }
         }
 
-        protected virtual JObject Process(string method, JArray parameters)
+        protected virtual JObject Process(JToken id, string method, JArray parameters)
         {
+            return processHandler.ContainsKey(method) 
+                ? processHandler[method](parameters) : CreateErrorResponse(id, -1, string.Format("Not found method({0}", method));
+/*
             switch (method)
             {
                 case "getheight":
@@ -91,6 +119,7 @@ namespace Sky.Network.RPC
                     }
             }
             return null;
+*/
         }
 
         async Task ProcessAsync(HttpContext context)
@@ -159,9 +188,10 @@ namespace Sky.Network.RPC
             JObject result = null;
             try
             {
+                JToken id = request["id"];
                 string method = request["method"].Value<string>();
                 JArray parameters = (JArray)request["params"];
-                result = Process(method, parameters);
+                result = Process(id, method, parameters);
             }
             catch (Exception e)
             {
