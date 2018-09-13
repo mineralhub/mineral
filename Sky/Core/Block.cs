@@ -106,7 +106,7 @@ namespace Sky.Core
             if (prev.Height + 1 != Height)
                 return false;
             foreach (Transaction tx in Transactions)
-                if (!tx.VerifySignature())
+                if (!tx.Verify())
                     return false;
             return true;
         }

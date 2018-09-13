@@ -33,6 +33,11 @@ namespace Sky.Core
         {
             if (From == null)
                 return false;
+            return true;
+        }
+
+        public virtual bool VerifyLevelDB()
+        {
             if (FromAccountState == null)
                 return false;
             if (FromAccountState.Balance - Fee < Fixed8.Zero)

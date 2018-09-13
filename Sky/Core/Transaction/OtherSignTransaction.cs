@@ -37,15 +37,9 @@ namespace Sky.Core
         {
             if (!base.Verify())
                 return false;
-            Fixed8 totalAmount = Fixed8.Zero;
             foreach (Fixed8 v in To.Values)
-            {
                 if (v < Fixed8.Satoshi)
                     return false;
-                totalAmount += v;
-            }
-            if (FromAccountState.Balance - totalAmount < Fixed8.Zero)
-                return false;
             if (Others.Count == 0)
                 return false;
             if (Config.OtherSignMaxLength < Others.Count)
@@ -53,10 +47,19 @@ namespace Sky.Core
             if (ValidBlockHeight < Blockchain.Instance.CurrentBlockHeight)
                 return false;
             foreach (string addr in Others)
-            {
                 if (Wallets.WalletAccount.IsAddress(addr))
                     return false;
-            }
+            return true;
+        }
+
+        public override bool VerifyLevelDB()
+        {
+            if (!base.VerifyLevelDB())
+                return false;
+            if (ValidBlockHeight < Blockchain.Instance.CurrentBlockHeight)
+                return false;
+            if (FromAccountState.Balance - To.Sum(p => p.Value) < Fixed8.Zero)
+                return false;
             return true;
         }
 

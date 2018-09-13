@@ -69,6 +69,7 @@ namespace Sky
         public const int OtherSignMaxLength = 10;
         public const int OtherSignToMaxLength = 10;
         public const int TransferToMaxLength = 10;
+        public const int VoteMaxLength = 10;
 
         public static Fixed8 DefaultFee = Fixed8.One;
         public static Fixed8 RegisterDelegateFee = Fixed8.One * 10000;

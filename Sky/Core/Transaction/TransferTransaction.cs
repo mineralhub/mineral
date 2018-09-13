@@ -1,7 +1,6 @@
 ﻿using System.IO;
 using System.Collections.Generic;
 using Newtonsoft.Json.Linq;
-using Newtonsoft.Json;
 
 namespace Sky.Core
 {
@@ -32,14 +31,17 @@ namespace Sky.Core
         {
             if (!base.Verify())
                 return false;
-            Fixed8 totalAmount = Fixed8.Zero;
             foreach (Fixed8 v in To.Values)
-            {
                 if (v < Fixed8.Satoshi)
                     return false;
-                totalAmount += v;
-            }
-            if (FromAccountState.Balance - totalAmount < Fixed8.Zero)
+            return true;
+        }
+
+        public override bool VerifyLevelDB()
+        {
+            if (!base.VerifyLevelDB())
+                return false;
+            if (FromAccountState.Balance - To.Sum(p => p.Value) < Fixed8.Zero)
                 return false;
             return true;
         }

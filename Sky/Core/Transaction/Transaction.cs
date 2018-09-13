@@ -29,8 +29,6 @@ namespace Sky.Core
             }
         }
 
-        public bool Verified;
-
         public Transaction(eTransactionType type, int timestamp)
         {
             Version = Config.TransactionVersion;
@@ -144,8 +142,14 @@ namespace Sky.Core
 
         public bool Verify()
         {
-            Verified = Data.Verify();
-            return Verified;
+            if (VerifySignature() == false)
+                return false;
+            return Data.Verify();
+        }
+
+        public bool VerifyLevelDB()
+        {
+            return Data.VerifyLevelDB();
         }
 
         public JObject ToJson()
@@ -157,7 +161,6 @@ namespace Sky.Core
             json["data"] = Data.ToJson();
             json["signature"] = Signature.ToJson();
             json["hash"] = Hash.ToString();
-            json["verified"] = Verified;
             return json;
         }
     }

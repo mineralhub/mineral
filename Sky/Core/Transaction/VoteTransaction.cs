@@ -23,9 +23,14 @@ namespace Sky.Core
 
         public override bool Verify()
         {
-            if (!base.Verify())
+            if (Config.VoteMaxLength < Votes.Count)
                 return false;
-            return true;
+            return base.Verify();
+        }
+
+        public override bool VerifyLevelDB()
+        {
+            return base.VerifyLevelDB();
         }
 
         public override JObject ToJson()

@@ -35,6 +35,11 @@ namespace Sky.Core
             return true;
         }
 
+        public override bool VerifyLevelDB()
+        {
+            return base.VerifyLevelDB();
+        }
+
         public override JObject ToJson()
         {
             JObject json = base.ToJson();

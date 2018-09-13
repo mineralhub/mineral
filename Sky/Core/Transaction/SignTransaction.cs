@@ -35,13 +35,16 @@ namespace Sky.Core
 
         public override bool Verify()
         {
-            if (!base.Verify())
-                return false;
+            return base.Verify();
+        }
 
+        public override bool VerifyLevelDB()
+        {
+            if (!base.VerifyLevelDB())
+                return false;
             Transaction tx = Blockchain.Instance.GetTransaction(SignTxHash);
             if (tx == null || tx.Type != eTransactionType.OtherSignTransaction)
                 return false;
-
             OtherSignTransaction osignTx = tx.Data as OtherSignTransaction;
             if (osignTx.Others.Contains(Wallets.WalletAccount.ToAddress(Owner.Signature.Pubkey)))
                 return true;
