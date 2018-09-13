@@ -321,7 +321,7 @@ namespace Sky.Database.LevelDB
                 if (Fixed8.Zero < tx.Fee)
                     from.AddBalance(-tx.Fee);
                 
-                if (block != GenesisBlock && !tx.VerifyLevelDB())
+                if (block != GenesisBlock && !tx.VerifyBlockchain())
                 {
 #if DEBUG
                     throw new Exception("verified == false transaction. " + tx.ToJson());

@@ -147,9 +147,9 @@ namespace Sky.Core
             return Data.Verify();
         }
 
-        public bool VerifyLevelDB()
+        public bool VerifyBlockchain()
         {
-            return Data.VerifyLevelDB();
+            return Data.VerifyBlockchain();
         }
 
         public JObject ToJson()

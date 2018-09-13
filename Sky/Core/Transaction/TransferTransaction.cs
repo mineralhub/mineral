@@ -37,9 +37,9 @@ namespace Sky.Core
             return true;
         }
 
-        public override bool VerifyLevelDB()
+        public override bool VerifyBlockchain()
         {
-            if (!base.VerifyLevelDB())
+            if (!base.VerifyBlockchain())
                 return false;
             if (FromAccountState.Balance - To.Sum(p => p.Value) < Fixed8.Zero)
                 return false;

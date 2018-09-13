@@ -52,9 +52,9 @@ namespace Sky.Core
             return true;
         }
 
-        public override bool VerifyLevelDB()
+        public override bool VerifyBlockchain()
         {
-            if (!base.VerifyLevelDB())
+            if (!base.VerifyBlockchain())
                 return false;
             if (ValidBlockHeight < Blockchain.Instance.CurrentBlockHeight)
                 return false;

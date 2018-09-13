@@ -36,7 +36,7 @@ namespace Sky.Core
             return true;
         }
 
-        public virtual bool VerifyLevelDB()
+        public virtual bool VerifyBlockchain()
         {
             if (FromAccountState == null)
                 return false;

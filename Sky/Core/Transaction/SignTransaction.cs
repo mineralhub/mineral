@@ -38,9 +38,9 @@ namespace Sky.Core
             return base.Verify();
         }
 
-        public override bool VerifyLevelDB()
+        public override bool VerifyBlockchain()
         {
-            if (!base.VerifyLevelDB())
+            if (!base.VerifyBlockchain())
                 return false;
             Transaction tx = Blockchain.Instance.GetTransaction(SignTxHash);
             if (tx == null || tx.Type != eTransactionType.OtherSignTransaction)

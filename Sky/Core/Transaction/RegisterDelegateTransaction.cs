@@ -38,9 +38,9 @@ namespace Sky.Core
             return true;
         }
 
-        public override bool VerifyLevelDB()
+        public override bool VerifyBlockchain()
         {
-            return base.VerifyLevelDB();
+            return base.VerifyBlockchain();
         }
 
         public override JObject ToJson()
