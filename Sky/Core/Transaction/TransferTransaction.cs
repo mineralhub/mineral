@@ -1,14 +1,15 @@
 ﻿using System.IO;
+using System.Collections.Generic;
 using Newtonsoft.Json.Linq;
+using Newtonsoft.Json;
 
 namespace Sky.Core
 {
     public class TransferTransaction : TransactionBase
     {
-        public UInt160 To;
-        public Fixed8 Amount;
+        public Dictionary<UInt160, Fixed8> To;
 
-        public override int Size => base.Size + To.Size + Amount.Size;
+        public override int Size => base.Size + To.GetSize();
 
         public override void CalcFee()
         {
@@ -18,26 +19,27 @@ namespace Sky.Core
         public override void Deserialize(BinaryReader reader)
         {
             base.Deserialize(reader);
-            To = reader.ReadSerializable<UInt160>();
-            Amount = reader.ReadSerializable<Fixed8>();
+            To = reader.ReadSerializableDictionary<UInt160, Fixed8>(Config.TransferToMaxLength);
         }
 
         public override void Serialize(BinaryWriter writer)
         {
             base.Serialize(writer);
-            writer.WriteSerializable(To);
-            writer.WriteSerializable(Amount);
+            writer.WriteSerializableDictonary(To);
         }
 
         public override bool Verify()
         {
             if (!base.Verify())
                 return false;
-            if (From == To)
-                return false;
-            if (Amount < Fixed8.Satoshi)
-                return false;
-            if (FromAccountState.Balance - Amount < Fixed8.Zero)
+            Fixed8 totalAmount = Fixed8.Zero;
+            foreach (Fixed8 v in To.Values)
+            {
+                if (v < Fixed8.Satoshi)
+                    return false;
+                totalAmount += v;
+            }
+            if (FromAccountState.Balance - totalAmount < Fixed8.Zero)
                 return false;
             return true;
         }
@@ -45,8 +47,15 @@ namespace Sky.Core
         public override JObject ToJson()
         {
             JObject json = base.ToJson();
-            json["to"] = To.ToString();
-            json["amount"] = Amount.Value;
+            JArray to = new JArray();
+            foreach (var v in To)
+            {
+                var j = new JObject();
+                j["addr"] = v.Key.ToString();
+                j["amount"] = v.Value.ToString();
+                to.Add(j);
+            }
+            json["to"] = to;
             return json;
         }
     }

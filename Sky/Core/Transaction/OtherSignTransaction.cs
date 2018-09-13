@@ -6,18 +6,16 @@ namespace Sky.Core
 {
     public class OtherSignTransaction : TransactionBase
     {
-        public UInt160 To;
-        public Fixed8 Amount;
+        public Dictionary<UInt160, Fixed8> To;
         public HashSet<string> Others;
         public int ValidBlockHeight;
 
-        public override int Size => base.Size + To.Size + Amount.Size + Others.GetSize() + sizeof(int);
+        public override int Size => base.Size + To.GetSize() + Others.GetSize() + sizeof(int);
 
         public override void Deserialize(BinaryReader reader)
         {
             base.Deserialize(reader);
-            To = reader.ReadSerializable<UInt160>();
-            Amount = reader.ReadSerializable<Fixed8>();
+            To = reader.ReadSerializableDictionary<UInt160, Fixed8>(Config.OtherSignToMaxLength);
             Others = reader.ReadStringHashSet();
             ValidBlockHeight = reader.ReadInt32();
         }
@@ -25,8 +23,7 @@ namespace Sky.Core
         public override void Serialize(BinaryWriter writer)
         {
             base.Serialize(writer);
-            writer.WriteSerializable(To);
-            writer.WriteSerializable(Amount);
+            writer.WriteSerializableDictonary(To);
             writer.WriteStringHashSet(Others);
             writer.Write(ValidBlockHeight);
         }
@@ -40,9 +37,14 @@ namespace Sky.Core
         {
             if (!base.Verify())
                 return false;
-            if (From == To)
-                return false;
-            if (Amount < Fixed8.Satoshi)
+            Fixed8 totalAmount = Fixed8.Zero;
+            foreach (Fixed8 v in To.Values)
+            {
+                if (v < Fixed8.Satoshi)
+                    return false;
+                totalAmount += v;
+            }
+            if (FromAccountState.Balance - totalAmount < Fixed8.Zero)
                 return false;
             if (Others.Count == 0)
                 return false;
@@ -62,7 +64,6 @@ namespace Sky.Core
         {
             JObject json = base.ToJson();
             json["to"] = To.ToString();
-            json["amount"] = Amount.Value;
             json["Others"] = new JObject();
             foreach (string other in Others)
                 json["Others"].AddAfterSelf(other);

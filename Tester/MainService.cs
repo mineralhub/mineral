@@ -115,8 +115,7 @@ namespace Tester
                         transTxs.Add(new TransferTransaction
                         {
                             From = UInt160.Zero,
-                            To = p.Address,
-                            Amount = p.Balance
+                            To = new Dictionary<UInt160, Fixed8> { { p.Address, p.Balance } }
                         });
                     });
 
@@ -221,8 +220,7 @@ namespace Tester
             var trans = new TransferTransaction
             {
                 From = _account.AddressHash,
-                To = _fromAccount.AddressHash,
-                Amount = Fixed8.Satoshi
+                To = new Dictionary<UInt160, Fixed8> { { _fromAccount.AddressHash, Fixed8.Satoshi } }
             };
             var tx = new Transaction(eTransactionType.TransferTransaction, DateTime.UtcNow.ToTimestamp(), trans);
             tx.Sign(_account);

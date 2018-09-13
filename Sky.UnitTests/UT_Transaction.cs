@@ -31,8 +31,7 @@ namespace Sky.UnitTests
             _transfer = new TransferTransaction
             {
                 From = _from.AddressHash,
-                To = _to.AddressHash,
-                Amount = Fixed8.One,
+                To = new Dictionary<UInt160, Fixed8> { {_to.AddressHash, Fixed8.One } }
             };
 
             _reward = new RewardTransaction
@@ -50,8 +49,7 @@ namespace Sky.UnitTests
             _otherSign = new OtherSignTransaction
             {
                 From = _from.AddressHash,
-                To = _to.AddressHash,
-                Amount = Fixed8.One,
+                To = new Dictionary<UInt160, Fixed8> { { _to.AddressHash, Fixed8.One } },
                 Others = new HashSet<string> { _from.Address, _to.Address },
                 ValidBlockHeight = 10
             };
@@ -89,12 +87,14 @@ namespace Sky.UnitTests
         {
             // txbase : 8 + 20
             int txbase = 28;
+            int transferTxSize = 0;
             using (MemoryStream ms = new MemoryStream())
             using (BinaryWriter bw = new BinaryWriter(ms))
             {
                 _transfer.Serialize(bw);
                 ms.Flush();
-                ms.ToArray().Length.Should().Be(txbase + 20 + 8); // 56
+                ms.ToArray().Length.Should().Be(txbase + _transfer.To.GetSize()); // dynamic
+                transferTxSize = ms.ToArray().Length;
             }
 
             using (MemoryStream ms = new MemoryStream())
@@ -118,7 +118,7 @@ namespace Sky.UnitTests
             {
                 _otherSign.Serialize(bw);
                 ms.Flush();
-                ms.ToArray().Length.Should().Be(txbase + 20 + 8 + _otherSign.Others.GetSize() + 4); // dynamic
+                ms.ToArray().Length.Should().Be(txbase + _otherSign.To.GetSize() + _otherSign.Others.GetSize() + 4); // dynamic
             }
 
             using (MemoryStream ms = new MemoryStream())
@@ -140,10 +140,10 @@ namespace Sky.UnitTests
             using (MemoryStream ms = new MemoryStream())
             using (BinaryWriter bw = new BinaryWriter(ms))
             {
-                // 2 + 2 + 4 + 56(transfer)
+                // 2 + 2 + 4 + transfer
                 _transaction.SerializeUnsigned(bw);
                 ms.Flush();
-                ms.ToArray().Length.Should().Be(64);
+                ms.ToArray().Length.Should().Be(8 + transferTxSize);
             }
         }
     }
