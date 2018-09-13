@@ -79,7 +79,19 @@ namespace Sky.UnitTests
         [TestMethod]
         public void Sign()
         {
-            _transaction.VerifySignature().Should().Be(true);
+            _transaction.VerifySignature().Should().BeTrue();
+        }
+
+        [TestMethod]
+        public void Verify()
+        {
+            _transfer.Verify().Should().BeTrue();
+            _reward.Verify().Should().BeTrue();
+            _vote.Verify().Should().BeTrue();
+            _otherSign.Verify().Should().BeTrue();
+            _sign.Verify().Should().BeTrue();
+            _register.Verify().Should().BeTrue();
+            _transaction.Verify().Should().BeTrue();
         }
 
         [TestMethod]
