@@ -63,7 +63,15 @@ namespace Sky.Core
         public override JObject ToJson()
         {
             JObject json = base.ToJson();
-            json["to"] = To.ToString();
+            JArray to = new JArray();
+            foreach (var v in To)
+            {
+                var j = new JObject();
+                j["addr"] = v.Key.ToString();
+                j["amount"] = v.Value.ToString();
+                to.Add(j);
+            }
+            json["to"] = to;
             json["Others"] = new JObject();
             foreach (string other in Others)
                 json["Others"].AddAfterSelf(other);
