@@ -46,10 +46,10 @@ namespace Tester
                 return;
             if (ValidBlock() == false)
                 return;
+
             StartLocalNode();
             StartRpcServer();
-            //                Config.GenesisBlock.Delegates.ForEach(p => dpos.TurnTable.Enqueue(p.Address));
-            //                StartLocalNode();
+            // Config.GenesisBlock.Delegates.ForEach(p => dpos.TurnTable.Enqueue(p.Address));
 
             while (true)
             {
