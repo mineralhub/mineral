@@ -361,7 +361,7 @@ namespace Sky.Database.LevelDB
                         {
                             Fixed8 totalAmount = osignTx.To.Sum(p => p.Value);
                             from.AddBalance(-totalAmount);
-                            blockTriggers.GetAndChange(osignTx.ValidBlockHeight).TransactionHashes.Add(osignTx.Owner.Hash);
+                            blockTriggers.GetAndChange(osignTx.ExpirationBlockHeight).TransactionHashes.Add(osignTx.Owner.Hash);
                             otherSignTxs.Add(osignTx.Owner.Hash, osignTx.Others);
                         }
                         break;
@@ -373,7 +373,7 @@ namespace Sky.Database.LevelDB
                                 OtherSignTransaction osignTx = GetTransaction(osignState.TxHash).Data as OtherSignTransaction;
                                 foreach (var i in osignTx.To)
                                     accounts.GetAndChange(i.Key).AddBalance(i.Value);
-                                BlockTriggerState state = blockTriggers.GetAndChange(signTx.Reference.ValidBlockHeight);
+                                BlockTriggerState state = blockTriggers.GetAndChange(signTx.Reference.ExpirationBlockHeight);
                                 state.TransactionHashes.Remove(signTx.SignTxHash);
                             }
                         }

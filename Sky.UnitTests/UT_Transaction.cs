@@ -51,7 +51,7 @@ namespace Sky.UnitTests
                 From = _from.AddressHash,
                 To = new Dictionary<UInt160, Fixed8> { { _to.AddressHash, Fixed8.One } },
                 Others = new HashSet<string> { _from.Address, _to.Address },
-                ValidBlockHeight = 10
+                ExpirationBlockHeight = 10
             };
 
             _sign = new SignTransaction
