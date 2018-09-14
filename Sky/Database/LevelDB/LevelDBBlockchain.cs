@@ -221,7 +221,7 @@ namespace Sky.Database.LevelDB
             Slice value;
             if (!_db.TryGet(ReadOptions.Default, SliceBuilder.Begin(DataEntryPrefix.DATA_Block).Add(hash), out value))
                 return null;
-            Block block = new Block(value.ToArray(), sizeof(long));
+            Block block = Block.FromTrimmedData(value.ToArray(), sizeof(long), p => GetTransaction(p));
             if (block.Transactions.Count == 0)
                 return null;
             return block;
@@ -311,8 +311,7 @@ namespace Sky.Database.LevelDB
             BlockTriggerCacheStorage blockTriggers = new BlockTriggerCacheStorage(_db);
 
             long fee = block.Transactions.Sum(p => p.Fee).Value;
-            batch.Put(SliceBuilder.Begin(DataEntryPrefix.DATA_Block).Add(block.Hash), SliceBuilder.Begin().Add(fee).Add(block.ToArray()));
-            block.VerifyTransactions();
+            batch.Put(SliceBuilder.Begin(DataEntryPrefix.DATA_Block).Add(block.Hash), SliceBuilder.Begin().Add(fee).Add(block.Trim()));
 
             foreach (Transaction tx in block.Transactions)
             {
@@ -321,8 +320,8 @@ namespace Sky.Database.LevelDB
                 AccountState from = accounts.GetAndChange(tx.From);
                 if (Fixed8.Zero < tx.Fee)
                     from.AddBalance(-tx.Fee);
-
-                if (tx.Verified == false)
+                
+                if (block != GenesisBlock && !tx.VerifyBlockchain())
                 {
 #if DEBUG
                     throw new Exception("verified == false transaction. " + tx.ToJson());
@@ -340,8 +339,10 @@ namespace Sky.Database.LevelDB
                         break;
                     case TransferTransaction transTx:
                         {
-                            from.AddBalance(-transTx.Amount);
-                            accounts.GetAndChange(transTx.To).AddBalance(transTx.Amount);
+                            Fixed8 totalAmount = transTx.To.Sum(p => p.Value);
+                            from.AddBalance(-totalAmount);
+                            foreach (var i in transTx.To)
+                                accounts.GetAndChange(i.Key).AddBalance(i.Value);
                         }
                         break;
                     case VoteTransaction voteTx:
@@ -357,7 +358,8 @@ namespace Sky.Database.LevelDB
                         break;
                     case OtherSignTransaction osignTx:
                         {
-                            from.AddBalance(-osignTx.Amount);
+                            Fixed8 totalAmount = osignTx.To.Sum(p => p.Value);
+                            from.AddBalance(-totalAmount);
                             blockTriggers.GetAndChange(osignTx.ValidBlockHeight).TransactionHashes.Add(osignTx.Owner.Hash);
                             otherSignTxs.Add(osignTx.Owner.Hash, osignTx.Others);
                         }
@@ -368,7 +370,8 @@ namespace Sky.Database.LevelDB
                             if (osignState != null && osignState.Sign(signTx.Owner.Signature) && osignState.RemainSign.Count == 0)
                             {
                                 OtherSignTransaction osignTx = GetTransaction(osignState.TxHash).Data as OtherSignTransaction;
-                                accounts.GetAndChange(osignTx.To).AddBalance(osignTx.Amount);
+                                foreach (var i in osignTx.To)
+                                    accounts.GetAndChange(i.Key).AddBalance(i.Value);
                                 BlockTriggerState state = blockTriggers.GetAndChange(signTx.Reference.ValidBlockHeight);
                                 state.TransactionHashes.Remove(signTx.SignTxHash);
                             }
@@ -387,7 +390,7 @@ namespace Sky.Database.LevelDB
                     {
                         case OtherSignTransaction osignTx:
                             {
-                                accounts.GetAndChange(osignTx.From).AddBalance(osignTx.Amount);
+                                accounts.GetAndChange(osignTx.From).AddBalance(osignTx.To.Sum(p => p.Value));
                             }
                             break;
                     }

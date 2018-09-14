@@ -6,18 +6,16 @@ namespace Sky.Core
 {
     public class OtherSignTransaction : TransactionBase
     {
-        public UInt160 To { get; private set; }
-        public Fixed8 Amount { get; private set; }
+        public Dictionary<UInt160, Fixed8> To;
         public HashSet<string> Others;
         public int ValidBlockHeight;
 
-        public override int Size => base.Size + To.Size + Amount.Size + Others.GetSize() + sizeof(int);
+        public override int Size => base.Size + To.GetSize() + Others.GetSize() + sizeof(int);
 
         public override void Deserialize(BinaryReader reader)
         {
             base.Deserialize(reader);
-            To = reader.ReadSerializable<UInt160>();
-            Amount = reader.ReadSerializable<Fixed8>();
+            To = reader.ReadSerializableDictionary<UInt160, Fixed8>(Config.OtherSignToMaxLength);
             Others = reader.ReadStringHashSet();
             ValidBlockHeight = reader.ReadInt32();
         }
@@ -25,8 +23,7 @@ namespace Sky.Core
         public override void Serialize(BinaryWriter writer)
         {
             base.Serialize(writer);
-            writer.WriteSerializable(To);
-            writer.WriteSerializable(Amount);
+            writer.WriteSerializableDictonary(To);
             writer.WriteStringHashSet(Others);
             writer.Write(ValidBlockHeight);
         }
@@ -40,26 +37,42 @@ namespace Sky.Core
         {
             if (!base.Verify())
                 return false;
-
+            foreach (Fixed8 v in To.Values)
+                if (v < Fixed8.Satoshi)
+                    return false;
             if (Others.Count == 0)
                 return false;
+            if (Config.OtherSignMaxLength < Others.Count)
+                return false;
+            foreach (string addr in Others)
+                if (!Wallets.WalletAccount.IsAddress(addr))
+                    return false;
+            return true;
+        }
 
+        public override bool VerifyBlockchain()
+        {
+            if (!base.VerifyBlockchain())
+                return false;
             if (ValidBlockHeight < Blockchain.Instance.CurrentBlockHeight)
                 return false;
-            
-            foreach (string addr in Others)
-            {
-                if (Wallets.WalletAccount.IsAddress(addr))
-                    return false;
-            }
+            if (FromAccountState.Balance - To.Sum(p => p.Value) < Fixed8.Zero)
+                return false;
             return true;
         }
 
         public override JObject ToJson()
         {
             JObject json = base.ToJson();
-            json["to"] = To.ToString();
-            json["amount"] = Amount.Value;
+            JArray to = new JArray();
+            foreach (var v in To)
+            {
+                var j = new JObject();
+                j["addr"] = v.Key.ToString();
+                j["amount"] = v.Value.ToString();
+                to.Add(j);
+            }
+            json["to"] = to;
             json["Others"] = new JObject();
             foreach (string other in Others)
                 json["Others"].AddAfterSelf(other);

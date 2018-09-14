@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Net;
 using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
@@ -9,6 +10,12 @@ namespace SkyCLI.Network
 {
     public class RcpClient
     {
+        public class ResponeData
+        {
+            public JObject Result { get; set; }
+            public HttpStatusCode StatusCode { get; set; }
+        }
+
         public static JObject RequestGet(string url)
         {
             string respone_data = null;
@@ -80,7 +87,6 @@ namespace SkyCLI.Network
         public static async Task<JObject> RequestPostAnsyc(string url, string text)
         {
             string respone_data = null;
-
             try
             {
                 using (HttpClient client = new HttpClient())

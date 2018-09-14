@@ -1,9 +1,50 @@
 {
-    "network": {
-        "listen_address": "127.0.0.1",
-        "tcp_port": 11255,
-        "ws_port": 11256,
-        "rpc_port": 11257,
-        "seed_list": [ "127.0.0.1:11355", "127.0.0.1:11455" ]
-    }
+  "block_version": 1,
+  "address_version": 0,
+  "state_version": 0,
+  "network": {
+    "listen_address": "127.0.0.1",
+    "tcp_port": 11255,
+    "ws_port": 11256,
+    "rpc_port": 11257,
+    "seed_list": [ "127.0.0.1:11355", "127.0.0.1:11455" ]
+  },
+  "block": {
+    "next_block_time_sec": 5
+  },
+  "user": {
+    "private_key": "1",
+    "witness": true
+  },
+  "genesisBlock": {
+    "account": [
+      {
+        "address": "12AKRNHpFhDSBDD9rSn74VAzZSL3774PxQ",
+        "balance": "100000"
+      },
+      {
+        "address": "19mqdnsraLrBSHTupx9HcnmJrCryM5Jpjy",
+        "balance": "200000"
+      },
+      {
+        "address": "1889nUYazT9MhsqE4fxutq1dpyspHZEiaM",
+        "balance": "300000"
+      },
+      {
+        "address": "1CvKHaVAKsGGftTFZBdJRcxozxeQo7rXUk",
+        "balance": "400000"
+      },
+      {
+        "address": "12iMNgciNRutMSeu18iaByKYBPnk88Hcm1",
+        "balance": "500000"
+      }
+    ],
+    "delegate": [
+      {
+        "name": "one",
+        "address": "12AKRNHpFhDSBDD9rSn74VAzZSL3774PxQ"
+      }
+    ],
+    "timestamp": 1532051710
+  }
 }

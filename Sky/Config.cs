@@ -65,6 +65,12 @@ namespace Sky
         public const uint MagicNumber = 16;
         public const int MaxDelegate = 5;
         public const int RoundBlock = 100;
+        public const int DelegateNameMaxLength = 20;
+        public const int OtherSignMaxLength = 10;
+        public const int OtherSignToMaxLength = 10;
+        public const int TransferToMaxLength = 10;
+        public const int VoteMaxLength = 10;
+
         public static Fixed8 DefaultFee = Fixed8.One;
         public static Fixed8 RegisterDelegateFee = Fixed8.One * 10000;
         public static Fixed8 VoteFee = Fixed8.One;

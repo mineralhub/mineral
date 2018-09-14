@@ -27,12 +27,17 @@ namespace Sky.Core
             }
         }
 
-        public virtual int Size => Fee.Size + From.Size + sizeof(UInt64);
+        public virtual int Size => Fee.Size + From.Size;
 
         public virtual bool Verify()
         {
             if (From == null)
                 return false;
+            return true;
+        }
+
+        public virtual bool VerifyBlockchain()
+        {
             if (FromAccountState == null)
                 return false;
             if (FromAccountState.Balance - Fee < Fixed8.Zero)

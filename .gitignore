@@ -1,5 +1,6 @@
 ﻿### ignore files
 .vs
+packages/
 
 # sky
 Sky/obj/
@@ -13,8 +14,13 @@ Tester/output-database/
 Tester/output-wallet-index/
 
 # sky-cli
-/SkyCLI/bin
-/SkyCLI/obj
+SkyCLI/bin/
+SkyCLI/obj/
+
+# unit tests
+Sky.UnitTests/bin/
+Sky.UnitTests/obj/
 
 # mac
 *.DS_Store
+Tester/error-log

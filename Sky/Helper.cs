@@ -194,6 +194,10 @@ namespace Sky
             {
                 return Marshal.SizeOf(Enum.GetUnderlyingType(type)) * value.Count();
             }
+            else if (type.Equals(typeof(string)))
+            {
+                return value.OfType<string>().Sum(p => p.Length + 1);
+            }
             else
             {
                 return value.Count() * Marshal.SizeOf<T>();

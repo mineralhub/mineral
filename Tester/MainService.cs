@@ -19,8 +19,7 @@ namespace Tester
         short BlockVersion => Config.BlockVersion;
         int GenesisBlockTimestamp => Config.GenesisBlock.Timestamp;
         WalletAccount _account;
-        UInt256 _from = new UInt256(new byte[32] { 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 });
-        UInt256 _to = new UInt256(new byte[32] { 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 });
+        WalletAccount _fromAccount;
         Block _genesisBlock;
         LocalNode _node;
         RpcServer _rpcServer;
@@ -82,9 +81,17 @@ namespace Tester
             List<Block> blocks = new List<Block>();
             int height = Blockchain.Instance.CurrentHeaderHeight;
             UInt256 prevhash = Blockchain.Instance.CurrentHeaderHash;
+            List<Transaction> txs = new List<Transaction>();
+
+            // Transaction TPS Check.
+            /*
+            var tx = CreateTransferTransaction();
+            for (int i = 0; i < 1000; ++i)
+                txs.Add(tx);
+            */
             for (int i = 0; i < cnt; ++i)
             {
-                Block block = CreateBlock(height + i, prevhash);
+                Block block = CreateBlock(height + i, prevhash, txs);
                 blocks.Add(block);
                 prevhash = block.Hash;
             }
@@ -96,6 +103,7 @@ namespace Tester
         {
             Logger.Log("---------- Initialize ----------");
             _account = new WalletAccount(Sky.Cryptography.Helper.SHA256(Config.User.PrivateKey));
+            _fromAccount = new WalletAccount(Sky.Cryptography.Helper.SHA256(Encoding.Default.GetBytes("256")));
             _dpos = new DPos();
 
             // create genesis block.
@@ -107,8 +115,7 @@ namespace Tester
                         transTxs.Add(new TransferTransaction
                         {
                             From = UInt160.Zero,
-                            To = p.Address,
-                            Amount = p.Balance
+                            To = new Dictionary<UInt160, Fixed8> { { p.Address, p.Balance } }
                         });
                     });
 
@@ -138,27 +145,16 @@ namespace Tester
                     });
 
                 var merkle = new MerkleTree(txs.Select(p => p.Hash).ToArray());
-                var blockHeader = new BlockHeader(0, BlockVersion, GenesisBlockTimestamp, merkle.RootHash, UInt256.Zero, new MakerSignature());
+                var blockHeader = new BlockHeader
+                {
+                    PrevHash = UInt256.Zero,
+                    MerkleRoot = merkle.RootHash,
+                    Version = BlockVersion,
+                    Timestamp = GenesisBlockTimestamp,
+                    Height = 0,
+                    Signature = new MakerSignature()
+                };
                 _genesisBlock = new Block(blockHeader, txs);
-            }
-
-            {
-                byte[] bytes = null;
-                using (MemoryStream ms = new MemoryStream())
-                using (BinaryWriter bw = new BinaryWriter(ms))
-                {
-                    _genesisBlock.Serialize(bw);
-                    ms.Flush();
-                    bytes = ms.ToArray();
-                }
-
-                using (MemoryStream ms = new MemoryStream(bytes, false))
-                using (BinaryReader br = new BinaryReader(ms))
-                {
-                    Block serializeBlock = new Block(bytes, 0);
-                    Logger.Log("- serialize block test -");
-                    Logger.Log("compare block hash : " + (serializeBlock.Hash == _genesisBlock.Hash));
-                }
             }
 
             Logger.Log("genesis block. hash : " + _genesisBlock.Hash);
@@ -187,28 +183,48 @@ namespace Tester
             */
         }
 
-        Block CreateBlock(int height, UInt256 prevhash)
+        Block CreateBlock(int height, UInt256 prevhash, List<Transaction> txs = null)
         {
-            // translate trasnaction block.
-            var txs = new List<Transaction>();
+            if (txs == null)
+                txs = new List<Transaction>();
+
+            // block reward
+            RewardTransaction rewardTx = new RewardTransaction
             {
-                // block reward
-                RewardTransaction rewardTx = new RewardTransaction
-                {
-                    From = _account.AddressHash,
-                    Reward = Config.BlockReward
-                };
-                var tx = new Transaction(
-                    eTransactionType.RewardTransaction,
-                    DateTime.UtcNow.ToTimestamp(),
-                    rewardTx
-                );
-                tx.Sign(_account);
-                txs.Add(tx);
-            }
+                From = _account.AddressHash,
+                Reward = Config.BlockReward
+            };
+            var tx = new Transaction(
+                eTransactionType.RewardTransaction,
+                DateTime.UtcNow.ToTimestamp(),
+                rewardTx
+            );
+            tx.Sign(_account);
+            txs.Insert(0, tx);
+
             var merkle = new MerkleTree(txs.Select(p => p.Hash).ToArray());
-            var blockHeader = new BlockHeader(height + 1, BlockVersion, DateTime.UtcNow.ToTimestamp(), merkle.RootHash, prevhash, _account.Key);
+            var blockHeader = new BlockHeader
+            {
+                PrevHash = prevhash,
+                MerkleRoot = merkle.RootHash,
+                Version = BlockVersion,
+                Timestamp = DateTime.UtcNow.ToTimestamp(),
+                Height = height + 1
+            };
+            blockHeader.Sign(_account.Key);
             return new Block(blockHeader, txs);
+        }
+
+        Transaction CreateTransferTransaction()
+        {
+            var trans = new TransferTransaction
+            {
+                From = _account.AddressHash,
+                To = new Dictionary<UInt160, Fixed8> { { _fromAccount.AddressHash, Fixed8.Satoshi } }
+            };
+            var tx = new Transaction(eTransactionType.TransferTransaction, DateTime.UtcNow.ToTimestamp(), trans);
+            tx.Sign(_account);
+            return tx;
         }
 
         /*

@@ -26,13 +26,21 @@ namespace Sky.Core
             writer.WriteByteArray(Name);
         }
 
+
         public override bool Verify()
         {
             if (!base.Verify())
                 return false;
             if (Name == null || Name.Length == 0)
                 return false;
+            if (Config.DelegateNameMaxLength < Name.Length)
+                return false;
             return true;
+        }
+
+        public override bool VerifyBlockchain()
+        {
+            return base.VerifyBlockchain();
         }
 
         public override JObject ToJson()

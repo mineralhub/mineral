@@ -6,7 +6,7 @@ namespace Sky.Core
 {
     public class VoteTransaction : TransactionBase
     {
-        public Dictionary<UInt160, Fixed8> Votes { get; private set; }
+        public Dictionary<UInt160, Fixed8> Votes;
         public override int Size => base.Size + Votes.GetSize();
 
         public override void Deserialize(BinaryReader reader)
@@ -23,9 +23,14 @@ namespace Sky.Core
 
         public override bool Verify()
         {
-            if (!base.Verify())
+            if (Config.VoteMaxLength < Votes.Count)
                 return false;
-            return true;
+            return base.Verify();
+        }
+
+        public override bool VerifyBlockchain()
+        {
+            return base.VerifyBlockchain();
         }
 
         public override JObject ToJson()

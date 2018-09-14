@@ -1,5 +1,4 @@
-﻿using System;
-using System.IO;
+﻿using System.IO;
 using Sky.Cryptography;
 using System.Text;
 using Sky.Wallets;
@@ -19,9 +18,16 @@ namespace Sky.Core
         public Fixed8 Fee => Data.Fee;
 
         public virtual int Size => sizeof(short) + sizeof(eTransactionType) + sizeof(int) + Data.Size + Signature.Size;
-        public UInt256 Hash => this.GetHash();
-
-        public bool Verified;
+        private UInt256 _hash = null;
+        public UInt256 Hash
+        {
+            get
+            {
+                if (_hash == null)
+                    _hash = this.GetHash();
+                return _hash;
+            }
+        }
 
         public Transaction(eTransactionType type, int timestamp)
         {
@@ -126,18 +132,24 @@ namespace Sky.Core
 
         public void Sign(ECKey key)
         {
-            Signature = new MakerSignature(Cryptography.Helper.Sign(ToUnsignedArray(), key), key.PublicKey.ToByteArray());
+            Signature = new MakerSignature(Cryptography.Helper.Sign(Hash.Data, key), key.PublicKey.ToByteArray());
         }
 
         public bool VerifySignature()
         {
-            return Cryptography.Helper.VerifySignature(Signature, ToUnsignedArray());
+            return Cryptography.Helper.VerifySignature(Signature, Hash.Data);
         }
 
         public bool Verify()
         {
-            Verified = Data.Verify();
-            return Verified;
+            if (VerifySignature() == false)
+                return false;
+            return Data.Verify();
+        }
+
+        public bool VerifyBlockchain()
+        {
+            return Data.VerifyBlockchain();
         }
 
         public JObject ToJson()
@@ -149,7 +161,6 @@ namespace Sky.Core
             json["data"] = Data.ToJson();
             json["signature"] = Signature.ToJson();
             json["hash"] = Hash.ToString();
-            json["verified"] = Verified;
             return json;
         }
     }
