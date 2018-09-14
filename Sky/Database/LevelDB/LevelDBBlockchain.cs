@@ -315,20 +315,21 @@ namespace Sky.Database.LevelDB
 
             foreach (Transaction tx in block.Transactions)
             {
-                batch.Put(SliceBuilder.Begin(DataEntryPrefix.DATA_Transaction).Add(tx.Hash), SliceBuilder.Begin().Add(block.Header.Height).Add(tx.ToArray()));
-
-                AccountState from = accounts.GetAndChange(tx.From);
-                if (Fixed8.Zero < tx.Fee)
-                    from.AddBalance(-tx.Fee);
-                
                 if (block != GenesisBlock && !tx.VerifyBlockchain())
                 {
+                    if (Fixed8.Zero < tx.Fee)
+                        accounts.GetAndChange(tx.From).AddBalance(-tx.Fee);
 #if DEBUG
                     throw new Exception("verified == false transaction. " + tx.ToJson());
 #else
                     continue;
 #endif
                 }
+                batch.Put(SliceBuilder.Begin(DataEntryPrefix.DATA_Transaction).Add(tx.Hash), SliceBuilder.Begin().Add(block.Header.Height).Add(tx.ToArray()));
+
+                AccountState from = accounts.GetAndChange(tx.From);
+                if (Fixed8.Zero < tx.Fee)
+                    from.AddBalance(-tx.Fee);
                 
                 switch (tx.Data)
                 {
