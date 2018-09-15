@@ -1,0 +1,26 @@
+﻿### ignore files
+.vs
+packages/
+
+# sky
+Sky/obj/
+Sky/bin/
+
+# tester
+Tester/obj/
+Tester/bin/
+Tester/output-log
+Tester/output-database/
+Tester/output-wallet-index/
+
+# sky-cli
+SkyCLI/bin/
+SkyCLI/obj/
+
+# unit tests
+Sky.UnitTests/bin/
+Sky.UnitTests/obj/
+
+# mac
+*.DS_Store
+Tester/error-log

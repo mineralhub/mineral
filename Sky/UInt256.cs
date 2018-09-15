@@ -36,9 +36,9 @@ namespace Sky
             return left.CompareTo(right) <= 0;
         }
 
-        public static UInt256 FromHexString(string str, bool hasPrefix)
+        public static UInt256 FromHexString(string str)
         {
-            if (hasPrefix)
+            if (str.StartsWith("0x"))
                 str = str.Substring(2, str.Length - 2);
             return new UInt256(Helper.HexToBytes(str));
         }

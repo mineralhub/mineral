@@ -1,57 +1,54 @@
-﻿using System.Collections.Generic;
-using System.IO;
-using System.Text;
+﻿using System.IO;
 using Sky.Cryptography;
+using System.Text;
+using Sky.Wallets;
+using Newtonsoft.Json.Linq;
 
 namespace Sky.Core
 {
     public class Transaction : IVerifiable
     {
-        public short Version { get; protected set; }
-        public eTransactionType Type { get; protected set; }
-        public int Timestamp { get; protected set; }
-        public Fixed8 Fee { get; protected set; }
-        public List<TransactionInput> Inputs { get; protected set; }
-        public List<TransactionOutput> Outputs { get; protected set; }
-        public List<MakerSignature> Signatures { get; protected set; }
-        public UInt256 Hash => this.GetHash();
+        public short Version;
+        public eTransactionType Type;
+        public int Timestamp;
+        public TransactionBase Data;
+        public MakerSignature Signature;
 
-        // cache refs
-        private List<TransactionOutput> _referense;
-        public List<TransactionOutput> References
+        public UInt160 From => Data.From;
+        public Fixed8 Fee => Data.Fee;
+
+        public virtual int Size => sizeof(short) + sizeof(eTransactionType) + sizeof(int) + Data.Size + Signature.Size;
+        private UInt256 _hash = null;
+        public UInt256 Hash
         {
             get
             {
-                if (_referense == null)
-                {
-                    _referense = new List<TransactionOutput>();
-                    foreach (var group in Inputs)
-                    {
-                        Transaction tx = Blockchain.Instance.GetTransaction(group.PrevHash);
-                        if (tx == null)
-                            return null;
-                        _referense.Add(tx.Outputs[group.PrevIndex]);
-                    }
-                }
-                return _referense;
+                if (_hash == null)
+                    _hash = this.GetHash();
+                return _hash;
             }
         }
 
-        public virtual int Size => sizeof(eTransactionType) + sizeof(short) + sizeof(int) +
-            Fee.Size + Outputs.GetSize();
-
-        public Transaction(short version, eTransactionType type, int timestamp, List<TransactionInput> inputs, List<TransactionOutput> outputs, List<MakerSignature> signatures)
+        public Transaction(eTransactionType type, int timestamp)
         {
-            Version = version;
+            Version = Config.TransactionVersion;
             Type = type;
             Timestamp = timestamp;
-            Inputs = inputs;
-            Outputs = outputs;
-            Signatures = signatures;
+            MallocTrasnactionData();
+        }
+
+        public Transaction(eTransactionType type, int timestamp, TransactionBase txData)
+        {
+            Version = Config.TransactionVersion;
+            Type = type;
+            Timestamp = timestamp;
+            Data = txData;
+            Data.Owner = this;
         }
 
         public Transaction()
         {
+            Version = Config.TransactionVersion;
         }
 
         static public Transaction DeserializeFrom(byte[] value, int offset = 0)
@@ -59,29 +56,44 @@ namespace Sky.Core
             using (MemoryStream ms = new MemoryStream(value, offset, value.Length - offset, false))
             using (BinaryReader reader = new BinaryReader(ms, Encoding.UTF8))
             {
-                Transaction tx = null;
-                short version = reader.ReadInt16();
-                eTransactionType type = (eTransactionType)reader.ReadInt16();
-                switch (type)
-                {
-                    case eTransactionType.DataTransaction:
-                        tx = new DataTransaction();
-                        break;
-                    case eTransactionType.VoteTransaction:
-                        tx = new VoteTransaction();
-                        break;
-                    case eTransactionType.RegisterDelegateTransaction:
-                        tx = new RegisterDelegateTransaction();
-                        break;
-                    default:
-                        tx = new Transaction();
-                        break;
-                }
-                reader.BaseStream.Position = 0;
+                Transaction tx = new Transaction();
                 tx.Deserialize(reader);
-                tx.CalcFee();
                 return tx;
             }
+        }
+
+        public byte[] ToUnsignedArray()
+        {
+            using (MemoryStream ms = new MemoryStream())
+            using (BinaryWriter writer = new BinaryWriter(ms, Encoding.UTF8))
+            {
+                SerializeUnsigned(writer);
+                writer.Flush();
+                return ms.ToArray();
+            }
+        }
+
+        private void MallocTrasnactionData()
+        {
+            switch (Type)
+            {
+                case eTransactionType.TransferTransaction:
+                    Data = new TransferTransaction();
+                    break;
+                case eTransactionType.VoteTransaction:
+                    Data = new VoteTransaction();
+                    break;
+                case eTransactionType.RegisterDelegateTransaction:
+                    Data = new RegisterDelegateTransaction();
+                    break;
+                case eTransactionType.RewardTransaction:
+                    Data = new RewardTransaction();
+                    break;
+                default:
+                    Data = new TransactionBase();
+                    break;
+            }
+            Data.Owner = this;
         }
 
         public void DeserializeUnsigned(BinaryReader reader)
@@ -89,9 +101,8 @@ namespace Sky.Core
             Version = reader.ReadInt16();
             Type = (eTransactionType)reader.ReadInt16();
             Timestamp = reader.ReadInt32();
-            Fee = reader.ReadSerializable<Fixed8>();
-            Inputs = reader.ReadSerializableArray<TransactionInput>();
-            Outputs = reader.ReadSerializableArray<TransactionOutput>();
+            MallocTrasnactionData();
+            Data.Deserialize(reader);
         }
 
         public void SerializeUnsigned(BinaryWriter writer)
@@ -99,76 +110,60 @@ namespace Sky.Core
             writer.Write(Version);
             writer.Write((short)Type);
             writer.Write(Timestamp);
-            writer.WriteSerializable(Fee);
-            writer.WriteSerializableArray(Inputs);
-            writer.WriteSerializableArray(Outputs);
+            Data.Serialize(writer);
         }
 
         public virtual void Deserialize(BinaryReader reader)
         {
             DeserializeUnsigned(reader);
-            Signatures = reader.ReadSerializableArray<MakerSignature>();
+            Signature = reader.ReadSerializable<MakerSignature>();
         }
 
         public virtual void Serialize(BinaryWriter writer)
         {
             SerializeUnsigned(writer);
-            writer.WriteSerializableArray(Signatures);
+            writer.WriteSerializable(Signature);
         }
 
-        public virtual void CalcFee()
+        public void Sign(WalletAccount account)
         {
-            Fee = Config.DefaultFee;
+            Sign(account.Key);
         }
 
-        public TransactionResult GetTransactionResult()
+        public void Sign(ECKey key)
         {
-            if (References == null)
-                return null;
-
-            return new TransactionResult(References.Sum(p => p.Value) - Outputs.Sum(p => p.Value));
+            Signature = new MakerSignature(Cryptography.Helper.Sign(ToUnsignedArray(), key), key.PublicKey.ToByteArray());
         }
 
-        public virtual bool Verify()
+        public bool VerifySignature()
         {
-            if (Type == eTransactionType.RewardTransaction)
-            {
-                // zero input
-                if (0 < Inputs.Count)
-                    return false;
-                // single output
-                if (1 < Outputs.Count)
-                    return false;
-                // block reward
-                if (Outputs[0].Value != Config.BlockReward)
-                    return false;
-                return true;
-            }
-            // required input
-            if (Inputs.Count == 0)
+            return Cryptography.Helper.VerifySignature(Signature, ToUnsignedArray());
+        }
+
+        public bool Verify()
+        {
+            if (VerifySignature() == false)
                 return false;
-            // signature count
-            if (Signatures.Count != Inputs.Count)
+            return Data.Verify();
+        }
+
+        public bool VerifyBlockchain()
+        {
+            if (Blockchain.Instance.GetTransaction(Hash) != null)
                 return false;
-            // multiple input
-            for (int i = 1; i < Inputs.Count; i++)
-                for (int j = 0; j < i; j++)
-                    if (Inputs[i].PrevHash == Inputs[j].PrevHash && Inputs[i].PrevIndex == Inputs[j].PrevIndex)
-                        return false;
-            // has value
-            TransactionResult result = GetTransactionResult();
-            if (result == null || result.Amount < Fee)
-                return false;
-            // sign
-            for (int i = 0; i < Inputs.Count; ++i)
-            {
-                if (!Cryptography.Helper.VerifySignature(Signatures[i], Inputs[i].Hash.Data))
-                    return false;
-            }
-            // blockchain database spent
-            if (!Blockchain.Instance.IsDoubleSpend(this))
-                return false;
-            return true;
+            return Data.VerifyBlockchain();
+        }
+
+        public JObject ToJson()
+        {
+            JObject json = new JObject();
+            json["version"] = Version;
+            json["type"] = (short)Type;
+            json["timestamp"] = Timestamp;
+            json["data"] = Data.ToJson();
+            json["signature"] = Signature.ToJson();
+            json["hash"] = Hash.ToString();
+            return json;
         }
     }
 }

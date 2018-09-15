@@ -13,6 +13,8 @@ namespace Sky.Core
             _instance = chain;
         }
 
+        public object PersistLock { get; } = new object();
+        public event EventHandler<Block> PersistCompleted;
 
         public abstract Block GenesisBlock { get; }
         public abstract int CurrentBlockHeight { get; }
@@ -21,8 +23,10 @@ namespace Sky.Core
         public abstract int CurrentHeaderHeight { get; }
         public abstract UInt256 CurrentHeaderHash { get; }
 
+        public abstract void Run();
         public abstract void Dispose();
         public abstract bool AddBlock(Block block);
+        public abstract bool AddBlockDirectly(Block block);
         public abstract BlockHeader GetHeader(UInt256 hash);
         public abstract BlockHeader GetHeader(int height);
         public abstract BlockHeader GetNextHeader(UInt256 hash);
@@ -37,9 +41,13 @@ namespace Sky.Core
 
         public abstract Transaction GetTransaction(UInt256 hash, out int height);
 
-        public abstract bool IsDoubleSpend(Transaction tx);
         public abstract AccountState GetAccountState(UInt160 addressHash);
-        public abstract List<DelegatorState> GetDelegateStateAll();
-        public abstract List<DelegatorState> GetDelegateStateMakers();
+        public abstract List<DelegateState> GetDelegateStateAll();
+        public abstract List<DelegateState> GetDelegateStateMakers();
+
+        protected void OnPersistCompleted(Block block)
+        {
+            PersistCompleted?.Invoke(this, block);
+        }
     }
 }

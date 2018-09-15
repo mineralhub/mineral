@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using Sky;
 
 public enum TrackState : byte
 {
@@ -47,7 +46,7 @@ namespace Sky.Database.LevelDB
 
         protected IEnumerable<KeyValuePair<TKey, TValue>> FindInternal(byte[] keyPrefix)
         {
-            return _db.Find(ReadOptions.Default, SliceBuilder.Begin(_prefix).Add(keyPrefix), 
+            return _db.Find(ReadOptions.Default, SliceBuilder.Begin(_prefix).Add(keyPrefix),
                 (k, v) => new KeyValuePair<TKey, TValue>(k.ToArray().Serializable<TKey>(), v.ToArray().Serializable<TValue>()));
         }
 
@@ -110,9 +109,9 @@ namespace Sky.Database.LevelDB
             dels.Select(p => _cache.Remove(p));
         }
 
-        public IEnumerable<KeyValuePair<TKey, TValue>> Find(byte[] keyPrefix)
+        public IEnumerable<KeyValuePair<TKey, TValue>> Find(byte[] keyPrefix = null)
         {
-            foreach (var pair in FindInternal(keyPrefix))
+            foreach (var pair in FindInternal(keyPrefix == null ? new byte[0] : keyPrefix))
             {
                 if (!_cache.ContainsKey(pair.Key))
                 {
@@ -136,12 +135,15 @@ namespace Sky.Database.LevelDB
             return _cache.Values.Where(p => p.State != TrackState.None);
         }
 
-        public TValue GetAndChange(TKey key, Func<TValue> factory)
+        public TValue GetAndChange(TKey key, Func<TValue> factory = null)
         {
             if (_cache.TryGetValue(key, out Trackable trackable))
             {
                 if (trackable.State == TrackState.Deleted)
                 {
+                    if (factory == null)
+                        return null;
+                    
                     trackable.Item = factory();
                     trackable.State = TrackState.Changed;
                 }
@@ -159,6 +161,9 @@ namespace Sky.Database.LevelDB
                 };
                 if (trackable.Item == null)
                 {
+                    if (factory == null)
+                        return null;
+                    
                     trackable.Item = factory();
                     trackable.State = TrackState.Added;
                 }
@@ -218,6 +223,15 @@ namespace Sky.Database.LevelDB
                 State = TrackState.None
             });
             return value;
+        }
+
+        public bool ContainsKey(TKey key)
+        {
+            if (_cache.ContainsKey(key))
+                return true;
+
+            TValue value = TryGetInternal(key);
+            return value != null;
         }
     }
 }

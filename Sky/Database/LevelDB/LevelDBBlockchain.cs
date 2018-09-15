@@ -7,11 +7,13 @@ using System.Threading;
 using Sky;
 using Sky.Core;
 using System.Text;
+using Sky.Database.CacheStorage;
 
 namespace Sky.Database.LevelDB
 {
     public class LevelDBBlockchain : Blockchain
     {
+        private string _path;
         private DB _db;
 
         private List<UInt256> _headerIndices = new List<UInt256>();
@@ -39,12 +41,16 @@ namespace Sky.Database.LevelDB
 
         public LevelDBBlockchain(string path, Block genesisBlock)
         {
+            _path = path;
             _genesisBlock = genesisBlock;
+        }
 
+        public override void Run()
+        {
             Version version;
             Slice value;
             ReadOptions options = new ReadOptions { FillCache = false };
-            _db = DB.Open(path, new Options { CreateIfMissing = true });
+            _db = DB.Open(_path, new Options { CreateIfMissing = true });
             if (_db.TryGet(ReadOptions.Default, SliceBuilder.Begin(DataEntryPrefix.SYS_Version), out value) && Version.TryParse(value.ToString(), out version))
             {
                 value = _db.Get(options, SliceBuilder.Begin(DataEntryPrefix.SYS_CurrentBlock));
@@ -61,7 +67,7 @@ namespace Sky.Database.LevelDB
 
                 IEnumerable<UInt256> headerHashes = _db.Find(options, SliceBuilder.Begin(DataEntryPrefix.IX_HeaderHashList), (k, v) =>
                 {
-                    using (MemoryStream ms = new MemoryStream())
+                    using (MemoryStream ms = new MemoryStream(v.ToArray(), false))
                     using (BinaryReader br = new BinaryReader(ms))
                     {
                         return new
@@ -74,9 +80,7 @@ namespace Sky.Database.LevelDB
 
                 foreach (UInt256 headerHash in headerHashes)
                 {
-                    if (!headerHash.Equals(genesisBlock.Hash))
-                        _headerIndices.Add(headerHash);
-
+                    _headerIndices.Add(headerHash);
                     ++_storedHeaderCount;
                 }
 
@@ -106,8 +110,10 @@ namespace Sky.Database.LevelDB
                         batch.Delete(it.Key());
                 }
                 _db.Write(WriteOptions.Default, batch);
-                _headerIndices.Add(genesisBlock.Hash);
-                Persist(genesisBlock);
+                _headerIndices.Add(_genesisBlock.Hash);
+                _currentBlockHash = _genesisBlock.Hash;
+                _currentHeaderHash = _genesisBlock.Hash;
+                Persist(_genesisBlock);
                 _db.Put(WriteOptions.Default, SliceBuilder.Begin(DataEntryPrefix.SYS_Version), Assembly.GetExecutingAssembly().GetName().Version.ToString());
             }
 
@@ -157,6 +163,24 @@ namespace Sky.Database.LevelDB
             return true;
         }
 
+        public override bool AddBlockDirectly(Block block)
+        {
+            if (block.Height != CurrentBlockHeight + 1)
+                return false;
+            if (block.Height == _headerIndices.Count)
+            {
+                WriteBatch batch = new WriteBatch();
+                OnAddHeader(block.Header, batch);
+                _db.Write(WriteOptions.Default, batch);
+            }
+            lock (PersistLock)
+            {
+                Persist(block);
+                OnPersistCompleted(block);
+            }
+            return true;
+        }
+
         public override BlockHeader GetHeader(UInt256 hash)
         {
             lock (_headerCache)
@@ -197,7 +221,7 @@ namespace Sky.Database.LevelDB
             Slice value;
             if (!_db.TryGet(ReadOptions.Default, SliceBuilder.Begin(DataEntryPrefix.DATA_Block).Add(hash), out value))
                 return null;
-            Block block = new Block(value.ToArray(), sizeof(long));
+            Block block = Block.FromTrimmedData(value.ToArray(), sizeof(long), p => GetTransaction(p));
             if (block.Transactions.Count == 0)
                 return null;
             return block;
@@ -232,37 +256,17 @@ namespace Sky.Database.LevelDB
             }
         }
 
-        public override bool IsDoubleSpend(Transaction tx)
-        {
-            if (tx.Inputs.Count == 0)
-                return false;
-
-            ReadOptions options = new ReadOptions();
-            using (options.Snapshot = _db.GetSnapshot())
-            {
-                foreach (var group in tx.Inputs.GroupBy(p => p.PrevHash))
-                {
-                    UnspentCoinState state = _db.TryGet<UnspentCoinState>(options, DataEntryPrefix.ST_COIN, group.Key);
-                    if (state == null)
-                        return true;
-                    if (group.Any(p => p.PrevIndex >= state.Items.Count || state.Items[p.PrevIndex].HasFlag(CoinState.Spent)))
-                        return true;
-                }
-            }
-            return false;
-        }
-
         public override AccountState GetAccountState(UInt160 addressHash)
         {
             return _db.TryGet<AccountState>(ReadOptions.Default, DataEntryPrefix.ST_Account, addressHash);
         }
 
-        public override List<DelegatorState> GetDelegateStateAll()
+        public override List<DelegateState> GetDelegateStateAll()
         {
-            return new List<DelegatorState>(_db.Find<DelegatorState>(ReadOptions.Default, DataEntryPrefix.ST_Delegator));
+            return new List<DelegateState>(_db.Find<DelegateState>(ReadOptions.Default, DataEntryPrefix.ST_Delegate));
         }
 
-        public override List<DelegatorState> GetDelegateStateMakers()
+        public override List<DelegateState> GetDelegateStateMakers()
         {
             throw new NotImplementedException();
         }
@@ -293,67 +297,113 @@ namespace Sky.Database.LevelDB
             }
             batch.Put(SliceBuilder.Begin(DataEntryPrefix.DATA_Block).Add(header.Hash), SliceBuilder.Begin().Add(0L).Add(header.ToArray()));
             batch.Put(SliceBuilder.Begin(DataEntryPrefix.SYS_CurrentHeader), SliceBuilder.Begin().Add(header.Hash).Add(header.Height));
+
+            _currentHeaderHeight = _headerIndices.Count - 1;
+            _currentHeaderHash = header.Hash;
         }
 
         private void Persist(Block block)
         {
             WriteBatch batch = new WriteBatch();
-            DbCache<UInt160, AccountState> accounts = new DbCache<UInt160, AccountState>(_db, DataEntryPrefix.ST_Account);
-            DbCache<DelegateKey, DelegatorState> delegators = new DbCache<DelegateKey, DelegatorState>(_db, DataEntryPrefix.ST_Delegator);
+            AccountCacheStorage accounts = new AccountCacheStorage(_db);
+            DelegateCacheStorage delegates = new DelegateCacheStorage(_db);
+            OtherSignCacheStorage otherSignTxs = new OtherSignCacheStorage(_db);
+            BlockTriggerCacheStorage blockTriggers = new BlockTriggerCacheStorage(_db);
 
             long fee = block.Transactions.Sum(p => p.Fee).Value;
-            batch.Put(SliceBuilder.Begin(DataEntryPrefix.DATA_Block).Add(block.Hash), SliceBuilder.Begin().Add(fee).Add(block.ToArray()));
+            batch.Put(SliceBuilder.Begin(DataEntryPrefix.DATA_Block).Add(block.Hash), SliceBuilder.Begin().Add(fee).Add(block.Trim()));
+
             foreach (Transaction tx in block.Transactions)
             {
+                if (block != GenesisBlock && !tx.VerifyBlockchain())
+                {
+                    if (Fixed8.Zero < tx.Fee)
+                        accounts.GetAndChange(tx.From).AddBalance(-tx.Fee);
+#if DEBUG
+                    throw new Exception("verified == false transaction. " + tx.ToJson());
+#else
+                    continue;
+#endif
+                }
                 batch.Put(SliceBuilder.Begin(DataEntryPrefix.DATA_Transaction).Add(tx.Hash), SliceBuilder.Begin().Add(block.Header.Height).Add(tx.ToArray()));
-                foreach (TransactionOutput output in tx.Outputs)
-                {
-                    AccountState account = accounts.GetAndChange(output.AddressHash, () => new AccountState(output.AddressHash));
-                    account.AddBalance(output.Value);
-                }
 
-                int txHeight;
-                foreach (TransactionInput input in tx.Inputs)
+                AccountState from = accounts.GetAndChange(tx.From);
+                if (Fixed8.Zero < tx.Fee)
+                    from.AddBalance(-tx.Fee);
+                
+                switch (tx.Data)
                 {
-                    Transaction prevtx = GetTransaction(input.PrevHash, out txHeight);
-                    TransactionOutput prevOutput = prevtx.Outputs[input.PrevIndex];
-                    AccountState account = accounts.GetAndChange(prevOutput.AddressHash, () => new AccountState(prevOutput.AddressHash));
-                    account.AddBalance(-prevOutput.Value);
-                }
-
-                switch (tx.Type)
-                {
-                    case eTransactionType.RewardTransaction:
-                        break;
-                    case eTransactionType.DataTransaction:
+                    case RewardTransaction rewardTx:
                         {
-                            //DataTransaction data = tx as DataTransaction;
-                            //data.Data
+                            from.AddBalance(rewardTx.Reward);
                         }
                         break;
-                    case eTransactionType.VoteTransaction:
+                    case TransferTransaction transTx:
                         {
-                            VoteTransaction vote = tx as VoteTransaction;
-                            DelegatorState delegator = delegators.TryGet(new DelegateKey(vote.Delegate));
-                            AccountState account = accounts.GetAndChange(vote.Sender, () => new AccountState(vote.Sender));
-                            delegator.VoteAddressHashes.Add(vote.Sender);
-                            account.SetVote(vote.Delegate);
+                            Fixed8 totalAmount = transTx.To.Sum(p => p.Value);
+                            from.AddBalance(-totalAmount);
+                            foreach (var i in transTx.To)
+                                accounts.GetAndChange(i.Key).AddBalance(i.Value);
                         }
                         break;
-                    case eTransactionType.RegisterDelegateTransaction:
+                    case VoteTransaction voteTx:
                         {
-                            RegisterDelegateTransaction dg = tx as RegisterDelegateTransaction;
-                            DelegatorState delegator = delegators.GetOrAdd(new DelegateKey(dg.NameBytes), () => new DelegatorState(dg.NameBytes));
-                            if (delegator.AddressHash == null)
-                                delegator.SetAddressHash(dg.Sender);
+                            delegates.Vote(voteTx);
+                            accounts.GetAndChange(voteTx.From).SetVote(voteTx.Votes);
+                        }
+                        break;
+                    case RegisterDelegateTransaction registerDelegateTx:
+                        {
+                            delegates.Add(registerDelegateTx.From, registerDelegateTx.Name);
+                        }
+                        break;
+                    case OtherSignTransaction osignTx:
+                        {
+                            Fixed8 totalAmount = osignTx.To.Sum(p => p.Value);
+                            from.AddBalance(-totalAmount);
+                            blockTriggers.GetAndChange(osignTx.ExpirationBlockHeight).TransactionHashes.Add(osignTx.Owner.Hash);
+                            otherSignTxs.Add(osignTx.Owner.Hash, osignTx.Others);
+                        }
+                        break;
+                    case SignTransaction signTx:
+                        {
+                            OtherSignTransactionState osignState = otherSignTxs.GetAndChange(signTx.SignTxHash);
+                            if (osignState != null && osignState.Sign(signTx.Owner.Signature) && osignState.RemainSign.Count == 0)
+                            {
+                                OtherSignTransaction osignTx = GetTransaction(osignState.TxHash).Data as OtherSignTransaction;
+                                foreach (var i in osignTx.To)
+                                    accounts.GetAndChange(i.Key).AddBalance(i.Value);
+                                BlockTriggerState state = blockTriggers.GetAndChange(signTx.Reference.ExpirationBlockHeight);
+                                state.TransactionHashes.Remove(signTx.SignTxHash);
+                            }
                         }
                         break;
                 }
             }
-            accounts.DeleteWhere((k, v) => !v.IsFrozen && v.Balance <= Fixed8.Zero && v.Vote == null);
+
+            BlockTriggerState blockTrigger = blockTriggers.TryGet(block.Height);
+            if (blockTrigger != null)
+            {
+                foreach (UInt256 txhash in blockTrigger.TransactionHashes)
+                {
+                    Transaction tx = GetTransaction(txhash);
+                    switch (tx.Data)
+                    {
+                        case OtherSignTransaction osignTx:
+                            {
+                                accounts.GetAndChange(osignTx.From).AddBalance(osignTx.To.Sum(p => p.Value));
+                            }
+                            break;
+                    }
+                }
+            }
+
+            accounts.Clean();
             accounts.Commit(batch);
-            delegators.DeleteWhere((k, v) => v.AddressHash == null);
-            delegators.Commit(batch);
+            delegates.Commit(batch);
+            otherSignTxs.Commit(batch);
+            blockTriggers.Clean(block.Height);
+            blockTriggers.Commit(batch);
             batch.Put(SliceBuilder.Begin(DataEntryPrefix.SYS_CurrentBlock), SliceBuilder.Begin().Add(block.Hash).Add(block.Header.Height));
             _db.Write(WriteOptions.Default, batch);
             _currentBlockHeight = block.Header.Height;
@@ -361,7 +411,7 @@ namespace Sky.Database.LevelDB
 
             StringBuilder sb = new StringBuilder();
             sb.AppendLine("persist block : " + block.Height);
-            sb.AppendLine(block.ToJson());
+            sb.AppendLine(block.ToJson().ToString());
             Logger.Log(sb.ToString());
         }
 
@@ -371,26 +421,30 @@ namespace Sky.Database.LevelDB
             {
                 _newBlockEvent.WaitOne();
 
-                UInt256 hash;
-                lock (_headerIndices)
+                while (!_disposed)
                 {
-                    if (_headerIndices.Count <= _currentBlockHeight + 1)
-                        continue;
-                    hash = _headerIndices[(int)_currentBlockHeight + 1];
-                }
-                Block block;
-                lock (_blockCache)
-                {
-                    if (!_blockCache.TryGetValue(hash, out block))
-                        continue;
-                }
-                Persist(block);
-                // calculate round
-
-                //
-                lock (_blockCache)
-                {
-                    _blockCache.Remove(hash);
+                    UInt256 hash;
+                    lock (_headerIndices)
+                    {
+                        if (_headerIndices.Count <= _currentBlockHeight + 1)
+                            break;
+                        hash = _headerIndices[_currentBlockHeight + 1];
+                    }
+                    Block block;
+                    lock (_blockCache)
+                    {
+                        if (!_blockCache.TryGetValue(hash, out block))
+                            break;
+                    }
+                    lock (PersistLock)
+                    {
+                        Persist(block);
+                        OnPersistCompleted(block);
+                    }
+                    lock (_blockCache)
+                    {
+                        _blockCache.Remove(hash);
+                    }
                 }
             }
         }

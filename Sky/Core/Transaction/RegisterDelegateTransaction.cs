@@ -1,24 +1,13 @@
-﻿using System.Collections.Generic;
-using System.IO;
+﻿using System.IO;
+using Newtonsoft.Json.Linq;
 
 namespace Sky.Core
 {
-    public class RegisterDelegateTransaction : Transaction
+    public class RegisterDelegateTransaction : TransactionBase
     {
-        public UInt160 Sender { get; private set; }
-        public byte[] NameBytes { get; private set; }
+        public byte[] Name;
 
-        public override int Size => base.Size + Sender.Size + NameBytes.GetSize();
-
-        public RegisterDelegateTransaction()
-        {
-        }
-        public RegisterDelegateTransaction(short version, eTransactionType type, int timestamp, List<TransactionInput> inputs, List<TransactionOutput> outputs, List<MakerSignature> signatures, UInt160 sender, byte[] name)
-            : base(version, type, timestamp, inputs, outputs, signatures)
-        {
-            Sender = sender;
-            NameBytes = name;
-        }
+        public override int Size => base.Size + Name.GetSize();
 
         public override void CalcFee()
         {
@@ -28,26 +17,37 @@ namespace Sky.Core
         public override void Deserialize(BinaryReader reader)
         {
             base.Deserialize(reader);
-            Sender = reader.ReadSerializable<UInt160>();
-            NameBytes = reader.ReadByteArray();
+            Name = reader.ReadByteArray();
         }
 
         public override void Serialize(BinaryWriter writer)
         {
             base.Serialize(writer);
-            writer.WriteSerializable(Sender);
-            writer.WriteByteArray(NameBytes);
+            writer.WriteByteArray(Name);
         }
+
 
         public override bool Verify()
         {
             if (!base.Verify())
                 return false;
-            if (Sender != References[0].AddressHash)
+            if (Name == null || Name.Length == 0)
                 return false;
-            if (NameBytes == null || NameBytes.Length == 0)
+            if (Config.DelegateNameMaxLength < Name.Length)
                 return false;
             return true;
+        }
+
+        public override bool VerifyBlockchain()
+        {
+            return base.VerifyBlockchain();
+        }
+
+        public override JObject ToJson()
+        {
+            JObject json = base.ToJson();
+            json["name"] = Name;
+            return json;
         }
     }
 }

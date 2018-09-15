@@ -1,41 +1,46 @@
-﻿using System;
+﻿using System.Collections.Generic;
 using System.IO;
-using System.Text;
+using Newtonsoft.Json.Linq;
 
 namespace Sky.Core
 {
-    public class VoteTransaction : Transaction
+    public class VoteTransaction : TransactionBase
     {
-        public UInt160 Sender { get; private set; }
-        public byte[] Delegate { get; private set; }
-        public override int Size => base.Size + Sender.Size + Delegate.GetSize();
+        public Dictionary<UInt160, Fixed8> Votes;
+        public override int Size => base.Size + Votes.GetSize();
 
-        public VoteTransaction()
-        {
-        }
         public override void Deserialize(BinaryReader reader)
         {
             base.Deserialize(reader);
-            Sender = reader.ReadSerializable<UInt160>();
-            Delegate = reader.ReadByteArray();
+            Votes = reader.ReadSerializableDictionary<UInt160, Fixed8>();
         }
 
         public override void Serialize(BinaryWriter writer)
         {
             base.Serialize(writer);
-            writer.WriteSerializable(Sender);
-            writer.WriteByteArray(Delegate);
+            writer.WriteSerializableDictonary(Votes);
         }
 
         public override bool Verify()
         {
-            if (!base.Verify())
+            if (Config.VoteMaxLength < Votes.Count)
                 return false;
-            if (Sender != References[0].AddressHash)
-                return false;
-            if (Delegate == null || Delegate.Length == 0)
-                return false;
-            return true;
+            return base.Verify();
+        }
+
+        public override bool VerifyBlockchain()
+        {
+            return base.VerifyBlockchain();
+        }
+
+        public override JObject ToJson()
+        {
+            JObject json = base.ToJson();
+            JArray votes = new JArray();
+            foreach (var v in Votes)
+                votes[v.Key] = v.Value.Value;
+            json["votes"] = votes;
+            return json;
         }
     }
 }

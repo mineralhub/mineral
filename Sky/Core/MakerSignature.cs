@@ -1,4 +1,6 @@
-﻿using System.IO;
+﻿using Newtonsoft.Json.Linq;
+using Sky.Cryptography;
+using System.IO;
 
 namespace Sky.Core
 {
@@ -7,7 +9,7 @@ namespace Sky.Core
         public byte[] Signature { get; private set; }
         public byte[] Pubkey { get; private set; }
 
-        public int Size => Signature.GetSize();
+        public int Size => Signature.GetSize() + Pubkey.GetSize();
 
         public MakerSignature()
         {
@@ -29,6 +31,14 @@ namespace Sky.Core
         {
             writer.WriteByteArray(Signature);
             writer.WriteByteArray(Pubkey);
+        }
+
+        public JObject ToJson()
+        {
+            JObject json = new JObject();
+            json["signature"] = Signature;
+            json["pubkey"] = Pubkey;
+            return json;
         }
     }
 }

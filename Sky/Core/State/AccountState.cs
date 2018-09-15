@@ -1,5 +1,6 @@
-﻿using Sky.Cryptography;
+﻿using Newtonsoft.Json.Linq;
 using System.IO;
+using System.Collections.Generic;
 
 namespace Sky.Core
 {
@@ -8,17 +9,22 @@ namespace Sky.Core
         public UInt160 AddressHash { get; private set; }
         public bool IsFrozen { get; private set; }
         public Fixed8 Balance { get; private set; }
-        public byte[] Vote { get; private set; }
+        public Fixed8 LockBalance { get; private set; }
+        public Dictionary<UInt160, Fixed8> Votes { get; private set; }
 
         public override int Size => base.Size + AddressHash.Size + sizeof(bool) + Balance.Size;
 
-        public AccountState() { }
+        public AccountState()
+        {
+            Votes = new Dictionary<UInt160, Fixed8>();
+        }
         public AccountState(UInt160 hash)
         {
             AddressHash = hash;
             IsFrozen = false;
             Balance = Fixed8.Zero;
-            Vote = null;
+            LockBalance = Fixed8.Zero;
+            Votes = new Dictionary<UInt160, Fixed8>();
         }
 
         public override void Deserialize(BinaryReader reader)
@@ -27,7 +33,8 @@ namespace Sky.Core
             AddressHash = reader.ReadSerializable<UInt160>();
             IsFrozen = reader.ReadBoolean();
             Balance = reader.ReadSerializable<Fixed8>();
-            Vote = reader.ReadByteArray();
+            LockBalance = reader.ReadSerializable<Fixed8>();
+            Votes = reader.ReadSerializableDictionary<UInt160, Fixed8>();
         }
 
         public override void Serialize(BinaryWriter writer)
@@ -36,7 +43,8 @@ namespace Sky.Core
             writer.WriteSerializable(AddressHash);
             writer.Write(IsFrozen);
             writer.WriteSerializable(Balance);
-            writer.WriteByteArray(Vote);
+            writer.WriteSerializable(LockBalance);
+            writer.WriteSerializableDictonary(Votes);
         }
 
         public void AddBalance(Fixed8 value)
@@ -44,9 +52,23 @@ namespace Sky.Core
             Balance += value;
         }
 
-        public void SetVote(byte[] vote)
+        public void SetVote(Dictionary<UInt160, Fixed8> vote)
         {
-            Vote = vote;
+            Votes = vote;
+        }
+
+        public JObject ToJson()
+        {
+            JObject json = new JObject();
+            json["address"] = Wallets.WalletAccount.ToAddress(AddressHash);
+            json["frozen"] = IsFrozen;
+            json["balance"] = Balance.ToString();
+            json["lockbalance"] = LockBalance.ToString();
+            JObject votes = new JObject();
+            foreach (var v in Votes)
+                json[Wallets.WalletAccount.ToAddress(v.Key)] = v.Value.ToString();
+            json["votes"] = votes;
+            return json;
         }
     }
 }
