@@ -132,12 +132,12 @@ namespace Sky.Core
 
         public void Sign(ECKey key)
         {
-            Signature = new MakerSignature(Cryptography.Helper.Sign(Hash.Data, key), key.PublicKey.ToByteArray());
+            Signature = new MakerSignature(Cryptography.Helper.Sign(ToUnsignedArray(), key), key.PublicKey.ToByteArray());
         }
 
         public bool VerifySignature()
         {
-            return Cryptography.Helper.VerifySignature(Signature, Hash.Data);
+            return Cryptography.Helper.VerifySignature(Signature, ToUnsignedArray());
         }
 
         public bool Verify()
@@ -149,6 +149,8 @@ namespace Sky.Core
 
         public bool VerifyBlockchain()
         {
+            if (Blockchain.Instance.GetTransaction(Hash) != null)
+                return false;
             return Data.VerifyBlockchain();
         }
 
