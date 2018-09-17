@@ -29,7 +29,7 @@ namespace Sky.Core.DPos
             if (remain < 0)
                 return null;
 
-            return _table[(UpdateHeight - height) % Count];
+            return _table[(height - UpdateHeight) % Count];
         }
     }
 
