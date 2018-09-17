@@ -66,7 +66,7 @@ namespace Tester
                     // create
                     //System.Diagnostics.Stopwatch sw = new System.Diagnostics.Stopwatch();
                     //sw.Start();
-                    CreateAndAddBlocks(1);
+                    CreateAndAddBlocks(1, true);
                     //sw.Stop();
                     //Logger.Log("AddBlock Elapsed=" + sw.Elapsed);
                 }
@@ -75,7 +75,7 @@ namespace Tester
             }
         }
 
-        void CreateAndAddBlocks(int cnt)
+        void CreateAndAddBlocks(int cnt, bool directly)
         {
             List<Block> blocks = new List<Block>();
             int height = Blockchain.Instance.CurrentHeaderHeight;
@@ -94,8 +94,17 @@ namespace Tester
                 blocks.Add(block);
                 prevhash = block.Hash;
             }
-            foreach (Block block in blocks)
-                Blockchain.Instance.AddBlock(block);
+            if (directly)
+            {
+                foreach (Block block in blocks)
+                    Blockchain.Instance.AddBlock(block);
+            }
+            else
+            {
+                foreach (Block block in blocks)
+                    Blockchain.Instance.AddBlockDirectly(block);
+            }
+
         }
 
         void Initialize()
