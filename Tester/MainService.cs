@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Text;
-using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Collections.Generic;
@@ -59,7 +58,7 @@ namespace Tester
                         break;
                     // my turn?
                     if (_account.AddressHash != _dpos.TurnTable.GetTurn(Blockchain.Instance.CurrentBlockHeight))
-                        continue;
+                        break;
                     // create time?
                     var time = _dpos.CalcBlockTime(_genesisBlock.Header.Timestamp, Blockchain.Instance.CurrentBlockHeight + 1);
                     if (DateTime.UtcNow.ToTimestamp() < time)
