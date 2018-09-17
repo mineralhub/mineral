@@ -163,8 +163,11 @@ namespace Sky.Database.LevelDB
                 {
                     case TransferTransaction transTx:
                         {
-                            if (accounts.Contains(transTx.To) && !changed.Contains(transTx.To))
-                                changed.Add(transTx.To);
+                            foreach (UInt160 to in transTx.To.Keys)
+                            {
+                                if (accounts.Contains(to) && !changed.Contains(to))
+                                    changed.Add(to);
+                            }
                         }
                         break;
                     case VoteTransaction voteTx:
@@ -178,8 +181,11 @@ namespace Sky.Database.LevelDB
                         break;
                     case OtherSignTransaction osignTx:
                         {
-                            if (accounts.Contains(osignTx.To) && !changed.Contains(osignTx.To))
-                                changed.Add(osignTx.To);
+                            foreach (UInt160 to in osignTx.To.Keys)
+                            {
+                                if (accounts.Contains(to) && !changed.Contains(to))
+                                    changed.Add(to);                                
+                            }
                         }
                         break;
                     case SignTransaction signTx:
@@ -187,8 +193,11 @@ namespace Sky.Database.LevelDB
                             OtherSignTransaction osignTx = Blockchain.Instance.GetTransaction(signTx.SignTxHash).Data as OtherSignTransaction;
                             if (accounts.Contains(osignTx.From) && !changed.Contains(osignTx.From))
                                 changed.Add(osignTx.From);
-                            if (accounts.Contains(osignTx.To) && !changed.Contains(osignTx.To))
-                                changed.Add(osignTx.To);
+                            foreach (UInt160 to in osignTx.To.Keys)
+                            {
+                                if (accounts.Contains(to) && !changed.Contains(to))
+                                    changed.Add(to);
+                            }
                         }
                         break;
                 }

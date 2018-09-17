@@ -315,20 +315,21 @@ namespace Sky.Database.LevelDB
 
             foreach (Transaction tx in block.Transactions)
             {
-                batch.Put(SliceBuilder.Begin(DataEntryPrefix.DATA_Transaction).Add(tx.Hash), SliceBuilder.Begin().Add(block.Header.Height).Add(tx.ToArray()));
-
-                AccountState from = accounts.GetAndChange(tx.From);
-                if (Fixed8.Zero < tx.Fee)
-                    from.AddBalance(-tx.Fee);
-                
-                if (block != GenesisBlock && !tx.Verify())
+                if (block != GenesisBlock && !tx.VerifyBlockchain())
                 {
+                    if (Fixed8.Zero < tx.Fee)
+                        accounts.GetAndChange(tx.From).AddBalance(-tx.Fee);
 #if DEBUG
                     throw new Exception("verified == false transaction. " + tx.ToJson());
 #else
                     continue;
 #endif
                 }
+                batch.Put(SliceBuilder.Begin(DataEntryPrefix.DATA_Transaction).Add(tx.Hash), SliceBuilder.Begin().Add(block.Header.Height).Add(tx.ToArray()));
+
+                AccountState from = accounts.GetAndChange(tx.From);
+                if (Fixed8.Zero < tx.Fee)
+                    from.AddBalance(-tx.Fee);
                 
                 switch (tx.Data)
                 {
@@ -339,8 +340,10 @@ namespace Sky.Database.LevelDB
                         break;
                     case TransferTransaction transTx:
                         {
-                            from.AddBalance(-transTx.Amount);
-                            accounts.GetAndChange(transTx.To).AddBalance(transTx.Amount);
+                            Fixed8 totalAmount = transTx.To.Sum(p => p.Value);
+                            from.AddBalance(-totalAmount);
+                            foreach (var i in transTx.To)
+                                accounts.GetAndChange(i.Key).AddBalance(i.Value);
                         }
                         break;
                     case VoteTransaction voteTx:
@@ -356,8 +359,9 @@ namespace Sky.Database.LevelDB
                         break;
                     case OtherSignTransaction osignTx:
                         {
-                            from.AddBalance(-osignTx.Amount);
-                            blockTriggers.GetAndChange(osignTx.ValidBlockHeight).TransactionHashes.Add(osignTx.Owner.Hash);
+                            Fixed8 totalAmount = osignTx.To.Sum(p => p.Value);
+                            from.AddBalance(-totalAmount);
+                            blockTriggers.GetAndChange(osignTx.ExpirationBlockHeight).TransactionHashes.Add(osignTx.Owner.Hash);
                             otherSignTxs.Add(osignTx.Owner.Hash, osignTx.Others);
                         }
                         break;
@@ -367,8 +371,9 @@ namespace Sky.Database.LevelDB
                             if (osignState != null && osignState.Sign(signTx.Owner.Signature) && osignState.RemainSign.Count == 0)
                             {
                                 OtherSignTransaction osignTx = GetTransaction(osignState.TxHash).Data as OtherSignTransaction;
-                                accounts.GetAndChange(osignTx.To).AddBalance(osignTx.Amount);
-                                BlockTriggerState state = blockTriggers.GetAndChange(signTx.Reference.ValidBlockHeight);
+                                foreach (var i in osignTx.To)
+                                    accounts.GetAndChange(i.Key).AddBalance(i.Value);
+                                BlockTriggerState state = blockTriggers.GetAndChange(signTx.Reference.ExpirationBlockHeight);
                                 state.TransactionHashes.Remove(signTx.SignTxHash);
                             }
                         }
@@ -386,7 +391,7 @@ namespace Sky.Database.LevelDB
                     {
                         case OtherSignTransaction osignTx:
                             {
-                                accounts.GetAndChange(osignTx.From).AddBalance(osignTx.Amount);
+                                accounts.GetAndChange(osignTx.From).AddBalance(osignTx.To.Sum(p => p.Value));
                             }
                             break;
                     }

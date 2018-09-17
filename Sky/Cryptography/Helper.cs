@@ -66,7 +66,7 @@ namespace Sky.Cryptography
             {
                 try
                 {
-                    value.SerializeUnsigned(bw);
+                    value.Serialize(bw);
                     bw.Flush();
                     return new UInt256(ms.ToArray().DoubleSHA256());
                 }

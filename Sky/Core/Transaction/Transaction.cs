@@ -29,8 +29,6 @@ namespace Sky.Core
             }
         }
 
-        public bool Verified;
-
         public Transaction(eTransactionType type, int timestamp)
         {
             Version = Config.TransactionVersion;
@@ -134,18 +132,26 @@ namespace Sky.Core
 
         public void Sign(ECKey key)
         {
-            Signature = new MakerSignature(Cryptography.Helper.Sign(Hash.Data, key), key.PublicKey.ToByteArray());
+            Signature = new MakerSignature(Cryptography.Helper.Sign(ToUnsignedArray(), key), key.PublicKey.ToByteArray());
         }
 
         public bool VerifySignature()
         {
-            return Cryptography.Helper.VerifySignature(Signature, Hash.Data);
+            return Cryptography.Helper.VerifySignature(Signature, ToUnsignedArray());
         }
 
         public bool Verify()
         {
-            Verified = Data.Verify();
-            return Verified;
+            if (VerifySignature() == false)
+                return false;
+            return Data.Verify();
+        }
+
+        public bool VerifyBlockchain()
+        {
+            if (Blockchain.Instance.GetTransaction(Hash) != null)
+                return false;
+            return Data.VerifyBlockchain();
         }
 
         public JObject ToJson()
@@ -157,7 +163,6 @@ namespace Sky.Core
             json["data"] = Data.ToJson();
             json["signature"] = Signature.ToJson();
             json["hash"] = Hash.ToString();
-            json["verified"] = Verified;
             return json;
         }
     }

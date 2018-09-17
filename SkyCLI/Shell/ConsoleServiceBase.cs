@@ -5,7 +5,7 @@ using System.Text;
 
 namespace SkyCLI.Shell
 {
-    public class ConsoleServiceBase
+    public class ConsoleServiceBase : IDisposable
     {
         public const string prompt = ">";
         public bool IsRunning { get; set; } = true;
@@ -63,6 +63,11 @@ namespace SkyCLI.Shell
         {
             Console.WriteLine("Help command");
             return true;
+        }
+
+        public void Dispose()
+        {
+            IsRunning = false;
         }
     }
 }

@@ -35,6 +35,11 @@ namespace Sky.Core
             return true;
         }
 
+        public override bool VerifyBlockchain()
+        {
+            return base.VerifyBlockchain();
+        }
+
         public override JObject ToJson()
         {
             JObject json = base.ToJson();

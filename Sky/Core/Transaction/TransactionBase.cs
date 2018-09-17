@@ -1,5 +1,4 @@
-﻿using System;
-using System.IO;
+﻿using System.IO;
 using Newtonsoft.Json.Linq;
 
 namespace Sky.Core
@@ -33,6 +32,11 @@ namespace Sky.Core
         {
             if (From == null)
                 return false;
+            return true;
+        }
+
+        public virtual bool VerifyBlockchain()
+        {
             if (FromAccountState == null)
                 return false;
             if (FromAccountState.Balance - Fee < Fixed8.Zero)

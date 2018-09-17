@@ -2,45 +2,16 @@
 using System.IO;
 using System.Linq;
 using Newtonsoft.Json.Linq;
+using Sky;
+using Sky.Wallets;
 
 namespace SkyCLI
 {
-    public class NetworkConfig
-    {
-        public string ListenAddress;
-        public ushort TcpPort;
-        public ushort WsPort;
-        public ushort RpcPort;
-        public string[] SeedList;
-    }
-
-    public class Config
-    {
-        public const string config_file = @"./config.json";
-        public static NetworkConfig Network;
-        public static bool Initialzie()
-        {
-            if (!File.Exists(config_file))
-            {
-                Console.WriteLine(@"Not found 'config.json' file.");
-                return false;
-            }
-            JObject jobj = JObject.Parse(File.ReadAllText("./config.json"));
-
-            JToken net = jobj["network"];
-            Network = new NetworkConfig();
-            Network.ListenAddress = net["listen_address"].Value<string>();
-            Network.TcpPort = net["tcp_port"].Value<ushort>();
-            Network.WsPort = net["ws_port"].Value<ushort>();
-            Network.RpcPort = net["rpc_port"].Value<ushort>();
-            Network.SeedList = net["seed_list"].Values<string>().ToArray();
-
-            return true;
-        }
-    }
-
     class Program
     {
+        internal static string url;
+        internal static WalletAccount Wallet;
+
         static void Main(string[] args)
         {
             Initialize(args);
@@ -50,7 +21,8 @@ namespace SkyCLI
 
         private static void Initialize(string[] args)
         {
-            Config.Initialzie();
+            Config.Initialize();
+            url = @"http:\\" + Config.Network.ListenAddress + ":" + Config.Network.RpcPort;
         }
     }
 }

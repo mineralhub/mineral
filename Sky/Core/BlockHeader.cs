@@ -1,6 +1,7 @@
 ﻿using System.IO;
 using Sky.Cryptography;
 using Newtonsoft.Json.Linq;
+using System.Text;
 
 namespace Sky.Core
 {
@@ -40,6 +41,17 @@ namespace Sky.Core
             }
         }
 
+        public byte[] ToUnsignedArray()
+        {
+            using (MemoryStream ms = new MemoryStream())
+            using (BinaryWriter writer = new BinaryWriter(ms, Encoding.UTF8))
+            {
+                SerializeUnsigned(writer);
+                writer.Flush();
+                return ms.ToArray();
+            }
+        }
+
         public void DeserializeUnsigned(BinaryReader reader)
         {
             PrevHash = reader.ReadSerializable<UInt256>();
@@ -72,12 +84,12 @@ namespace Sky.Core
 
         public void Sign(ECKey key)
         {
-            Signature = new MakerSignature(Cryptography.Helper.Sign(Hash.Data, key), key.PublicKey.ToByteArray());
+            Signature = new MakerSignature(Cryptography.Helper.Sign(ToUnsignedArray(), key), key.PublicKey.ToByteArray());
         }
 
         public bool VerifySignature()
         {
-            return Cryptography.Helper.VerifySignature(Signature, Hash.Data);
+            return Cryptography.Helper.VerifySignature(Signature, ToUnsignedArray());
         }
 
         public bool Verify()
