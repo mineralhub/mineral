@@ -34,7 +34,7 @@ namespace Sky.UnitTests
         [TestMethod]
         public void Sign()
         {
-            _block.Header.VerifySignature().Should().Be(true);
+            _block.Header.VerifySignature().Should().BeTrue();
         }
 
         [TestMethod]
