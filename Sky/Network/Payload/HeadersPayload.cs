@@ -1,12 +1,10 @@
 ﻿using Sky.Core;
-using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Text;
 
 namespace Sky.Network.Payload
 {
-	internal class HeadersPayload : ISerializable
+    internal class HeadersPayload : ISerializable
 	{
 		public const int MaxCount = 2000;
 		public List<BlockHeader> Headers;
