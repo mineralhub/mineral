@@ -58,7 +58,7 @@ namespace Tester
                     if (!_account.IsDelegate())
                         break;
                     // my turn?
-                    if (_dpos.TurnTable.GetTurn(Blockchain.Instance.CurrentBlockHeight + 1) != _account.AddressHash)
+                    if (_account.AddressHash != _dpos.TurnTable.GetTurn(Blockchain.Instance.CurrentBlockHeight + 1))
                         break;
                     // create time?
                     var time = _dpos.CalcBlockTime(_genesisBlock.Header.Timestamp, Blockchain.Instance.CurrentBlockHeight + 1);

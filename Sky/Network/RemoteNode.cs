@@ -136,10 +136,39 @@ namespace Sky.Network
                 headers.Add(header);
             }
             while (hash != null && hash != payload.HashStop && headers.Count < HeadersPayload.MaxCount);
-            EnqueueMessage(Message.CommandName.ResponseAddrs, HeadersPayload.Create(new List<BlockHeader>(headers)));
+            EnqueueMessage(Message.CommandName.ResponseHeaders, HeadersPayload.Create(headers));
         }
 
-        private void OnMessageReceived(Message message)
+		private void ReceivedRequestBlocks(GetBlocksPayload payload)
+		{
+			if (!_localNode.IsServiceEnable)
+				return;
+
+			List<Block> blocks = new List<Block>();
+			UInt256 hash = payload.HashStart;
+			do
+			{
+				Block block  = Blockchain.Instance.GetBlock(hash);
+				if (block == null)
+					break;
+				blocks.Add(block);
+			}
+			while (hash != null && hash != payload.HashStop && blocks.Count < BlocksPayload.MaxCount);
+			EnqueueMessage(Message.CommandName.ResponseBlocks, BlocksPayload.Create(blocks));
+		}
+
+		private void ReceivedResponseBlocks(BlocksPayload payload)
+		{
+			if (!_localNode.IsServiceEnable)
+				return;
+
+			foreach(Block block in payload.Blocks)
+			{
+				Blockchain.Instance.AddBlock(block);
+			}
+		}
+
+		private void OnMessageReceived(Message message)
         {
             switch (message.Command)
             {
@@ -157,9 +186,13 @@ namespace Sky.Network
                     ReceivedRequestHeaders(message.Payload.Serializable<GetBlocksPayload>());
                     break;
                 case Message.CommandName.RequestBlocks:
-                    break;
+					ReceivedRequestBlocks(message.Payload.Serializable<GetBlocksPayload>());
+					break;
                 case Message.CommandName.ResponseHeaders:
-                    break;
+					break;
+				case Message.CommandName.ResponseBlocks:
+					ReceivedResponseBlocks(message.Payload.Serializable<BlocksPayload>());
+					break;
                 case Message.CommandName.Alert:
                     break;
             }
@@ -267,8 +300,8 @@ namespace Sky.Network
                 return;
             }
 
-            if (Blockchain.Instance.CurrentHeaderHeight < Version.Height)
-                EnqueueMessage(Message.CommandName.RequestHeaders, GetBlocksPayload.Create(Blockchain.Instance.CurrentHeaderHash));
+//            if (Blockchain.Instance.CurrentHeaderHeight < Version.Height)
+//                EnqueueMessage(Message.CommandName.RequestHeaders, GetBlocksPayload.Create(Blockchain.Instance.CurrentHeaderHash));
 
             NetworkSendProcessAsyncLoop();
             while (IsConnected)

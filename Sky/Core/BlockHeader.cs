@@ -24,7 +24,7 @@ namespace Sky.Core
                 return _hash;
             }
         }
-        public int Size => PrevHash.Size + MerkleRoot.Size + sizeof(int) + sizeof(int) + sizeof(int);
+        public int Size => PrevHash.Size + MerkleRoot.Size + sizeof(int) + sizeof(int) + sizeof(int) + Signature.Size;
 
         public BlockHeader()
         {

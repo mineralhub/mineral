@@ -8,9 +8,4 @@
   <ItemGroup>
     <ProjectReference Include="..\Sky\Sky.csproj" />
   </ItemGroup>
-
-  <ItemGroup>
-    <Folder Include="database\" />
-    <Folder Include="setting\" />
-  </ItemGroup>
 </Project>
