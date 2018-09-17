@@ -134,6 +134,7 @@ namespace Sky.Network
                 if (header == null)
                     break;
                 headers.Add(header);
+                hash = header.Hash;
             }
             while (hash != null && hash != payload.HashStop && headers.Count < HeadersPayload.MaxCount);
             EnqueueMessage(Message.CommandName.ResponseHeaders, HeadersPayload.Create(headers));
@@ -148,10 +149,11 @@ namespace Sky.Network
 			UInt256 hash = payload.HashStart;
 			do
 			{
-				Block block  = Blockchain.Instance.GetBlock(hash);
+				Block block = Blockchain.Instance.GetNextBlock(hash);
 				if (block == null)
 					break;
 				blocks.Add(block);
+                hash = block.Hash;
 			}
 			while (hash != null && hash != payload.HashStop && blocks.Count < BlocksPayload.MaxCount);
 			EnqueueMessage(Message.CommandName.ResponseBlocks, BlocksPayload.Create(blocks));

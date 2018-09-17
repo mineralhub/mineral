@@ -33,6 +33,7 @@ namespace Sky.Core
         public abstract bool ContainsBlock(UInt256 hash);
         public abstract Block GetBlock(UInt256 hash);
         public abstract Block GetBlock(int height);
+        public abstract Block GetNextBlock(UInt256 hash);
 
         public Transaction GetTransaction(UInt256 hash)
         {
