@@ -11,19 +11,21 @@ namespace Sky.Network.Payload
         public uint Nonce;
         public int Height;
         public bool Relay;
+		public Guid NodeID;
 
-        public int Size => sizeof(int) + sizeof(int) + sizeof(ushort) + sizeof(uint) + sizeof(int) + sizeof(bool);
+        public int Size => sizeof(int) + sizeof(int) + sizeof(ushort) + sizeof(uint) + sizeof(int) + sizeof(bool) + 16/*Guid bytes*/;
 
-        public static VersionPayload Create(int port)
+        public static VersionPayload Create(int port, Guid _guid)
         {
-            return new VersionPayload
-            {
-                Version = Config.ProtocolVersion,
-                Timestamp = DateTime.Now.ToTimestamp(),
-                Port = (ushort)port,
-                Nonce = Config.Nonce,
-                Height = Core.Blockchain.Instance.CurrentBlockHeight,
-                Relay = true
+			return new VersionPayload
+			{
+				Version = Config.ProtocolVersion,
+				Timestamp = DateTime.Now.ToTimestamp(),
+				Port = (ushort)port,
+				Nonce = Config.Nonce,
+				Height = Core.Blockchain.Instance.CurrentBlockHeight,
+				Relay = true,
+				NodeID = _guid
             };
         }
 
@@ -37,6 +39,7 @@ namespace Sky.Network.Payload
                 Nonce = reader.ReadUInt32();
                 Height = reader.ReadInt32();
                 Relay = reader.ReadBoolean();
+				NodeID = new Guid(reader.ReadBytes(16));
             }
             catch (Exception e)
             {
@@ -52,6 +55,7 @@ namespace Sky.Network.Payload
             writer.Write(Nonce);
             writer.Write(Height);
             writer.Write(Relay);
+			writer.Write(NodeID.ToByteArray());
         }
     }
 }

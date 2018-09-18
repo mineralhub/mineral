@@ -9,8 +9,8 @@ namespace SkyCLI
 {
     class Program
     {
-        internal static string url;
-        internal static WalletAccount Wallet;
+        internal static string url = null;
+        internal static WalletAccount Wallet = null;
 
         static void Main(string[] args)
         {

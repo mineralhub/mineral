@@ -9,6 +9,7 @@ using Sky.Core;
 using Sky.Wallets;
 using Sky.Core.DPos;
 using Sky.Network;
+using Sky.Network.Payload;
 using Sky.Network.RPC;
 
 namespace Tester
@@ -96,16 +97,16 @@ namespace Tester
             }
             if (directly)
             {
-                foreach (Block block in blocks)
-                    Blockchain.Instance.AddBlock(block);
-            }
-            else
+				foreach (Block block in blocks)
+					Blockchain.Instance.AddBlockDirectly(block);
+				_node.BroadCast(Message.CommandName.BroadcastBlocks, BroadcastBlockPayload.Create(blocks));
+			}
+			else
             {
-                foreach (Block block in blocks)
-                    Blockchain.Instance.AddBlockDirectly(block);
-            }
-
-        }
+				foreach (Block block in blocks)
+					Blockchain.Instance.AddBlock(block);
+			}
+		}
 
         void Initialize()
         {
