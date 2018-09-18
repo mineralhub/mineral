@@ -8,7 +8,7 @@ namespace Sky.Network.RPC.Command
 {
     public partial class ProcessCommand
     {
-        public static JObject OnGetBlock(JArray parameters)
+        public static JObject OnGetBlock(object obj, JArray parameters)
         {
             Block block = null;
             if (parameters[0].Type == JTokenType.Integer)
@@ -22,7 +22,20 @@ namespace Sky.Network.RPC.Command
             return json;
         }
 
-        public static JObject OnGetHeight(JArray parameters)
+        public static JObject OnGetBlockHash(object obj, JArray parameters)
+        {
+            JObject json = new JObject();
+            int height = -1;
+            if (int.TryParse(parameters[0].ToString(), out height))
+            {
+                Block block = Blockchain.Instance.GetBlock(height);
+                json["hash"] = block.Hash.ToString();
+            }
+
+            return json;
+        }
+
+        public static JObject OnGetHeight(object obj, JArray parameters)
         {
             JObject json = new JObject();
             json["blockheight"] = Blockchain.Instance.CurrentBlockHeight;
@@ -30,11 +43,17 @@ namespace Sky.Network.RPC.Command
             return json;
         }
 
-        public static JObject OnGetCurrentBlockHash(JArray parameters)
+        public static JObject OnGetCurrentBlockHash(object obj, JArray parameters)
         {
             JObject json = new JObject();
             json["hash"] = Blockchain.Instance.CurrentBlockHash.ToString();
             return json;
+        }
+
+        public static JObject OnGetTransaction(object obj, JArray parameters)
+        {
+            Transaction tx = Blockchain.Instance.GetTransaction(UInt256.FromHexString(parameters[0].Value<string>()));
+            return tx.ToJson();
         }
     }
 }

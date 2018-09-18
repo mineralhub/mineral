@@ -18,14 +18,29 @@ namespace SkyCLI.Commands
                 return true;
             }
 
-            JArray param = new JArray();
-            param.Add(parameters[1]);
+            JArray param = new JArray(new ArraySegment<string>(parameters, 1, parameters.Length - 1));
 
             JObject obj = MakeCommand(Config.BlockVersion, RpcCommands.Block.GetBlock, param);
             obj = RcpClient.RequestPostAnsyc(Program.url, obj.ToString()).Result;
 
             TestOutput(obj);
+            return true;
+        }
 
+        public static bool OnGetBlockHash(string[] parameters)
+        {
+            if (parameters.Length != 2)
+            {
+                ErrorParamMessage();
+                return true;
+            }
+
+            JArray param = new JArray(new ArraySegment<string>(parameters, 1, parameters.Length - 1));
+
+            JObject obj = MakeCommand(Config.BlockVersion, RpcCommands.Block.GetBlockHash, param);
+            obj = RcpClient.RequestPostAnsyc(Program.url, obj.ToString()).Result;
+
+            TestOutput(obj);
             return true;
         }
 
@@ -35,7 +50,6 @@ namespace SkyCLI.Commands
             obj = RcpClient.RequestPostAnsyc(Program.url, obj.ToString()).Result;
 
             TestOutput(obj);
-
             return true;
         }
 
@@ -45,7 +59,15 @@ namespace SkyCLI.Commands
             obj = RcpClient.RequestPostAnsyc(Program.url, obj.ToString()).Result;
 
             TestOutput(obj);
+            return true;
+        }
 
+        public static bool OnGetTransaction(string[] parameters)
+        {
+            JObject obj = MakeCommand(Config.BlockVersion, RpcCommands.Block.GetCurrentBlockHash, new JArray());
+            obj = RcpClient.RequestPostAnsyc(Program.url, obj.ToString()).Result;
+
+            TestOutput(obj);
             return true;
         }
     }
