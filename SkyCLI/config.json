@@ -40,10 +40,14 @@
       }
     ],
     "delegate": [
-      {
-        "name": "one",
-        "address": "12AKRNHpFhDSBDD9rSn74VAzZSL3774PxQ"
-      }
+        {
+            "name": "one",
+            "address": "12AKRNHpFhDSBDD9rSn74VAzZSL3774PxQ"
+        },
+        {
+            "name": "two",
+            "address": "19mqdnsraLrBSHTupx9HcnmJrCryM5Jpjy"
+        }
     ],
     "timestamp": 1532051710
   }

@@ -25,24 +25,26 @@ namespace Sky.Network.RPC
         protected Dictionary<string, ProcessCommand.ProcessHandler> processHandler = new Dictionary<string, ProcessCommand.ProcessHandler>()
         {
             // Block
-            { RpcCommands.Block.GetBlock, new ProcessCommand.ProcessHandler(ProcessCommand.OnGetBlock) }
-            , { RpcCommands.Block.GetHeight, new ProcessCommand.ProcessHandler(ProcessCommand.OnGetHeight) }
-            , { RpcCommands.Block.GetCurrentBlockHash, new ProcessCommand.ProcessHandler(ProcessCommand.OnGetCurrentBlockHash) }
+            { RpcCommands.Block.GetBlock, new ProcessCommand.ProcessHandler(ProcessCommand.OnGetBlock) },
+            { RpcCommands.Block.GetBlockHash, new ProcessCommand.ProcessHandler(ProcessCommand.OnGetBlockHash) },
+            { RpcCommands.Block.GetHeight, new ProcessCommand.ProcessHandler(ProcessCommand.OnGetHeight) },
+            { RpcCommands.Block.GetCurrentBlockHash, new ProcessCommand.ProcessHandler(ProcessCommand.OnGetCurrentBlockHash) },
+            { RpcCommands.Block.GetTransaction, new ProcessCommand.ProcessHandler(ProcessCommand.OnGetTransaction) },
 
             // Node
-            , { RpcCommands.Node.NodeList, new ProcessCommand.ProcessHandler(ProcessCommand.OnNodeList) }
+            { RpcCommands.Node.NodeList, new ProcessCommand.ProcessHandler(ProcessCommand.OnNodeList) },
 
             // Wallet
-            , { RpcCommands.Wallet.CreateAccount, new ProcessCommand.ProcessHandler(ProcessCommand.OnCreateAccount) }
-            , { RpcCommands.Wallet.OpenAccount, new ProcessCommand.ProcessHandler(ProcessCommand.OnOpenAccount) }
-            , { RpcCommands.Wallet.CloseAccount, new ProcessCommand.ProcessHandler(ProcessCommand.OnCloseAccount) }
-            , { RpcCommands.Wallet.GetAccount, new ProcessCommand.ProcessHandler(ProcessCommand.OnGetAccount) }
-            , { RpcCommands.Wallet.GetAddress, new ProcessCommand.ProcessHandler(ProcessCommand.OnGetAddress) }
-            , { RpcCommands.Wallet.GetBalance, new ProcessCommand.ProcessHandler(ProcessCommand.OnGetBalance) }
-            , { RpcCommands.Wallet.SendTo, new ProcessCommand.ProcessHandler(ProcessCommand.OnSendTo) }
-            , { RpcCommands.Wallet.FreezeBalance, new ProcessCommand.ProcessHandler(ProcessCommand.OnFreezeBalance) }
-            , { RpcCommands.Wallet.UnfreezeBalance, new ProcessCommand.ProcessHandler(ProcessCommand.OnUnfreezeBalance) }
-            , { RpcCommands.Wallet.VoteWitness, new ProcessCommand.ProcessHandler(ProcessCommand.OnVoteWitness) }
+            { RpcCommands.Wallet.CreateAccount, new ProcessCommand.ProcessHandler(ProcessCommand.OnCreateAccount) },
+            { RpcCommands.Wallet.OpenAccount, new ProcessCommand.ProcessHandler(ProcessCommand.OnOpenAccount) },
+            { RpcCommands.Wallet.CloseAccount, new ProcessCommand.ProcessHandler(ProcessCommand.OnCloseAccount) },
+            { RpcCommands.Wallet.GetAccount, new ProcessCommand.ProcessHandler(ProcessCommand.OnGetAccount) },
+            { RpcCommands.Wallet.GetAddress, new ProcessCommand.ProcessHandler(ProcessCommand.OnGetAddress) },
+            { RpcCommands.Wallet.GetBalance, new ProcessCommand.ProcessHandler(ProcessCommand.OnGetBalance) },
+            { RpcCommands.Wallet.SendTo, new ProcessCommand.ProcessHandler(ProcessCommand.OnSendTo) },
+            { RpcCommands.Wallet.FreezeBalance, new ProcessCommand.ProcessHandler(ProcessCommand.OnFreezeBalance) },
+            { RpcCommands.Wallet.UnfreezeBalance, new ProcessCommand.ProcessHandler(ProcessCommand.OnUnfreezeBalance) },
+            { RpcCommands.Wallet.VoteWitness, new ProcessCommand.ProcessHandler(ProcessCommand.OnVoteWitness) },
         };
 
         public RpcServer(LocalNode localNode)
@@ -81,45 +83,19 @@ namespace Sky.Network.RPC
         protected virtual JObject Process(JToken id, string method, JArray parameters)
         {
             return processHandler.ContainsKey(method) 
-                ? processHandler[method](parameters) : CreateErrorResponse(id, -1, string.Format("Not found method({0}", method));
-/*
-            switch (method)
-            {
-                case "getheight":
-                    {
-                        JObject json = new JObject();
-                        json["blockheight"] = Blockchain.Instance.CurrentBlockHeight;
-                        json["headerheight"] = Blockchain.Instance.CurrentHeaderHeight;
-                        return json;
-                    }
-                case "getcurrentblockhash":
-                    {
-                        JObject json = new JObject();
-                        json["hash"] = Blockchain.Instance.CurrentBlockHash.ToString();
-                        return json;
-                    }
-                case "getblock":
-                    {
-                        Block block = null;
-                        if (parameters[0].Type == JTokenType.Integer)
-                            block = Blockchain.Instance.GetBlock(parameters[0].Value<int>());
-                        else
-                            block = Blockchain.Instance.GetBlock(UInt256.FromHexString(parameters[0].Value<string>()));
-                        BlockHeader nextHeader = Blockchain.Instance.GetNextHeader(block.Hash);
-                        JObject json = block.ToJson();
-                        json["nextblockhash"] = nextHeader.Hash.ToString();
-                        return json;
-                    }
-                case "account":
-                    {
-                        string address = parameters[0].Value<string>();
-                        UInt160 addressHash = Wallets.WalletAccount.ToAddressHash(address);
-                        AccountState state = Blockchain.Instance.GetAccountState(addressHash);
-                        return state.ToJson();
-                    }
-            }
-            return null;
-*/
+                ? processHandler[method](_localNode, parameters) : CreateErrorResponse(id, -1, string.Format("Not found method : {0}", method));
+
+            //switch (method)
+            //{
+            //    case "account":
+            //        {
+            //            string address = parameters[0].Value<string>();
+            //            UInt160 addressHash = Wallets.WalletAccount.ToAddressHash(address);
+            //            AccountState state = Blockchain.Instance.GetAccountState(addressHash);
+            //            return state.ToJson();
+            //        }
+            //}
+            //return null;
         }
 
         async Task ProcessAsync(HttpContext context)

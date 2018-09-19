@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Text;
-using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Collections.Generic;
@@ -10,6 +9,7 @@ using Sky.Core;
 using Sky.Wallets;
 using Sky.Core.DPos;
 using Sky.Network;
+using Sky.Network.Payload;
 using Sky.Network.RPC;
 
 namespace Tester
@@ -45,10 +45,10 @@ namespace Tester
                 return;
             if (ValidBlock() == false)
                 return;
+
             StartLocalNode();
             StartRpcServer();
-            //                Config.GenesisBlock.Delegates.ForEach(p => dpos.TurnTable.Enqueue(p.Address));
-            //                StartLocalNode();
+            // Config.GenesisBlock.Delegates.ForEach(p => dpos.TurnTable.Enqueue(p.Address));
 
             while (true)
             {
@@ -58,8 +58,8 @@ namespace Tester
                     if (!_account.IsDelegate())
                         break;
                     // my turn?
-                    //if (dpos.TurnTable.Front != _user.AddressHash)
-                    //    continue;
+                    if (_account.AddressHash != _dpos.TurnTable.GetTurn(Blockchain.Instance.CurrentBlockHeight + 1))
+                        break;
                     // create time?
                     var time = _dpos.CalcBlockTime(_genesisBlock.Header.Timestamp, Blockchain.Instance.CurrentBlockHeight + 1);
                     if (DateTime.UtcNow.ToTimestamp() < time)
@@ -67,7 +67,7 @@ namespace Tester
                     // create
                     //System.Diagnostics.Stopwatch sw = new System.Diagnostics.Stopwatch();
                     //sw.Start();
-                    CreateAndAddBlocks(1);
+                    CreateAndAddBlocks(1, true);
                     //sw.Stop();
                     //Logger.Log("AddBlock Elapsed=" + sw.Elapsed);
                 }
@@ -76,7 +76,7 @@ namespace Tester
             }
         }
 
-        void CreateAndAddBlocks(int cnt)
+        void CreateAndAddBlocks(int cnt, bool directly)
         {
             List<Block> blocks = new List<Block>();
             int height = Blockchain.Instance.CurrentHeaderHeight;
@@ -95,9 +95,18 @@ namespace Tester
                 blocks.Add(block);
                 prevhash = block.Hash;
             }
-            foreach (Block block in blocks)
-                Blockchain.Instance.AddBlock(block);
-        }
+            if (directly)
+            {
+				foreach (Block block in blocks)
+					Blockchain.Instance.AddBlockDirectly(block);
+				_node.BroadCast(Message.CommandName.BroadcastBlocks, BroadcastBlockPayload.Create(blocks));
+			}
+			else
+            {
+				foreach (Block block in blocks)
+					Blockchain.Instance.AddBlock(block);
+			}
+		}
 
         void Initialize()
         {

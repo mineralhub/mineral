@@ -18,12 +18,12 @@ namespace Sky.Network
             _socket = ws;
         }
 
-        public override void Disconnect(bool error)
+        public override void Disconnect(bool error, bool removeNode = false)
         {
             if (_socket != null)
                 _socket.Dispose();
 
-            base.Disconnect(error);
+            base.Disconnect(error, removeNode);
         }
 
         internal override void OnConnected()

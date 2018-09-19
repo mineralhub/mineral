@@ -235,6 +235,15 @@ namespace Sky.Database.LevelDB
             return GetBlock(hash);
         }
 
+        public override Block GetNextBlock(UInt256 hash)
+        {
+            Block block = GetBlock(hash);
+            if (block == null)
+                return null;
+
+            return GetBlock(block.Height + 1);
+        }
+
         public override Transaction GetTransaction(UInt256 hash, out int height)
         {
             return GetTransaction(ReadOptions.Default, hash, out height);

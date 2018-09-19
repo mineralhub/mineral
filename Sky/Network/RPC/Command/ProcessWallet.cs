@@ -7,61 +7,61 @@ namespace Sky.Network.RPC.Command
 {
     public partial class ProcessCommand
     {
-        public static JObject OnCreateAccount(JArray parameters)
+        public static JObject OnCreateAccount(object obj, JArray parameters)
         {
             JObject json = new JObject();
             return json;
         }
 
-        public static JObject OnOpenAccount(JArray parameters)
+        public static JObject OnOpenAccount(object obj, JArray parameters)
         {
             JObject json = new JObject();
             return json;
         }
 
-        public static JObject OnCloseAccount(JArray parameters)
+        public static JObject OnCloseAccount(object obj, JArray parameters)
         {
             JObject json = new JObject();
             return json;
         }
 
-        public static JObject OnGetAccount(JArray parameters)
+        public static JObject OnGetAccount(object obj, JArray parameters)
         {
             JObject json = new JObject();
             return json;
         }
 
-        public static JObject OnGetAddress(JArray parameters)
+        public static JObject OnGetAddress(object obj, JArray parameters)
         {
             JObject json = new JObject();
             return json;
         }
 
-        public static JObject OnGetBalance(JArray parameters)
+        public static JObject OnGetBalance(object obj, JArray parameters)
         {
             JObject json = new JObject();
             return json;
         }
 
-        public static JObject OnSendTo(JArray parameters)
+        public static JObject OnSendTo(object obj, JArray parameters)
         {
             JObject json = new JObject();
             return json;
         }
 
-        public static JObject OnFreezeBalance(JArray parameters)
+        public static JObject OnFreezeBalance(object obj, JArray parameters)
         {
             JObject json = new JObject();
             return json;
         }
 
-        public static JObject OnUnfreezeBalance(JArray parameters)
+        public static JObject OnUnfreezeBalance(object obj, JArray parameters)
         {
             JObject json = new JObject();
             return json;
         }
 
-        public static JObject OnVoteWitness(JArray parameters)
+        public static JObject OnVoteWitness(object obj, JArray parameters)
         {
             JObject json = new JObject();
             return json;
