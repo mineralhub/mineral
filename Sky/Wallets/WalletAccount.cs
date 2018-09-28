@@ -1,6 +1,7 @@
 ﻿using Sky.Core;
 using Sky.Cryptography;
 using System;
+using System.Collections.Generic;
 using System.Linq;
 
 namespace Sky.Wallets
@@ -25,7 +26,7 @@ namespace Sky.Wallets
 
         public bool IsDelegate()
         {
-            return Blockchain.Instance.GetDelegateStateAll().First(p => p.AddressHash == AddressHash) != null;
+            return Blockchain.Instance.GetDelegateStateAll().FindIndex(p => (p.AddressHash == AddressHash)) != -1;
         }
 
         public static string ToAddress(ECKey key)
@@ -62,7 +63,7 @@ namespace Sky.Wallets
                     throw new FormatException();
                 return true;
             }
-            catch 
+            catch
             {
                 return false;
             }

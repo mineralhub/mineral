@@ -136,7 +136,7 @@ namespace Sky.Database.LevelDB
             }
         }
 
-        public override bool AddBlock(Block block)
+        public override BLOCK_ERROR AddBlock(Block block)
         {
             lock (_blockCache)
             {
@@ -147,12 +147,15 @@ namespace Sky.Database.LevelDB
             lock (_headerIndices)
             {
                 if (_headerIndices.Count <= block.Height - 1)
-                    return false;
+                    return BLOCK_ERROR.E_ERROR_HEIGHT;
 
                 if (_headerIndices.Count == block.Height)
                 {
                     if (!block.Verify())
-                        return false;
+                        return BLOCK_ERROR.E_ERROR;
+#if DEBUG
+                    Logger.Log("Added Height: " + block.Height);
+#endif
                     WriteBatch batch = new WriteBatch();
                     OnAddHeader(block.Header, batch);
                     _db.Write(WriteOptions.Default, batch);
@@ -160,7 +163,7 @@ namespace Sky.Database.LevelDB
                 if (block.Height < _headerIndices.Count)
                     _newBlockEvent.Set();
             }
-            return true;
+            return BLOCK_ERROR.E_NO_ERROR;
         }
 
         public override bool AddBlockDirectly(Block block)
@@ -339,7 +342,7 @@ namespace Sky.Database.LevelDB
                 AccountState from = accounts.GetAndChange(tx.From);
                 if (Fixed8.Zero < tx.Fee)
                     from.AddBalance(-tx.Fee);
-                
+
                 switch (tx.Data)
                 {
                     case RewardTransaction rewardTx:
@@ -445,6 +448,12 @@ namespace Sky.Database.LevelDB
                         if (!_blockCache.TryGetValue(hash, out block))
                             break;
                     }
+
+                    // Compare block's previous hash is CurrentBlockHash
+
+                    if (block.Header.PrevHash != CurrentBlockHash)
+                        break;
+
                     lock (PersistLock)
                     {
                         Persist(block);

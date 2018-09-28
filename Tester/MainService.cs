@@ -97,16 +97,16 @@ namespace Tester
             }
             if (directly)
             {
-				foreach (Block block in blocks)
-					Blockchain.Instance.AddBlockDirectly(block);
-				_node.BroadCast(Message.CommandName.BroadcastBlocks, BroadcastBlockPayload.Create(blocks));
-			}
-			else
+                foreach (Block block in blocks)
+                    Blockchain.Instance.AddBlockDirectly(block);
+                _node.BroadCast(Message.CommandName.BroadcastBlocks, BroadcastBlockPayload.Create(blocks));
+            }
+            else
             {
-				foreach (Block block in blocks)
-					Blockchain.Instance.AddBlock(block);
-			}
-		}
+                foreach (Block block in blocks)
+                    Blockchain.Instance.AddBlock(block);
+            }
+        }
 
         void Initialize()
         {
@@ -354,7 +354,7 @@ namespace Tester
             if (0 < Config.Network.RpcPort)
             {
                 _rpcServer = new RpcServer(_node);
-                _rpcServer.Start(Config.Network.RpcPort);                
+                _rpcServer.Start(Config.Network.RpcPort);
             }
         }
     }
