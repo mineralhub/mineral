@@ -5,6 +5,13 @@ namespace Sky.Core
 {
     public abstract class Blockchain : IDisposable
     {
+        public enum BLOCK_ERROR
+        {
+            E_NO_ERROR = 0,
+            E_ERROR = 1,
+            E_ERROR_HEIGHT = 2
+        };
+
         static private Blockchain _instance = null;
         static public Blockchain Instance => _instance;
 
@@ -25,7 +32,7 @@ namespace Sky.Core
 
         public abstract void Run();
         public abstract void Dispose();
-        public abstract bool AddBlock(Block block);
+        public abstract BLOCK_ERROR AddBlock(Block block);
         public abstract bool AddBlockDirectly(Block block);
         public abstract BlockHeader GetHeader(UInt256 hash);
         public abstract BlockHeader GetHeader(int height);

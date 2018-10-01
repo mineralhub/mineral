@@ -26,7 +26,7 @@ namespace Sky.Wallets
 
         public bool IsDelegate()
         {
-            return Blockchain.Instance.GetDelegateStateAll().First(p => p.AddressHash == AddressHash) != null;
+            return Blockchain.Instance.GetDelegateStateAll().FindIndex(p => (p.AddressHash == AddressHash)) != -1;
         }
 
         public static WalletAccount CreateAccount()
@@ -71,7 +71,7 @@ namespace Sky.Wallets
                     throw new FormatException();
                 return true;
             }
-            catch 
+            catch
             {
                 return false;
             }

@@ -15,6 +15,8 @@ namespace Sky.Network
             None = 0,
             Version = 1,
             Verack = 2,
+            Ping = 3,
+            Pong = 4,
 
             RequestAddrs = 10,
             ResponseAddrs = 11,
@@ -23,10 +25,10 @@ namespace Sky.Network
             RequestBlocks = 1001,
 
             ResponseHeaders = 1100,
-			ResponseBlocks = 1101,
-			BroadcastBlocks = 1102,
+            ResponseBlocks = 1101,
+            BroadcastBlocks = 1102,
 
-			Alert = 9999,
+            Alert = 9999,
         }
 
         private const int PayloadMaxSize = 0x020000000;

@@ -10,323 +10,521 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Linq;
 using Sky.Core;
+using System.Diagnostics;
 
 namespace Sky.Network
 {
-	public class LocalNode : IDisposable
-	{
-		private int _listenedFlag;
-		private int _disposedFlag;
-		private TcpListener _tcpListener;
-		private IWebHost _wsHost;
-		private List<RemoteNode> _connectedPeers = new List<RemoteNode>();
-		private List<RemoteNode> _validPeers = new List<RemoteNode>();
-		private HashSet<IPEndPoint> _waitPeers = new HashSet<IPEndPoint>();
-		private HashSet<IPEndPoint> _badPeers = new HashSet<IPEndPoint>();
-		private HashSet<IPEndPoint> _localPoints = new HashSet<IPEndPoint>();
-		private HashSet<Guid> _vaildNodes = new HashSet<Guid>();
+    public class LocalNode : IDisposable
+    {
+        private int _listenedFlag;
+        private int _disposedFlag;
+        private TcpListener _tcpListener;
+        private IWebHost _wsHost;
+        private List<RemoteNode> _connectedPeers = new List<RemoteNode>();
+        private List<RemoteNode> _validPeers = new List<RemoteNode>();
+        private HashSet<IPEndPoint> _waitPeers = new HashSet<IPEndPoint>();
+        private HashSet<IPEndPoint> _badPeers = new HashSet<IPEndPoint>();
+        private HashSet<IPEndPoint> _localPoints = new HashSet<IPEndPoint>();
+        private HashSet<Guid> _vaildNodes = new HashSet<Guid>();
 
-		private Thread _connectThread;
+        private Thread _connectThread;
+        private Thread _syncThread;
 
-		private CancellationTokenSource _cancelTokenSource = new CancellationTokenSource();
-		private Dictionary<UInt256, Transaction> _txPool = new Dictionary<UInt256, Transaction>();
-		private Guid nodeID = Guid.NewGuid();
+        private CancellationTokenSource _cancelTokenSource = new CancellationTokenSource();
+        private Dictionary<UInt256, Transaction> _txPool = new Dictionary<UInt256, Transaction>();
 
-		public Guid NodeID { get { return nodeID; } }
-		public HashSet<Guid> NodeSet { get { return _vaildNodes; } }
+        private Guid nodeID = Guid.NewGuid();
 
-		public bool IsServiceEnable { get { return !_cancelTokenSource.IsCancellationRequested; } }
+        public Guid NodeID { get { return nodeID; } }
+        public Dictionary<Guid, IPEndPoint> NodeSet = new Dictionary<Guid, IPEndPoint>();
 
-		public LocalNode()
-		{
-			_connectThread = new Thread(ConnectToPeersLoop)
-			{
-				IsBackground = true,
-				Name = "Sky.LocalNode.ConnectToPeersLoop"
-			};
-		}
+        private Stopwatch swPing = new Stopwatch();
+        public UInt256 lastAddHash = UInt256.Zero;
+        public int lastAddHeight = 0;
+        public bool isSyncing = true;
+        public List<KeyValuePair<Guid, Block>> broadcastBlocks = new List<KeyValuePair<Guid, Block>>();
+        private Object _respLock = new Object();
+        public AutoResetEvent syncEvent = new AutoResetEvent(false);
 
-		public void Dispose()
-		{
-			if (Interlocked.Exchange(ref _disposedFlag, 1) == 0)
-			{
-				if (0 < _listenedFlag)
-				{
-					if (_tcpListener != null)
-						_tcpListener.Stop();
-				}
-			}
-		}
+        public long lastBlockTime = 0;
+        public long lastTime { get { return swPing.ElapsedMilliseconds; } }
 
-		public void Listen()
-		{
-			if (Interlocked.Exchange(ref _listenedFlag, 1) == 0)
-			{
-				Task.Run(() =>
-				{
-					int tcpPort = Config.Network.TcpPort;
-					int wsPort = Config.Network.WsPort;
-					try
-					{
-						if (UPNP.Enable)
-						{
-							if (0 < tcpPort || 0 < wsPort)
-							{
-								if (0 < tcpPort)
-									UPNP.PortMapping(tcpPort, ProtocolType.Tcp, "SKY-TCP");
-								if (0 < wsPort)
-									UPNP.PortMapping(wsPort, ProtocolType.Tcp, "SKY-WEBSOCKET");
-							}
-						}
-						_connectThread.Start();
+        public bool IsServiceEnable { get { return !_cancelTokenSource.IsCancellationRequested; } }
 
-						if (0 < tcpPort)
-						{
-							_tcpListener = new TcpListener(IPAddress.Any, tcpPort);
-							_tcpListener.Server.SetSocketOption(SocketOptionLevel.Socket, SocketOptionName.ReuseAddress, 1);
-							try
-							{
-								_tcpListener.Start();
-								Task.Run(() => AcceptPeersLoop());
-								Task.Run(() => ConnectToPeersLoop());
-							}
-							catch (SocketException) { }
-						}
-						if (0 < wsPort)
-						{
-							_wsHost = new WebHostBuilder().UseKestrel().UseUrls($"http://*:{wsPort}").Configure(app => app.UseWebSockets().Run(AcceptWebSocketAsync)).Build();
-							_wsHost.Start();
-						}
-					}
-					catch (Exception e)
-					{
-						Logger.Log(e.Message);
-					}
-				});
-			}
-		}
+        public LocalNode()
+        {
+            _connectThread = new Thread(ConnectToPeersLoop)
+            {
+                IsBackground = true,
+                Name = "Sky.LocalNode.ConnectToPeersLoop"
+            };
+            _syncThread = new Thread(SyncBlocks)
+            {
+                IsBackground = true,
+                Name = "Sky.LocalNode.SyncBlocks"
+            };
 
-		private void AcceptPeersLoop()
-		{
-			while (!_cancelTokenSource.IsCancellationRequested)
-			{
-				Socket socket;
-				try
-				{
-					socket = _tcpListener.AcceptSocket();
-				}
-				catch (ObjectDisposedException)
-				{
-					break;
-				}
-				catch (SocketException)
-				{
-					continue;
-				}
-				TcpRemoteNode node = new TcpRemoteNode(this, socket);
-				OnConnected(node);
-			}
-		}
+        }
 
-		private void ConnectToPeersLoop()
-		{
-			while (!_cancelTokenSource.IsCancellationRequested)
-			{
-				int connectedCount = 0;
-				lock (_connectedPeers)
-					connectedCount = _connectedPeers.Count;
+        public void Dispose()
+        {
+            if (Interlocked.Exchange(ref _disposedFlag, 1) == 0)
+            {
+                if (0 < _listenedFlag)
+                {
+                    if (_tcpListener != null)
+                        _tcpListener.Stop();
+                }
+            }
+        }
 
-				if (connectedCount < Config.ConnectPeerMax)
-				{
-					Task[] tasks = { };
-					int waitCount = 0;
-					lock (_waitPeers)
-						waitCount = _waitPeers.Count;
+        public void Listen()
+        {
+            if (Interlocked.Exchange(ref _listenedFlag, 1) == 0)
+            {
+                Task.Run(() =>
+                {
+                    swPing.Restart();
+                    int tcpPort = Config.Network.TcpPort;
+                    int wsPort = Config.Network.WsPort;
+                    try
+                    {
+                        if (UPNP.Enable)
+                        {
+                            if (0 < tcpPort || 0 < wsPort)
+                            {
+                                if (0 < tcpPort)
+                                    UPNP.PortMapping(tcpPort, ProtocolType.Tcp, "SKY-TCP");
+                                if (0 < wsPort)
+                                    UPNP.PortMapping(wsPort, ProtocolType.Tcp, "SKY-WEBSOCKET");
+                            }
+                        }
+                        _connectThread.Start();
+                        _syncThread.Start();
 
-					if (0 < waitCount)
-					{
-						IPEndPoint[] eps;
-						lock (_waitPeers)
-							eps = _waitPeers.Take(Config.ConnectPeerMax - connectedCount).ToArray();
-						tasks = eps.Select(p => ConnectToPeerAsync(p)).ToArray();
-					}
-					else if (0 < connectedCount)
-					{
-						lock (_connectedPeers)
-						{
-							foreach (RemoteNode node in _connectedPeers)
-								node.RequestAddrs();
-						}
-					}
-					else if (Config.Network.SeedList != null)
-					{
-						var split = Config.Network.SeedList.OfType<string>().Select(p => p.Split(':'));
-						tasks = split.Select(p => ConnectToPeerAsync(p[0], int.Parse(p[1]))).ToArray();
-					}
+                        if (0 < tcpPort)
+                        {
+                            _tcpListener = new TcpListener(IPAddress.Any, tcpPort);
+                            _tcpListener.Server.SetSocketOption(SocketOptionLevel.Socket, SocketOptionName.ReuseAddress, 1);
+                            try
+                            {
+                                _tcpListener.Start();
+                                Task.Run(() => AcceptPeersLoop());
+                                Task.Run(() => ConnectToPeersLoop());
+                            }
+                            catch (SocketException) { }
+                        }
 
-					try
-					{
-						Task.WaitAll(tasks, _cancelTokenSource.Token);
-					}
-					catch (OperationCanceledException)
-					{
-						break;
-					}
-				}
+                        if (0 < wsPort)
+                        {
+                            _wsHost = new WebHostBuilder().UseKestrel().UseUrls($"http://*:{wsPort}").Configure(app => app.UseWebSockets().Run(AcceptWebSocketAsync)).Build();
+                            _wsHost.Start();
+                        }
+                    }
+                    catch (Exception e)
+                    {
+                        Logger.Log(e.Message);
+                    }
+                });
+            }
+        }
 
-				for (int i = 0; i < 50 && !_cancelTokenSource.IsCancellationRequested; ++i)
-					Thread.Sleep(100);
-			}
-		}
+        private void AcceptPeersLoop()
+        {
+            while (!_cancelTokenSource.IsCancellationRequested)
+            {
+                Socket socket;
+                try
+                {
+                    socket = _tcpListener.AcceptSocket();
+                }
+                catch (ObjectDisposedException)
+                {
+                    break;
+                }
+                catch (SocketException)
+                {
+                    continue;
+                }
+                TcpRemoteNode node = new TcpRemoteNode(this, socket);
+                OnConnected(node);
+            }
+        }
 
-		public async Task ConnectToPeerAsync(string host, int port)
-		{
-			IPAddress addr;
-			if (IPAddress.TryParse(host, out addr))
-			{
-				addr = addr.MapToIPv6();
-			}
-			else
-			{
-				IPHostEntry entry;
-				try
-				{
-					entry = await Dns.GetHostEntryAsync(host);
-				}
-				catch (SocketException)
-				{
-					return;
-				}
-				addr = entry.AddressList.FirstOrDefault(p => p.AddressFamily == AddressFamily.InterNetwork || p.IsIPv6Teredo)?.MapToIPv6();
-				if (addr == null)
-					return;
-			}
-			await ConnectToPeerAsync(new IPEndPoint(addr, port));
-		}
+        private void ConnectToPeersLoop()
+        {
+            while (!_cancelTokenSource.IsCancellationRequested)
+            {
+                int connectedCount = 0;
+                lock (_connectedPeers)
+                    connectedCount = _connectedPeers.Count;
 
-		public async Task ConnectToPeerAsync(IPEndPoint ep)
-		{
-			if (ep.Port == Config.Network.TcpPort && Config.LocalAddresses.Contains(ep.Address))
-				return;
+                if (connectedCount < Config.ConnectPeerMax)
+                {
+                    Task[] tasks = { };
+                    int waitCount = 0;
+                    lock (_waitPeers)
+                        waitCount = _waitPeers.Count;
 
-			lock (_waitPeers)
-				_waitPeers.Remove(ep);
+                    if (0 < waitCount)
+                    {
+                        IPEndPoint[] eps;
+                        lock (_waitPeers)
+                            eps = _waitPeers.Take(Config.ConnectPeerMax - connectedCount).ToArray();
+                        tasks = eps.Select(p => ConnectToPeerAsync(p)).ToArray();
+                    }
+                    else if (0 < connectedCount)
+                    {
+                        lock (_connectedPeers)
+                        {
+                            foreach (RemoteNode node in _connectedPeers)
+                            {
+                                node.pingOutTime = lastTime;
+                                node.RequestAddrs();
+                            }
+                        }
+                    }
+                    else if (Config.Network.SeedList != null)
+                    {
+                        var split = Config.Network.SeedList.OfType<string>().Select(p => p.Split(':'));
+                        tasks = split.Select(p => ConnectToPeerAsync(p[0], int.Parse(p[1]))).ToArray();
+                    }
 
-			TcpRemoteNode node = new TcpRemoteNode(this, ep);
-			if (await node.ConnectAsync())
-				OnConnected(node);
-		}
+                    try
+                    {
+                        Task.WaitAll(tasks, _cancelTokenSource.Token);
+                    }
+                    catch (OperationCanceledException)
+                    {
+                        break;
+                    }
+                }
 
-		private void OnConnected(RemoteNode node)
-		{
-			lock (_connectedPeers)
-			{
-				if (node.ListenerEndPoint != null && _connectedPeers.Any(p => node.ListenerEndPoint.Equals(p.ListenerEndPoint)))
-				{
-					node.Disconnect(false);
-					return;
-				}
+                for (int i = 0; i < 50 && !_cancelTokenSource.IsCancellationRequested; ++i)
+                    Thread.Sleep(100);
+            }
+        }
 
-				_connectedPeers.Add(node);
-			}
-			node.DisconnectedCallback += OnDisconnected;
-			node.PeersReceivedCallback += OnPeersReceived;
-			node.OnConnected();
-		}
+        public bool AddBroadcastBlocks(List<Block> blocks, RemoteNode node)
+        {
+            lock (_respLock)
+            {
+                if (!isSyncing)
+                {
+                    foreach (Block block in blocks)
+                    {
+#if DEBUG
+                        Logger.Log("[AddBroadcastBlocks] Block height: " + block.Height);
+#endif
+                        Blockchain.BLOCK_ERROR eRET = Blockchain.Instance.AddBlock(block);
+                        if (eRET != Blockchain.BLOCK_ERROR.E_NO_ERROR)
+                        {
+                            if (eRET == Blockchain.BLOCK_ERROR.E_ERROR_HEIGHT)
+                            {
+                                isSyncing = true;
+                                return true;
+                            }
+                            Logger.Log("[AddBroadcastBlocks] Blockchain.Instance.AddBlock(block) failed.");
+                            return false;
+                        }
+                    }
+                    return true;
+                }
+                else
+                {
+                    foreach (Block block in blocks)
+                    {
+                        broadcastBlocks.Add(new KeyValuePair<Guid, Block>(node.Version.NodeID, block));
+                    }
+                    if (broadcastBlocks.Count > 2000)
+                        broadcastBlocks.RemoveRange(0, 1000);
+                }
+                return true;
+            }
+        }
 
-		private void OnDisconnected(RemoteNode node, bool error)
-		{
-			node.DisconnectedCallback -= OnDisconnected;
-			node.PeersReceivedCallback -= OnPeersReceived;
-			if (error && node.ListenerEndPoint != null)
-			{
-				lock (_badPeers)
-					_badPeers.Add(node.ListenerEndPoint);
-			}
+        public bool AddResponseBlocks(List<Block> blocks, RemoteNode node)
+        {
+            UInt256 firstPrevHash = UInt256.Zero;
+            lock (_respLock)
+            {
+                if (!isSyncing)
+                    return true;
 
-			lock (_connectedPeers)
-				_connectedPeers.Remove(node);
-		}
+                if (broadcastBlocks.Count > 0)
+                    firstPrevHash = broadcastBlocks.First().Value.Header.PrevHash;
 
-		private void OnPeersReceived(RemoteNode node, IPEndPoint[] endPoints)
-		{
-			lock (_waitPeers)
-			{
-				if (_waitPeers.Count < Config.WaitPeerMax)
-				{
-					lock (_badPeers)
-					{
-						lock (_connectedPeers)
-						{
-							_waitPeers.UnionWith(endPoints);
-							_waitPeers.ExceptWith(_localPoints);
-							_waitPeers.ExceptWith(_badPeers);
-							_waitPeers.ExceptWith(_connectedPeers.Select(p => p.ListenerEndPoint));
-						}
-					}
-				}
-			}
-		}
+                foreach (Block block in blocks)
+                {
+                    if (Blockchain.Instance.AddBlock(block) != Blockchain.BLOCK_ERROR.E_NO_ERROR)
+                    {
+                        Logger.Log("Blockchain.Instance.AddBlock(block) failed.");
+                        return false;
+                    }
 
-		private async Task AcceptWebSocketAsync(HttpContext context)
-		{
-			if (!context.WebSockets.IsWebSocketRequest)
-				return;
+                    if (block.Hash == firstPrevHash)
+                    {
+                        foreach (KeyValuePair<Guid, Block> gblock in broadcastBlocks)
+                        {
+                            Blockchain.BLOCK_ERROR eRET = Blockchain.Instance.AddBlock(gblock.Value);
+                            if (eRET != Blockchain.BLOCK_ERROR.E_NO_ERROR)
+                            {
+                                broadcastBlocks.Clear();
+                                if (eRET == Blockchain.BLOCK_ERROR.E_ERROR_HEIGHT)
+                                    return true;
 
-			WebSocket ws = await context.WebSockets.AcceptWebSocketAsync();
-			IPEndPoint ep = new IPEndPoint(context.Connection.RemoteIpAddress, context.Connection.RemotePort);
-			WebSocketRemoteNode node = new WebSocketRemoteNode(ws, this, ep);
-			OnConnected(node);
-		}
+                                lock (_connectedPeers)
+                                {
+                                    foreach (RemoteNode rnode in _connectedPeers)
+                                    {
+                                        if (rnode.Version.NodeID == gblock.Key)
+                                        {
+                                            Logger.Log("Blockchain.Instance.AddBlock(gblock.Value) failed.");
+                                            rnode.Disconnect(true, false);
+                                            return rnode != node;
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                        broadcastBlocks.Clear();
+                        isSyncing = false;
+                        return true;
+                    }
 
-		public bool HasPeer(RemoteNode node)
-		{
-			lock (_connectedPeers)
-			{
-				return _connectedPeers.Where(p => p != node && p.ListenerEndPoint != null).Any(
-					p => p.ListenerEndPoint.Address.Equals(node.ListenerEndPoint) && p.Version?.Nonce == node.Version.Nonce);
-			}
-		}
+                    lastAddHash = block.Hash;
+                }
+                syncEvent.Set();
+            }
+            return true;
+        }
 
-		public List<RemoteNode> CloneConnectedPeers()
-		{
-			lock (_connectedPeers)
-			{
-				return new List<RemoteNode>(_connectedPeers);
-			}
-		}
+        private void SyncBlocks()
+        {
+            Stopwatch swTimeout = new Stopwatch();
+            long lastPing = 0;
+            lastAddHash = Blockchain.Instance.CurrentBlockHash;
+            if (isSyncing)
+                syncEvent.Set();
 
-		public bool AddTransaction(Transaction tx)
-		{
-			lock (_txPool)
-			{
-				if (_txPool.ContainsKey(tx.Hash))
-					return false;
-				if (!tx.Verify())
-					return false;
-				_txPool.Add(tx.Hash, tx);
-			}
-			return true;
-		}
+            while (!_cancelTokenSource.IsCancellationRequested)
+            {
+                int connectedCount = 0;
+                lock (_connectedPeers)
+                    connectedCount = _connectedPeers.Count;
 
-		public void RemoveTransactionPool(List<Transaction> txs)
-		{
-			Transaction[] remain;
-			lock (_txPool)
-			{
-				foreach (Transaction tx in txs)
-					_txPool.Remove(tx.Hash);
-				if (_txPool.Count == 0)
-					return;
-				remain = _txPool.Values.ToArray();
-				_txPool.Clear();
-			}
-		}
+                if (connectedCount > 0)
+                {
+                    if (!syncEvent.WaitOne(100))
+                    {
+                        if (swTimeout.ElapsedMilliseconds < 5000)
+                            continue;
+                    }
 
-		public void BroadCast(Message.CommandName name, ISerializable payload = null)
-		{
-			foreach (RemoteNode node in _connectedPeers)
-				node.EnqueueMessage(name, payload);
-		}
-	}
+                    lock (_connectedPeers)
+                    {
+                        RemoteNode pingNode = null;
+                        int pingHeight = -1;
+
+                        long nowTimestamp = DateTime.Now.ToTimestamp();
+                        bool bPing = (nowTimestamp - lastPing) >= 5000;
+                        if (bPing)
+                            lastPing = nowTimestamp;
+
+                        foreach (RemoteNode node in _connectedPeers)
+                        {
+                            if (node.Version != null)
+                            {
+                                if (bPing)
+                                    node.SendPing();
+
+                                if (node.Version.Height > pingHeight)
+                                {
+                                    pingHeight = node.Version.Height;
+                                    pingNode = node;
+                                }
+                            }
+                        }
+
+                        if (pingNode != null)
+                        {
+                            if (isSyncing)
+                                pingNode.EnqueueMessage(Message.CommandName.RequestBlocks, Payload.GetBlocksPayload.Create(lastAddHash));
+                            swTimeout.Restart();
+                        }
+                    }
+                }
+                else
+                {
+                    Thread.Sleep(1000);
+                }
+            }
+        }
+
+        public async Task ConnectToPeerAsync(string host, int port)
+        {
+            IPAddress addr;
+            if (IPAddress.TryParse(host, out addr))
+            {
+                addr = addr.MapToIPv6();
+            }
+            else
+            {
+                IPHostEntry entry;
+                try
+                {
+                    entry = await Dns.GetHostEntryAsync(host);
+                }
+                catch (SocketException)
+                {
+                    return;
+                }
+                addr = entry.AddressList.FirstOrDefault(p => p.AddressFamily == AddressFamily.InterNetwork || p.IsIPv6Teredo)?.MapToIPv6();
+                if (addr == null)
+                    return;
+            }
+            await ConnectToPeerAsync(new IPEndPoint(addr, port));
+        }
+
+        public async Task ConnectToPeerAsync(IPEndPoint ep)
+        {
+            if (ep.Port == Config.Network.TcpPort && Config.LocalAddresses.Contains(ep.Address))
+                return;
+
+            lock (_waitPeers)
+                _waitPeers.Remove(ep);
+
+            TcpRemoteNode node = new TcpRemoteNode(this, ep);
+            if (await node.ConnectAsync())
+                OnConnected(node);
+        }
+
+        private void OnConnected(RemoteNode node)
+        {
+            lock (_connectedPeers)
+            {
+                if (node.ListenerEndPoint != null && _connectedPeers.Any(p => node.ListenerEndPoint.Equals(p.ListenerEndPoint)))
+                {
+                    node.Disconnect(false);
+                    return;
+                }
+
+                _connectedPeers.Add(node);
+            }
+            node.DisconnectedCallback += OnDisconnected;
+            node.PeersReceivedCallback += OnPeersReceived;
+            node.OnConnected();
+        }
+
+        private void OnDisconnected(RemoteNode node, bool error)
+        {
+            node.DisconnectedCallback -= OnDisconnected;
+            node.PeersReceivedCallback -= OnPeersReceived;
+            if (error && node.ListenerEndPoint != null)
+            {
+                lock (_badPeers)
+                    _badPeers.Add(node.ListenerEndPoint);
+            }
+
+            lock (_connectedPeers)
+                _connectedPeers.Remove(node);
+        }
+
+        private void OnPeersReceived(RemoteNode node, IPEndPoint[] endPoints)
+        {
+            lock (_waitPeers)
+            {
+                if (_waitPeers.Count < Config.WaitPeerMax)
+                {
+                    lock (_badPeers)
+                    {
+                        lock (_connectedPeers)
+                        {
+                            _waitPeers.UnionWith(endPoints);
+                            _waitPeers.ExceptWith(_localPoints);
+                            _waitPeers.ExceptWith(_badPeers);
+                            _waitPeers.ExceptWith(_connectedPeers.Select(p => p.ListenerEndPoint));
+                        }
+                    }
+                }
+            }
+        }
+
+        private async Task AcceptWebSocketAsync(HttpContext context)
+        {
+            if (!context.WebSockets.IsWebSocketRequest)
+                return;
+
+            WebSocket ws = await context.WebSockets.AcceptWebSocketAsync();
+            IPEndPoint ep = new IPEndPoint(context.Connection.RemoteIpAddress, context.Connection.RemotePort);
+            WebSocketRemoteNode node = new WebSocketRemoteNode(ws, this, ep);
+            OnConnected(node);
+        }
+
+        public bool HasPeer(RemoteNode node)
+        {
+            lock (_connectedPeers)
+            {
+                return _connectedPeers.Where(p => p != node && p.ListenerEndPoint != null).Any(
+                    p => p.ListenerEndPoint.Address.Equals(node.ListenerEndPoint) && p.Version?.Nonce == node.Version.Nonce);
+            }
+        }
+
+        public bool HasNode(RemoteNode node, bool bAdd = false)
+        {
+            lock (NodeSet)
+            {
+                if (NodeID.Equals(node.Version.NodeID))
+                    return true;
+
+                if (NodeSet.ContainsKey(node.Version.NodeID))
+                    return true;
+
+                if (bAdd)
+                    NodeSet.Add(node.Version.NodeID, node.ListenerEndPoint);
+                return false;
+            }
+        }
+
+        public List<RemoteNode> CloneConnectedPeers()
+        {
+            lock (_connectedPeers)
+            {
+                return new List<RemoteNode>(_connectedPeers);
+            }
+        }
+
+        public bool AddTransaction(Transaction tx)
+        {
+            lock (_txPool)
+            {
+                if (_txPool.ContainsKey(tx.Hash))
+                    return false;
+                if (!tx.Verify())
+                    return false;
+                _txPool.Add(tx.Hash, tx);
+            }
+            return true;
+        }
+
+        public void RemoveTransactionPool(List<Transaction> txs)
+        {
+            Transaction[] remain;
+            lock (_txPool)
+            {
+                foreach (Transaction tx in txs)
+                    _txPool.Remove(tx.Hash);
+                if (_txPool.Count == 0)
+                    return;
+                remain = _txPool.Values.ToArray();
+                _txPool.Clear();
+            }
+        }
+
+        public void BroadCast(Message.CommandName name, ISerializable payload = null)
+        {
+            foreach (RemoteNode node in _connectedPeers)
+                node.EnqueueMessage(name, payload);
+        }
+    }
 }
