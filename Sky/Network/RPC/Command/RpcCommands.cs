@@ -9,6 +9,7 @@ namespace Sky.Network.RPC.Command
         public struct Block
         {
             public const string GetBlock = "getblock";
+            public const string GetBlocks = "getblocks";
             public const string GetBlockHash = "getblockhash";
             public const string GetHeight = "getheight";
             public const string GetCurrentBlockHash = "getcurrentblockhash";

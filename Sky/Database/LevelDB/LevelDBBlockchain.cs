@@ -367,6 +367,7 @@ namespace Sky.Database.LevelDB
 
             foreach (Transaction tx in block.Transactions)
             {
+                batch.Put(SliceBuilder.Begin(DataEntryPrefix.DATA_Transaction).Add(tx.Hash), SliceBuilder.Begin().Add(block.Header.Height).Add(tx.ToArray()));
                 if (block != GenesisBlock && !tx.VerifyBlockchain())
                 {
                     if (Fixed8.Zero < tx.Fee)
@@ -377,7 +378,6 @@ namespace Sky.Database.LevelDB
                     continue;
 #endif
                 }
-                batch.Put(SliceBuilder.Begin(DataEntryPrefix.DATA_Transaction).Add(tx.Hash), SliceBuilder.Begin().Add(block.Header.Height).Add(tx.ToArray()));
 
                 AccountState from = accounts.GetAndChange(tx.From);
                 if (Fixed8.Zero < tx.Fee)

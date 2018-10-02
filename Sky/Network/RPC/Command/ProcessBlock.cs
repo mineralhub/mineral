@@ -17,7 +17,43 @@ namespace Sky.Network.RPC.Command
                 block = Blockchain.Instance.GetBlock(UInt256.FromHexString(parameters[0].Value<string>()));
             BlockHeader nextHeader = Blockchain.Instance.GetNextHeader(block.Hash);
             JObject json = block.ToJson();
-            json["nextblockhash"] = nextHeader.Hash.ToString();
+            json["nextblockhash"] = nextHeader == null ? "" : nextHeader.Hash.ToString();
+
+            return json;
+        }
+
+        public static JObject OnGetBlocks(object obj, JArray parameters)
+        {
+            JObject json = new JObject();
+            JObject jobj = null;
+            JArray jarr = new JArray();
+            Block prevBlock = null, currBlock = null;
+
+            int start = parameters[0].Value<int>();
+            int end = parameters[1].Value<int>();
+            for (int i = start; i < end; ++i) 
+            {
+                prevBlock = currBlock;
+                currBlock = Blockchain.Instance.GetBlock(i);
+                if (prevBlock != null)
+                {
+                    jobj = prevBlock.ToJson();
+                    jobj["nextblockhash"] = currBlock == null ? "" : currBlock.Hash.ToString();
+                    jarr.Add(jobj);
+                }
+
+                if (currBlock == null)
+                    break;
+            }
+
+            if (currBlock != null)
+            {
+                BlockHeader nextHeader = Blockchain.Instance.GetNextHeader(currBlock.Hash);
+                jobj = currBlock.ToJson();
+                jobj["nextblockhash"] = nextHeader == null ? "" : nextHeader.Hash.ToString();
+                jarr.Add(jobj);
+            }
+            json["blocks"] = jarr;
 
             return json;
         }

@@ -15,6 +15,7 @@
 	"user": {
 		"private_key": "1",
 		"witness": true
+      
 	},
 	"genesisBlock": {
 		"account": [
@@ -43,10 +44,6 @@
 			{
 				"name": "one",
 				"address": "12AKRNHpFhDSBDD9rSn74VAzZSL3774PxQ"
-			},
-			{
-				"name": "two",
-				"address": "19mqdnsraLrBSHTupx9HcnmJrCryM5Jpjy"
 			}
 		],
 		"timestamp": 1532051710

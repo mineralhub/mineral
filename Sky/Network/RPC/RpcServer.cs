@@ -26,6 +26,7 @@ namespace Sky.Network.RPC
         {
             // Block
             { RpcCommands.Block.GetBlock, new ProcessCommand.ProcessHandler(ProcessCommand.OnGetBlock) },
+            { RpcCommands.Block.GetBlocks, new ProcessCommand.ProcessHandler(ProcessCommand.OnGetBlocks) },
             { RpcCommands.Block.GetBlockHash, new ProcessCommand.ProcessHandler(ProcessCommand.OnGetBlockHash) },
             { RpcCommands.Block.GetHeight, new ProcessCommand.ProcessHandler(ProcessCommand.OnGetHeight) },
             { RpcCommands.Block.GetCurrentBlockHash, new ProcessCommand.ProcessHandler(ProcessCommand.OnGetCurrentBlockHash) },
