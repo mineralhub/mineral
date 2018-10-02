@@ -51,4 +51,35 @@ namespace Sky.Network.Payload
 			writer.WriteSerializableArray(Blocks);
 		}
 	}
+
+    public class TransactionsPayload : ISerializable
+    {
+        public const int MaxCount = 2000;
+        public List<Transaction> Transactions;
+        public int Size => Transactions.GetSize();
+        public static TransactionsPayload Create(List<Transaction> transactions)
+        {
+            return new TransactionsPayload
+            {
+                Transactions = transactions
+            };
+        }
+
+        public static TransactionsPayload Create(Transaction tx)
+        {
+            TransactionsPayload pl = new TransactionsPayload();
+            pl.Transactions.Add(tx);
+            return pl;
+        }
+
+        public void Deserialize(BinaryReader reader)
+        {
+            Transactions = reader.ReadSerializableArray<Transaction>(1);
+        }
+
+        public void Serialize(BinaryWriter writer)
+        {
+            writer.WriteSerializableArray(Transactions);
+        }
+    }
 }

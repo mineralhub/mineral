@@ -189,6 +189,15 @@ namespace Sky.Network
                 Disconnect(true, false);
         }
 
+        private void ReceivedBroadcastTransactions(TransactionsPayload payload)
+        {
+            if (!_localNode.IsServiceEnable)
+                return;
+
+            if (!_localNode.AddBroadcastTransactions(payload.Transactions, this))
+                Disconnect(true, false);
+        }
+
         private void OnMessageReceived(Message message)
         {
 #if DEBUG
@@ -234,6 +243,8 @@ namespace Sky.Network
                 case Message.CommandName.BroadcastBlocks:
                     ReceivedBroadcastBlocks(message.Payload.Serializable<BroadcastBlockPayload>());
                     break;
+                case Message.CommandName.BroadcastTransactions:
+
                 case Message.CommandName.Alert:
                     break;
             }

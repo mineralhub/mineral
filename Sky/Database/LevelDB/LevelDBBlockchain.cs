@@ -117,8 +117,10 @@ namespace Sky.Database.LevelDB
                 _db.Put(WriteOptions.Default, SliceBuilder.Begin(DataEntryPrefix.SYS_Version), Assembly.GetExecutingAssembly().GetName().Version.ToString());
             }
 
-            _threadPersistence = new Thread(PersistBlocksLoop);
-            _threadPersistence.Name = $"{nameof(LevelDBBlockchain)}.{nameof(PersistBlocksLoop)}";
+            _threadPersistence = new Thread(PersistBlocksLoop)
+            {
+                Name = $"{nameof(LevelDBBlockchain)}.{nameof(PersistBlocksLoop)}"
+            };
             _threadPersistence.Start();
         }
 
@@ -142,6 +144,18 @@ namespace Sky.Database.LevelDB
             {
                 if (!_blockCache.ContainsKey(block.Hash))
                     _blockCache.Add(block.Hash, block);
+            }
+
+            lock(PoolLock)
+            {
+                foreach(var tx in block.Transactions)
+                {
+                    if (_rxPool.ContainsKey(tx.Hash))
+                        continue;
+                    if (_txPool.ContainsKey(tx.Hash))
+                        continue;
+                    _txPool.Add(tx.Hash, tx);
+                }
             }
 
             lock (_headerIndices)
@@ -168,20 +182,25 @@ namespace Sky.Database.LevelDB
 
         public override bool AddBlockDirectly(Block block)
         {
+            while (_headerIndices.Count > CurrentBlockHeight + 1)
+                Thread.Sleep(10);
+
             if (block.Height != CurrentBlockHeight + 1)
                 return false;
+
             if (block.Height == _headerIndices.Count)
             {
                 WriteBatch batch = new WriteBatch();
                 OnAddHeader(block.Header, batch);
                 _db.Write(WriteOptions.Default, batch);
+                lock (PersistLock)
+                {
+                    Persist(block);
+                    OnPersistCompleted(block);
+                }
+                return true;
             }
-            lock (PersistLock)
-            {
-                Persist(block);
-                OnPersistCompleted(block);
-            }
-            return true;
+            return false;
         }
 
         public override BlockHeader GetHeader(UInt256 hash)
@@ -290,6 +309,27 @@ namespace Sky.Database.LevelDB
                 if (_headerIndices.Count <= height)
                     return null;
                 return _headerIndices[height];
+            }
+        }
+
+        public override void NormalizeTransactions(ref List<Transaction> txs)
+        {
+            if (txs.Count == 0)
+                return;
+            lock (_blockCache)
+            {
+                foreach (Block block in _blockCache.Values)
+                {
+                    int counter = txs.Count;
+                    while (counter > 0)
+                    {
+                        counter--;
+                        Transaction tx = txs.ElementAt(0);
+                        txs.RemoveAt(0);
+                        if (block.Transactions.Find((p) => { return p.Hash == tx.Hash; }) == null)
+                            txs.Add(tx);
+                    }
+                }
             }
         }
 
