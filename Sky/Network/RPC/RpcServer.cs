@@ -84,18 +84,6 @@ namespace Sky.Network.RPC
         {
             return processHandler.ContainsKey(method) 
                 ? processHandler[method](_localNode, parameters) : CreateErrorResponse(id, -1, string.Format("Not found method : {0}", method));
-
-            //switch (method)
-            //{
-            //    case "account":
-            //        {
-            //            string address = parameters[0].Value<string>();
-            //            UInt160 addressHash = Wallets.WalletAccount.ToAddressHash(address);
-            //            AccountState state = Blockchain.Instance.GetAccountState(addressHash);
-            //            return state.ToJson();
-            //        }
-            //}
-            //return null;
         }
 
         async Task ProcessAsync(HttpContext context)
