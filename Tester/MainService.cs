@@ -82,7 +82,7 @@ namespace Tester
             int height = Blockchain.Instance.CurrentHeaderHeight;
             UInt256 prevhash = Blockchain.Instance.CurrentHeaderHash;
             List<Transaction> txs = new List<Transaction>();
-
+            
             // Transaction TPS Check.
             /*
             var tx = CreateTransferTransaction();
@@ -91,21 +91,24 @@ namespace Tester
             */
             for (int i = 0; i < cnt; ++i)
             {
+                txs.Clear();
+                Blockchain.Instance.LoadTransactionPool(ref txs);
+                Blockchain.Instance.NormalizeTransactions(ref txs);
                 Block block = CreateBlock(height + i, prevhash, txs);
-                blocks.Add(block);
                 prevhash = block.Hash;
-            }
-            if (directly)
-            {
-                foreach (Block block in blocks)
+                if (directly)
+                {
                     Blockchain.Instance.AddBlockDirectly(block);
-                _node.BroadCast(Message.CommandName.BroadcastBlocks, BroadcastBlockPayload.Create(blocks));
-            }
-            else
-            {
-                foreach (Block block in blocks)
+                }
+                else
+                {
                     Blockchain.Instance.AddBlock(block);
+                }
+                blocks.Add(block);
             }
+
+            if (directly)
+                _node.BroadCast(Message.CommandName.BroadcastBlocks, BroadcastBlockPayload.Create(blocks));
         }
 
         void Initialize()
@@ -133,8 +136,10 @@ namespace Tester
                 {
                     var tx = new Transaction(eTransactionType.TransferTransaction,
                                     GenesisBlockTimestamp - 1,
-                                    trans);
-                    tx.Signature = new MakerSignature();
+                                    trans)
+                    {
+                        Signature = new MakerSignature()
+                    };
                     txs.Add(tx);
                 }
 
@@ -148,8 +153,10 @@ namespace Tester
                         };
                         var tx = new Transaction(eTransactionType.RegisterDelegateTransaction,
                                                  GenesisBlockTimestamp - 1,
-                                                 register);
-                        tx.Signature = new MakerSignature();
+                                                 register)
+                        {
+                            Signature = new MakerSignature()
+                        };
                         txs.Add(tx);
                     });
 

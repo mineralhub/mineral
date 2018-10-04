@@ -10,6 +10,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Linq;
 using Sky.Core;
+using Sky.Network.Payload;
 using System.Diagnostics;
 
 namespace Sky.Network
@@ -31,7 +32,6 @@ namespace Sky.Network
         private Thread _syncThread;
 
         private CancellationTokenSource _cancelTokenSource = new CancellationTokenSource();
-        private Dictionary<UInt256, Transaction> _txPool = new Dictionary<UInt256, Transaction>();
 
         private Guid nodeID = Guid.NewGuid();
 
@@ -43,11 +43,11 @@ namespace Sky.Network
         public int lastAddHeight = 0;
         public bool isSyncing = true;
         public List<KeyValuePair<Guid, Block>> broadcastBlocks = new List<KeyValuePair<Guid, Block>>();
-        private Object _respLock = new Object();
+        private readonly object _respLock = new Object();
         public AutoResetEvent syncEvent = new AutoResetEvent(false);
 
         public long lastBlockTime = 0;
-        public long lastTime { get { return swPing.ElapsedMilliseconds; } }
+        public long LastTime { get { return swPing.ElapsedMilliseconds; } }
 
         public bool IsServiceEnable { get { return !_cancelTokenSource.IsCancellationRequested; } }
 
@@ -179,7 +179,7 @@ namespace Sky.Network
                         {
                             foreach (RemoteNode node in _connectedPeers)
                             {
-                                node.pingOutTime = lastTime;
+                                node.pingOutTime = LastTime;
                                 node.RequestAddrs();
                             }
                         }
@@ -202,6 +202,15 @@ namespace Sky.Network
 
                 for (int i = 0; i < 50 && !_cancelTokenSource.IsCancellationRequested; ++i)
                     Thread.Sleep(100);
+            }
+        }
+
+        public bool AddBroadcastTransactions(List<Transaction> transactions, RemoteNode node)
+        {
+            lock (_respLock)
+            {
+                Blockchain.Instance.AddTransactionPool(transactions);
+                return true;
             }
         }
 
@@ -234,8 +243,10 @@ namespace Sky.Network
                 {
                     foreach (Block block in blocks)
                     {
+                        Blockchain.Instance.AddTxPool(block.Transactions);
                         broadcastBlocks.Add(new KeyValuePair<Guid, Block>(node.Version.NodeID, block));
                     }
+
                     if (broadcastBlocks.Count > 2000)
                         broadcastBlocks.RemoveRange(0, 1000);
                 }
@@ -266,25 +277,25 @@ namespace Sky.Network
                     {
                         foreach (KeyValuePair<Guid, Block> gblock in broadcastBlocks)
                         {
-                            Blockchain.BLOCK_ERROR eRET = Blockchain.Instance.AddBlock(gblock.Value);
-                            if (eRET != Blockchain.BLOCK_ERROR.E_NO_ERROR)
+                            if (!Blockchain.Instance.AddBlockDirectly(gblock.Value))
                             {
                                 broadcastBlocks.Clear();
-                                if (eRET == Blockchain.BLOCK_ERROR.E_ERROR_HEIGHT)
-                                    return true;
 
-                                lock (_connectedPeers)
-                                {
-                                    foreach (RemoteNode rnode in _connectedPeers)
-                                    {
-                                        if (rnode.Version.NodeID == gblock.Key)
-                                        {
-                                            Logger.Log("Blockchain.Instance.AddBlock(gblock.Value) failed.");
-                                            rnode.Disconnect(true, false);
-                                            return rnode != node;
-                                        }
-                                    }
-                                }
+                                return true;
+                                //lock (_connectedPeers)
+                                //{
+                                //    foreach (RemoteNode rnode in _connectedPeers)
+                                //    {
+                                //        if (rnode.Version.NodeID == gblock.Key)
+                                //        {
+                                //            Logger.Log("Blockchain.Instance.AddBlock(gblock.Value) failed.");
+                                //            rnode.Disconnect(true, false);
+                                //            return rnode != node;
+                                //        }
+                                //    }
+                                //}
+
+                                //return true;
                             }
                         }
                         broadcastBlocks.Clear();
@@ -349,7 +360,7 @@ namespace Sky.Network
                         if (pingNode != null)
                         {
                             if (isSyncing)
-                                pingNode.EnqueueMessage(Message.CommandName.RequestBlocks, Payload.GetBlocksPayload.Create(lastAddHash));
+                                pingNode.EnqueueMessage(Message.CommandName.RequestBlocks, GetBlocksPayload.Create(lastAddHash));
                             swTimeout.Restart();
                         }
                     }
@@ -494,31 +505,17 @@ namespace Sky.Network
             }
         }
 
-        public bool AddTransaction(Transaction tx)
+        public bool AddTransaction(Transaction tx, bool bBroadcast = true)
         {
-            lock (_txPool)
-            {
-                if (_txPool.ContainsKey(tx.Hash))
-                    return false;
-                if (!tx.Verify())
-                    return false;
-                _txPool.Add(tx.Hash, tx);
-            }
+            Blockchain.Instance.AddTransactionPool(tx);
+            if (bBroadcast)
+                BroadCast(Message.CommandName.BroadcastTransactions, TransactionsPayload.Create(tx));
             return true;
         }
 
         public void RemoveTransactionPool(List<Transaction> txs)
         {
-            Transaction[] remain;
-            lock (_txPool)
-            {
-                foreach (Transaction tx in txs)
-                    _txPool.Remove(tx.Hash);
-                if (_txPool.Count == 0)
-                    return;
-                remain = _txPool.Values.ToArray();
-                _txPool.Clear();
-            }
+            Blockchain.Instance.RemoveTransactionPool(txs);
         }
 
         public void BroadCast(Message.CommandName name, ISerializable payload = null)

@@ -26,7 +26,9 @@ namespace Sky.Network
 
             ResponseHeaders = 1100,
             ResponseBlocks = 1101,
-            BroadcastBlocks = 1102,
+
+            BroadcastBlocks = 2000,
+            BroadcastTransactions = 2001,
 
             Alert = 9999,
         }

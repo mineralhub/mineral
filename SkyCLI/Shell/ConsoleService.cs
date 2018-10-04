@@ -38,7 +38,7 @@ namespace SkyCLI.Shell
             return commands.ContainsKey(parameters[0]) ? commands[parameters[0]](parameters) : base.OnCommand(parameters);
         }
 
-        public void Dispose()
+        public new void Dispose()
         {
             commands.Clear();
             base.Dispose();
