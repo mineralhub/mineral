@@ -41,7 +41,7 @@ namespace SkyCLI.Commands
             Console.WriteLine(obj);
         }
 
-        public static void ErrorParamMessage()
+        public static void ErrorParamMessage(object command)
         {
             Console.WriteLine("Error parameter.");
         }

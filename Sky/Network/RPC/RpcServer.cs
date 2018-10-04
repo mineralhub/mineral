@@ -22,30 +22,30 @@ namespace Sky.Network.RPC
         protected readonly LocalNode _localNode;
         IWebHost _host;
 
-        protected Dictionary<string, ProcessCommand.ProcessHandler> processHandler = new Dictionary<string, ProcessCommand.ProcessHandler>()
+        protected Dictionary<string, RpcCommands.ProcessHandler> processHandler = new Dictionary<string, RpcCommands.ProcessHandler>()
         {
             // Block
-            { RpcCommands.Block.GetBlock, new ProcessCommand.ProcessHandler(ProcessCommand.OnGetBlock) },
-            { RpcCommands.Block.GetBlocks, new ProcessCommand.ProcessHandler(ProcessCommand.OnGetBlocks) },
-            { RpcCommands.Block.GetBlockHash, new ProcessCommand.ProcessHandler(ProcessCommand.OnGetBlockHash) },
-            { RpcCommands.Block.GetHeight, new ProcessCommand.ProcessHandler(ProcessCommand.OnGetHeight) },
-            { RpcCommands.Block.GetCurrentBlockHash, new ProcessCommand.ProcessHandler(ProcessCommand.OnGetCurrentBlockHash) },
-            { RpcCommands.Block.GetTransaction, new ProcessCommand.ProcessHandler(ProcessCommand.OnGetTransaction) },
+            { RpcCommands.Block.GetBlock, new RpcCommands.ProcessHandler(ProcessCommand.OnGetBlock) },
+            { RpcCommands.Block.GetBlocks, new RpcCommands.ProcessHandler(ProcessCommand.OnGetBlocks) },
+            { RpcCommands.Block.GetBlockHash, new RpcCommands.ProcessHandler(ProcessCommand.OnGetBlockHash) },
+            { RpcCommands.Block.GetHeight, new RpcCommands.ProcessHandler(ProcessCommand.OnGetHeight) },
+            { RpcCommands.Block.GetCurrentBlockHash, new RpcCommands.ProcessHandler(ProcessCommand.OnGetCurrentBlockHash) },
+            { RpcCommands.Block.GetTransaction, new RpcCommands.ProcessHandler(ProcessCommand.OnGetTransaction) },
 
             // Node
-            { RpcCommands.Node.NodeList, new ProcessCommand.ProcessHandler(ProcessCommand.OnNodeList) },
+            { RpcCommands.Node.NodeList, new RpcCommands.ProcessHandler(ProcessCommand.OnNodeList) },
 
             // Wallet
-            { RpcCommands.Wallet.CreateAccount, new ProcessCommand.ProcessHandler(ProcessCommand.OnCreateAccount) },
-            { RpcCommands.Wallet.OpenAccount, new ProcessCommand.ProcessHandler(ProcessCommand.OnOpenAccount) },
-            { RpcCommands.Wallet.CloseAccount, new ProcessCommand.ProcessHandler(ProcessCommand.OnCloseAccount) },
-            { RpcCommands.Wallet.GetAccount, new ProcessCommand.ProcessHandler(ProcessCommand.OnGetAccount) },
-            { RpcCommands.Wallet.GetAddress, new ProcessCommand.ProcessHandler(ProcessCommand.OnGetAddress) },
-            { RpcCommands.Wallet.GetBalance, new ProcessCommand.ProcessHandler(ProcessCommand.OnGetBalance) },
-            { RpcCommands.Wallet.SendTo, new ProcessCommand.ProcessHandler(ProcessCommand.OnSendTo) },
-            { RpcCommands.Wallet.FreezeBalance, new ProcessCommand.ProcessHandler(ProcessCommand.OnFreezeBalance) },
-            { RpcCommands.Wallet.UnfreezeBalance, new ProcessCommand.ProcessHandler(ProcessCommand.OnUnfreezeBalance) },
-            { RpcCommands.Wallet.VoteWitness, new ProcessCommand.ProcessHandler(ProcessCommand.OnVoteWitness) },
+            { RpcCommands.Wallet.CreateAccount, new RpcCommands.ProcessHandler(ProcessCommand.OnCreateAccount) },
+            { RpcCommands.Wallet.OpenAccount, new RpcCommands.ProcessHandler(ProcessCommand.OnOpenAccount) },
+            { RpcCommands.Wallet.CloseAccount, new RpcCommands.ProcessHandler(ProcessCommand.OnCloseAccount) },
+            { RpcCommands.Wallet.GetAccount, new RpcCommands.ProcessHandler(ProcessCommand.OnGetAccount) },
+            { RpcCommands.Wallet.GetAddress, new RpcCommands.ProcessHandler(ProcessCommand.OnGetAddress) },
+            { RpcCommands.Wallet.GetBalance, new RpcCommands.ProcessHandler(ProcessCommand.OnGetBalance) },
+            { RpcCommands.Wallet.SendTo, new RpcCommands.ProcessHandler(ProcessCommand.OnSendTo) },
+            { RpcCommands.Wallet.FreezeBalance, new RpcCommands.ProcessHandler(ProcessCommand.OnFreezeBalance) },
+            { RpcCommands.Wallet.UnfreezeBalance, new RpcCommands.ProcessHandler(ProcessCommand.OnUnfreezeBalance) },
+            { RpcCommands.Wallet.VoteWitness, new RpcCommands.ProcessHandler(ProcessCommand.OnVoteWitness) },
         };
 
         public RpcServer(LocalNode localNode)

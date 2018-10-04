@@ -15,6 +15,8 @@ namespace SkyCLI.Commands
             JObject obj = MakeCommand(Config.BlockVersion, RpcCommands.Node.NodeList, new JArray());
             obj = RcpClient.RequestPostAnsyc(Program.url, obj.ToString()).Result;
 
+            TestOutput(obj);
+
             return true;
         }
     }

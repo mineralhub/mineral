@@ -14,7 +14,7 @@ namespace SkyCLI.Commands
         {
             if (parameters.Length != 2)
             {
-                ErrorParamMessage();
+                ErrorParamMessage(RpcCommands.Block.GetBlock);
                 return true;
             }
 
@@ -31,7 +31,7 @@ namespace SkyCLI.Commands
         {
             if (parameters.Length != 2)
             {
-                ErrorParamMessage();
+                ErrorParamMessage(RpcCommands.Block.GetBlockHash);
                 return true;
             }
 

@@ -4,7 +4,7 @@ using System.Text;
 
 namespace Sky.Network.RPC.Command
 {
-    public class RpcCommands
+    public partial class RpcCommands
     {
         public struct Block
         {
