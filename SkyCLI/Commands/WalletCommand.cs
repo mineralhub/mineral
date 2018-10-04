@@ -105,8 +105,19 @@ namespace SkyCLI.Commands
 
         public static bool OnGetBalance(string[] parameters)
         {
-            JObject obj = MakeCommand(Config.BlockVersion, RpcCommands.Wallet.GetBalance, new JArray());
+            if (Program.Wallet == null)
+            {
+                Console.WriteLine("Not load wallet account");
+                return true;
+            }
+
+            JArray param = new JArray();
+            param.Add(Program.Wallet.Key.PrivateKey.D.ToByteArray());
+
+            JObject obj = MakeCommand(Config.BlockVersion, RpcCommands.Wallet.GetBalance, param);
             obj = RcpClient.RequestPostAnsyc(Program.url, obj.ToString()).Result;
+
+            TestOutput(obj);
 
             return true;
         }
@@ -126,9 +137,12 @@ namespace SkyCLI.Commands
             }
 
             JArray param = new JArray(new ArraySegment<string>(parameters, 1, parameters.Length - 1));
+            param.AddFirst(Program.Wallet.Key.PrivateKey.D.ToByteArray());
 
             JObject obj = MakeCommand(Config.BlockVersion, RpcCommands.Wallet.SendTo, param);
             obj = RcpClient.RequestPostAnsyc(Program.url, obj.ToString()).Result;
+
+            TestOutput(obj);
 
             return true;
         }

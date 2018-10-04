@@ -48,6 +48,11 @@ namespace Sky.Network.RPC.Command
         public static JObject OnGetBalance(object obj, JArray parameters)
         {
             JObject json = new JObject();
+
+            ECKey key = new ECKey(parameters[0].ToObject<byte[]>(), true);
+            WalletAccount account = new WalletAccount(key.PrivateKey.D.ToByteArray());
+            json["balance"] = account.GetBalance().ToString();
+
             return json;
         }
 
@@ -56,16 +61,16 @@ namespace Sky.Network.RPC.Command
             JObject json = new JObject();
             LocalNode localNode = obj as LocalNode;
 
-            ECKey key = new ECKey(parameters[1].ToObject<byte[]>(), true);
+            ECKey key = new ECKey(parameters[0].ToObject<byte[]>(), true);
             WalletAccount from_account = new WalletAccount(key.PrivateKey.D.ToByteArray());
-            UInt160 to_address = UInt160.FromHexString(parameters[2].Value<string>(), false);
-            Fixed8 value = Fixed8.Parse(parameters[4].ToString());
+            UInt160 to_address = WalletAccount.ToAddressHash(parameters[1].Value<string>());
+            Fixed8 value = Fixed8.Parse(parameters[2].ToString());
 
             if (from_account.GetBalance() >= value)
             {
                 TransferTransaction trans = new TransferTransaction()
                 {
-                    From = UInt160.FromHexString(parameters[0].Value<string>(), false),
+                    From = from_account.AddressHash,
                     To = new Dictionary<UInt160, Fixed8> { { to_address, value } }
                 };
 
