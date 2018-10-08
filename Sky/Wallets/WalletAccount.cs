@@ -33,7 +33,6 @@ namespace Sky.Wallets
         {
             ECKey key = new ECKey(ECKey.Generate());
             WalletAccount account =  new WalletAccount(key.PrivateKey.D.ToByteArray());
-            WalletIndexer.Instance.AddAccounts(new List<UInt160> { account.AddressHash } );
             return account;
         }
 

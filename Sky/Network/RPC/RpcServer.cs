@@ -22,30 +22,27 @@ namespace Sky.Network.RPC
         protected readonly LocalNode _localNode;
         IWebHost _host;
 
-        protected Dictionary<string, RpcCommands.ProcessHandler> processHandler = new Dictionary<string, RpcCommands.ProcessHandler>()
+        protected Dictionary<string, RpcCommand.ProcessHandler> processHandlers = new Dictionary<string, RpcCommand.ProcessHandler>()
         {
             // Block
-            { RpcCommands.Block.GetBlock, new RpcCommands.ProcessHandler(ProcessCommand.OnGetBlock) },
-            { RpcCommands.Block.GetBlocks, new RpcCommands.ProcessHandler(ProcessCommand.OnGetBlocks) },
-            { RpcCommands.Block.GetBlockHash, new RpcCommands.ProcessHandler(ProcessCommand.OnGetBlockHash) },
-            { RpcCommands.Block.GetHeight, new RpcCommands.ProcessHandler(ProcessCommand.OnGetHeight) },
-            { RpcCommands.Block.GetCurrentBlockHash, new RpcCommands.ProcessHandler(ProcessCommand.OnGetCurrentBlockHash) },
-            { RpcCommands.Block.GetTransaction, new RpcCommands.ProcessHandler(ProcessCommand.OnGetTransaction) },
+            { RpcCommand.Block.GetBlock, new RpcCommand.ProcessHandler(RpcProcessCommand.OnGetBlock) },
+            { RpcCommand.Block.GetBlocks, new RpcCommand.ProcessHandler(RpcProcessCommand.OnGetBlocks) },
+            { RpcCommand.Block.GetBlockHash, new RpcCommand.ProcessHandler(RpcProcessCommand.OnGetBlockHash) },
+            { RpcCommand.Block.GetHeight, new RpcCommand.ProcessHandler(RpcProcessCommand.OnGetHeight) },
+            { RpcCommand.Block.GetCurrentBlockHash, new RpcCommand.ProcessHandler(RpcProcessCommand.OnGetCurrentBlockHash) },
+            { RpcCommand.Block.GetTransaction, new RpcCommand.ProcessHandler(RpcProcessCommand.OnGetTransaction) },
 
             // Node
-            { RpcCommands.Node.NodeList, new RpcCommands.ProcessHandler(ProcessCommand.OnNodeList) },
+            { RpcCommand.Node.NodeList, new RpcCommand.ProcessHandler(RpcProcessCommand.OnNodeList) },
 
             // Wallet
-            { RpcCommands.Wallet.CreateAccount, new RpcCommands.ProcessHandler(ProcessCommand.OnCreateAccount) },
-            { RpcCommands.Wallet.OpenAccount, new RpcCommands.ProcessHandler(ProcessCommand.OnOpenAccount) },
-            { RpcCommands.Wallet.CloseAccount, new RpcCommands.ProcessHandler(ProcessCommand.OnCloseAccount) },
-            { RpcCommands.Wallet.GetAccount, new RpcCommands.ProcessHandler(ProcessCommand.OnGetAccount) },
-            { RpcCommands.Wallet.GetAddress, new RpcCommands.ProcessHandler(ProcessCommand.OnGetAddress) },
-            { RpcCommands.Wallet.GetBalance, new RpcCommands.ProcessHandler(ProcessCommand.OnGetBalance) },
-            { RpcCommands.Wallet.SendTo, new RpcCommands.ProcessHandler(ProcessCommand.OnSendTo) },
-            { RpcCommands.Wallet.FreezeBalance, new RpcCommands.ProcessHandler(ProcessCommand.OnFreezeBalance) },
-            { RpcCommands.Wallet.UnfreezeBalance, new RpcCommands.ProcessHandler(ProcessCommand.OnUnfreezeBalance) },
-            { RpcCommands.Wallet.VoteWitness, new RpcCommands.ProcessHandler(ProcessCommand.OnVoteWitness) },
+            { RpcCommand.Wallet.GetAccount, new RpcCommand.ProcessHandler(RpcProcessCommand.OnGetAccount) },
+            { RpcCommand.Wallet.GetAddress, new RpcCommand.ProcessHandler(RpcProcessCommand.OnGetAddress) },
+            { RpcCommand.Wallet.GetBalance, new RpcCommand.ProcessHandler(RpcProcessCommand.OnGetBalance) },
+            { RpcCommand.Wallet.SendTo, new RpcCommand.ProcessHandler(RpcProcessCommand.OnSendTo) },
+            { RpcCommand.Wallet.FreezeBalance, new RpcCommand.ProcessHandler(RpcProcessCommand.OnFreezeBalance) },
+            { RpcCommand.Wallet.UnfreezeBalance, new RpcCommand.ProcessHandler(RpcProcessCommand.OnUnfreezeBalance) },
+            { RpcCommand.Wallet.VoteWitness, new RpcCommand.ProcessHandler(RpcProcessCommand.OnVoteWitness) },
         };
 
         public RpcServer(LocalNode localNode)
@@ -83,8 +80,8 @@ namespace Sky.Network.RPC
 
         protected virtual JObject Process(JToken id, string method, JArray parameters)
         {
-            return processHandler.ContainsKey(method) 
-                ? processHandler[method](_localNode, parameters) : CreateErrorResponse(id, -1, string.Format("Not found method : {0}", method));
+            return processHandlers.ContainsKey(method) 
+                ? processHandlers[method](_localNode, parameters) : CreateErrorResponse(id, -1, string.Format("Not found method : {0}", method));
         }
 
         async Task ProcessAsync(HttpContext context)

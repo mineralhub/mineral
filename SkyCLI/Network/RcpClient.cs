@@ -101,7 +101,7 @@ namespace SkyCLI.Network
             {
                 Console.WriteLine(e.Message);
             }
-
+            Console.WriteLine(respone_data);
             return respone_data != null ? JObject.Parse(respone_data) : null;
         }
     }

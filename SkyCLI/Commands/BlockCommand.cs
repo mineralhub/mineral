@@ -12,62 +12,151 @@ namespace SkyCLI.Commands
     {
         public static bool OnGetBlock(string[] parameters)
         {
-            if (parameters.Length != 2)
+            string usage = string.Format(
+                "\t{0} [command option] <block hash>\n"
+                , RpcCommand.Block.GetBlock);
+            string command_option = HelpCategory.Option_Help;
+
+            if (parameters.Length == 1 || parameters.Length > 3)
             {
-                ErrorParamMessage(RpcCommands.Block.GetBlock);
+                OutputHelpMessage(usage, "", command_option, "");
                 return true;
             }
 
-            JArray param = new JArray(new ArraySegment<string>(parameters, 1, parameters.Length - 1));
+            int index = 1;
+            if (parameters.Length > index)
+            {
+                string option = parameters[index];
+                if (option.ToLower().Equals("-help") || option.ToLower().Equals("-h"))
+                {
+                    OutputHelpMessage(usage, "", command_option, "");
+                    index++;
+                    return true;
+                }
+            }
 
-            JObject obj = MakeCommand(Config.BlockVersion, RpcCommands.Block.GetBlock, param);
-            obj = RcpClient.RequestPostAnsyc(Program.url, obj.ToString()).Result;
-
-            TestOutput(obj);
+            JArray param = new JArray(new ArraySegment<string>(parameters, index, parameters.Length - index));
+            SendCommand(Config.BlockVersion, RpcCommand.Block.GetBlock, param);
             return true;
         }
 
         public static bool OnGetBlockHash(string[] parameters)
         {
-            if (parameters.Length != 2)
+            string usage = string.Format(
+                "\t{0} [command option] <block hash>\n"
+                , RpcCommand.Block.GetBlockHash);
+            string command_option = HelpCategory.Option_Help;
+
+            if (parameters.Length == 1 || parameters.Length > 3)
             {
-                ErrorParamMessage(RpcCommands.Block.GetBlockHash);
+                OutputHelpMessage(usage, "", command_option, "");
                 return true;
             }
 
-            JArray param = new JArray(new ArraySegment<string>(parameters, 1, parameters.Length - 1));
+            int index = 1;
+            if (parameters.Length > index)
+            {
+                string option = parameters[index];
+                if (option.ToLower().Equals("-help") || option.ToLower().Equals("-h"))
+                {
+                    OutputHelpMessage(usage, "", command_option, "");
+                    index++;
+                    return true;
+                }
+            }
 
-            JObject obj = MakeCommand(Config.BlockVersion, RpcCommands.Block.GetBlockHash, param);
-            obj = RcpClient.RequestPostAnsyc(Program.url, obj.ToString()).Result;
-
-            TestOutput(obj);
+            JArray param = new JArray(new ArraySegment<string>(parameters, index, parameters.Length - index));
+            SendCommand(Config.BlockVersion, RpcCommand.Block.GetBlockHash, param);
             return true;
         }
 
         public static bool OnGetHeight(string[] parameters)
         {
-            JObject obj = MakeCommand(Config.BlockVersion, RpcCommands.Block.GetHeight, new JArray());
-            obj = RcpClient.RequestPostAnsyc(Program.url, obj.ToString()).Result;
+            string usage = string.Format(
+                "\t{0} [command option]\n"
+                , RpcCommand.Block.GetHeight);
+            string command_option = HelpCategory.Option_Help;
 
-            TestOutput(obj);
+            if (parameters.Length > 2)
+            {
+                OutputHelpMessage(usage, "", command_option, "");
+                return true;
+            }
+
+            int index = 1;
+            if (parameters.Length > index)
+            {
+                string option = parameters[index];
+                if (option.ToLower().Equals("-help") || option.ToLower().Equals("-h"))
+                {
+                    OutputHelpMessage(usage, "", command_option, "");
+                    index++;
+                    return true;
+                }
+            }
+
+            JArray param = new JArray(new ArraySegment<string>(parameters, index, parameters.Length - index));
+            SendCommand(Config.BlockVersion, RpcCommand.Block.GetHeight, param);
             return true;
         }
 
         public static bool OnGetCurrentBlockHash(string[] parameters)
         {
-            JObject obj = MakeCommand(Config.BlockVersion, RpcCommands.Block.GetCurrentBlockHash, new JArray());
-            obj = RcpClient.RequestPostAnsyc(Program.url, obj.ToString()).Result;
+            string usage = string.Format(
+                "\t{0} [command option]\n"
+                , RpcCommand.Block.GetCurrentBlockHash);
+            string command_option = HelpCategory.Option_Help;
 
-            TestOutput(obj);
+            if (parameters.Length > 2)
+            {
+                OutputHelpMessage(usage, "", command_option, "");
+                return true;
+            }
+
+            int index = 1;
+            if (parameters.Length > index)
+            {
+                string option = parameters[index];
+                if (option.ToLower().Equals("-help") || option.ToLower().Equals("-h"))
+                {
+                    OutputHelpMessage(usage, "", command_option, "");
+                    index++;
+                    return true;
+                }
+            }
+
+            JArray param = new JArray(new ArraySegment<string>(parameters, index, parameters.Length - index));
+            SendCommand(Config.BlockVersion, RpcCommand.Block.GetCurrentBlockHash, param);
             return true;
         }
 
         public static bool OnGetTransaction(string[] parameters)
         {
-            JObject obj = MakeCommand(Config.BlockVersion, RpcCommands.Block.GetCurrentBlockHash, new JArray());
-            obj = RcpClient.RequestPostAnsyc(Program.url, obj.ToString()).Result;
+            string usage = string.Format(
+                "\t{0} [command option] <transaction hash>\n"
+                , RpcCommand.Block.GetTransaction);
+            string command_option = HelpCategory.Option_Help;
 
-            TestOutput(obj);
+            if (parameters.Length == 1 || parameters.Length > 3)
+            {
+                OutputHelpMessage(usage, "", command_option, "");
+                return true;
+            }
+
+            int index = 1;
+            if (parameters.Length > index)
+            {
+                string option = parameters[index];
+                if (option.ToLower().Equals("-help") || option.ToLower().Equals("-h"))
+                {
+                    OutputHelpMessage(usage, "", command_option, "");
+                    index++;
+                    return true;
+                }
+            }
+
+            JArray param = new JArray(new ArraySegment<string>(parameters, index, parameters.Length - index));
+            SendCommand(Config.BlockVersion, RpcCommand.Block.GetCurrentBlockHash, param);
             return true;
         }
     }

@@ -5,14 +5,15 @@ using Newtonsoft.Json.Linq;
 
 namespace Sky.Network.RPC.Command
 {
-    public partial class RpcCommands
+    public partial class RpcCommand
     {
         public delegate JObject ProcessHandler(object obj, JArray parameters);
+
         //public delegate string InvalidParameterMessage();
 
         //protected static Dictionary<object, InvalidParameterMessage> InvalidParameterHandlers = new Dictionary<object, InvalidParameterMessage>()
         //{
-        //    { RpcCommands.Block.GetBlock, InvalidParameter_GetBlock },
+        //    { RpcCommand.Block.GetBlock, InvalidParameter_GetBlock },
         //};
 
         //public static string InvalidParameter_GetBlock()

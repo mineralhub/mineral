@@ -59,11 +59,7 @@ namespace SkyCLI.Shell
             return result;
         }
 
-        public virtual bool OnHelp(string[] parameters)
-        {
-            Console.WriteLine("Help command");
-            return true;
-        }
+        public virtual void OnHelp(string[] parameters) { }
 
         public void Dispose()
         {

@@ -8,31 +8,8 @@ using Sky.Wallets;
 
 namespace Sky.Network.RPC.Command
 {
-    public partial class ProcessCommand
+    public partial class RpcProcessCommand
     {
-        public static JObject OnCreateAccount(object obj, JArray parameters)
-        {
-            JObject json = new JObject();
-            WalletAccount account = WalletAccount.CreateAccount();
-            json["address"] = account.Address;
-            json["addresshash"] = account.AddressHash.ToArray();
-            json["privatekey"] = account.Key.PrivateKey.D.ToByteArray();
-            json["publickey"] = account.Key.PublicKey.ToByteArray();
-            return json;
-        }
-
-        public static JObject OnOpenAccount(object obj, JArray parameters)
-        {
-            JObject json = new JObject();
-            return json;
-        }
-
-        public static JObject OnCloseAccount(object obj, JArray parameters)
-        {
-            JObject json = new JObject();
-            return json;
-        }
-
         public static JObject OnGetAccount(object obj, JArray parameters)
         {
             JObject json = new JObject();
@@ -61,8 +38,7 @@ namespace Sky.Network.RPC.Command
             JObject json = new JObject();
             LocalNode localNode = obj as LocalNode;
 
-            ECKey key = new ECKey(parameters[0].ToObject<byte[]>(), true);
-            WalletAccount from_account = new WalletAccount(key.PrivateKey.D.ToByteArray());
+            WalletAccount from_account = new WalletAccount(parameters[0].ToObject<byte[]>());
             UInt160 to_address = WalletAccount.ToAddressHash(parameters[1].Value<string>());
             Fixed8 value = Fixed8.Parse(parameters[2].ToString());
 
@@ -81,7 +57,7 @@ namespace Sky.Network.RPC.Command
             }
             else
             {
-                //json = CreateErrorResponse(null, 0, "");
+                json = RpcCommand.CreateErrorResponse(null, 0, "Not enough balance");
             }
 
             return json;

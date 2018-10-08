@@ -4,7 +4,9 @@ using System.IO;
 using System.Text;
 using Newtonsoft.Json.Linq;
 using Sky;
+using Sky.Cryptography;
 using Sky.Network.RPC.Command;
+using Sky.Wallets;
 using SkyCLI.Network;
 
 namespace SkyCLI.Commands
@@ -13,62 +15,91 @@ namespace SkyCLI.Commands
     {
         public static bool OnCreateAccount(string[] parameters)
         {
-            if (parameters.Length != 2)
+            string usage = string.Format(
+                "\t{0} [command option] <path>\n"
+                , RpcCommand.Wallet.CreateAccount);
+            string command_option = HelpCategory.Option_Help;
+
+            if (parameters.Length == 1 || parameters.Length > 3)
             {
-                ErrorParamMessage(RpcCommands.Wallet.CreateAccount);
+                OutputHelpMessage(usage, "", command_option, "");
                 return true;
             }
 
-            JObject obj = MakeCommand(Config.BlockVersion, RpcCommands.Wallet.CreateAccount, new JArray());
-            obj = RcpClient.RequestPostAnsyc(Program.url, obj.ToString()).Result;
-
-            if (obj.ContainsKey("error"))
+            int index = 1;
+            if (parameters.Length > index)
             {
-                Console.WriteLine("Fail to create account.");
-                return true;
+                string option = parameters[index];
+                if (option.ToLower().Equals("-help") || option.ToLower().Equals("-h"))
+                {
+                    OutputHelpMessage(usage, "", command_option, "");
+                    index++;
+                    return true;
+                }
             }
 
-            string path = parameters[1] + ".json";
+            WalletAccount account = WalletAccount.CreateAccount();
+
+            JObject json = new JObject();
+            json["address"] = account.Address;
+            json["addresshash"] = account.AddressHash.ToArray();
+            json["privatekey"] = account.Key.PrivateKey.D.ToByteArray();
+            json["publickey"] = account.Key.PublicKey.ToByteArray();
+
+            string path = parameters[1].Contains(".json") ? parameters[1] : parameters[1] + ".json";
             using (var file = File.CreateText(path))
             {
-                file.Write(obj);
+                file.Write(json);
                 file.Flush();
             }
 
-            JToken key;
-            JObject result = JObject.Parse(obj["result"].ToString());
-            if (result.TryGetValue("privatekey", out key))
-            {
-                Program.Wallet = new Sky.Wallets.WalletAccount(key.ToObject<byte[]>());
-            }
+            Program.Wallet = account;
+            Console.WriteLine(json.ToString());
 
             return true;
         }
 
         public static bool OnOpenAccount(string[] parameters)
         {
-            if (parameters.Length != 2)
+            string usage = string.Format(
+                "\t{0} [command option] <path>\n"
+                , RpcCommand.Wallet.OpenAccount);
+            string command_option = HelpCategory.Option_Help;
+
+            if (parameters.Length == 1 || parameters.Length > 3)
             {
-                ErrorParamMessage(RpcCommands.Wallet.OpenAccount);
+                OutputHelpMessage(usage, "", command_option, "");
                 return true;
             }
 
-            JObject json;
-            string path = parameters[1];
+            int index = 1;
+            if (parameters.Length > index)
+            {
+                string option = parameters[index];
+                if (option.ToLower().Equals("-help") || option.ToLower().Equals("-h"))
+                {
+                    OutputHelpMessage(usage, "", command_option, "");
+                    index++;
+                    return true;
+                }
+            }
 
+            string path = parameters[1].Contains(".json") ? parameters[1] : parameters[1] + ".json";
             if (!File.Exists(path))
             {
                 Console.WriteLine(string.Format("Not found file : [0]", path));
                 return true;
             }
 
-            var file = File.OpenText(path);
-            string data = file.ReadToEnd();
-            json = JObject.Parse(data);
+            JObject json;
+            using (var file = File.OpenText(path))
+            {
+                string data = file.ReadToEnd();
+                json = JObject.Parse(data);
+            }
 
             JToken key;
-            JObject result = JObject.Parse(json["result"].ToString());
-            if (result.TryGetValue("privatekey", out key))
+            if (json.TryGetValue("privatekey", out key))
             {
                 Program.Wallet = new Sky.Wallets.WalletAccount(key.ToObject<byte[]>());
             }
@@ -83,13 +114,12 @@ namespace SkyCLI.Commands
         public static bool OnCloseAccount(string[] parameters)
         {
             Program.Wallet = null;
-
             return true;
         }
 
         public static bool OnGetAccount(string[] parameters)
         {
-            JObject obj = MakeCommand(Config.BlockVersion, RpcCommands.Wallet.GetAccount, new JArray());
+            JObject obj = MakeCommand(Config.BlockVersion, RpcCommand.Wallet.GetAccount, new JArray());
             obj = RcpClient.RequestPostAnsyc(Program.url, obj.ToString()).Result;
 
             return true;
@@ -97,7 +127,7 @@ namespace SkyCLI.Commands
 
         public static bool OnGetAddress(string[] parameters)
         {
-            JObject obj = MakeCommand(Config.BlockVersion, RpcCommands.Wallet.GetAddress, new JArray());
+            JObject obj = MakeCommand(Config.BlockVersion, RpcCommand.Wallet.GetAddress, new JArray());
             obj = RcpClient.RequestPostAnsyc(Program.url, obj.ToString()).Result;
 
             return true;
@@ -107,49 +137,80 @@ namespace SkyCLI.Commands
         {
             if (Program.Wallet == null)
             {
-                Console.WriteLine("Not load wallet account");
+                Console.WriteLine("Not loaded wallet account");
                 return true;
             }
 
-            JArray param = new JArray();
-            param.Add(Program.Wallet.Key.PrivateKey.D.ToByteArray());
+            string usage = string.Format(
+                "\t{0} [command option]\n"
+                , RpcCommand.Wallet.GetBalance);
+            string command_option = HelpCategory.Option_Help;
 
-            JObject obj = MakeCommand(Config.BlockVersion, RpcCommands.Wallet.GetBalance, param);
-            obj = RcpClient.RequestPostAnsyc(Program.url, obj.ToString()).Result;
+            if (parameters.Length > 2)
+            {
+                OutputHelpMessage(usage, "", command_option, "");
+                return true;
+            }
 
-            TestOutput(obj);
+            int index = 1;
+            if (parameters.Length > index)
+            {
+                string option = parameters[index];
+                if (option.ToLower().Equals("-help") || option.ToLower().Equals("-h"))
+                {
+                    OutputHelpMessage(usage, "", command_option, "");
+                    index++;
+                    return true;
+                }
+            }
+
+            JArray param = new JArray() { Program.Wallet.Key.PrivateKey.D.ToByteArray() };
+            SendCommand(Config.BlockVersion, RpcCommand.Wallet.GetBalance, param);
 
             return true;
         }
 
         public static bool OnSendTo(string[] parameters)
         {
-            if (parameters.Length != 3)
-            {
-                ErrorParamMessage(RpcCommands.Wallet.SendTo);
-                return true;
-            }
-
             if (Program.Wallet == null)
             {
-                Console.WriteLine("Not load wallet account");
+                Console.WriteLine("Not loaded wallet account");
                 return true;
             }
 
-            JArray param = new JArray(new ArraySegment<string>(parameters, 1, parameters.Length - 1));
+            string usage = string.Format(
+                    "\t{0} [command option] <to address> <balance>\n"
+                    , RpcCommand.Wallet.SendTo);
+            string command_option = HelpCategory.Option_Help;
+
+            if (parameters.Length == 1 || parameters.Length > 4)
+            {
+                OutputHelpMessage(usage, "", command_option, "");
+                return true;
+            }
+
+            int index = 1;
+            if (parameters.Length > index)
+            {
+                string option = parameters[index];
+                if (option.ToLower().Equals("-help") || option.ToLower().Equals("-h"))
+                {
+                    OutputHelpMessage(usage, "", command_option, "");
+                    index++;
+                    return true;
+                }
+            }
+
+            JArray param = new JArray(new ArraySegment<string>(parameters, index, parameters.Length - index));
             param.AddFirst(Program.Wallet.Key.PrivateKey.D.ToByteArray());
-
-            JObject obj = MakeCommand(Config.BlockVersion, RpcCommands.Wallet.SendTo, param);
-            obj = RcpClient.RequestPostAnsyc(Program.url, obj.ToString()).Result;
-
-            TestOutput(obj);
+            SendCommand(Config.BlockVersion, RpcCommand.Wallet.SendTo, param);
 
             return true;
         }
 
         public static bool OnFreezeBalance(string[] parameters)
         {
-            JObject obj = MakeCommand(Config.BlockVersion, RpcCommands.Wallet.FreezeBalance, new JArray());
+            JObject obj = MakeCommand(Config.BlockVersion, RpcCommand.Wallet.FreezeBalance, new JArray());
             obj = RcpClient.RequestPostAnsyc(Program.url, obj.ToString()).Result;
 
             return true;
@@ -157,7 +218,7 @@ namespace SkyCLI.Commands
 
         public static bool OnUnfreezeBalance(string[] parameters)
         {
-            JObject obj = MakeCommand(Config.BlockVersion, RpcCommands.Wallet.UnfreezeBalance, new JArray());
+            JObject obj = MakeCommand(Config.BlockVersion, RpcCommand.Wallet.UnfreezeBalance, new JArray());
             obj = RcpClient.RequestPostAnsyc(Program.url, obj.ToString()).Result;
 
             return true;
@@ -165,11 +226,10 @@ namespace SkyCLI.Commands
 
         public static bool OnVoteWitness(string[] parameters)
         {
-            JObject obj = MakeCommand(Config.BlockVersion, RpcCommands.Wallet.VoteWitness, new JArray());
+            JObject obj = MakeCommand(Config.BlockVersion, RpcCommand.Wallet.VoteWitness, new JArray());
             obj = RcpClient.RequestPostAnsyc(Program.url, obj.ToString()).Result;
 
             return true;
         }
     }
 }
-    

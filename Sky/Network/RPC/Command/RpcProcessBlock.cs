@@ -6,7 +6,7 @@ using Sky.Core;
 
 namespace Sky.Network.RPC.Command
 {
-    public partial class ProcessCommand
+    public partial class RpcProcessCommand
     {
         public static JObject OnGetBlock(object obj, JArray parameters)
         {

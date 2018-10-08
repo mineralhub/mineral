@@ -31,6 +31,7 @@ namespace Tester
             /*
             for (int i = 0 ; i < 5 ;++i)
             {
+                ECKey key = new 
                 var account = new WalletAccount(Sky.Cryptography.Helper.SHA256(Encoding.ASCII.GetBytes((i+1).ToString())));
                 Logger.Log((i+1).ToString());
                 Logger.Log(account.Address);

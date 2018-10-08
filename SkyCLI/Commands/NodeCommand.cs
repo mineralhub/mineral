@@ -12,10 +12,31 @@ namespace SkyCLI.Commands
     {
         public static bool OnNodeList(string[] parameters)
         {
-            JObject obj = MakeCommand(Config.BlockVersion, RpcCommands.Node.NodeList, new JArray());
-            obj = RcpClient.RequestPostAnsyc(Program.url, obj.ToString()).Result;
+            string usage = string.Format(
+                "\t{0} [command option]\n"
+                , RpcCommand.Node.NodeList);
+            string command_option = HelpCategory.Option_Help;
 
-            TestOutput(obj);
+            if (parameters.Length > 2)
+            {
+                OutputHelpMessage(usage, "", command_option, "");
+                return true;
+            }
+
+            int index = 1;
+            if (parameters.Length > index)
+            {
+                string option = parameters[index];
+                if (option.ToLower().Equals("-help") || option.ToLower().Equals("-h"))
+                {
+                    OutputHelpMessage(usage, "", command_option, "");
+                    index++;
+                    return true;
+                }
+            }
+
+            JArray param = new JArray(new ArraySegment<string>(parameters, index, parameters.Length - index));
+            SendCommand(Config.BlockVersion, RpcCommand.Node.NodeList, new JArray());
 
             return true;
         }

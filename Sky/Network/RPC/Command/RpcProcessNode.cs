@@ -6,7 +6,7 @@ using Newtonsoft.Json.Linq;
 
 namespace Sky.Network.RPC.Command
 {
-    public partial class ProcessCommand
+    public partial class RpcProcessCommand
     {
         public static JObject OnNodeList(object obj, JArray parameters)
         {
