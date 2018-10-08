@@ -68,6 +68,7 @@ namespace Sky.Network.Payload
         public static TransactionsPayload Create(Transaction tx)
         {
             TransactionsPayload pl = new TransactionsPayload();
+            pl.Transactions = new List<Transaction>();
             pl.Transactions.Add(tx);
             return pl;
         }
