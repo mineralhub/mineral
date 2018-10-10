@@ -4,6 +4,7 @@ using System.IO;
 using System.Text;
 using Newtonsoft.Json.Linq;
 using Sky;
+using Sky.Core;
 using Sky.Cryptography;
 using Sky.Network.RPC.Command;
 using Sky.Wallets;
@@ -127,8 +128,25 @@ namespace SkyCLI.Commands
 
         public static bool OnGetAddress(string[] parameters)
         {
-            JObject obj = MakeCommand(Config.BlockVersion, RpcCommand.Wallet.GetAddress, new JArray());
-            obj = RcpClient.RequestPostAnsyc(Program.url, obj.ToString()).Result;
+            //JObject obj = MakeCommand(Config.BlockVersion, RpcCommand.Wallet.GetAddress, new JArray());
+            //obj = RcpClient.RequestPostAnsyc(Program.url, obj.ToString()).Result;
+
+            //WalletAccount account = new WalletAccount(Sky.Cryptography.Helper.SHA256(Encoding.Default.GetBytes(parameters[1])));
+            //JObject json = new JObject();
+            //json["address"] = account.Address;
+            //json["addresshash"] = account.AddressHash.ToArray();
+            //json["privatekey"] = account.Key.PrivateKey.D.ToByteArray();
+            //json["publickey"] = account.Key.PublicKey.ToByteArray();
+
+
+            //string path = parameters[1].Contains(".json") ? parameters[1] : parameters[1] + ".json";
+            //using (var file = File.CreateText(path))
+            //{
+            //    file.Write(json);
+            //    file.Flush();
+            //}
+
+            //Console.WriteLine(json.ToString());
 
             return true;
         }
@@ -164,7 +182,7 @@ namespace SkyCLI.Commands
                 }
             }
 
-            JArray param = new JArray() { Program.Wallet.Key.PrivateKey.D.ToByteArray() };
+            JArray param = new JArray() { Program.Wallet.AddressHash.ToString() };
             SendCommand(Config.BlockVersion, RpcCommand.Wallet.GetBalance, param);
 
             return true;
@@ -181,7 +199,7 @@ namespace SkyCLI.Commands
             string[] usage = new string[] { string.Format(
                     "{0} [command option] <to address> <balance>\n"
                     , RpcCommand.Wallet.SendTo) };
-            string[] command_option = new string[] { HelpCommandOption.Help };;
+            string[] command_option = new string[] { HelpCommandOption.Help };
 
             if (parameters.Length == 1 || parameters.Length > 4)
             {
@@ -201,8 +219,19 @@ namespace SkyCLI.Commands
                 }
             }
 
-            JArray param = new JArray(new ArraySegment<string>(parameters, index, parameters.Length - index));
-            param.AddFirst(Program.Wallet.Key.PrivateKey.D.ToByteArray());
+            UInt160 to_address = WalletAccount.ToAddressHash(parameters[1]);
+            Fixed8 value = Fixed8.Parse(parameters[2].ToString());
+
+            TransferTransaction trans = new TransferTransaction()
+            {
+                From = Program.Wallet.AddressHash,
+                To = new Dictionary<UInt160, Fixed8> { { to_address, value } }
+            };
+
+            Transaction tx = new Transaction(eTransactionType.TransferTransaction, DateTime.UtcNow.ToTimestamp(), trans);
+            tx.Sign(Program.Wallet);
+
+            JArray param = new JArray(tx.ToArray());
             SendCommand(Config.BlockVersion, RpcCommand.Wallet.SendTo, param);
 
             return true;

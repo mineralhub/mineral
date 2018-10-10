@@ -7,7 +7,7 @@ namespace Sky.Network.RPC.Command
 {
     public partial class RpcCommand
     {
-        public delegate JObject ProcessHandler(object obj, JArray parameters);
+        public delegate JObject ProcessHandler(object obj, RpcCommand.ParamType type, JArray parameters);
 
         //public delegate string InvalidParameterMessage();
 

@@ -6,6 +6,12 @@ namespace Sky.Network.RPC.Command
 {
     public partial class RpcCommand
     {
+        public enum ParamType
+        {
+            Serialize,
+            Args
+        }
+
         public struct Block
         {
             public const string GetBlock = "getblock";

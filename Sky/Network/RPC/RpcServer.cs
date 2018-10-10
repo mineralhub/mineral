@@ -78,10 +78,10 @@ namespace Sky.Network.RPC
             }
         }
 
-        protected virtual JObject Process(JToken id, string method, JArray parameters)
+        protected virtual JObject Process(JToken id, string method, RpcCommand.ParamType type, JArray parameters)
         {
             return processHandlers.ContainsKey(method) 
-                ? processHandlers[method](_localNode, parameters) : CreateErrorResponse(id, -1, string.Format("Not found method : {0}", method));
+                ? processHandlers[method](_localNode, type, parameters) : CreateErrorResponse(id, -1, string.Format("Not found method : {0}", method));
         }
 
         async Task ProcessAsync(HttpContext context)
@@ -99,6 +99,7 @@ namespace Sky.Network.RPC
                 string jsonrpc = context.Request.Query["jsonrpc"];
                 string id = context.Request.Query["id"];
                 string method = context.Request.Query["method"];
+                string type = context.Request.Query["type"];
                 string parameters = context.Request.Query["params"];
                 if (!string.IsNullOrEmpty(id) && !string.IsNullOrEmpty(method) && !string.IsNullOrEmpty(parameters))
                 {
@@ -112,6 +113,7 @@ namespace Sky.Network.RPC
                         request["jsonrpc"] = jsonrpc;
                     request["id"] = double.Parse(id);
                     request["method"] = method;
+                    request["type"] = type;
                     request["params"] = JArray.Parse(parameters);
                 }
             }
@@ -153,7 +155,11 @@ namespace Sky.Network.RPC
                 JToken id = request["id"];
                 string method = request["method"].Value<string>();
                 JArray parameters = (JArray)request["params"];
-                result = Process(id, method, parameters);
+                RpcCommand.ParamType type = RpcCommand.ParamType.Args;
+                if (request.ContainsKey("type"))
+                    Enum.TryParse<RpcCommand.ParamType>(request["type"].ToString(), out type);
+
+                result = Process(id, method, type, parameters);
             }
             catch (Exception e)
             {

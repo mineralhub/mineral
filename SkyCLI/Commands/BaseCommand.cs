@@ -49,6 +49,7 @@ namespace SkyCLI.Commands
             JObject cmd = new JObject();
             cmd["id"] = id;
             cmd["method"] = method;
+            cmd["type"] = RpcCommand.ParamType.Serialize.ToString();
             cmd["params"] = parameters;
             return cmd;
         }

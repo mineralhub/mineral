@@ -84,6 +84,14 @@ namespace Sky.Wallets
             return data.Base58CheckEncode();
         }
 
+        public static Fixed8 GetBalance(UInt160 addressHash)
+        {
+            AccountState state = Blockchain.Instance.GetAccountState(addressHash);
+            if (state == null)
+                return Fixed8.Zero;
+            return state.Balance;
+        }
+
         public Fixed8 GetBalance()
         {
             AccountState state = Blockchain.Instance.GetAccountState(AddressHash);
