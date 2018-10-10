@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 using Newtonsoft.Json.Linq;
 using Sky;
@@ -14,11 +15,15 @@ namespace SkyCLI.Commands
 
         public struct HelpCategory
         {
-            public const string Usage = "\nUsage :\n";
-            public const string Options = "\nOptions :\n";
-            public const string Command_Options = "\nCommand Options :\n";
-            public const string Help = "\nHelp :\n";
-            public const string Option_Help = "\t -help -h\n";
+            public const string usage = "Usage :\n\n";
+            public const string Options = "Options :\n\n";
+            public const string Command_Options = "Command Options :\n\n";
+            public const string Help = "Help :\n\n";
+        }
+
+        public struct HelpCommandOption
+        {
+            public const string Help = "-help -h\n";
         }
 
         public static bool AppendParameter(ref JObject cmd, JToken parameter)
@@ -54,16 +59,39 @@ namespace SkyCLI.Commands
             return RcpClient.RequestPostAnsyc(Program.url, obj.ToString()).Result;
         }
 
-        public static void OutputHelpMessage(string usage_message, string option_message, string commandoption_message, string help_message)
+        public static void OutputHelpMessage(string[] usage_message, string[] option_message, string[] commandoption_message, string[] help_message)
         {
-            string message =
-                Program.version +
-                (usage_message.Length > 0 ? HelpCategory.Usage + usage_message : "") +
-                (option_message.Length > 0 ? HelpCategory.Options + option_message : "") +
-                (commandoption_message.Length > 0 ? HelpCategory.Command_Options + commandoption_message : "") +
-                (help_message.Length > 0 ? HelpCategory.Help + help_message : "");
+            string output_message = Program.version;
 
-            Console.WriteLine(message + "\n");
+            if (usage_message != null)
+            {
+                output_message += "\n" + "".PadLeft(2) + HelpCategory.usage;
+                foreach (string msg in usage_message ?? Enumerable.Empty<string>())
+                    output_message += "".PadLeft(4) + msg + "\n";
+            }
+
+            if (option_message != null)
+            {
+                output_message += "\n" + "".PadLeft(2) + HelpCategory.Options;
+                foreach (string msg in option_message ?? Enumerable.Empty<string>())
+                    output_message += "".PadLeft(4) + msg + "\n";
+            }
+
+            if (commandoption_message != null)
+            {
+                output_message += "\n" + "".PadLeft(2) + HelpCategory.Command_Options;
+                foreach (string msg in commandoption_message ?? Enumerable.Empty<string>())
+                    output_message += "".PadLeft(4) + msg + "\n";
+            }
+
+            if (help_message != null)
+            {
+                output_message += "\n" + "".PadLeft(2) + HelpCategory.Help;
+                foreach (string msg in help_message ?? Enumerable.Empty<string>())
+                    output_message += "".PadLeft(4) + msg + "\n";
+            }
+
+            Console.WriteLine(output_message);
         }
     }
 }

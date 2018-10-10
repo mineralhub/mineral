@@ -12,14 +12,14 @@ namespace SkyCLI.Commands
     {
         public static bool OnGetBlock(string[] parameters)
         {
-            string usage = string.Format(
-                "\t{0} [command option] <block hash>\n"
-                , RpcCommand.Block.GetBlock);
-            string command_option = HelpCategory.Option_Help;
+            string[] usage = new string[] { string.Format(
+                "{0} [command option] <block hash>\n"
+                , RpcCommand.Block.GetBlock) };
+            string[] command_option = new string[] { HelpCommandOption.Help };;
 
             if (parameters.Length == 1 || parameters.Length > 3)
             {
-                OutputHelpMessage(usage, "", command_option, "");
+                OutputHelpMessage(usage, null, command_option, null);
                 return true;
             }
 
@@ -29,7 +29,7 @@ namespace SkyCLI.Commands
                 string option = parameters[index];
                 if (option.ToLower().Equals("-help") || option.ToLower().Equals("-h"))
                 {
-                    OutputHelpMessage(usage, "", command_option, "");
+                    OutputHelpMessage(usage, null, command_option, null);
                     index++;
                     return true;
                 }
@@ -42,14 +42,14 @@ namespace SkyCLI.Commands
 
         public static bool OnGetBlockHash(string[] parameters)
         {
-            string usage = string.Format(
-                "\t{0} [command option] <block hash>\n"
-                , RpcCommand.Block.GetBlockHash);
-            string command_option = HelpCategory.Option_Help;
+            string[] usage = new string[] { string.Format(
+                "{0} [command option] <block hash>\n"
+                , RpcCommand.Block.GetBlockHash) };
+            string[] command_option = new string[] { HelpCommandOption.Help };;
 
             if (parameters.Length == 1 || parameters.Length > 3)
             {
-                OutputHelpMessage(usage, "", command_option, "");
+                OutputHelpMessage(usage, null, command_option, null);
                 return true;
             }
 
@@ -59,7 +59,7 @@ namespace SkyCLI.Commands
                 string option = parameters[index];
                 if (option.ToLower().Equals("-help") || option.ToLower().Equals("-h"))
                 {
-                    OutputHelpMessage(usage, "", command_option, "");
+                    OutputHelpMessage(usage, null, command_option, null);
                     index++;
                     return true;
                 }
@@ -72,14 +72,14 @@ namespace SkyCLI.Commands
 
         public static bool OnGetHeight(string[] parameters)
         {
-            string usage = string.Format(
-                "\t{0} [command option]\n"
-                , RpcCommand.Block.GetHeight);
-            string command_option = HelpCategory.Option_Help;
+            string[] usage = new string[] { string.Format(
+                "{0} [command option]\n"
+                , RpcCommand.Block.GetHeight) };
+            string[] command_option = new string[] { HelpCommandOption.Help };;
 
             if (parameters.Length > 2)
             {
-                OutputHelpMessage(usage, "", command_option, "");
+                OutputHelpMessage(usage, null, command_option, null);
                 return true;
             }
 
@@ -89,7 +89,7 @@ namespace SkyCLI.Commands
                 string option = parameters[index];
                 if (option.ToLower().Equals("-help") || option.ToLower().Equals("-h"))
                 {
-                    OutputHelpMessage(usage, "", command_option, "");
+                    OutputHelpMessage(usage, null, command_option, null);
                     index++;
                     return true;
                 }
@@ -102,14 +102,14 @@ namespace SkyCLI.Commands
 
         public static bool OnGetCurrentBlockHash(string[] parameters)
         {
-            string usage = string.Format(
-                "\t{0} [command option]\n"
-                , RpcCommand.Block.GetCurrentBlockHash);
-            string command_option = HelpCategory.Option_Help;
+            string[] usage = new string[] { string.Format(
+                "{0} [command option]\n"
+                , RpcCommand.Block.GetCurrentBlockHash) };
+            string[] command_option = new string[] { HelpCommandOption.Help };;
 
             if (parameters.Length > 2)
             {
-                OutputHelpMessage(usage, "", command_option, "");
+                OutputHelpMessage(usage, null, command_option, null);
                 return true;
             }
 
@@ -119,7 +119,7 @@ namespace SkyCLI.Commands
                 string option = parameters[index];
                 if (option.ToLower().Equals("-help") || option.ToLower().Equals("-h"))
                 {
-                    OutputHelpMessage(usage, "", command_option, "");
+                    OutputHelpMessage(usage, null, command_option, null);
                     index++;
                     return true;
                 }
@@ -132,14 +132,14 @@ namespace SkyCLI.Commands
 
         public static bool OnGetTransaction(string[] parameters)
         {
-            string usage = string.Format(
-                "\t{0} [command option] <transaction hash>\n"
-                , RpcCommand.Block.GetTransaction);
-            string command_option = HelpCategory.Option_Help;
+            string[] usage = new string[] { string.Format(
+                "{0} [command option] <transaction hash>\n"
+                , RpcCommand.Block.GetTransaction) };
+            string[] command_option = new string[] { HelpCommandOption.Help };;
 
             if (parameters.Length == 1 || parameters.Length > 3)
             {
-                OutputHelpMessage(usage, "", command_option, "");
+                OutputHelpMessage(usage, null, command_option, null);
                 return true;
             }
 
@@ -149,7 +149,7 @@ namespace SkyCLI.Commands
                 string option = parameters[index];
                 if (option.ToLower().Equals("-help") || option.ToLower().Equals("-h"))
                 {
-                    OutputHelpMessage(usage, "", command_option, "");
+                    OutputHelpMessage(usage, null, command_option, null);
                     index++;
                     return true;
                 }

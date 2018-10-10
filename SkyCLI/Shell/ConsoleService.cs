@@ -41,24 +41,30 @@ namespace SkyCLI.Shell
         public override void OnHelp(string[] parameters)
         {
             string message =
-                Program.version + "\n" +
-                "COMMAND : " + "\n" +
-                "\t BLOCK : " + "\n" +
-                "\t\t getblock" + "\n" +
-                "\t\t getblockhash" + "\n" +
-                "\t\t getheight" + "\n" +
-                "\t\t getcurrentblockhash" + "\n" +
-                "\t\t gettransaction" + "\n" +
-                "\t NODE : " + "\n" +
-                "\t\t nodelist" + "\n" +
-                "\t WALLET : " + "\n" +
-                "\t\t createaccount" + "\n" +
-                "\t\t openaccount" + "\n" +
-                "\t\t closeaccount" + "\n" +
-                "\t\t getbalance" + "\n" +
-                "\t\t sendto" + "\n" +
-                "MISC OPTION :" + "\n" +
-                BaseCommand.HelpCategory.Option_Help;
+                Program.version
+                + "\n" + "".PadLeft(2) + "COMMAND : "
+                + "\n" + "".PadLeft(4) + "BLOCK : "
+                + "\n" + "".PadLeft(6) + RpcCommand.Block.GetBlock
+                + "\n" + "".PadLeft(6) + RpcCommand.Block.GetBlockHash
+                + "\n" + "".PadLeft(6) + RpcCommand.Block.GetHeight
+                + "\n" + "".PadLeft(6) + RpcCommand.Block.GetCurrentBlockHash
+                + "\n" + "".PadLeft(6) + RpcCommand.Block.GetTransaction
+
+                + "\n"
+                + "\n" + "".PadLeft(4) + "NODE : "
+                + "\n" + "".PadLeft(6) + RpcCommand.Node.NodeList
+
+                + "\n"
+                + "\n" + "".PadLeft(4) + "WALLET :"
+                + "\n" + "".PadLeft(6) + RpcCommand.Wallet.CreateAccount
+                + "\n" + "".PadLeft(6) + RpcCommand.Wallet.OpenAccount
+                + "\n" + "".PadLeft(6) + RpcCommand.Wallet.CloseAccount
+                + "\n" + "".PadLeft(6) + RpcCommand.Wallet.GetBalance
+                + "\n" + "".PadLeft(6) + RpcCommand.Wallet.SendTo
+
+                + "\n"
+                + "\n" + "".PadLeft(2) + "MISC OPTION :"
+                + "\n" + "".PadLeft(6) + BaseCommand.HelpCommandOption.Help;
 
             Console.WriteLine(message);
         }

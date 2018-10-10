@@ -15,14 +15,14 @@ namespace SkyCLI.Commands
     {
         public static bool OnCreateAccount(string[] parameters)
         {
-            string usage = string.Format(
-                "\t{0} [command option] <path>\n"
-                , RpcCommand.Wallet.CreateAccount);
-            string command_option = HelpCategory.Option_Help;
+            string[] usage = new string[] { string.Format(
+                "{0} [command option] <path>\n"
+                , RpcCommand.Wallet.CreateAccount) };
+            string[] command_option = new string[] { HelpCommandOption.Help };
 
             if (parameters.Length == 1 || parameters.Length > 3)
             {
-                OutputHelpMessage(usage, "", command_option, "");
+                OutputHelpMessage(usage, null, command_option, null);
                 return true;
             }
 
@@ -32,7 +32,7 @@ namespace SkyCLI.Commands
                 string option = parameters[index];
                 if (option.ToLower().Equals("-help") || option.ToLower().Equals("-h"))
                 {
-                    OutputHelpMessage(usage, "", command_option, "");
+                    OutputHelpMessage(usage, null, command_option, null);
                     index++;
                     return true;
                 }
@@ -61,14 +61,14 @@ namespace SkyCLI.Commands
 
         public static bool OnOpenAccount(string[] parameters)
         {
-            string usage = string.Format(
-                "\t{0} [command option] <path>\n"
-                , RpcCommand.Wallet.OpenAccount);
-            string command_option = HelpCategory.Option_Help;
+            string[] usage = new string[] { string.Format(
+                "{0} [command option] <path>\n"
+                , RpcCommand.Wallet.OpenAccount) };
+            string[] command_option = new string[] { HelpCommandOption.Help };;
 
             if (parameters.Length == 1 || parameters.Length > 3)
             {
-                OutputHelpMessage(usage, "", command_option, "");
+                OutputHelpMessage(usage, null, command_option, null);
                 return true;
             }
 
@@ -78,7 +78,7 @@ namespace SkyCLI.Commands
                 string option = parameters[index];
                 if (option.ToLower().Equals("-help") || option.ToLower().Equals("-h"))
                 {
-                    OutputHelpMessage(usage, "", command_option, "");
+                    OutputHelpMessage(usage, null, command_option, null);
                     index++;
                     return true;
                 }
@@ -141,14 +141,14 @@ namespace SkyCLI.Commands
                 return true;
             }
 
-            string usage = string.Format(
-                "\t{0} [command option]\n"
-                , RpcCommand.Wallet.GetBalance);
-            string command_option = HelpCategory.Option_Help;
+            string[] usage = new string[] { string.Format(
+                "{0} [command option]\n"
+                , RpcCommand.Wallet.GetBalance) };
+            string[] command_option = new string[] { HelpCommandOption.Help };;
 
             if (parameters.Length > 2)
             {
-                OutputHelpMessage(usage, "", command_option, "");
+                OutputHelpMessage(usage, null, command_option, null);
                 return true;
             }
 
@@ -158,7 +158,7 @@ namespace SkyCLI.Commands
                 string option = parameters[index];
                 if (option.ToLower().Equals("-help") || option.ToLower().Equals("-h"))
                 {
-                    OutputHelpMessage(usage, "", command_option, "");
+                    OutputHelpMessage(usage, null, command_option, null);
                     index++;
                     return true;
                 }
@@ -178,14 +178,14 @@ namespace SkyCLI.Commands
                 return true;
             }
 
-            string usage = string.Format(
-                    "\t{0} [command option] <to address> <balance>\n"
-                    , RpcCommand.Wallet.SendTo);
-            string command_option = HelpCategory.Option_Help;
+            string[] usage = new string[] { string.Format(
+                    "{0} [command option] <to address> <balance>\n"
+                    , RpcCommand.Wallet.SendTo) };
+            string[] command_option = new string[] { HelpCommandOption.Help };;
 
             if (parameters.Length == 1 || parameters.Length > 4)
             {
-                OutputHelpMessage(usage, "", command_option, "");
+                OutputHelpMessage(usage, null, command_option, null);
                 return true;
             }
 
@@ -195,7 +195,7 @@ namespace SkyCLI.Commands
                 string option = parameters[index];
                 if (option.ToLower().Equals("-help") || option.ToLower().Equals("-h"))
                 {
-                    OutputHelpMessage(usage, "", command_option, "");
+                    OutputHelpMessage(usage, null, command_option, null);
                     index++;
                     return true;
                 }

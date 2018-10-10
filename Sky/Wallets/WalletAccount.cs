@@ -91,5 +91,13 @@ namespace Sky.Wallets
                 return Fixed8.Zero;
             return state.Balance;
         }
+
+        public Fixed8 GetLockBalance()
+        {
+            AccountState state = Blockchain.Instance.GetAccountState(AddressHash);
+            if (state == null)
+                return Fixed8.Zero;
+            return state.LockBalance;
+        }
     }
 }

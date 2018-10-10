@@ -12,14 +12,14 @@ namespace SkyCLI.Commands
     {
         public static bool OnNodeList(string[] parameters)
         {
-            string usage = string.Format(
-                "\t{0} [command option]\n"
-                , RpcCommand.Node.NodeList);
-            string command_option = HelpCategory.Option_Help;
+            string[] usage = new string[] { string.Format(
+                "{0} [command option]\n"
+                , RpcCommand.Node.NodeList) };
+            string[] command_option = new string[] { HelpCommandOption.Help };;
 
             if (parameters.Length > 2)
             {
-                OutputHelpMessage(usage, "", command_option, "");
+                OutputHelpMessage(usage, null, command_option, null);
                 return true;
             }
 
@@ -29,7 +29,7 @@ namespace SkyCLI.Commands
                 string option = parameters[index];
                 if (option.ToLower().Equals("-help") || option.ToLower().Equals("-h"))
                 {
-                    OutputHelpMessage(usage, "", command_option, "");
+                    OutputHelpMessage(usage, null, command_option, null);
                     index++;
                     return true;
                 }
