@@ -41,7 +41,7 @@ namespace Sky.Core
         {
             if (!base.VerifyBlockchain())
                 return false;
-            if (FromAccountState.Balance - To.Sum(p => p.Value) < Fixed8.Zero)
+            if (FromAccountState.Balance - Fee - To.Sum(p => p.Value) < Fixed8.Zero)
                 return false;
             return true;
         }

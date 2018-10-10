@@ -28,19 +28,30 @@ namespace Sky.Core
 
         public virtual int Size => Fee.Size + From.Size;
 
+        public virtual ERROR_CODES TxResult { get; protected set; } = ERROR_CODES.E_NO_ERROR;
+
         public virtual bool Verify()
         {
             if (From == null)
+            {
+                TxResult = ERROR_CODES.E_TX_FROM_ADDRESS_INVALID;
                 return false;
+            }
             return true;
         }
 
         public virtual bool VerifyBlockchain()
         {
             if (FromAccountState == null)
+            {
+                TxResult = ERROR_CODES.E_TX_FROM_ACCOUNT_INVALID;
                 return false;
+            }
             if (FromAccountState.Balance - Fee < Fixed8.Zero)
+            {
+                TxResult = ERROR_CODES.E_TX_NOT_ENOUGH_BALANCE;
                 return false;
+            }
             return true;
         }
 

@@ -146,9 +146,9 @@ namespace Sky.Database.LevelDB
                     _blockCache.Add(block.Hash, block);
             }
 
-            lock(PoolLock)
+            lock (PoolLock)
             {
-                foreach(var tx in block.Transactions)
+                foreach (var tx in block.Transactions)
                 {
                     if (_rxPool.ContainsKey(tx.Hash))
                         continue;
@@ -372,11 +372,13 @@ namespace Sky.Database.LevelDB
                 {
                     if (Fixed8.Zero < tx.Fee)
                         accounts.GetAndChange(tx.From).AddBalance(-tx.Fee);
+
+                    byte[] eCodeBytes = BitConverter.GetBytes((Int64)tx.Data.TxResult).Take(8).ToArray();
+                    batch.Put(SliceBuilder.Begin(DataEntryPrefix.DATA_TxResult).Add(tx.Hash), SliceBuilder.Begin().Add(eCodeBytes));
 #if DEBUG
-                    throw new Exception("verified == false transaction. " + tx.ToJson());
-#else
-                    continue;
+                    Logger.Log("verified == false transaction. " + tx.ToJson());
 #endif
+                    continue;
                 }
 
                 AccountState from = accounts.GetAndChange(tx.From);
@@ -400,8 +402,9 @@ namespace Sky.Database.LevelDB
                         break;
                     case VoteTransaction voteTx:
                         {
+                            delegates.Unvote(from.Votes);
                             delegates.Vote(voteTx);
-                            accounts.GetAndChange(voteTx.From).SetVote(voteTx.Votes);
+                            from.SetVote(voteTx.Votes);
                         }
                         break;
                     case RegisterDelegateTransaction registerDelegateTx:
@@ -428,6 +431,13 @@ namespace Sky.Database.LevelDB
                                 BlockTriggerState state = blockTriggers.GetAndChange(signTx.Reference.ExpirationBlockHeight);
                                 state.TransactionHashes.Remove(signTx.SignTxHash);
                             }
+                        }
+                        break;
+
+                    case LockTransaction lockTx:
+                        {
+                            from.AddBalance(-lockTx.LockValue);
+                            from.AddLock(lockTx.LockValue);
                         }
                         break;
                 }

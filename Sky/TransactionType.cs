@@ -7,6 +7,7 @@
         VoteTransaction = 3,
         RegisterDelegateTransaction = 4,
         OtherSignTransaction = 5,
-        SignTransaction = 6
+        SignTransaction = 6,
+        LockTransaction = 7,
     }
 }

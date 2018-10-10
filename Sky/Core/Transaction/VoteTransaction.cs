@@ -23,14 +23,35 @@ namespace Sky.Core
 
         public override bool Verify()
         {
-            if (Config.VoteMaxLength < Votes.Count)
+            if (!base.Verify())
                 return false;
-            return base.Verify();
+
+            if (Config.VoteMaxLength < Votes.Count)
+            {
+                TxResult = ERROR_CODES.E_TX_VOTE_OVERCOUNT;
+                return false;
+            }
+
+            return true;
         }
 
         public override bool VerifyBlockchain()
         {
-            return base.VerifyBlockchain();
+            if (!base.VerifyBlockchain())
+                return false;
+
+            Fixed8 LockValue = FromAccountState.LockBalance;
+
+            foreach (var v in Votes)
+            {
+                LockValue -= v.Value;
+                if (LockValue < Fixed8.Zero)
+                {
+                    TxResult = ERROR_CODES.E_TX_NOT_ENOUGH_LOCKBALANCE;
+                    return false;
+                }
+            }
+            return true;
         }
 
         public override JObject ToJson()

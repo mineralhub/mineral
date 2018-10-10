@@ -25,6 +25,14 @@ namespace Sky.Database.CacheStorage
             }
         }
 
+        public void Unvote(System.Collections.Generic.Dictionary<UInt160,Fixed8> Votes)
+        {
+            foreach (var v in Votes)
+            {
+                _cache.GetAndChange(v.Key)?.Vote(v.Key, Fixed8.Zero);
+            }
+        }
+
         public void Commit(WriteBatch batch)
         {
             _cache.Commit(batch);

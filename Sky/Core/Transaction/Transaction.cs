@@ -89,6 +89,9 @@ namespace Sky.Core
                 case eTransactionType.RewardTransaction:
                     Data = new RewardTransaction();
                     break;
+                case eTransactionType.LockTransaction:
+                    Data = new LockTransaction();
+                    break;
                 default:
                     Data = new TransactionBase();
                     break;

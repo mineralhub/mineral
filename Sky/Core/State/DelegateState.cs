@@ -42,9 +42,20 @@ namespace Sky.Core
         public void Vote(UInt160 addressHash, Fixed8 value)
         {
             if (Votes.ContainsKey(addressHash))
-                Votes[addressHash] = value;
-            else
+            {
+                if (value == Fixed8.Zero)
+                {
+                    Votes.Remove(addressHash);
+                }
+                else
+                {
+                    Votes[addressHash] = value;
+                }
+            }
+            else if (value > Fixed8.Zero)
+            {
                 Votes.Add(addressHash, value);
+            }
         }
     }
 }

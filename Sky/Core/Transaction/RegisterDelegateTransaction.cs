@@ -30,17 +30,32 @@ namespace Sky.Core
         public override bool Verify()
         {
             if (!base.Verify())
+            {
+                TxResult = ERROR_CODES.E_TX_SIGNATURE_INVALID;
                 return false;
+            }
+
             if (Name == null || Name.Length == 0)
+            {
+                TxResult = ERROR_CODES.E_TX_DELEGATE_NAME_INVALID;
                 return false;
+            }
+
             if (Config.DelegateNameMaxLength < Name.Length)
+            {
+                TxResult = ERROR_CODES.E_TX_DELEGATE_NAME_INVALID;
                 return false;
+            }
             return true;
         }
 
         public override bool VerifyBlockchain()
         {
-            return base.VerifyBlockchain();
+            if (!base.VerifyBlockchain())
+                return false;
+            if (FromAccountState.Balance - Fee < Fixed8.Zero)
+                return false;
+            return true;
         }
 
         public override JObject ToJson()
