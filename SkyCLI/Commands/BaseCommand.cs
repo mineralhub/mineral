@@ -55,7 +55,7 @@ namespace SkyCLI.Commands
 
         public static JObject SendCommand(double id, string method, JArray parameters)
         {
-            JObject obj = MakeCommand(Config.BlockVersion, RpcCommand.Block.GetBlockHash, parameters);
+            JObject obj = MakeCommand(Config.BlockVersion, method, parameters);
             return RcpClient.RequestPostAnsyc(Program.url, obj.ToString()).Result;
         }
 
