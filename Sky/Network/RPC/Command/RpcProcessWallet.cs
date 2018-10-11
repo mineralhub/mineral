@@ -26,11 +26,13 @@ namespace Sky.Network.RPC.Command
         {
             JObject json = new JObject();
 
-            UInt160 addressHash = UInt160.FromHexString(parameters[0].ToString(), false);
-            string address = WalletAccount.ToAddress(addressHash);
+            WalletAccount acc = new WalletAccount(parameters[0].ToObject<byte[]>());
+            string address = WalletAccount.ToAddress(acc.AddressHash);
             json["address"] = address;
-            json["addresshash"] = addressHash.ToArray();
-            json["balance"] = WalletAccount.GetBalance(addressHash).ToString();
+            json["addresshash"] = acc.AddressHash.ToArray();
+            json["balance"] = acc.GetBalance().ToString();
+            json["lock_balance"] = acc.GetLockBalance().ToString();
+            json["total_balance"] = acc.GetTotalBalance().ToString();
 
             return json;
         }
@@ -46,11 +48,11 @@ namespace Sky.Network.RPC.Command
                 if (tx.VerifyBlockchain())
                     localNode.AddTransaction(tx);
                 else
-                    json = RpcCommand.CreateErrorResponse(null, 0, "Not enough balance");
+                    json = RpcCommand.CreateErrorResult(null, 0, "Not enough balance");
             }
             else
             {
-                json = RpcCommand.CreateErrorResponse(null, 0, "Invalid trasaction data");
+                json = RpcCommand.CreateErrorResult(null, 0, "Invalid trasaction data");
             }
 
             return json;
@@ -66,8 +68,9 @@ namespace Sky.Network.RPC.Command
                 From = from_account.AddressHash,
                 To = new Dictionary<UInt160, Fixed8> { { to_address, balance } }
             };
+            trans.CalcFee();
 
-            if (trans.VerifyBlockchain())
+            if (trans.VerifyBlockchain(Blockchain.Instance.storage))
             {
                 Transaction tx = new Transaction(eTransactionType.TransferTransaction, DateTime.UtcNow.ToTimestamp(), trans);
                 tx.Sign(from_account);
@@ -75,7 +78,7 @@ namespace Sky.Network.RPC.Command
             }
             else
             {
-                json = RpcCommand.CreateErrorResponse(null, 0, "Not enough balance");
+                json = RpcCommand.CreateErrorResult(null, (int)trans.TxResult, trans.TxResult.ToString());
             }
 
             return json;

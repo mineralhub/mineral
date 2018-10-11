@@ -1,6 +1,7 @@
 ﻿using System.IO;
 using System.Collections.Generic;
 using Newtonsoft.Json.Linq;
+using Sky.Database.LevelDB;
 
 namespace Sky.Core
 {
@@ -31,18 +32,32 @@ namespace Sky.Core
         {
             if (!base.Verify())
                 return false;
+
+            if (To.ContainsKey(From))
+            {
+                TxResult = ERROR_CODES.E_TX_SELF_TRANSFER_NOT_ALLOWED;
+                return false;
+            }
+
             foreach (Fixed8 v in To.Values)
                 if (v < Fixed8.Satoshi)
+                {
+                    TxResult = ERROR_CODES.E_TX_TOO_SMALL_TRANSFER_BALANCE;
                     return false;
+                }
             return true;
         }
 
-        public override bool VerifyBlockchain()
+        public override bool VerifyBlockchain(Storage storage)
         {
-            if (!base.VerifyBlockchain())
+            if (!base.VerifyBlockchain(storage))
                 return false;
+
             if (FromAccountState.Balance - Fee - To.Sum(p => p.Value) < Fixed8.Zero)
+            {
+                TxResult = ERROR_CODES.E_TX_NOT_ENOUGH_BALANCE;
                 return false;
+            }
             return true;
         }
 

@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.IO;
 using Newtonsoft.Json.Linq;
+using Sky.Database.LevelDB;
 
 namespace Sky.Core
 {
@@ -50,14 +51,17 @@ namespace Sky.Core
             return true;
         }
 
-        public override bool VerifyBlockchain()
+        public override bool VerifyBlockchain(Storage storage)
         {
-            if (!base.VerifyBlockchain())
+            if (!base.VerifyBlockchain(storage))
                 return false;
+
             if (ExpirationBlockHeight < Blockchain.Instance.CurrentBlockHeight)
                 return false;
-            if (FromAccountState.Balance - To.Sum(p => p.Value) < Fixed8.Zero)
+
+            if (FromAccountState.Balance - Fee - To.Sum(p => p.Value) < Fixed8.Zero)
                 return false;
+
             return true;
         }
 

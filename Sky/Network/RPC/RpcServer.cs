@@ -50,9 +50,9 @@ namespace Sky.Network.RPC
             _localNode = localNode;
         }
 
-        static JObject CreateErrorResponse(JToken id, int code, string message, string data = null)
+        static JObject CreateErrorResult(JToken id, int code, string message, string data = null)
         {
-            JObject response = CreateResponse(id);
+            JObject response = new JObject();
             response["error"] = new JObject();
             response["error"]["code"] = code;
             response["error"]["message"] = message;
@@ -81,7 +81,7 @@ namespace Sky.Network.RPC
         protected virtual JObject Process(JToken id, string method, RpcCommand.ParamType type, JArray parameters)
         {
             return processHandlers.ContainsKey(method) 
-                ? processHandlers[method](_localNode, type, parameters) : CreateErrorResponse(id, -1, string.Format("Not found method : {0}", method));
+                ? processHandlers[method](_localNode, type, parameters) : CreateErrorResult(id, -1, string.Format("Not found method : {0}", method));
         }
 
         async Task ProcessAsync(HttpContext context)
@@ -128,10 +128,10 @@ namespace Sky.Network.RPC
                     catch (FormatException) { }
                 }
             }
-            JObject response;
+            JObject response = CreateResponse(request["id"]);
             if (request == null)
             {
-                response = CreateErrorResponse(null, -32700, "Parse error");
+                response["error"] = CreateErrorResult(null, -32700, "Parse error");
             }
             else
             {
@@ -148,8 +148,9 @@ namespace Sky.Network.RPC
             if (!request.ContainsKey("id"))
                 return null;
             if (!request.ContainsKey("method") || !request.ContainsKey("params") || !(request["params"] is JArray))
-                return CreateErrorResponse(request["id"], -32600, "Invalid Request");
+                return CreateErrorResult(request["id"], -32600, "Invalid Request");
             JObject result = null;
+            JObject response = CreateResponse(request["id"]);
             try
             {
                 JToken id = request["id"];
@@ -160,17 +161,27 @@ namespace Sky.Network.RPC
                     Enum.TryParse<RpcCommand.ParamType>(request["type"].ToString(), out type);
 
                 result = Process(id, method, type, parameters);
+                JToken token = null;
+                if (result.TryGetValue("error", out token))
+                    response["error"] = token;
+                else
+                    response["result"] = result;
+                
             }
             catch (Exception e)
             {
+                result = CreateErrorResult(request["id"], e.HResult, e.Message
 #if DEBUG
-                return CreateErrorResponse(request["id"], e.HResult, e.Message, e.StackTrace);
-#else
-                return CreateErrorResponse(request["id"], e.HResult, e.Message);
+                , e.StackTrace
 #endif
+                );
+                JToken token = null;
+                if (result.TryGetValue("error", out token))
+                    response["error"] = token;
+                else
+                    response["error"] = result;
+                return response;
             }
-            JObject response = CreateResponse(request["id"]);
-            response["result"] = result;
             return response;
         }
 

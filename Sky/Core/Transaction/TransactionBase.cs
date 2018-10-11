@@ -1,5 +1,6 @@
 ﻿using System.IO;
 using Newtonsoft.Json.Linq;
+using Sky.Database.LevelDB;
 
 namespace Sky.Core
 {
@@ -10,18 +11,22 @@ namespace Sky.Core
 
         public Transaction Owner;
 
+        private Storage _storage;
+
+        public void UsingStorage(Storage storage)
+        {
+            _storage = storage;
+            _fromAccountState = null;
+        }
+
         private AccountState _fromAccountState;
         public AccountState FromAccountState 
         {
             get 
             {
                 if (_fromAccountState == null)
-                {
-                    _fromAccountState = Blockchain.Instance.GetAccountState(From);
-                    if (_fromAccountState == null)
-                        _fromAccountState = new AccountState(From);
-                }
-                    
+                    _fromAccountState = _storage.GetAccountState(From);
+
                 return _fromAccountState;
             }
         }
@@ -40,8 +45,9 @@ namespace Sky.Core
             return true;
         }
 
-        public virtual bool VerifyBlockchain()
+        public virtual bool VerifyBlockchain(Storage storage)
         {
+            UsingStorage(storage);
             if (FromAccountState == null)
             {
                 TxResult = ERROR_CODES.E_TX_FROM_ACCOUNT_INVALID;

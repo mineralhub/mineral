@@ -86,7 +86,7 @@ namespace Sky.Wallets
 
         public static Fixed8 GetBalance(UInt160 addressHash)
         {
-            AccountState state = Blockchain.Instance.GetAccountState(addressHash);
+            AccountState state = Blockchain.Instance.storage.GetAccountState(addressHash);
             if (state == null)
                 return Fixed8.Zero;
             return state.Balance;
@@ -94,7 +94,7 @@ namespace Sky.Wallets
 
         public Fixed8 GetBalance()
         {
-            AccountState state = Blockchain.Instance.GetAccountState(AddressHash);
+            AccountState state = Blockchain.Instance.storage.GetAccountState(AddressHash);
             if (state == null)
                 return Fixed8.Zero;
             return state.Balance;
@@ -102,10 +102,18 @@ namespace Sky.Wallets
 
         public Fixed8 GetLockBalance()
         {
-            AccountState state = Blockchain.Instance.GetAccountState(AddressHash);
+            AccountState state = Blockchain.Instance.storage.GetAccountState(AddressHash);
             if (state == null)
                 return Fixed8.Zero;
             return state.LockBalance;
+        }
+
+        public Fixed8 GetTotalBalance()
+        {
+            AccountState state = Blockchain.Instance.storage.GetAccountState(AddressHash);
+            if (state == null)
+                return Fixed8.Zero;
+            return state.TotalBalance;
         }
     }
 }

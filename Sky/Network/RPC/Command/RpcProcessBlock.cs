@@ -88,7 +88,7 @@ namespace Sky.Network.RPC.Command
 
         public static JObject OnGetTransaction(object obj, RpcCommand.ParamType type, JArray parameters)
         {
-            Transaction tx = Blockchain.Instance.GetTransaction(UInt256.FromHexString(parameters[0].Value<string>()));
+            Transaction tx = Blockchain.Instance.storage.GetTransaction(UInt256.FromHexString(parameters[0].Value<string>()));
             return tx.ToJson();
         }
     }

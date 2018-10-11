@@ -9,5 +9,6 @@
         OtherSignTransaction = 5,
         SignTransaction = 6,
         LockTransaction = 7,
+        UnlockTransaction = 8,
     }
 }

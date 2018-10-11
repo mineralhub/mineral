@@ -1,5 +1,6 @@
 ﻿using System.IO;
 using Newtonsoft.Json.Linq;
+using Sky.Database.LevelDB;
 
 namespace Sky.Core
 {
@@ -13,7 +14,7 @@ namespace Sky.Core
             get 
             {
                 if (_reference == null)
-                    _reference = Blockchain.Instance.GetTransaction(SignTxHash).Data as OtherSignTransaction;
+                    _reference = Blockchain.Instance.storage.GetTransaction(SignTxHash).Data as OtherSignTransaction;
 
                 return _reference;
             }
@@ -38,16 +39,19 @@ namespace Sky.Core
             return base.Verify();
         }
 
-        public override bool VerifyBlockchain()
+        public override bool VerifyBlockchain(Storage storage)
         {
-            if (!base.VerifyBlockchain())
+            if (!base.VerifyBlockchain(storage))
                 return false;
-            Transaction tx = Blockchain.Instance.GetTransaction(SignTxHash);
+
+            Transaction tx = Blockchain.Instance.storage.GetTransaction(SignTxHash);
             if (tx == null || tx.Type != eTransactionType.OtherSignTransaction)
                 return false;
+
             OtherSignTransaction osignTx = tx.Data as OtherSignTransaction;
             if (osignTx.Others.Contains(Wallets.WalletAccount.ToAddress(Owner.Signature.Pubkey)))
                 return true;
+
             return false;
         }
 

@@ -70,6 +70,7 @@ namespace Sky
         public const int OtherSignMaxLength = 10;
         public const int OtherSignToMaxLength = 10;
         public const int TransferToMaxLength = 10;
+        public const int MaxTransactions = 2000;
         public const int VoteMaxLength = 10;
         public const int LockTTL = TTLDay * 1;
         public const int LockRedoTimes = 10;

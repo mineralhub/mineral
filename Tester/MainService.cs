@@ -83,7 +83,7 @@ namespace Tester
             int height = Blockchain.Instance.CurrentHeaderHeight;
             UInt256 prevhash = Blockchain.Instance.CurrentHeaderHash;
             List<Transaction> txs = new List<Transaction>();
-            
+
             // Transaction TPS Check.
             /*
             var tx = CreateTransferTransaction();
@@ -96,7 +96,18 @@ namespace Tester
                 Blockchain.Instance.LoadTransactionPool(ref txs);
                 Blockchain.Instance.NormalizeTransactions(ref txs);
                 Block block = CreateBlock(height + i, prevhash, txs);
+
+                if (!Blockchain.Instance.VerityBlock(block))
+                {
+                    Logger.Log("Block [" + block.Height + ":" + block.Hash + "] has unconfirmed transactions.");
+                    if (!Blockchain.Instance.VerityBlock(block))
+                    {
+                        Logger.Log("Block [" + block.Height + ":" + block.Hash + "] has not verified.");
+                    }
+                }
+
                 prevhash = block.Hash;
+
                 if (directly)
                 {
                     Blockchain.Instance.AddBlockDirectly(block);
@@ -179,7 +190,7 @@ namespace Tester
             Blockchain.Instance.PersistCompleted += PersistCompleted;
             Blockchain.Instance.Run();
 
-            var genesisBlockTx = Blockchain.Instance.GetTransaction(_genesisBlock.Transactions[0].Hash);
+            var genesisBlockTx = Blockchain.Instance.storage.GetTransaction(_genesisBlock.Transactions[0].Hash);
             Logger.Log("genesis block tx. hash : " + genesisBlockTx.Hash);
 
             WalletIndexer.SetInstance(new Sky.Database.LevelDB.LevelDBWalletIndexer("./output-wallet-index"));

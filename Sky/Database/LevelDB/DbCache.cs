@@ -25,11 +25,14 @@ namespace Sky.Database.LevelDB
 
         protected Dictionary<TKey, Trackable> _cache = new Dictionary<TKey, Trackable>();
         protected DB _db = null;
+        protected ReadOptions _opt = ReadOptions.Default;
         protected byte _prefix = 0;
 
-        public DbCache(DB db, byte prefix)
+        public DbCache(DB db, byte prefix, ReadOptions opt = null)
         {
             _db = db;
+            if (opt != null)
+                _opt = opt;
             _prefix = prefix;
         }
 
@@ -46,18 +49,18 @@ namespace Sky.Database.LevelDB
 
         protected IEnumerable<KeyValuePair<TKey, TValue>> FindInternal(byte[] keyPrefix)
         {
-            return _db.Find(ReadOptions.Default, SliceBuilder.Begin(_prefix).Add(keyPrefix),
+            return _db.Find(_opt, SliceBuilder.Begin(_prefix).Add(keyPrefix),
                 (k, v) => new KeyValuePair<TKey, TValue>(k.ToArray().Serializable<TKey>(), v.ToArray().Serializable<TValue>()));
         }
 
         protected TValue GetInternal(TKey key)
         {
-            return _db.Get<TValue>(ReadOptions.Default, _prefix, key);
+            return _db.Get<TValue>(_opt, _prefix, key);
         }
 
         protected TValue TryGetInternal(TKey key)
         {
-            return _db.TryGet<TValue>(ReadOptions.Default, _prefix, key);
+            return _db.TryGet<TValue>(_opt, _prefix, key);
         }
 
         public void Add(TKey key, TValue value)

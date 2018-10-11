@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Sky.Database.LevelDB;
+using System;
 using System.Collections.Generic;
 
 namespace Sky.Core
@@ -45,11 +46,14 @@ namespace Sky.Core
         public abstract Block GetBlock(UInt256 hash);
         public abstract Block GetBlock(int height);
         public abstract Block GetNextBlock(UInt256 hash);
+        public abstract bool VerityBlock(Block block);
 
-        public Transaction GetTransaction(UInt256 hash)
-        {
-            return GetTransaction(hash, out _);
-        }
+        public abstract Storage storage { get; }
+
+        //public Transaction GetTransaction(UInt256 hash)
+        //{
+        //    return GetTransaction(hash, out _);
+        //}
 
         public bool HasTransactionPool(UInt256 hash)
         {
@@ -65,13 +69,16 @@ namespace Sky.Core
 
         public bool AddTransactionPool(Transaction tx)
         {
+            if (!tx.Verify())
+                return false;
+
             lock (PoolLock)
             {
                 if (_rxPool.ContainsKey(tx.Hash))
                     return false;
                 if (_txPool.ContainsKey(tx.Hash))
                     return false;
-                if (GetTransaction(tx.Hash) != null)
+                if (storage.GetTransaction(tx.Hash) != null)
                     return false;
                 _rxPool.Add(tx.Hash, tx);
                 return true;
@@ -131,14 +138,20 @@ namespace Sky.Core
                 {
                     txs.Add(tx);
                     _txPool.Add(tx.Hash, tx);
+                    if (txs.Count >= Config.MaxTransactions)
+                    {
+                        foreach (Transaction rx in _txPool.Values)
+                            _rxPool.Remove(rx.Hash);
+                        return;
+                    }
                 }
                 _rxPool.Clear();
             }
         }
 
-        public abstract Transaction GetTransaction(UInt256 hash, out int height);
+        //public abstract Transaction GetTransaction(UInt256 hash, out int height);
+        //public abstract AccountState GetAccountState(UInt160 addressHash);
 
-        public abstract AccountState GetAccountState(UInt160 addressHash);
         public abstract List<DelegateState> GetDelegateStateAll();
         public abstract List<DelegateState> GetDelegateStateMakers();
 

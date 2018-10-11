@@ -1,5 +1,6 @@
 ﻿using System.IO;
 using Newtonsoft.Json.Linq;
+using Sky.Database.LevelDB;
 
 namespace Sky.Core
 {
@@ -35,9 +36,9 @@ namespace Sky.Core
             return true;
         }
 
-        public override bool VerifyBlockchain()
+        public override bool VerifyBlockchain(Storage storage)
         {
-            return base.VerifyBlockchain();
+            return base.VerifyBlockchain(storage);
         }
 
         public override JObject ToJson()

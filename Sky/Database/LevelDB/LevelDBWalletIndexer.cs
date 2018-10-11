@@ -190,7 +190,7 @@ namespace Sky.Database.LevelDB
                         break;
                     case SignTransaction signTx:
                         {
-                            OtherSignTransaction osignTx = Blockchain.Instance.GetTransaction(signTx.SignTxHash).Data as OtherSignTransaction;
+                            OtherSignTransaction osignTx = Blockchain.Instance.storage.GetTransaction(signTx.SignTxHash).Data as OtherSignTransaction;
                             if (accounts.Contains(osignTx.From) && !changed.Contains(osignTx.From))
                                 changed.Add(osignTx.From);
                             foreach (UInt160 to in osignTx.To.Keys)

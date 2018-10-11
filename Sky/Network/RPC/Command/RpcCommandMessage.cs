@@ -27,12 +27,12 @@ namespace Sky.Network.RPC.Command
         //        InvalidParameterHandlers[obj]() : "";
         //}
 
-        public static JObject CreateErrorResponse(JToken id, int code, string message, string data = null)
+        public static JObject CreateErrorResult(JToken id, int code, string message, string data = null)
         {
             JObject response = new JObject();
-            response["jsonrpc"] = "2.0";
-            response["id"] = id;
             response["error"] = new JObject();
+            if (id != null)
+                response["error"]["id"] = id;
             response["error"]["code"] = code;
             response["error"]["message"] = message;
             if (data != null)

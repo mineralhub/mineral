@@ -3,6 +3,7 @@ using Sky.Cryptography;
 using System.Text;
 using Sky.Wallets;
 using Newtonsoft.Json.Linq;
+using Sky.Database.LevelDB;
 
 namespace Sky.Core
 {
@@ -16,6 +17,7 @@ namespace Sky.Core
 
         public UInt160 From => Data.From;
         public Fixed8 Fee => Data.Fee;
+        public ERROR_CODES TxResult = ERROR_CODES.E_NO_ERROR;
 
         public virtual int Size => sizeof(short) + sizeof(eTransactionType) + sizeof(int) + Data.Size + Signature.Size;
         private UInt256 _hash = null;
@@ -92,6 +94,9 @@ namespace Sky.Core
                 case eTransactionType.LockTransaction:
                     Data = new LockTransaction();
                     break;
+                case eTransactionType.UnlockTransaction:
+                    Data = new UnlockTransaction();
+                    break;
                 default:
                     Data = new TransactionBase();
                     break;
@@ -146,15 +151,34 @@ namespace Sky.Core
         public bool Verify()
         {
             if (VerifySignature() == false)
+            {
+                TxResult = ERROR_CODES.E_TX_SIGNATURE_INVALID;
                 return false;
-            return Data.Verify();
+            }
+            if (!Data.Verify())
+            {
+                TxResult = Data.TxResult;
+                return false;
+            }
+            return true;
         }
 
-        public bool VerifyBlockchain()
+        public bool VerifyBlockchain(Storage storage = null)
         {
-            if (Blockchain.Instance.GetTransaction(Hash) != null)
+            if (storage == null)
+                storage = Blockchain.Instance.storage;
+
+            if (storage.GetTransaction(Hash) != null)
+            {
+                TxResult = ERROR_CODES.E_SYS_EXIST_TRANSACTION;
                 return false;
-            return Data.VerifyBlockchain();
+            }
+            if (!Data.VerifyBlockchain(storage))
+            {
+                TxResult = Data.TxResult;
+                return false;
+            }
+            return true;
         }
 
         public JObject ToJson()
