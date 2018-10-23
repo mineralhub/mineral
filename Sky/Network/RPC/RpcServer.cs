@@ -40,8 +40,8 @@ namespace Sky.Network.RPC
             { RpcCommand.Wallet.GetAddress, new RpcCommand.ProcessHandler(RpcProcessCommand.OnGetAddress) },
             { RpcCommand.Wallet.GetBalance, new RpcCommand.ProcessHandler(RpcProcessCommand.OnGetBalance) },
             { RpcCommand.Wallet.SendTo, new RpcCommand.ProcessHandler(RpcProcessCommand.OnSendTo) },
-            { RpcCommand.Wallet.FreezeBalance, new RpcCommand.ProcessHandler(RpcProcessCommand.OnFreezeBalance) },
-            { RpcCommand.Wallet.UnfreezeBalance, new RpcCommand.ProcessHandler(RpcProcessCommand.OnUnfreezeBalance) },
+            { RpcCommand.Wallet.LockBalance, new RpcCommand.ProcessHandler(RpcProcessCommand.OnLockBalance) },
+            { RpcCommand.Wallet.UnlockBalance, new RpcCommand.ProcessHandler(RpcProcessCommand.OnUnlockBalance) },
             { RpcCommand.Wallet.VoteWitness, new RpcCommand.ProcessHandler(RpcProcessCommand.OnVoteWitness) },
         };
 

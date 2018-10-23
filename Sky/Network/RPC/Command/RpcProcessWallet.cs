@@ -104,13 +104,13 @@ namespace Sky.Network.RPC.Command
             return json;
         }
 
-        public static JObject OnFreezeBalance(object obj, RpcCommand.ParamType type, JArray parameters)
+        public static JObject OnLockBalance(object obj, RpcCommand.ParamType type, JArray parameters)
         {
             JObject json = new JObject();
             return json;
         }
 
-        public static JObject OnUnfreezeBalance(object obj, RpcCommand.ParamType type, JArray parameters)
+        public static JObject OnUnlockBalance(object obj, RpcCommand.ParamType type, JArray parameters)
         {
             JObject json = new JObject();
             return json;
