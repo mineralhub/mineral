@@ -28,8 +28,8 @@ namespace SkyCLI.Shell
             { RpcCommand.Wallet.GetAddress, new CommandHandler(WalletCommand.OnGetAddress) },
             { RpcCommand.Wallet.GetBalance, new CommandHandler(WalletCommand.OnGetBalance) },
             { RpcCommand.Wallet.SendTo, new CommandHandler(WalletCommand.OnSendTo) },
-            { RpcCommand.Wallet.FreezeBalance, new CommandHandler(WalletCommand.OnFreezeBalance) },
-            { RpcCommand.Wallet.UnfreezeBalance, new CommandHandler(WalletCommand.OnUnfreezeBalance) },
+            { RpcCommand.Wallet.LockBalance, new CommandHandler(WalletCommand.OnLockBalance) },
+            { RpcCommand.Wallet.UnlockBalance, new CommandHandler(WalletCommand.OnUnlockBalance) },
             { RpcCommand.Wallet.VoteWitness, new CommandHandler(WalletCommand.OnVoteWitness) },
         };
 

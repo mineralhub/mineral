@@ -236,7 +236,7 @@ namespace SkyCLI.Commands
             }
 
             UInt160 to_address = WalletAccount.ToAddressHash(parameters[1]);
-            Fixed8 value = Fixed8.Parse(parameters[2].ToString());
+            Fixed8 value = Fixed8.Parse(parameters[2]);
 
             TransferTransaction trans = new TransferTransaction()
             {
@@ -253,26 +253,145 @@ namespace SkyCLI.Commands
             return true;
         }
 
-        public static bool OnFreezeBalance(string[] parameters)
+        public static bool OnLockBalance(string[] parameters)
         {
-            JObject obj = MakeCommand(Config.BlockVersion, RpcCommand.Wallet.FreezeBalance, new JArray());
-            obj = RcpClient.RequestPostAnsyc(Program.url, obj.ToString()).Result;
+            if (Program.Wallet == null)
+            {
+                Console.WriteLine("Not loaded wallet account");
+                return true;
+            }
+
+            string[] usage = new string[] { string.Format(
+                    "{0} [command option] <balance>\n"
+                    , RpcCommand.Wallet.LockBalance) };
+            string[] command_option = new string[] { HelpCommandOption.Help };
+
+            if (parameters.Length == 1 || parameters.Length > 3)
+            {
+                OutputHelpMessage(usage, null, command_option, null);
+                return true;
+            }
+
+            int index = 1;
+            if (parameters.Length > index)
+            {
+                string option = parameters[index];
+                if (option.ToLower().Equals("-help") || option.ToLower().Equals("-h"))
+                {
+                    OutputHelpMessage(usage, null, command_option, null);
+                    index++;
+                    return true;
+                }
+            }
+
+            Fixed8 value = Fixed8.Parse(parameters[1]);
+
+            LockTransaction trans = new LockTransaction()
+            {
+                From = Program.Wallet.AddressHash,
+                LockValue = value
+            };
+
+            Transaction tx = new Transaction(eTransactionType.LockTransaction, DateTime.UtcNow.ToTimestamp(), trans);
+            tx.Sign(Program.Wallet);
+
+            JArray param = new JArray(tx.ToArray());
+            SendCommand(Config.BlockVersion, RpcCommand.Wallet.LockBalance, param);
 
             return true;
         }
 
-        public static bool OnUnfreezeBalance(string[] parameters)
+        public static bool OnUnlockBalance(string[] parameters)
         {
-            JObject obj = MakeCommand(Config.BlockVersion, RpcCommand.Wallet.UnfreezeBalance, new JArray());
-            obj = RcpClient.RequestPostAnsyc(Program.url, obj.ToString()).Result;
+            if (Program.Wallet == null)
+            {
+                Console.WriteLine("Not loaded wallet account");
+                return true;
+            }
+
+            string[] usage = new string[] { string.Format(
+                    "{0} [command option]\n"
+                    , RpcCommand.Wallet.UnlockBalance) };
+            string[] command_option = new string[] { HelpCommandOption.Help };
+
+            if (parameters.Length > 2)
+            {
+                OutputHelpMessage(usage, null, command_option, null);
+                return true;
+            }
+
+            int index = 1;
+            if (parameters.Length > index)
+            {
+                string option = parameters[index];
+                if (option.ToLower().Equals("-help") || option.ToLower().Equals("-h"))
+                {
+                    OutputHelpMessage(usage, null, command_option, null);
+                    index++;
+                    return true;
+                }
+            }
+
+            UnlockTransaction trans = new UnlockTransaction()
+            {
+                From = Program.Wallet.AddressHash
+            };
+
+            Transaction tx = new Transaction(eTransactionType.UnlockTransaction, DateTime.UtcNow.ToTimestamp(), trans);
+            tx.Sign(Program.Wallet);
+
+            JArray param = new JArray(tx.ToArray());
+            SendCommand(Config.BlockVersion, RpcCommand.Wallet.UnlockBalance, param);
 
             return true;
         }
 
         public static bool OnVoteWitness(string[] parameters)
         {
-            JObject obj = MakeCommand(Config.BlockVersion, RpcCommand.Wallet.VoteWitness, new JArray());
-            obj = RcpClient.RequestPostAnsyc(Program.url, obj.ToString()).Result;
+            if (Program.Wallet == null)
+            {
+                Console.WriteLine("Not loaded wallet account");
+                return true;
+            }
+
+            string[] usage = new string[] { string.Format(
+                    "{0} [command option] <to address> <vote balance> <to address> <vote balance> ...\n"
+                    , RpcCommand.Wallet.VoteWitness) };
+            string[] command_option = new string[] { HelpCommandOption.Help };
+
+            if (parameters.Length == 1)
+            {
+                OutputHelpMessage(usage, null, command_option, null);
+                return true;
+            }
+
+            int index = 1;
+            if (parameters.Length > index)
+            {
+                string option = parameters[index];
+                if (option.ToLower().Equals("-help") || option.ToLower().Equals("-h"))
+                {
+                    OutputHelpMessage(usage, null, command_option, null);
+                    index++;
+                    return true;
+                }
+            }
+
+            Dictionary<UInt160, Fixed8> votes = new Dictionary<UInt160, Fixed8>();
+            for (int i = 0; i < parameters.Length - 1; i+=2)
+                votes.Add(WalletAccount.ToAddressHash(parameters[i]), Fixed8.Parse(parameters[i]));
+
+            VoteTransaction trans = new VoteTransaction()
+            {
+                From = Program.Wallet.AddressHash,
+                Votes = votes
+            };
+
+            Transaction tx = new Transaction(eTransactionType.VoteTransaction, DateTime.UtcNow.ToTimestamp(), trans);
+            tx.Sign(Program.Wallet);
+
+            JArray param = new JArray(tx.ToArray());
+            SendCommand(Config.BlockVersion, RpcCommand.Wallet.VoteWitness, param);
 
             return true;
         }

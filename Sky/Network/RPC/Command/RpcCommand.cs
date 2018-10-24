@@ -38,8 +38,8 @@ namespace Sky.Network.RPC.Command
             public const string GetBalance = "getbalance";
             public const string SendTo = "sendto";
 
-            public const string FreezeBalance = "freezebalance";
-            public const string UnfreezeBalance = "unfreezebalance";
+            public const string LockBalance = "lockbalance";
+            public const string UnlockBalance = "unlockbalance";
 
             public const string VoteWitness = "votewitness";
         }
