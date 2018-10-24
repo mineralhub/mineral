@@ -2,13 +2,16 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Text;
+using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using Sky;
 using Sky.Core;
 using Sky.Cryptography;
 using Sky.Network.RPC.Command;
 using Sky.Wallets;
+using Sky.Wallets.KeyStore;
 using SkyCLI.Network;
+using SkyCLI.Shell;
 
 namespace SkyCLI.Commands
 {
@@ -39,23 +42,30 @@ namespace SkyCLI.Commands
                 }
             }
 
-            WalletAccount account = WalletAccount.CreateAccount();
+            Console.Write("Password : ");
+            string password = ConsoleServiceBase.ReadPasswordString();
+            Console.Write("Confirm password : ");
+            string confirm = ConsoleServiceBase.ReadPasswordString();
 
-            JObject json = new JObject();
-            json["address"] = account.Address;
-            json["addresshash"] = account.AddressHash.ToArray();
-            json["privatekey"] = account.Key.PrivateKey.D.ToByteArray();
-            json["publickey"] = account.Key.PublicKey.ToByteArray();
-
-            string path = parameters[1].Contains(".json") ? parameters[1] : parameters[1] + ".json";
-            using (var file = File.CreateText(path))
+            if (!password.Equals(confirm))
             {
-                file.Write(json);
-                file.Flush();
+                Console.WriteLine("Password do not match.");
+                return true;
             }
 
+            string path = parameters[1].Contains(".json") ? parameters[1] : parameters[1] + ".json";
+            WalletAccount account = WalletAccount.CreateAccount();
+
+            if (!KeyStoreService.GenerateKeyStore(path, password, account.Key.PrivateKey.D.ToByteArray(), account.Address))
+            {
+                Console.WriteLine("Fail to generate keystore file.");
+                return true;
+            }
+
+            Console.WriteLine("Address : {0}", account.Address);
+            Console.WriteLine("PrivateKey : {0}", account.Key.PrivateKey.D.ToByteArray().ToHexString());
+
             Program.Wallet = account;
-            Console.WriteLine(json.ToString());
 
             return true;
         }
@@ -99,11 +109,16 @@ namespace SkyCLI.Commands
                 json = JObject.Parse(data);
             }
 
-            JToken key;
-            if (json.TryGetValue("privatekey", out key))
-            {
-                Program.Wallet = new Sky.Wallets.WalletAccount(key.ToObject<byte[]>());
-            }
+            Console.Write("Password : ");
+            string password = ConsoleServiceBase.ReadPasswordString();
+
+            KeyStore keystore = new KeyStore();
+            keystore = JsonConvert.DeserializeObject<KeyStore>(json.ToString());
+
+            byte[] privatekey = null;
+            KeyStoreService.DecryptKeyStore(password, keystore, out privatekey);
+
+            Program.Wallet = new WalletAccount(privatekey);
 
             string message = Program.Wallet != null ?
                                 string.Format("Address : {0}", Program.Wallet.Address.ToString()) : "Load fail to wallet account";
@@ -115,6 +130,7 @@ namespace SkyCLI.Commands
         public static bool OnCloseAccount(string[] parameters)
         {
             Program.Wallet = null;
+            Console.WriteLine("Close account");
             return true;
         }
 

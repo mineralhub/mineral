@@ -61,6 +61,25 @@ namespace SkyCLI.Shell
 
         public virtual void OnHelp(string[] parameters) { }
 
+        public static string ReadPasswordString()
+        {
+            string result = "";
+
+            while (true)
+            {
+                var key = System.Console.ReadKey(true);
+
+                if (key.Key == ConsoleKey.Backspace) continue;
+                else if (key.Key == ConsoleKey.Enter) break;
+
+                Console.Write("*");
+                result += key.KeyChar;
+            }
+            Console.WriteLine();
+
+            return result;
+        }
+
         public void Dispose()
         {
             IsRunning = false;
