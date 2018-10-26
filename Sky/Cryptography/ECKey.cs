@@ -29,18 +29,12 @@ namespace Sky.Cryptography
         public ECKey(byte[] key, bool prikey)
         {
             if (prikey)
-            {
-                byte[] privatekey = new byte[32];
-                Buffer.BlockCopy(key, key.Length - 32, privatekey, 0, privatekey.Length);
-                _key = new ECPrivateKeyParameters(new BigInteger(1, privatekey), DomainParameter);
-            }
+                _key = new ECPrivateKeyParameters(new BigInteger(1, key), DomainParameter);
             else
-            {
                 _key = new ECPublicKeyParameters("EC", Secp256k1.Curve.DecodePoint(key), DomainParameter);
-            }
         }
 
-        public ECKey(AsymmetricCipherKeyPair keypair) : this((keypair.Private as ECPrivateKeyParameters).D.ToByteArray(), true)
+        public ECKey(AsymmetricCipherKeyPair keypair) : this((keypair.Private as ECPrivateKeyParameters).D.ToByteArrayUnsigned(), true)
         {
         }
 

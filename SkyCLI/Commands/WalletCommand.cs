@@ -56,7 +56,7 @@ namespace SkyCLI.Commands
             string path = parameters[1].Contains(".keystore") ? parameters[1] : parameters[1] + ".keystore";
             WalletAccount account = WalletAccount.CreateAccount();
 
-            if (!KeyStoreService.GenerateKeyStore(path, password, account.Key.PrivateKey.D.ToByteArray(), account.Address))
+            if (!KeyStoreService.GenerateKeyStore(path, password, account.Key.PrivateKey.D.ToByteArrayUnsigned(), account.Address))
             {
                 Console.WriteLine("Fail to generate keystore file.");
                 return true;
@@ -150,19 +150,19 @@ namespace SkyCLI.Commands
         public static bool OnGetAddress(string[] parameters)
         {
             WalletAccount account = new WalletAccount(Sky.Cryptography.Helper.SHA256(Encoding.Default.GetBytes("1")));
-            KeyStoreService.GenerateKeyStore("1.keystore", "1", account.Key.PrivateKey.D.ToByteArray(), account.Address);
+            KeyStoreService.GenerateKeyStore("1.keystore", "1", account.Key.PrivateKey.D.ToByteArrayUnsigned(), account.Address);
 
             account = new WalletAccount(Sky.Cryptography.Helper.SHA256(Encoding.Default.GetBytes("2")));
-            KeyStoreService.GenerateKeyStore("2.keystore", "1", account.Key.PrivateKey.D.ToByteArray(), account.Address);
+            KeyStoreService.GenerateKeyStore("2.keystore", "1", account.Key.PrivateKey.D.ToByteArrayUnsigned(), account.Address);
 
             account = new WalletAccount(Sky.Cryptography.Helper.SHA256(Encoding.Default.GetBytes("3")));
-            KeyStoreService.GenerateKeyStore("3.keystore", "1", account.Key.PrivateKey.D.ToByteArray(), account.Address);
+            KeyStoreService.GenerateKeyStore("3.keystore", "1", account.Key.PrivateKey.D.ToByteArrayUnsigned(), account.Address);
 
             account = new WalletAccount(Sky.Cryptography.Helper.SHA256(Encoding.Default.GetBytes("4")));
-            KeyStoreService.GenerateKeyStore("4.keystore", "1", account.Key.PrivateKey.D.ToByteArray(), account.Address);
+            KeyStoreService.GenerateKeyStore("4.keystore", "1", account.Key.PrivateKey.D.ToByteArrayUnsigned(), account.Address);
 
             account = new WalletAccount(Sky.Cryptography.Helper.SHA256(Encoding.Default.GetBytes("5")));
-            KeyStoreService.GenerateKeyStore("5.keystore", "1", account.Key.PrivateKey.D.ToByteArray(), account.Address);
+            KeyStoreService.GenerateKeyStore("5.keystore", "1", account.Key.PrivateKey.D.ToByteArrayUnsigned(), account.Address);
 
             return true;
         }
