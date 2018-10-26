@@ -53,7 +53,7 @@ namespace SkyCLI.Commands
                 return true;
             }
 
-            string path = parameters[1].Contains(".json") ? parameters[1] : parameters[1] + ".json";
+            string path = parameters[1].Contains(".keystore") ? parameters[1] : parameters[1] + ".keystore";
             WalletAccount account = WalletAccount.CreateAccount();
 
             if (!KeyStoreService.GenerateKeyStore(path, password, account.Key.PrivateKey.D.ToByteArray(), account.Address))
@@ -95,7 +95,7 @@ namespace SkyCLI.Commands
                 }
             }
 
-            string path = parameters[1].Contains(".json") ? parameters[1] : parameters[1] + ".json";
+            string path = parameters[1].Contains(".keystore") ? parameters[1] : parameters[1] + ".keystore";
             if (!File.Exists(path))
             {
                 Console.WriteLine(string.Format("Not found file : [0]", path));
@@ -116,9 +116,10 @@ namespace SkyCLI.Commands
             keystore = JsonConvert.DeserializeObject<KeyStore>(json.ToString());
 
             byte[] privatekey = null;
-            if (KeyStoreService.DecryptKeyStore(password, keystore, out privatekey))
+            if (!KeyStoreService.DecryptKeyStore(password, keystore, out privatekey))
             {
-                return false;
+                Console.WriteLine("Fail to decrypt keystore file.");
+                return true;
             }
 
             Program.Wallet = new WalletAccount(privatekey);
@@ -149,19 +150,19 @@ namespace SkyCLI.Commands
         public static bool OnGetAddress(string[] parameters)
         {
             WalletAccount account = new WalletAccount(Sky.Cryptography.Helper.SHA256(Encoding.Default.GetBytes("1")));
-            KeyStoreService.GenerateKeyStore("1.json", "1", account.Key.PrivateKey.D.ToByteArray(), account.Address);
+            KeyStoreService.GenerateKeyStore("1.keystore", "1", account.Key.PrivateKey.D.ToByteArray(), account.Address);
 
             account = new WalletAccount(Sky.Cryptography.Helper.SHA256(Encoding.Default.GetBytes("2")));
-            KeyStoreService.GenerateKeyStore("2.json", "1", account.Key.PrivateKey.D.ToByteArray(), account.Address);
+            KeyStoreService.GenerateKeyStore("2.keystore", "1", account.Key.PrivateKey.D.ToByteArray(), account.Address);
 
             account = new WalletAccount(Sky.Cryptography.Helper.SHA256(Encoding.Default.GetBytes("3")));
-            KeyStoreService.GenerateKeyStore("3.json", "1", account.Key.PrivateKey.D.ToByteArray(), account.Address);
+            KeyStoreService.GenerateKeyStore("3.keystore", "1", account.Key.PrivateKey.D.ToByteArray(), account.Address);
 
             account = new WalletAccount(Sky.Cryptography.Helper.SHA256(Encoding.Default.GetBytes("4")));
-            KeyStoreService.GenerateKeyStore("4.json", "1", account.Key.PrivateKey.D.ToByteArray(), account.Address);
+            KeyStoreService.GenerateKeyStore("4.keystore", "1", account.Key.PrivateKey.D.ToByteArray(), account.Address);
 
             account = new WalletAccount(Sky.Cryptography.Helper.SHA256(Encoding.Default.GetBytes("5")));
-            KeyStoreService.GenerateKeyStore("5.json", "1", account.Key.PrivateKey.D.ToByteArray(), account.Address);
+            KeyStoreService.GenerateKeyStore("5.keystore", "1", account.Key.PrivateKey.D.ToByteArray(), account.Address);
 
             return true;
         }

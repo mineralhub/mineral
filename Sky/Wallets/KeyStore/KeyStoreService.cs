@@ -11,24 +11,27 @@ namespace Sky.Wallets.KeyStore
 {
     public class KeyStoreService
     {
+        public static readonly string KDF_SCRYPT = "scrypt";
+        public static readonly string AES128CTR = "aes-128-ctr";
+
         public static bool GenerateKeyStore(string path, string password, byte[] privatekey, string address)
         {
-            SCryptParam param = KeyStoreScryptParam.GetDefaultParam();
+            KdfParam param = KdfParam.GetDefaultParam();
             return GenerateKeyStore(path, password, privatekey, address, param.N, param.R, param.P, param.Dklen);
         }
 
         public static bool GenerateKeyStore(string path, string password, byte[] privatekey, string address, int n, int r, int p, int dklen)
         {
-            KeyStoreScryptParam scrypt_param = new KeyStoreScryptParam() { Dklen = dklen, N = n, R = r, P = p };
+            KdfParam kdf_param = new KdfParam() { Dklen = dklen, N = n, R = r, P = p };
 
             byte[] salt;
             byte[] derivedkey;
-            if (!KeyStoreCrypto.GenerateScrypt(password, scrypt_param.N, scrypt_param.R, scrypt_param.P, scrypt_param.Dklen, out salt, out derivedkey))
+            if (!KeyStoreCrypto.GenerateScrypt(password, kdf_param.N, kdf_param.R, kdf_param.P, kdf_param.Dklen, out salt, out derivedkey))
             {
                 Console.WriteLine("fail to generate scrypt.");
                 return false;
             }
-            scrypt_param.Salt = salt.ToHexString();
+            kdf_param.Salt = salt.ToHexString();
 
             byte[] cipherkey = KeyStoreCrypto.GenerateCipherKey(derivedkey);
             byte[] iv = RandomGenerator.GenerateRandomBytes(16);
@@ -46,13 +49,24 @@ namespace Sky.Wallets.KeyStore
             {
                 Version = 1,
                 Address = address,
-                Scrypt = scrypt_param,
-                Aes = new KeyStoreAesParam()
+                Crypto = new KeyStoreCryptoInfo()
                 {
-                    Iv = iv.ToHexString(),
-                    Cipher = ciphertext.ToHexString(),
+                    Kdf = new KeyStoreKdfInfo()
+                    {
+                        Name = KDF_SCRYPT,
+                        Params = kdf_param
+                    },
+                    Aes = new KeyStoreAesInfo()
+                    {
+                        Name = AES128CTR,
+                        Text = ciphertext.ToHexString(),
+                        Params = new AesParam()
+                        {
+                            Iv = iv.ToHexString(),
+                        }
+                    },
                     Mac = mac.ToHexString()
-                }
+                },
             };
 
             string json = JsonConvert.SerializeObject(keystore);
@@ -67,31 +81,30 @@ namespace Sky.Wallets.KeyStore
 
         public static bool DecryptKeyStore(string password, KeyStore keystore, out byte[] privatekey)
         {
-            return DecryptKeyStore(password,
-                                keystore.Scrypt.N,
-                                keystore.Scrypt.P,
-                                keystore.Scrypt.R,
-                                keystore.Scrypt.Dklen,
-                                keystore.Scrypt.Salt.HexToBytes(),
-                                keystore.Aes.Iv.HexToBytes(),
-                                keystore.Aes.Cipher.HexToBytes(),
-                                keystore.Aes.Mac.HexToBytes(),
-                                out privatekey
-                );
-        }
-
-        public static bool DecryptKeyStore(string password
-                                        , int n, int p, int r, int dklen, byte[] salt
-                                        , byte[] iv, byte[] ciphertext, byte[] mac, out byte[] privatekey)
-        {
             byte[] derivedkey = new byte[32];
 
             privatekey = null;
-            if (!KeyStoreCrypto.EncryptScrypt(password, n, r, p, dklen, salt, out derivedkey))
+
+            password = "aAbBcCdDeE";
+
+            KeyStoreKdfInfo kdf = keystore.Crypto.Kdf;
+            KeyStoreAesInfo aes = keystore.Crypto.Aes;
+
+            if (!KeyStoreCrypto.EncryptScrypt(password
+                                            , kdf.Params.N
+                                            , kdf.Params.R
+                                            , kdf.Params.P
+                                            , kdf.Params.Dklen
+                                            , kdf.Params.Salt.HexToBytes()
+                                            , out derivedkey))
             {
                 Console.WriteLine("fail to generate scrypt.");
                 return false;
             }
+
+            byte[] iv = aes.Params.Iv.HexToBytes();
+            byte[] ciphertext = aes.Text.HexToBytes();
+            byte[] mac = keystore.Crypto.Mac.HexToBytes();
 
             if (!KeyStoreCrypto.VerifyMac(derivedkey, ciphertext, mac))
             {
