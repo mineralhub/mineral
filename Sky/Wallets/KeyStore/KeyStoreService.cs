@@ -85,6 +85,8 @@ namespace Sky.Wallets.KeyStore
 
             privatekey = null;
 
+            password = "aAbBcCdDeE";
+
             KeyStoreKdfInfo kdf = keystore.Crypto.Kdf;
             KeyStoreAesInfo aes = keystore.Crypto.Aes;
 

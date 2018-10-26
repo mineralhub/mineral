@@ -32,7 +32,7 @@ namespace Sky.Wallets
         public static WalletAccount CreateAccount()
         {
             ECKey key = new ECKey(ECKey.Generate());
-            WalletAccount account =  new WalletAccount(key.PrivateKey.D.ToByteArrayUnsigned());
+            WalletAccount account =  new WalletAccount(key.PrivateKey.D.ToByteArray());
             return account;
         }
 

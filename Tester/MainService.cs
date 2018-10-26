@@ -344,7 +344,7 @@ namespace Tester
             if (!validAddress)
                 return false;
             var generate = new ECKey(ECKey.Generate());
-            Logger.Log("generate prikey : " + generate.PrivateKey.D.ToByteArrayUnsigned().ToHexString());
+            Logger.Log("generate prikey : " + generate.PrivateKey.D.ToByteArray().ToHexString());
             Logger.Log("generate pubkey : " + generate.PublicKey.ToByteArray().ToHexString());
             return true;
         }

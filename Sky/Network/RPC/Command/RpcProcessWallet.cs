@@ -39,22 +39,75 @@ namespace Sky.Network.RPC.Command
 
         public static JObject OnSendTo(object obj, JArray parameters)
         {
-            return RpcProcessCommand.ProcessTransaction(obj as LocalNode, parameters[0].ToObject<byte[]>());
+            JObject json = new JObject();
+            LocalNode localNode = obj as LocalNode;
+
+            Transaction tx = Transaction.DeserializeFrom(parameters.ToObject<byte[]>());
+            if (tx != null)
+            {
+                if (tx.Verify() && tx.VerifyBlockchain())
+                {
+                    localNode.AddTransaction(tx);
+                }
+                else
+                {
+                    json = RpcCommand.CreateErrorResult(null, (int)tx.TxResult, tx.TxResult.ToString());
+                }
+            }
+            else
+            {
+                json = RpcCommand.CreateErrorResult(null, 0, "Invalid trasaction data");
+            }
+
+            return json;
         }
 
         public static JObject OnLockBalance(object obj, JArray parameters)
         {
-            return RpcProcessCommand.ProcessTransaction(obj as LocalNode, parameters[0].ToObject<byte[]>());
+            JObject json = new JObject();
+            LocalNode localNode = obj as LocalNode;
+
+            Transaction tx = Transaction.DeserializeFrom(parameters.ToObject<byte[]>());
+            if (tx != null)
+            {
+                if (tx.Verify() && tx.VerifyBlockchain())
+                    localNode.AddTransaction(tx);
+                else
+                    json = RpcCommand.CreateErrorResult(null, (int)tx.TxResult, tx.TxResult.ToString());
+            }
+            else
+            {
+                json = RpcCommand.CreateErrorResult(null, 0, "Invalid trasaction data");
+            }
+
+            return json;
         }
 
         public static JObject OnUnlockBalance(object obj, JArray parameters)
         {
-            return RpcProcessCommand.ProcessTransaction(obj as LocalNode, parameters[0].ToObject<byte[]>());
+            JObject json = new JObject();
+            LocalNode localNode = obj as LocalNode;
+
+            Transaction tx = Transaction.DeserializeFrom(parameters.ToObject<byte[]>());
+            if (tx != null)
+            {
+                if (tx.Verify() && tx.VerifyBlockchain())
+                    localNode.AddTransaction(tx);
+                else
+                    json = RpcCommand.CreateErrorResult(null, (int)tx.TxResult, tx.TxResult.ToString());
+            }
+            else
+            {
+                json = RpcCommand.CreateErrorResult(null, 0, "Invalid trasaction data");
+            }
+
+            return json;
         }
 
         public static JObject OnVoteWitness(object obj, JArray parameters)
         {
-            return RpcProcessCommand.ProcessTransaction(obj as LocalNode, parameters[0].ToObject<byte[]>());
+            JObject json = new JObject();
+            return json;
         }
     }
 }
