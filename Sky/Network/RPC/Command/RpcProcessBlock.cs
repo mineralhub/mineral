@@ -8,7 +8,7 @@ namespace Sky.Network.RPC.Command
 {
     public partial class RpcProcessCommand
     {
-        public static JObject OnGetBlock(object obj, RpcCommand.ParamType type, JArray parameters)
+        public static JObject OnGetBlock(object obj, JArray parameters)
         {
             Block block = null;
             if (parameters[0].Type == JTokenType.Integer)
@@ -22,7 +22,7 @@ namespace Sky.Network.RPC.Command
             return json;
         }
 
-        public static JObject OnGetBlocks(object obj, RpcCommand.ParamType type, JArray parameters)
+        public static JObject OnGetBlocks(object obj, JArray parameters)
         {
             JObject json = new JObject();
             JObject jobj = null;
@@ -58,7 +58,7 @@ namespace Sky.Network.RPC.Command
             return json;
         }
 
-        public static JObject OnGetBlockHash(object obj, RpcCommand.ParamType type, JArray parameters)
+        public static JObject OnGetBlockHash(object obj, JArray parameters)
         {
             JObject json = new JObject();
             int height = -1;
@@ -71,7 +71,7 @@ namespace Sky.Network.RPC.Command
             return json;
         }
 
-        public static JObject OnGetHeight(object obj, RpcCommand.ParamType type, JArray parameters)
+        public static JObject OnGetHeight(object obj, JArray parameters)
         {
             JObject json = new JObject();
             json["blockheight"] = Blockchain.Instance.CurrentBlockHeight;
@@ -79,14 +79,14 @@ namespace Sky.Network.RPC.Command
             return json;
         }
 
-        public static JObject OnGetCurrentBlockHash(object obj, RpcCommand.ParamType type, JArray parameters)
+        public static JObject OnGetCurrentBlockHash(object obj, JArray parameters)
         {
             JObject json = new JObject();
             json["hash"] = Blockchain.Instance.CurrentBlockHash.ToString();
             return json;
         }
 
-        public static JObject OnGetTransaction(object obj, RpcCommand.ParamType type, JArray parameters)
+        public static JObject OnGetTransaction(object obj, JArray parameters)
         {
             Transaction tx = Blockchain.Instance.storage.GetTransaction(UInt256.FromHexString(parameters[0].Value<string>()));
             return tx.ToJson();

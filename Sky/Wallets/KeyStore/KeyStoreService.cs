@@ -89,11 +89,13 @@ namespace Sky.Wallets.KeyStore
             privatekey = null;
             if (!KeyStoreCrypto.EncryptScrypt(password, n, r, p, dklen, salt, out derivedkey))
             {
+                Console.WriteLine("fail to generate scrypt.");
                 return false;
             }
 
             if (!KeyStoreCrypto.VerifyMac(derivedkey, ciphertext, mac))
             {
+                Console.WriteLine("Password do not match.");
                 return false;
             }
 

@@ -8,7 +8,7 @@ namespace Sky.Network.RPC.Command
 {
     public partial class RpcProcessCommand
     {
-        public static JObject OnNodeList(object obj, RpcCommand.ParamType type, JArray parameters)
+        public static JObject OnNodeList(object obj, JArray parameters)
         {
             JObject json = new JObject();
             JArray nodes = new JArray();

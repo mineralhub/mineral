@@ -10,19 +10,19 @@ namespace Sky.Network.RPC.Command
 {
     public partial class RpcProcessCommand
     {
-        public static JObject OnGetAccount(object obj, RpcCommand.ParamType type, JArray parameters)
+        public static JObject OnGetAccount(object obj, JArray parameters)
         {
             JObject json = new JObject();
             return json;
         }
 
-        public static JObject OnGetAddress(object obj, RpcCommand.ParamType type, JArray parameters)
+        public static JObject OnGetAddress(object obj, JArray parameters)
         {
             JObject json = new JObject();
             return json;
         }
 
-        public static JObject OnGetBalance(object obj, RpcCommand.ParamType type, JArray parameters)
+        public static JObject OnGetBalance(object obj, JArray parameters)
         {
             JObject json = new JObject();
 
@@ -37,18 +37,20 @@ namespace Sky.Network.RPC.Command
             return json;
         }
 
-        public static JObject OnSendTo(object obj, byte[] parameters)
+        public static JObject OnSendTo(object obj, JArray parameters)
         {
             JObject json = new JObject();
             LocalNode localNode = obj as LocalNode;
 
-            Transaction tx = Transaction.DeserializeFrom(parameters);
+            Transaction tx = Transaction.DeserializeFrom(parameters.ToObject<byte[]>());
             if (tx != null)
             {
                 if (tx.VerifyBlockchain())
                     localNode.AddTransaction(tx);
                 else
-                    json = RpcCommand.CreateErrorResult(null, 0, "Not enough balance");
+                {
+                    json = RpcCommand.CreateErrorResult(null, (int)tx.TxResult, tx.TxResult.ToString());
+                }
             }
             else
             {
@@ -58,65 +60,49 @@ namespace Sky.Network.RPC.Command
             return json;
         }
 
-        public static JObject OnSendTo(object obj, WalletAccount from_account, UInt160 to_address, Fixed8 balance)
+        public static JObject OnLockBalance(object obj, JArray parameters)
         {
             JObject json = new JObject();
             LocalNode localNode = obj as LocalNode;
 
-            TransferTransaction trans = new TransferTransaction()
+            Transaction tx = Transaction.DeserializeFrom(parameters.ToObject<byte[]>());
+            if (tx != null)
             {
-                From = from_account.AddressHash,
-                To = new Dictionary<UInt160, Fixed8> { { to_address, balance } }
-            };
-            trans.CalcFee();
-
-            if (trans.VerifyBlockchain(Blockchain.Instance.storage))
-            {
-                Transaction tx = new Transaction(eTransactionType.TransferTransaction, DateTime.UtcNow.ToTimestamp(), trans);
-                tx.Sign(from_account);
-                localNode.AddTransaction(tx);
+                if (tx.VerifyBlockchain())
+                    localNode.AddTransaction(tx);
+                else
+                    json = RpcCommand.CreateErrorResult(null, (int)tx.TxResult, tx.TxResult.ToString());
             }
             else
             {
-                json = RpcCommand.CreateErrorResult(null, (int)trans.TxResult, trans.TxResult.ToString());
+                json = RpcCommand.CreateErrorResult(null, 0, "Invalid trasaction data");
             }
 
             return json;
         }
 
-        public static JObject OnSendTo(object obj, RpcCommand.ParamType type, JArray parameters)
+        public static JObject OnUnlockBalance(object obj, JArray parameters)
         {
             JObject json = new JObject();
+            LocalNode localNode = obj as LocalNode;
 
-            if (type == RpcCommand.ParamType.Serialize)
+            Transaction tx = Transaction.DeserializeFrom(parameters.ToObject<byte[]>());
+            if (tx != null)
             {
-                byte[] value = parameters[0].ToObject<byte[]>();
-                json = OnSendTo(obj, value);
+                if (tx.VerifyBlockchain())
+                    localNode.AddTransaction(tx);
+                else
+                    json = RpcCommand.CreateErrorResult(null, (int)tx.TxResult, tx.TxResult.ToString());
             }
             else
             {
-                WalletAccount from_account = new WalletAccount(parameters[0].ToObject<byte[]>());
-                UInt160 to_address = WalletAccount.ToAddressHash(parameters[1].Value<string>());
-                Fixed8 balance = Fixed8.Parse(parameters[2].ToString());
-
-                json = OnSendTo(obj, from_account, to_address, balance);
+                json = RpcCommand.CreateErrorResult(null, 0, "Invalid trasaction data");
             }
+
             return json;
         }
 
-        public static JObject OnLockBalance(object obj, RpcCommand.ParamType type, JArray parameters)
-        {
-            JObject json = new JObject();
-            return json;
-        }
-
-        public static JObject OnUnlockBalance(object obj, RpcCommand.ParamType type, JArray parameters)
-        {
-            JObject json = new JObject();
-            return json;
-        }
-
-        public static JObject OnVoteWitness(object obj, RpcCommand.ParamType type, JArray parameters)
+        public static JObject OnVoteWitness(object obj, JArray parameters)
         {
             JObject json = new JObject();
             return json;

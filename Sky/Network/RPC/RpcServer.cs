@@ -78,10 +78,10 @@ namespace Sky.Network.RPC
             }
         }
 
-        protected virtual JObject Process(JToken id, string method, RpcCommand.ParamType type, JArray parameters)
+        protected virtual JObject Process(JToken id, string method, JArray parameters)
         {
             return processHandlers.ContainsKey(method) 
-                ? processHandlers[method](_localNode, type, parameters) : CreateErrorResult(id, -1, string.Format("Not found method : {0}", method));
+                ? processHandlers[method](_localNode, parameters) : CreateErrorResult(id, -1, string.Format("Not found method : {0}", method));
         }
 
         async Task ProcessAsync(HttpContext context)
@@ -156,11 +156,8 @@ namespace Sky.Network.RPC
                 JToken id = request["id"];
                 string method = request["method"].Value<string>();
                 JArray parameters = (JArray)request["params"];
-                RpcCommand.ParamType type = RpcCommand.ParamType.Args;
-                if (request.ContainsKey("type"))
-                    Enum.TryParse<RpcCommand.ParamType>(request["type"].ToString(), out type);
 
-                result = Process(id, method, type, parameters);
+                result = Process(id, method, parameters);
                 JToken token = null;
                 if (result.TryGetValue("error", out token))
                     response["error"] = token;

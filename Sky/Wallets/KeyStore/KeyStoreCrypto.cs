@@ -97,7 +97,6 @@ namespace Sky.Wallets.KeyStore
         public static bool VerifyMac(byte[] derivedkey, byte[] ciphertext, byte[] mac)
         {
             byte[] generateMac = GenerateMac(derivedkey, ciphertext);
-
             return generateMac.ToHexString().Equals(mac.ToHexString());
         }
     }
