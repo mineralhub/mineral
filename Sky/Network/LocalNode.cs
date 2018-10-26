@@ -331,16 +331,16 @@ namespace Sky.Network
                             continue;
                     }
 
+                    RemoteNode pingNode = null;
+                    int pingHeight = -1;
+
+                    long nowTimestamp = DateTime.Now.ToTimestamp();
+                    bool bPing = (nowTimestamp - lastPing) >= 5000;
+                    if (bPing)
+                        lastPing = nowTimestamp;
+
                     lock (_connectedPeers)
                     {
-                        RemoteNode pingNode = null;
-                        int pingHeight = -1;
-
-                        long nowTimestamp = DateTime.Now.ToTimestamp();
-                        bool bPing = (nowTimestamp - lastPing) >= 5000;
-                        if (bPing)
-                            lastPing = nowTimestamp;
-
                         foreach (RemoteNode node in _connectedPeers)
                         {
                             if (node.Version != null)
@@ -355,13 +355,13 @@ namespace Sky.Network
                                 }
                             }
                         }
+                    }
 
-                        if (pingNode != null)
-                        {
-                            if (isSyncing)
-                                pingNode.EnqueueMessage(Message.CommandName.RequestBlocks, GetBlocksPayload.Create(lastAddHash));
-                            swTimeout.Restart();
-                        }
+                    if (pingNode != null)
+                    {
+                        if (isSyncing)
+                            pingNode.EnqueueMessage(Message.CommandName.RequestBlocks, GetBlocksPayload.Create(lastAddHash));
+                        swTimeout.Restart();
                     }
                 }
                 else
