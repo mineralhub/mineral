@@ -378,7 +378,7 @@ namespace Sky.Database.LevelDB
                     case VoteTransaction voteTx:
                         {
                             from.LastVoteTxID = tx.Hash;
-                            storage.Unvote(from.Votes);
+                            storage.Downvote(from.Votes);
                             storage.Vote(voteTx);
                             from.SetVote(voteTx.Votes);
                         }
@@ -501,7 +501,7 @@ namespace Sky.Database.LevelDB
                     case VoteTransaction voteTx:
                         {
                             from.LastVoteTxID = tx.Hash;
-                            storage.Unvote(from.Votes);
+                            storage.Downvote(from.Votes);
                             storage.Vote(voteTx);
                             from.SetVote(voteTx.Votes);
                         }
@@ -569,7 +569,9 @@ namespace Sky.Database.LevelDB
 
             StringBuilder sb = new StringBuilder();
             sb.AppendLine("persist block : " + block.Height);
+#if FALSE
             sb.AppendLine(block.ToJson().ToString());
+#endif
             Logger.Log(sb.ToString());
         }
 

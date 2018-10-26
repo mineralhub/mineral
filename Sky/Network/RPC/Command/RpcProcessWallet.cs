@@ -45,8 +45,10 @@ namespace Sky.Network.RPC.Command
             Transaction tx = Transaction.DeserializeFrom(parameters.ToObject<byte[]>());
             if (tx != null)
             {
-                if (tx.VerifyBlockchain())
+                if (tx.Verify() && tx.VerifyBlockchain())
+                {
                     localNode.AddTransaction(tx);
+                }
                 else
                 {
                     json = RpcCommand.CreateErrorResult(null, (int)tx.TxResult, tx.TxResult.ToString());
@@ -68,7 +70,7 @@ namespace Sky.Network.RPC.Command
             Transaction tx = Transaction.DeserializeFrom(parameters.ToObject<byte[]>());
             if (tx != null)
             {
-                if (tx.VerifyBlockchain())
+                if (tx.Verify() && tx.VerifyBlockchain())
                     localNode.AddTransaction(tx);
                 else
                     json = RpcCommand.CreateErrorResult(null, (int)tx.TxResult, tx.TxResult.ToString());
@@ -89,7 +91,7 @@ namespace Sky.Network.RPC.Command
             Transaction tx = Transaction.DeserializeFrom(parameters.ToObject<byte[]>());
             if (tx != null)
             {
-                if (tx.VerifyBlockchain())
+                if (tx.Verify() && tx.VerifyBlockchain())
                     localNode.AddTransaction(tx);
                 else
                     json = RpcCommand.CreateErrorResult(null, (int)tx.TxResult, tx.TxResult.ToString());

@@ -69,9 +69,9 @@ namespace Sky.Database.LevelDB
             delegates.Vote(tx);
         }
 
-        public void Unvote(System.Collections.Generic.Dictionary<UInt160, Fixed8> Votes)
+        public void Downvote(System.Collections.Generic.Dictionary<UInt160, Fixed8> Votes)
         {
-            delegates.Unvote(Votes);
+            delegates.Downvote(Votes);
         }
 
         public void AddOtherSignTxs(UInt256 hash, HashSet<string> others)

@@ -26,7 +26,6 @@ namespace Sky.Network
         private HashSet<IPEndPoint> _waitPeers = new HashSet<IPEndPoint>();
         private HashSet<IPEndPoint> _badPeers = new HashSet<IPEndPoint>();
         private HashSet<IPEndPoint> _localPoints = new HashSet<IPEndPoint>();
-        private HashSet<Guid> _vaildNodes = new HashSet<Guid>();
 
         private Thread _connectThread;
         private Thread _syncThread;
@@ -483,11 +482,11 @@ namespace Sky.Network
 
         public bool HasNode(RemoteNode node, bool bAdd = false)
         {
+            if (NodeID.Equals(node.Version.NodeID))
+                return true;
+
             lock (NodeSet)
             {
-                if (NodeID.Equals(node.Version.NodeID))
-                    return true;
-
                 if (NodeSet.ContainsKey(node.Version.NodeID))
                     return true;
 
