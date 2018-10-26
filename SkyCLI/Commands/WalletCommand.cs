@@ -63,7 +63,7 @@ namespace SkyCLI.Commands
             }
 
             Console.WriteLine("Address : {0}", account.Address);
-            Console.WriteLine("PrivateKey : {0}", account.Key.PrivateKey.D.ToByteArray().ToHexString());
+            Console.WriteLine("PrivateKey : {0}", account.Key.PrivateKeyBytes.ToHexString());
 
             Program.Wallet = account;
 
@@ -150,19 +150,19 @@ namespace SkyCLI.Commands
         public static bool OnGetAddress(string[] parameters)
         {
             WalletAccount account = new WalletAccount(Sky.Cryptography.Helper.SHA256(Encoding.Default.GetBytes("1")));
-            KeyStoreService.GenerateKeyStore("1.keystore", "1", account.Key.PrivateKey.D.ToByteArray(), account.Address);
+            KeyStoreService.GenerateKeyStore("1.keystore", "1", account.Key.PrivateKeyBytes, account.Address);
 
             account = new WalletAccount(Sky.Cryptography.Helper.SHA256(Encoding.Default.GetBytes("2")));
-            KeyStoreService.GenerateKeyStore("2.keystore", "1", account.Key.PrivateKey.D.ToByteArray(), account.Address);
+            KeyStoreService.GenerateKeyStore("2.keystore", "1", account.Key.PrivateKeyBytes, account.Address);
 
             account = new WalletAccount(Sky.Cryptography.Helper.SHA256(Encoding.Default.GetBytes("3")));
-            KeyStoreService.GenerateKeyStore("3.keystore", "1", account.Key.PrivateKey.D.ToByteArray(), account.Address);
+            KeyStoreService.GenerateKeyStore("3.keystore", "1", account.Key.PrivateKeyBytes, account.Address);
 
             account = new WalletAccount(Sky.Cryptography.Helper.SHA256(Encoding.Default.GetBytes("4")));
-            KeyStoreService.GenerateKeyStore("4.keystore", "1", account.Key.PrivateKey.D.ToByteArray(), account.Address);
+            KeyStoreService.GenerateKeyStore("4.keystore", "1", account.Key.PrivateKeyBytes, account.Address);
 
             account = new WalletAccount(Sky.Cryptography.Helper.SHA256(Encoding.Default.GetBytes("5")));
-            KeyStoreService.GenerateKeyStore("5.keystore", "1", account.Key.PrivateKey.D.ToByteArray(), account.Address);
+            KeyStoreService.GenerateKeyStore("5.keystore", "1", account.Key.PrivateKeyBytes, account.Address);
 
             return true;
         }

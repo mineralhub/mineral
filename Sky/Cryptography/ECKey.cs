@@ -18,6 +18,18 @@ namespace Sky.Cryptography
         private readonly ECKeyParameters _key;
         public ECPrivateKeyParameters PrivateKey => _key as ECPrivateKeyParameters;
         public ECPublicKeyParameters PublicKey => _key is ECPublicKeyParameters ? (ECPublicKeyParameters)_key : new ECPublicKeyParameters("EC", Secp256k1.G.Multiply(PrivateKey.D), DomainParameter);
+        public byte[] PrivateKeyBytes
+        {
+            get
+            {
+                byte[] keyBytes = PrivateKey.D.ToByteArray();
+                if (keyBytes.Length == 32)
+                    return keyBytes;
+                byte[] bytes = new byte[32];
+                Array.Copy(keyBytes, keyBytes.Length - bytes.Length, bytes, 0, bytes.Length);
+                return bytes;
+            }
+        }
 
         static ECKey()
         {

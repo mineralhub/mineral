@@ -35,9 +35,8 @@ namespace Sky.Wallets.KeyStore
 
             byte[] cipherkey = KeyStoreCrypto.GenerateCipherKey(derivedkey);
             byte[] iv = RandomGenerator.GenerateRandomBytes(16);
-
             byte[] ciphertext = new byte[32];
-            using (var am = new Aes128CounterMode(iv))
+            using (var am = new Aes128CounterMode(iv.Clone() as byte[]))
             using (var ict = am.CreateEncryptor(cipherkey, null))
             {
                 ict.TransformBlock(privatekey, 0, privatekey.Length, ciphertext, 0);
@@ -85,8 +84,6 @@ namespace Sky.Wallets.KeyStore
 
             privatekey = null;
 
-            password = "aAbBcCdDeE";
-
             KeyStoreKdfInfo kdf = keystore.Crypto.Kdf;
             KeyStoreAesInfo aes = keystore.Crypto.Aes;
 
@@ -116,11 +113,10 @@ namespace Sky.Wallets.KeyStore
 
             privatekey = new byte[32];
             using (var am = new Aes128CounterMode(iv))
-            using (var ict = am.CreateEncryptor(cipherkey, null))
+            using (var ict = am.CreateDecryptor(cipherkey, null))
             {
                 ict.TransformBlock(ciphertext, 0, ciphertext.Length, privatekey, 0);
             }
-
             return true;
         }
     }
