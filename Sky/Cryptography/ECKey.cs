@@ -42,9 +42,7 @@ namespace Sky.Cryptography
         {
             if (prikey)
             {
-                byte[] privatekey = new byte[32];
-                Buffer.BlockCopy(key, key.Length - 32, privatekey, 0, privatekey.Length);
-                _key = new ECPrivateKeyParameters(new BigInteger(1, privatekey), DomainParameter);
+                _key = new ECPrivateKeyParameters(new BigInteger(1, key), DomainParameter);
             }
             else
             {
