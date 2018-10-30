@@ -74,6 +74,8 @@ namespace Sky.UnitTests
                 Data = _transfer,
             };
             _transaction.Sign(_from.Key);
+            _transaction.Signature.Pubkey.Should().NotBeNull();
+            _transaction.Signature.Signature.Should().NotBeNull();
         }
 
         [TestMethod]
