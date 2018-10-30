@@ -61,6 +61,9 @@ namespace SkyCLI.Shell
                 + "\n" + "".PadLeft(6) + RpcCommand.Wallet.CloseAccount
                 + "\n" + "".PadLeft(6) + RpcCommand.Wallet.GetBalance
                 + "\n" + "".PadLeft(6) + RpcCommand.Wallet.SendTo
+                + "\n" + "".PadLeft(6) + RpcCommand.Wallet.LockBalance
+                + "\n" + "".PadLeft(6) + RpcCommand.Wallet.UnlockBalance
+                + "\n" + "".PadLeft(6) + RpcCommand.Wallet.VoteWitness
 
                 + "\n"
                 + "\n" + "".PadLeft(2) + "MISC OPTION :"

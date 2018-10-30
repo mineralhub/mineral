@@ -26,13 +26,13 @@ namespace Sky.Network.RPC.Command
         {
             JObject json = new JObject();
 
-            WalletAccount acc = new WalletAccount(parameters[0].ToObject<byte[]>());
-            string address = WalletAccount.ToAddress(acc.AddressHash);
+            string address = parameters[0].ToString();
+            UInt160 addresHash = WalletAccount.ToAddressHash(address);
             json["address"] = address;
-            json["addresshash"] = acc.AddressHash.ToArray();
-            json["balance"] = acc.GetBalance().ToString();
-            json["lock_balance"] = acc.GetLockBalance().ToString();
-            json["total_balance"] = acc.GetTotalBalance().ToString();
+            json["addresshash"] = addresHash.ToString();
+            json["balance"] = WalletAccount.GetBalance(addresHash).ToString();
+            json["lock_balance"] = WalletAccount.GetLockBalance(addresHash).ToString();
+            json["total_balance"] = WalletAccount.GetTotalBalance(addresHash).ToString();
 
             return json;
         }

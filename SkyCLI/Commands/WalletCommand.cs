@@ -198,7 +198,7 @@ namespace SkyCLI.Commands
                 }
             }
 
-            JArray param = new JArray() { Program.Wallet.AddressHash.ToString() };
+            JArray param = new JArray() { Program.Wallet.Address };
             SendCommand(Config.BlockVersion, RpcCommand.Wallet.GetBalance, param);
 
             return true;
