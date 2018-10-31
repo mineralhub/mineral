@@ -31,6 +31,7 @@ namespace SkyCLI.Shell
             { RpcCommand.Wallet.LockBalance, new CommandHandler(WalletCommand.OnLockBalance) },
             { RpcCommand.Wallet.UnlockBalance, new CommandHandler(WalletCommand.OnUnlockBalance) },
             { RpcCommand.Wallet.VoteWitness, new CommandHandler(WalletCommand.OnVoteWitness) },
+            { RpcCommand.Wallet.GetVoteWitness, new CommandHandler(WalletCommand.OnGetVoteWitness) },
         };
 
         public override bool OnCommand(string[] parameters)
@@ -64,6 +65,7 @@ namespace SkyCLI.Shell
                 + "\n" + "".PadLeft(6) + RpcCommand.Wallet.LockBalance
                 + "\n" + "".PadLeft(6) + RpcCommand.Wallet.UnlockBalance
                 + "\n" + "".PadLeft(6) + RpcCommand.Wallet.VoteWitness
+                + "\n" + "".PadLeft(6) + RpcCommand.Wallet.GetVoteWitness
 
                 + "\n"
                 + "\n" + "".PadLeft(2) + "MISC OPTION :"

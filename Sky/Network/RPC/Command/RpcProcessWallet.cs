@@ -10,18 +10,6 @@ namespace Sky.Network.RPC.Command
 {
     public partial class RpcProcessCommand
     {
-        public static JObject OnGetAccount(object obj, JArray parameters)
-        {
-            JObject json = new JObject();
-            return json;
-        }
-
-        public static JObject OnGetAddress(object obj, JArray parameters)
-        {
-            JObject json = new JObject();
-            return json;
-        }
-
         public static JObject OnGetBalance(object obj, JArray parameters)
         {
             JObject json = new JObject();
@@ -55,6 +43,19 @@ namespace Sky.Network.RPC.Command
         public static JObject OnVoteWitness(object obj, JArray parameters)
         {
             return ProcessTransaction(obj as LocalNode, parameters[0].ToObject<byte[]>());
+        }
+
+        public static JObject OnGetVoteWitness(object obj, JArray parameters)
+        {
+            UInt160 addressHash = WalletAccount.ToAddressHash(parameters[0].ToString());
+            AccountState state = Blockchain.Instance.storage.GetAccountState(addressHash);
+
+            JObject json = new JObject();
+            json["votes"] = new JArray();
+            foreach (KeyValuePair<UInt160, Fixed8> pair in state.Votes)
+                (json["votes"] as JArray).Add(pair.ToString());
+
+            return json;
         }
     }
 }

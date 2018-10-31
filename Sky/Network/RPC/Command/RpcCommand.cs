@@ -27,6 +27,8 @@ namespace Sky.Network.RPC.Command
             public const string OpenAccount = "openaccount";
             public const string CloseAccount = "closeaccount";
 
+            public const string BackupAccount = "backupaccount";
+
             public const string GetAccount = "getaccount";
             public const string GetAddress = "getaddress";
             public const string GetBalance = "getbalance";
@@ -36,6 +38,7 @@ namespace Sky.Network.RPC.Command
             public const string UnlockBalance = "unlockbalance";
 
             public const string VoteWitness = "votewitness";
+            public const string GetVoteWitness = "getvotewitness";
         }
     }
 }

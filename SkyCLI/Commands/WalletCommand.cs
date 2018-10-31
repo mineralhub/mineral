@@ -149,20 +149,37 @@ namespace SkyCLI.Commands
 
         public static bool OnGetAddress(string[] parameters)
         {
-            WalletAccount account = new WalletAccount(Sky.Cryptography.Helper.SHA256(Encoding.Default.GetBytes("1")));
-            KeyStoreService.GenerateKeyStore("1.keystore", "1", account.Key.PrivateKeyBytes, account.Address);
+            if (Program.Wallet == null)
+            {
+                Console.WriteLine("Not loaded wallet account");
+                return true;
+            }
 
-            account = new WalletAccount(Sky.Cryptography.Helper.SHA256(Encoding.Default.GetBytes("2")));
-            KeyStoreService.GenerateKeyStore("2.keystore", "1", account.Key.PrivateKeyBytes, account.Address);
+            string[] usage = new string[] { string.Format(
+                "{0} [command option]\n"
+                , RpcCommand.Wallet.GetAddress) };
+            string[] command_option = new string[] { HelpCommandOption.Help }; ;
 
-            account = new WalletAccount(Sky.Cryptography.Helper.SHA256(Encoding.Default.GetBytes("3")));
-            KeyStoreService.GenerateKeyStore("3.keystore", "1", account.Key.PrivateKeyBytes, account.Address);
+            if (parameters.Length > 2)
+            {
+                OutputHelpMessage(usage, null, command_option, null);
+                return true;
+            }
 
-            account = new WalletAccount(Sky.Cryptography.Helper.SHA256(Encoding.Default.GetBytes("4")));
-            KeyStoreService.GenerateKeyStore("4.keystore", "1", account.Key.PrivateKeyBytes, account.Address);
+            int index = 1;
+            if (parameters.Length > index)
+            {
+                string option = parameters[index];
+                if (option.ToLower().Equals("-help") || option.ToLower().Equals("-h"))
+                {
+                    OutputHelpMessage(usage, null, command_option, null);
+                    index++;
+                    return true;
+                }
+            }
 
-            account = new WalletAccount(Sky.Cryptography.Helper.SHA256(Encoding.Default.GetBytes("5")));
-            KeyStoreService.GenerateKeyStore("5.keystore", "1", account.Key.PrivateKeyBytes, account.Address);
+            Console.WriteLine("Address : {0}", Program.Wallet.Address);
+            Console.WriteLine("AddressHash : {0}", Program.Wallet.AddressHash.ToArray().ToHexString());
 
             return true;
         }
@@ -377,9 +394,22 @@ namespace SkyCLI.Commands
                 }
             }
 
+            if ((parameters.Length - 1) % 2 != 0)
+                Console.WriteLine("Invalid parameter.");
+
+            UInt160 addressHash = UInt160.Zero;
+            Fixed8 value = Fixed8.Zero;
             Dictionary<UInt160, Fixed8> votes = new Dictionary<UInt160, Fixed8>();
-            for (int i = 0; i < parameters.Length - 1; i+=2)
-                votes.Add(WalletAccount.ToAddressHash(parameters[i]), Fixed8.Parse(parameters[i]));
+            for (int i = 1; i < parameters.Length - 1; i += 2)
+            {
+                addressHash = WalletAccount.ToAddressHash(parameters[i + 0]);
+                if (!Fixed8.TryParse(parameters[i + 1], out value))
+                {
+                    Console.WriteLine("Invalid parameter.");
+                    return true;
+                }
+                votes.Add(addressHash, value);
+            }
 
             VoteTransaction trans = new VoteTransaction()
             {
@@ -392,6 +422,43 @@ namespace SkyCLI.Commands
 
             JArray param = new JArray(tx.ToArray());
             SendCommand(Config.BlockVersion, RpcCommand.Wallet.VoteWitness, param);
+
+            return true;
+        }
+
+        public static bool OnGetVoteWitness(string[] parameters)
+        {
+            if (Program.Wallet == null)
+            {
+                Console.WriteLine("Not loaded wallet account");
+                return true;
+            }
+
+            string[] usage = new string[] { string.Format(
+                "{0} [command option]\n"
+                , RpcCommand.Wallet.GetVoteWitness) };
+            string[] command_option = new string[] { HelpCommandOption.Help }; ;
+
+            if (parameters.Length > 2)
+            {
+                OutputHelpMessage(usage, null, command_option, null);
+                return true;
+            }
+
+            int index = 1;
+            if (parameters.Length > index)
+            {
+                string option = parameters[index];
+                if (option.ToLower().Equals("-help") || option.ToLower().Equals("-h"))
+                {
+                    OutputHelpMessage(usage, null, command_option, null);
+                    index++;
+                    return true;
+                }
+            }
+
+            JArray param = new JArray() { Program.Wallet.Address };
+            SendCommand(Config.BlockVersion, RpcCommand.Wallet.GetVoteWitness, param);
 
             return true;
         }
