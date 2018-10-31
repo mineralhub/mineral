@@ -112,7 +112,7 @@ namespace Sky.Cryptography
 
         public static byte[] Sign(byte[] message, ECKey key)
         {
-            ISigner signer = SignerUtilities.GetSigner("SHA-256withECDSA");
+            ISigner signer = SignerUtilities.GetSigner("NONEwithECDSA");
             signer.Init(true, key.PrivateKey);
             signer.BlockUpdate(message, 0, message.Length);
             return signer.GenerateSignature();
@@ -130,7 +130,7 @@ namespace Sky.Cryptography
 
         public static bool VerifySignature(byte[] signature, byte[] message, ECKey key)
         {
-            ISigner signer = SignerUtilities.GetSigner("SHA-256withECDSA");
+            ISigner signer = SignerUtilities.GetSigner("NONEwithECDSA");
             signer.Init(false, key.PublicKey);
             signer.BlockUpdate(message, 0, message.Length);
             return signer.VerifySignature(signature);

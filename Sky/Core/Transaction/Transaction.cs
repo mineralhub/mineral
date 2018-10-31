@@ -140,12 +140,12 @@ namespace Sky.Core
 
         public void Sign(ECKey key)
         {
-            Signature = new MakerSignature(Cryptography.Helper.Sign(ToUnsignedArray(), key), key.PublicKey.ToByteArray());
+            Signature = new MakerSignature(Cryptography.Helper.Sign(ToUnsignedArray().SHA256(), key), key.PublicKey.ToByteArray());
         }
 
         public bool VerifySignature()
         {
-            return Cryptography.Helper.VerifySignature(Signature, ToUnsignedArray());
+            return Cryptography.Helper.VerifySignature(Signature, ToUnsignedArray().SHA256());
         }
 
         public bool Verify()
