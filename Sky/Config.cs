@@ -73,6 +73,7 @@ namespace Sky
         public const int MaxTransactions = 2000;
         public const int VoteMaxLength = 10;
         public const int LockTTL = TTLDay * 1;
+        public const int VoteTTL = TTLDay * 1;
         public const int LockRedoTimes = 10;
 
         public static Fixed8 DefaultFee = Fixed8.One;
