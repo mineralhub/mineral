@@ -540,6 +540,15 @@ namespace Sky.Database.LevelDB
                             from.AddLock(lockTx.LockValue);
                         }
                         break;
+
+                    case UnlockTransaction unlockTx:
+                        {
+                            from.LastLockTxID = tx.Hash;
+                            Fixed8 lockValue = from.LockBalance;
+                            from.AddBalance(lockValue);
+                            from.AddLock(-lockValue);
+                        }
+                        break;
                 }
             }
 
