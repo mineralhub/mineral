@@ -24,6 +24,7 @@ namespace SkyCLI.Shell
             { RpcCommand.Wallet.CreateAccount, new CommandHandler(WalletCommand.OnCreateAccount) },
             { RpcCommand.Wallet.OpenAccount, new CommandHandler(WalletCommand.OnOpenAccount) },
             { RpcCommand.Wallet.CloseAccount, new CommandHandler(WalletCommand.OnCloseAccount) },
+            { RpcCommand.Wallet.BackupAccount, new CommandHandler(WalletCommand.OnBackupAccount) },
             { RpcCommand.Wallet.GetAccount, new CommandHandler(WalletCommand.OnGetAccount) },
             { RpcCommand.Wallet.GetAddress, new CommandHandler(WalletCommand.OnGetAddress) },
             { RpcCommand.Wallet.GetBalance, new CommandHandler(WalletCommand.OnGetBalance) },

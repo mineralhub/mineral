@@ -61,10 +61,11 @@ namespace SkyCLI.Shell
 
         public virtual void OnHelp(string[] parameters) { }
 
-        public static string ReadPasswordString()
+        public static string ReadPasswordString(string message)
         {
             string result = "";
 
+            Console.Write(message);
             while (true)
             {
                 var key = System.Console.ReadKey(true);

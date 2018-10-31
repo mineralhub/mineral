@@ -42,10 +42,8 @@ namespace SkyCLI.Commands
                 }
             }
 
-            Console.Write("Password : ");
-            string password = ConsoleServiceBase.ReadPasswordString();
-            Console.Write("Confirm password : ");
-            string confirm = ConsoleServiceBase.ReadPasswordString();
+            string password = ConsoleServiceBase.ReadPasswordString("Password : ");
+            string confirm = ConsoleServiceBase.ReadPasswordString("Confirm password : ");
 
             if (!password.Equals(confirm))
             {
@@ -109,8 +107,7 @@ namespace SkyCLI.Commands
                 json = JObject.Parse(data);
             }
 
-            Console.Write("Password : ");
-            string password = ConsoleServiceBase.ReadPasswordString();
+            string password = ConsoleServiceBase.ReadPasswordString("Password: ");
 
             KeyStore keystore = new KeyStore();
             keystore = JsonConvert.DeserializeObject<KeyStore>(json.ToString());
@@ -134,8 +131,66 @@ namespace SkyCLI.Commands
 
         public static bool OnCloseAccount(string[] parameters)
         {
+            if (Program.Wallet == null)
+            {
+                Console.WriteLine("Already close account.");
+                return true;
+            }
+
             Program.Wallet = null;
             Console.WriteLine("Close account");
+            return true;
+        }
+
+        public static bool OnBackupAccount(string[] parameters)
+        {
+            if (Program.Wallet == null)
+            {
+                Console.WriteLine("Not loaded wallet account");
+                return true;
+            }
+
+            string[] usage = new string[] { string.Format(
+                "{0} [command option] <path>\n"
+                , RpcCommand.Wallet.BackupAccount) };
+            string[] command_option = new string[] { HelpCommandOption.Help }; ;
+
+            if (parameters.Length == 1 || parameters.Length > 3)
+            {
+                OutputHelpMessage(usage, null, command_option, null);
+                return true;
+            }
+
+            int index = 1;
+            if (parameters.Length > index)
+            {
+                string option = parameters[index];
+                if (option.ToLower().Equals("-help") || option.ToLower().Equals("-h"))
+                {
+                    OutputHelpMessage(usage, null, command_option, null);
+                    index++;
+                    return true;
+                }
+            }
+            string password = ConsoleServiceBase.ReadPasswordString("Password : ");
+            string confirm = ConsoleServiceBase.ReadPasswordString("Confirm password : ");
+
+            if (!password.Equals(confirm))
+            {
+                Console.WriteLine("Password do not match.");
+                return true;
+            }
+
+            string path = parameters[1].Contains(".keystore") ? parameters[1] : parameters[1] + ".keystore";
+
+            if (!KeyStoreService.GenerateKeyStore(path, password, Program.Wallet.Key.PrivateKeyBytes, Program.Wallet.Address))
+            {
+                Console.WriteLine("Fail to generate keystore file.");
+                return true;
+            }
+
+            Console.WriteLine("Address : {0}", Program.Wallet.Address);
+
             return true;
         }
 
