@@ -43,34 +43,37 @@ namespace SkyCLI.Shell
         public override void OnHelp(string[] parameters)
         {
             string message =
-                Program.version
-                + "\n" + "".PadLeft(2) + "COMMAND : "
-                + "\n" + "".PadLeft(4) + "BLOCK : "
-                + "\n" + "".PadLeft(6) + RpcCommand.Block.GetBlock
-                + "\n" + "".PadLeft(6) + RpcCommand.Block.GetBlockHash
-                + "\n" + "".PadLeft(6) + RpcCommand.Block.GetHeight
-                + "\n" + "".PadLeft(6) + RpcCommand.Block.GetCurrentBlockHash
-                + "\n" + "".PadLeft(6) + RpcCommand.Block.GetTransaction
+                Config.GetVersion()
 
                 + "\n"
-                + "\n" + "".PadLeft(4) + "NODE : "
-                + "\n" + "".PadLeft(6) + RpcCommand.Node.NodeList
+                + "\n" + "".PadLeft(0) + "COMMAND : "
+                + "\n" + "".PadLeft(4) + "BLOCK COMMAND :"
+                + "\n" + "".PadLeft(8) + RpcCommand.Block.GetBlock
+                + "\n" + "".PadLeft(8) + RpcCommand.Block.GetBlockHash
+                + "\n" + "".PadLeft(8) + RpcCommand.Block.GetHeight
+                + "\n" + "".PadLeft(8) + RpcCommand.Block.GetCurrentBlockHash
+                + "\n" + "".PadLeft(8) + RpcCommand.Block.GetTransaction
 
                 + "\n"
-                + "\n" + "".PadLeft(4) + "WALLET :"
-                + "\n" + "".PadLeft(6) + RpcCommand.Wallet.CreateAccount
-                + "\n" + "".PadLeft(6) + RpcCommand.Wallet.OpenAccount
-                + "\n" + "".PadLeft(6) + RpcCommand.Wallet.CloseAccount
-                + "\n" + "".PadLeft(6) + RpcCommand.Wallet.GetBalance
-                + "\n" + "".PadLeft(6) + RpcCommand.Wallet.SendTo
-                + "\n" + "".PadLeft(6) + RpcCommand.Wallet.LockBalance
-                + "\n" + "".PadLeft(6) + RpcCommand.Wallet.UnlockBalance
-                + "\n" + "".PadLeft(6) + RpcCommand.Wallet.VoteWitness
-                + "\n" + "".PadLeft(6) + RpcCommand.Wallet.GetVoteWitness
+                + "\n" + "".PadLeft(4) + "NODE COMMAND : "
+                + "\n" + "".PadLeft(8) + RpcCommand.Node.NodeList
 
                 + "\n"
-                + "\n" + "".PadLeft(2) + "MISC OPTION :"
-                + "\n" + "".PadLeft(6) + BaseCommand.HelpCommandOption.Help;
+                + "\n" + "".PadLeft(4) + "WALLET COMMAND :"
+                + "\n" + "".PadLeft(8) + RpcCommand.Wallet.CreateAccount
+                + "\n" + "".PadLeft(8) + RpcCommand.Wallet.OpenAccount
+                + "\n" + "".PadLeft(8) + RpcCommand.Wallet.CloseAccount
+                + "\n" + "".PadLeft(8) + RpcCommand.Wallet.BackupAccount
+                + "\n" + "".PadLeft(8) + RpcCommand.Wallet.GetBalance
+                + "\n" + "".PadLeft(8) + RpcCommand.Wallet.SendTo
+                + "\n" + "".PadLeft(8) + RpcCommand.Wallet.LockBalance
+                + "\n" + "".PadLeft(8) + RpcCommand.Wallet.UnlockBalance
+                + "\n" + "".PadLeft(8) + RpcCommand.Wallet.VoteWitness
+                + "\n" + "".PadLeft(8) + RpcCommand.Wallet.GetVoteWitness
+
+                + "\n"
+                + "\n" + "".PadLeft(0) + "MISC OPTION :"
+                + "\n" + "".PadLeft(8) + BaseCommand.HelpCommandOption.Help;
 
             Console.WriteLine(message);
         }

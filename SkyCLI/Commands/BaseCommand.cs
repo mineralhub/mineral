@@ -61,7 +61,7 @@ namespace SkyCLI.Commands
 
         public static void OutputHelpMessage(string[] usage_message, string[] option_message, string[] commandoption_message, string[] help_message)
         {
-            string output_message = Program.version;
+            string output_message = Config.GetVersion();
 
             if (usage_message != null)
             {
