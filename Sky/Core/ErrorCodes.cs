@@ -23,6 +23,7 @@ namespace Sky.Core
         E_TX_NO_LOCK_BALANCE,
         E_TX_LOCK_VALUE_CANNOT_NEGATIVE,
         E_TX_LOCK_TTL_NOT_ARRIVED,
+        E_TX_VOTE_TTL_NOT_ARRIVED,
         E_TX_VOTE_OVERCOUNT,
         E_TX_DELEGATE_NAME_INVALID,
     };
