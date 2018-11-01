@@ -69,7 +69,7 @@ namespace Sky.Core
             {
                 var j = new JObject();
                 j["addr"] = v.Key.ToString();
-                j["amount"] = v.Value.ToString();
+                j["amount"] = v.Value.Value;
                 to.Add(j);
             }
             json["to"] = to;

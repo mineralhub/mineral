@@ -16,7 +16,10 @@ namespace Sky.Network.RPC.Command
             if (tx != null)
             {
                 if (tx.Verify() && tx.VerifyBlockchain())
+                {
                     node.AddTransaction(tx);
+                    json["transaction"] = tx.ToJson();
+                }
                 else
                 {
                     json = RpcCommand.CreateErrorResult(null, (int)tx.TxResult, tx.TxResult.ToString());
