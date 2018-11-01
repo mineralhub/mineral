@@ -14,7 +14,7 @@ namespace Sky.Network.RPC.Command
             public const string GetHeight = "getheight";
             public const string GetCurrentBlockHash = "getcurrentblockhash";
             public const string GetTransaction = "gettransaction";
-            public const string AddTransaction = "addTransaction";
+            public const string AddTransaction = "addtransaction";
         }
 
         public struct Node
