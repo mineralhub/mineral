@@ -1,4 +1,5 @@
 ﻿using System.IO;
+using System.Text;
 using Newtonsoft.Json.Linq;
 using Sky.Database.LevelDB;
 
@@ -50,7 +51,7 @@ namespace Sky.Core
         public override JObject ToJson()
         {
             JObject json = base.ToJson();
-            json["name"] = Name;
+            json["name"] = Encoding.UTF8.GetString(Name);
             return json;
         }
     }

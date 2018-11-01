@@ -132,23 +132,23 @@ namespace Tester
 
             // create genesis block.
             {
-                List<TransferTransaction> transTxs = new List<TransferTransaction>();
+                List<RewardTransaction> rewardTxs = new List<RewardTransaction>();
                 Config.GenesisBlock.Accounts.ForEach(
                     p =>
                     {
-                        transTxs.Add(new TransferTransaction
+                        rewardTxs.Add(new RewardTransaction
                         {
-                            From = UInt160.Zero,
-                            To = new Dictionary<UInt160, Fixed8> { { p.Address, p.Balance } }
+                            From = p.Address,
+                            Reward = p.Balance
                         });
                     });
 
                 var txs = new List<Transaction>();
-                foreach (var trans in transTxs)
+                foreach (var reward in rewardTxs)
                 {
-                    var tx = new Transaction(eTransactionType.TransferTransaction,
+                    var tx = new Transaction(eTransactionType.RewardTransaction,
                                     GenesisBlockTimestamp - 1,
-                                    trans)
+                                    reward)
                     {
                         Signature = new MakerSignature()
                     };
