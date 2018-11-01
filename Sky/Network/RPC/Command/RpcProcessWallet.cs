@@ -57,5 +57,11 @@ namespace Sky.Network.RPC.Command
 
             return json;
         }
+
+        public static JObject OnAddTransaction(object obj, JArray parameters)
+        {
+            return ProcessTransaction(obj as LocalNode, parameters[0].ToObject<byte[]>());
+        }
+
     }
 }

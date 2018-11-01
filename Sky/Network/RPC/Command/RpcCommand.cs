@@ -39,6 +39,8 @@ namespace Sky.Network.RPC.Command
 
             public const string VoteWitness = "votewitness";
             public const string GetVoteWitness = "getvotewitness";
+
+            public const string AddTransaction = "addTransaction";
         }
     }
 }

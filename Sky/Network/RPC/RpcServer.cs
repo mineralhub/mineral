@@ -37,11 +37,14 @@ namespace Sky.Network.RPC
 
             // Wallet
             { RpcCommand.Wallet.GetBalance, new RpcCommand.ProcessHandler(RpcProcessCommand.OnGetBalance) },
+            { RpcCommand.Wallet.GetVoteWitness, new RpcCommand.ProcessHandler(RpcProcessCommand.OnGetVoteWitness) },
+
+            // Transactions
             { RpcCommand.Wallet.SendTo, new RpcCommand.ProcessHandler(RpcProcessCommand.OnSendTo) },
             { RpcCommand.Wallet.LockBalance, new RpcCommand.ProcessHandler(RpcProcessCommand.OnLockBalance) },
             { RpcCommand.Wallet.UnlockBalance, new RpcCommand.ProcessHandler(RpcProcessCommand.OnUnlockBalance) },
             { RpcCommand.Wallet.VoteWitness, new RpcCommand.ProcessHandler(RpcProcessCommand.OnVoteWitness) },
-            { RpcCommand.Wallet.GetVoteWitness, new RpcCommand.ProcessHandler(RpcProcessCommand.OnGetVoteWitness) },
+            { RpcCommand.Wallet.AddTransaction, new RpcCommand.ProcessHandler(RpcProcessCommand.OnAddTransaction) },
         };
 
         public RpcServer(LocalNode localNode)
