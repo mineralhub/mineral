@@ -31,6 +31,7 @@ namespace Sky.Network.RPC
             { RpcCommand.Block.GetHeight, new RpcCommand.ProcessHandler(RpcProcessCommand.OnGetHeight) },
             { RpcCommand.Block.GetCurrentBlockHash, new RpcCommand.ProcessHandler(RpcProcessCommand.OnGetCurrentBlockHash) },
             { RpcCommand.Block.GetTransaction, new RpcCommand.ProcessHandler(RpcProcessCommand.OnGetTransaction) },
+            { RpcCommand.Block.AddTransaction, new RpcCommand.ProcessHandler(RpcProcessCommand.OnAddTransaction) },
 
             // Node
             { RpcCommand.Node.NodeList, new RpcCommand.ProcessHandler(RpcProcessCommand.OnNodeList) },
@@ -44,7 +45,6 @@ namespace Sky.Network.RPC
             { RpcCommand.Wallet.LockBalance, new RpcCommand.ProcessHandler(RpcProcessCommand.OnLockBalance) },
             { RpcCommand.Wallet.UnlockBalance, new RpcCommand.ProcessHandler(RpcProcessCommand.OnUnlockBalance) },
             { RpcCommand.Wallet.VoteWitness, new RpcCommand.ProcessHandler(RpcProcessCommand.OnVoteWitness) },
-            { RpcCommand.Wallet.AddTransaction, new RpcCommand.ProcessHandler(RpcProcessCommand.OnAddTransaction) },
         };
 
         public RpcServer(LocalNode localNode)
