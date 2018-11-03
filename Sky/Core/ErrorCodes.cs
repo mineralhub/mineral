@@ -26,5 +26,6 @@ namespace Sky.Core
         E_TX_VOTE_TTL_NOT_ARRIVED,
         E_TX_VOTE_OVERCOUNT,
         E_TX_DELEGATE_NAME_INVALID,
+        E_TX_DELEGATE_ALREADY_REGISTER,
     };
 }

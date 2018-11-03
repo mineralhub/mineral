@@ -48,6 +48,19 @@ namespace Sky.Core
             return true;
         }
 
+        public override bool VerifyBlockchain(Storage storage)
+        {
+            if (!base.VerifyBlockchain(storage))
+                return false;
+
+            if (storage.GetDelegateState(From) != null)
+            {
+                TxResult = ERROR_CODES.E_TX_DELEGATE_ALREADY_REGISTER;
+                return false;
+            }
+            return true;
+        }
+
         public override JObject ToJson()
         {
             JObject json = base.ToJson();

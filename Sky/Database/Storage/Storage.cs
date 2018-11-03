@@ -59,6 +59,11 @@ namespace Sky.Database.LevelDB
             return accounts.GetAndChange(hash);
         }
 
+        public DelegateState GetDelegateState(UInt160 hash)
+        {
+            return delegates.TryGet(hash);
+        }
+
         public void AddDelegate(UInt160 key, byte[] name)
         {
             delegates.Add(key, name);
@@ -69,7 +74,7 @@ namespace Sky.Database.LevelDB
             delegates.Vote(tx);
         }
 
-        public void Downvote(System.Collections.Generic.Dictionary<UInt160, Fixed8> Votes)
+        public void Downvote(Dictionary<UInt160, Fixed8> Votes)
         {
             delegates.Downvote(Votes);
         }

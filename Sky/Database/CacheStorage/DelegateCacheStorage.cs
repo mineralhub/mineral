@@ -33,6 +33,11 @@ namespace Sky.Database.CacheStorage
             }
         }
 
+        public DelegateState TryGet(UInt160 key)
+        {
+            return _cache.TryGet(key);
+        }
+
         public void Commit(WriteBatch batch)
         {
             _cache.Commit(batch);
