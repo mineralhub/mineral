@@ -47,5 +47,21 @@ namespace Sky.Network.RPC.Command
             }
             return json;
         }
+
+        public static JObject OnGetTurnTable(object obj, JArray parameters)
+        {
+            JObject json = new JObject();
+            json["TurnTable"] = new JArray();
+            List<UInt160> list = Blockchain.Instance.GetTurnTable(parameters[0].Value<int>());
+            foreach (UInt160 hash in list)
+            {
+                DelegateState state = Blockchain.Instance.storage.GetDelegateState(hash);
+                JObject jstate = new JObject();
+                jstate["address"] = state.AddressHash.ToString();
+                jstate["name"] = Encoding.UTF8.GetString(state.Name); ;
+                (json["TurnTable"] as JArray).Add(jstate);
+            }
+            return json;
+        }
     }
 }

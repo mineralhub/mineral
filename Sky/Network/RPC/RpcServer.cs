@@ -33,6 +33,7 @@ namespace Sky.Network.RPC
             { RpcCommand.Block.GetTransaction, new RpcCommand.ProcessHandler(RpcProcessCommand.OnGetTransaction) },
             { RpcCommand.Block.AddTransaction, new RpcCommand.ProcessHandler(RpcProcessCommand.OnAddTransaction) },
             { RpcCommand.Block.GetCadidateDelegates, new RpcCommand.ProcessHandler(RpcProcessCommand.OnCadidateDelegates) },
+            { RpcCommand.Block.GetTurnTable, new RpcCommand.ProcessHandler(RpcProcessCommand.OnGetTurnTable) },
 
             // Node
             { RpcCommand.Node.NodeList, new RpcCommand.ProcessHandler(RpcProcessCommand.OnNodeList) },
@@ -83,7 +84,7 @@ namespace Sky.Network.RPC
 
         protected virtual JObject Process(JToken id, string method, JArray parameters)
         {
-            return processHandlers.ContainsKey(method) 
+            return processHandlers.ContainsKey(method)
                 ? processHandlers[method](_localNode, parameters) : CreateErrorResult(id, -1, string.Format("Not found method : {0}", method));
         }
 
@@ -166,7 +167,7 @@ namespace Sky.Network.RPC
                     response["error"] = token;
                 else
                     response["result"] = result;
-                
+
             }
             catch (Exception e)
             {

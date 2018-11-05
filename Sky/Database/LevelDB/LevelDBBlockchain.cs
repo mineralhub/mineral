@@ -623,5 +623,60 @@ namespace Sky.Database.LevelDB
                 }
             }
         }
+
+        public override void PersistTurnTable(List<UInt160> addrs, int height)
+        {
+            WriteBatch batch = new WriteBatch();
+
+            using (MemoryStream ms = new MemoryStream())
+            using (BinaryWriter bw = new BinaryWriter(ms))
+            {
+                bw.WriteSerializableArray(addrs);
+                bw.Flush();
+                byte[] data = ms.ToArray();
+                batch.Put(SliceBuilder.Begin(DataEntryPrefix.SYS_CurrentTurnTable), data);
+                batch.Put(SliceBuilder.Begin(DataEntryPrefix.ST_TurnTable).Add(height), data);
+            }
+            _db.Write(WriteOptions.Default, batch);
+        }
+
+        public class TurnTable
+        {
+            public UInt32 Height;
+            public List<UInt160> Hashes;
+
+            public TurnTable()
+            {
+                Height = 0;
+                Hashes = new List<UInt160>();
+            }
+
+            public TurnTable(TurnTable _o)
+            {
+                Height = _o.Height;
+                Hashes = _o.Hashes;
+            }
+        }
+
+        public override List<UInt160> GetTurnTable(int height)
+        {
+            List<UInt160> turnTable = new List<UInt160>();
+            IEnumerable<UInt32> _Heights = _db.Find(ReadOptions.Default, SliceBuilder.Begin(DataEntryPrefix.ST_TurnTable), (k, v) =>
+            {
+                return k.ToArray().ToUInt32(1);
+            }).Where(p => p <= height).ToArray();
+
+            List<UInt32> Heights = new List<uint>();
+            foreach (UInt32 n in _Heights)
+                Heights.Add(n);
+            Heights.Sort((a, b) => { return a > b ? -1 : a < b ? 1 : 0; });
+            Slice value = _db.Get(ReadOptions.Default, SliceBuilder.Begin(DataEntryPrefix.ST_TurnTable).Add(Heights.First()));
+            using (MemoryStream ms = new MemoryStream(value.ToArray(), false))
+            using (BinaryReader br = new BinaryReader(ms))
+            {
+                turnTable = br.ReadSerializableArray<UInt160>();
+            }
+            return turnTable;
+        }
     }
 }

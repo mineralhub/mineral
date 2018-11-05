@@ -162,5 +162,7 @@ namespace Sky.Core
         }
 
         public abstract void NormalizeTransactions(ref List<Transaction> txs);
+        public abstract void PersistTurnTable(List<UInt160> addrs, int height);
+        public abstract List<UInt160> GetTurnTable(int height);
     }
 }

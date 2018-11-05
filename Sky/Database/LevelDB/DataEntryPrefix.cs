@@ -12,11 +12,13 @@
         public const byte ST_SpentCoin = 0x45;
         public const byte ST_BlockTrigger = 0x46;
         public const byte ST_OtherSign = 0x47;
+        public const byte ST_TurnTable = 0x48;
 
         public const byte IX_HeaderHashList = 0x80;
 
         public const byte SYS_CurrentBlock = 0xc0;
         public const byte SYS_CurrentHeader = 0xc1;
+        public const byte SYS_CurrentTurnTable = 0xc2;
 
         public const byte SYS_Version = 0xf0;
     }

@@ -17,6 +17,7 @@ namespace Sky.Network.RPC.Command
             public const string AddTransaction = "addtransaction";
 
             public const string GetCadidateDelegates = "getcandidatedelegates";
+            public const string GetTurnTable = "getturntable";
         }
 
         public struct Node
