@@ -124,5 +124,10 @@ namespace Sky.Database.LevelDB
                 return null;
             }
         }
+
+        public List<DelegateState> GetCadidateDelgates()
+        {
+            return Blockchain.Instance.GetDelegateStateAll();
+        }
     }
 }

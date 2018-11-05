@@ -32,6 +32,7 @@ namespace Sky.Network.RPC
             { RpcCommand.Block.GetCurrentBlockHash, new RpcCommand.ProcessHandler(RpcProcessCommand.OnGetCurrentBlockHash) },
             { RpcCommand.Block.GetTransaction, new RpcCommand.ProcessHandler(RpcProcessCommand.OnGetTransaction) },
             { RpcCommand.Block.AddTransaction, new RpcCommand.ProcessHandler(RpcProcessCommand.OnAddTransaction) },
+            { RpcCommand.Block.GetCadidateDelegates, new RpcCommand.ProcessHandler(RpcProcessCommand.OnCadidateDelegates) },
 
             // Node
             { RpcCommand.Node.NodeList, new RpcCommand.ProcessHandler(RpcProcessCommand.OnNodeList) },

@@ -15,6 +15,8 @@ namespace Sky.Network.RPC.Command
             public const string GetCurrentBlockHash = "getcurrentblockhash";
             public const string GetTransaction = "gettransaction";
             public const string AddTransaction = "addtransaction";
+
+            public const string GetCadidateDelegates = "getcandidatedelegates";
         }
 
         public struct Node
@@ -40,7 +42,6 @@ namespace Sky.Network.RPC.Command
 
             public const string VoteWitness = "votewitness";
             public const string GetVoteWitness = "getvotewitness";
-
         }
     }
 }
