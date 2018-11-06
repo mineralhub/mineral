@@ -59,7 +59,12 @@ namespace Sky
         public static byte AddressVersion = 0;
         public static byte StateVersion = 0;
 
-        public const int TTLDay = 28800;    // Daily block count
+        public static int TTLMinute;
+        public static int TTLHour;
+        public static int TTLDay;
+        public static int LockTTL;
+        public static int VoteTTL;
+
         public const int ProtocolVersion = 0;
         public const int ConnectPeerMax = 10;
         public const int WaitPeerMax = 20;
@@ -72,8 +77,6 @@ namespace Sky
         public const int TransferToMaxLength = 10;
         public const int MaxTransactions = 2000;
         public const int VoteMaxLength = 10;
-        public const int LockTTL = TTLDay * 1;
-        public const int VoteTTL = TTLDay * 1;
         public const int LockRedoTimes = 10;
 
         public static Fixed8 DefaultFee = Fixed8.One;
@@ -137,6 +140,12 @@ namespace Sky
                 GenesisBlock.Delegates.Add(conf);
             }
             GenesisBlock.Timestamp = genesisBlock["timestamp"].Value<int>();
+
+            TTLMinute = 60 / Block.NextBlockTimeSec;
+            TTLHour = TTLMinute * 60;
+            TTLDay = TTLHour * 24;
+            LockTTL = TTLDay;
+            VoteTTL = TTLDay;
         }
         /*
         LocalAddresses.UnionWith(NetworkInterface.GetAllNetworkInterfaces().SelectMany(p => p.GetIPProperties().UnicastAddresses).Select(p => p.Address.MapToIPv6()));
