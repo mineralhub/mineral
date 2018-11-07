@@ -20,7 +20,7 @@ namespace Sky.Core.DPos
 
         public int RemainUpdate(int height)
         {
-            return UpdateHeight + Config.RoundBlock - height;
+            return UpdateHeight + Config.Instance.RoundBlock - height;
         }
 
         public UInt160 GetTurn(int height)
@@ -44,7 +44,7 @@ namespace Sky.Core.DPos
 
         public int CalcBlockTime(int genesisBlockTime, long height)
         {
-            return genesisBlockTime + (int)height * Config.Block.NextBlockTimeSec;
+            return genesisBlockTime + (int)height * Config.Instance.Block.NextBlockTimeSec;
         }
     }
 }

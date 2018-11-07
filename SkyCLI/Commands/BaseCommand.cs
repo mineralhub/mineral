@@ -55,13 +55,13 @@ namespace SkyCLI.Commands
 
         public static JObject SendCommand(double id, string method, JArray parameters)
         {
-            JObject obj = MakeCommand(Config.BlockVersion, method, parameters);
+            JObject obj = MakeCommand(Config.Instance.BlockVersion, method, parameters);
             return RcpClient.RequestPostAnsyc(Program.url, obj.ToString()).Result;
         }
 
         public static void OutputHelpMessage(string[] usage_message, string[] option_message, string[] commandoption_message, string[] help_message)
         {
-            string output_message = Config.GetVersion();
+            string output_message = Config.Instance.GetVersion();
 
             if (usage_message != null)
             {

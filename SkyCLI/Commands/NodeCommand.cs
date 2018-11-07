@@ -36,7 +36,7 @@ namespace SkyCLI.Commands
             }
 
             JArray param = new JArray(new ArraySegment<string>(parameters, index, parameters.Length - index));
-            SendCommand(Config.BlockVersion, RpcCommand.Node.NodeList, new JArray());
+            SendCommand(Config.Instance.BlockVersion, RpcCommand.Node.NodeList, new JArray());
 
             return true;
         }

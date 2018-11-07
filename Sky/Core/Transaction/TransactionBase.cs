@@ -75,7 +75,7 @@ namespace Sky.Core
 
         public virtual void CalcFee()
         {
-            Fee = Config.DefaultFee;
+            Fee = Config.Instance.DefaultFee;
         }
 
         public virtual JObject ToJson()

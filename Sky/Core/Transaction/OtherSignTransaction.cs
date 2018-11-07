@@ -16,7 +16,7 @@ namespace Sky.Core
         public override void Deserialize(BinaryReader reader)
         {
             base.Deserialize(reader);
-            To = reader.ReadSerializableDictionary<UInt160, Fixed8>(Config.OtherSignToMaxLength);
+            To = reader.ReadSerializableDictionary<UInt160, Fixed8>(Config.Instance.OtherSignToMaxLength);
             Others = reader.ReadStringHashSet();
             ExpirationBlockHeight = reader.ReadInt32();
         }
@@ -31,7 +31,7 @@ namespace Sky.Core
 
         public override void CalcFee()
         {
-            Fee = Config.DefaultFee;
+            Fee = Config.Instance.DefaultFee;
         }
 
         public override bool Verify()
@@ -43,7 +43,7 @@ namespace Sky.Core
                     return false;
             if (Others.Count == 0)
                 return false;
-            if (Config.OtherSignMaxLength < Others.Count)
+            if (Config.Instance.OtherSignMaxLength < Others.Count)
                 return false;
             foreach (string addr in Others)
                 if (!Wallets.WalletAccount.IsAddress(addr))

@@ -36,7 +36,7 @@ namespace SkyCLI.Commands
             }
 
             JArray param = new JArray(new ArraySegment<string>(parameters, index, parameters.Length - index));
-            SendCommand(Config.BlockVersion, RpcCommand.Block.GetBlock, param);
+            SendCommand(Config.Instance.BlockVersion, RpcCommand.Block.GetBlock, param);
             return true;
         }
 
@@ -66,7 +66,7 @@ namespace SkyCLI.Commands
             }
 
             JArray param = new JArray(new ArraySegment<string>(parameters, index, parameters.Length - index));
-            SendCommand(Config.BlockVersion, RpcCommand.Block.GetBlockHash, param);
+            SendCommand(Config.Instance.BlockVersion, RpcCommand.Block.GetBlockHash, param);
             return true;
         }
 
@@ -96,7 +96,7 @@ namespace SkyCLI.Commands
             }
 
             JArray param = new JArray(new ArraySegment<string>(parameters, index, parameters.Length - index));
-            SendCommand(Config.BlockVersion, RpcCommand.Block.GetHeight, param);
+            SendCommand(Config.Instance.BlockVersion, RpcCommand.Block.GetHeight, param);
             return true;
         }
 
@@ -105,7 +105,7 @@ namespace SkyCLI.Commands
             string[] usage = new string[] { string.Format(
                 "{0} [command option]\n"
                 , RpcCommand.Block.GetCurrentBlockHash) };
-            string[] command_option = new string[] { HelpCommandOption.Help };;
+            string[] command_option = new string[] { HelpCommandOption.Help };
 
             if (parameters.Length > 2)
             {
@@ -126,7 +126,7 @@ namespace SkyCLI.Commands
             }
 
             JArray param = new JArray(new ArraySegment<string>(parameters, index, parameters.Length - index));
-            SendCommand(Config.BlockVersion, RpcCommand.Block.GetCurrentBlockHash, param);
+            SendCommand(Config.Instance.BlockVersion, RpcCommand.Block.GetCurrentBlockHash, param);
             return true;
         }
 
@@ -156,7 +156,7 @@ namespace SkyCLI.Commands
             }
 
             JArray param = new JArray(new ArraySegment<string>(parameters, index, parameters.Length - index));
-            SendCommand(Config.BlockVersion, RpcCommand.Block.GetCurrentBlockHash, param);
+            SendCommand(Config.Instance.BlockVersion, RpcCommand.Block.GetCurrentBlockHash, param);
             return true;
         }
     }

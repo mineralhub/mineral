@@ -21,42 +21,42 @@ namespace SkyCLI
             public ushort RpcPort { get; set; }
         }
 
-        public static readonly string Version = "1.0";
+        public readonly string Version = "1.0";
         [JsonProperty("block_version")]
-        public static double BlockVersion { get; set; }
+        public double BlockVersion { get; set; }
         [JsonProperty("network")]
-        public static NetworkInfo Network { get; set; }
+        public NetworkInfo Network { get; set; }
 
-        public static string GetVersion()
+        private static Config instance = null;
+        public static Config Instance { get { return instance = instance ?? new Config(); } }
+
+
+        public string GetVersion()
         {
             return "Sky CLI " + Version;
         }
 
-        public static bool Initialize()
+        public bool Initialize()
         {
             bool result = false;
 
-            string path = "./config.json";
-            if (result = File.Exists(path))
+            try
             {
-                JObject jobj = JObject.Parse(File.ReadAllText("./config.json"));
-
-                BlockVersion = jobj["block_version"].Value<double>();
-
-                JToken net = jobj["network"];
-                Network = new NetworkInfo
+                string path = "./Config.json";
+                if (File.Exists(path))
                 {
-                    ListenAddress = net["listen_address"].ToString(),
-                    TcpPort = net["tcp_port"].Value<ushort>(),
-                    WsPort = net["ws_port"].Value<ushort>(),
-                    RpcPort = net["rpc_port"].Value<ushort>()
-                };
+                    using (var file = File.OpenText(path))
+                    {
+                        instance = JsonConvert.DeserializeObject<Config>(file.ReadToEnd());
+                    }
+                    result = true;
+                }
             }
-            else
+            catch (Exception e)
             {
-                Console.WriteLine("Not found \"config.json\" file.");
+                Console.WriteLine("Json invalid format");
             }
-
+            
             return result;
         }
     }

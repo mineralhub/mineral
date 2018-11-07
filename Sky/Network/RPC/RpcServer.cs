@@ -24,6 +24,9 @@ namespace Sky.Network.RPC
 
         protected Dictionary<string, RpcCommand.ProcessHandler> processHandlers = new Dictionary<string, RpcCommand.ProcessHandler>()
         {
+            // General
+            { RpcCommand.General.GetConfig, new RpcCommand.ProcessHandler(RpcProcessCommand.OnGetConfig) },
+
             // Block
             { RpcCommand.Block.GetBlock, new RpcCommand.ProcessHandler(RpcProcessCommand.OnGetBlock) },
             { RpcCommand.Block.GetBlocks, new RpcCommand.ProcessHandler(RpcProcessCommand.OnGetBlocks) },

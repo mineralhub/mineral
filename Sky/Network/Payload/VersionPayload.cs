@@ -19,10 +19,10 @@ namespace Sky.Network.Payload
         {
             return new VersionPayload
             {
-                Version = Config.ProtocolVersion,
+                Version = Config.Instance.ProtocolVersion,
                 Timestamp = DateTime.Now.ToTimestamp(),
                 Port = (ushort)port,
-                Nonce = Config.Nonce,
+                Nonce = Config.Instance.Nonce,
                 Height = Core.Blockchain.Instance.CurrentBlockHeight,
                 Relay = true,
                 NodeID = _guid

@@ -13,13 +13,13 @@ namespace Sky.Core
 
         public override void CalcFee()
         {
-            Fee = Config.DefaultFee;
+            Fee = Config.Instance.DefaultFee;
         }
 
         public override void Deserialize(BinaryReader reader)
         {
             base.Deserialize(reader);
-            To = reader.ReadSerializableDictionary<UInt160, Fixed8>(Config.TransferToMaxLength);
+            To = reader.ReadSerializableDictionary<UInt160, Fixed8>(Config.Instance.TransferToMaxLength);
         }
 
         public override void Serialize(BinaryWriter writer)

@@ -84,8 +84,8 @@ namespace Sky.Network
                 Task.Run(() =>
                 {
                     swPing.Restart();
-                    int tcpPort = Config.Network.TcpPort;
-                    int wsPort = Config.Network.WsPort;
+                    int tcpPort = Config.Instance.Network.TcpPort;
+                    int wsPort = Config.Instance.Network.WsPort;
                     try
                     {
                         if (UPNP.Enable)
@@ -158,7 +158,7 @@ namespace Sky.Network
                 lock (_connectedPeers)
                     connectedCount = _connectedPeers.Count;
 
-                if (connectedCount < Config.ConnectPeerMax)
+                if (connectedCount < Config.Instance.ConnectPeerMax)
                 {
                     Task[] tasks = { };
                     int waitCount = 0;
@@ -169,7 +169,7 @@ namespace Sky.Network
                     {
                         IPEndPoint[] eps;
                         lock (_waitPeers)
-                            eps = _waitPeers.Take(Config.ConnectPeerMax - connectedCount).ToArray();
+                            eps = _waitPeers.Take(Config.Instance.ConnectPeerMax - connectedCount).ToArray();
                         tasks = eps.Select(p => ConnectToPeerAsync(p)).ToArray();
                     }
                     else if (0 < connectedCount)
@@ -183,9 +183,9 @@ namespace Sky.Network
                             }
                         }
                     }
-                    else if (Config.Network.SeedList != null)
+                    else if (Config.Instance.Network.SeedList != null)
                     {
-                        var split = Config.Network.SeedList.OfType<string>().Select(p => p.Split(':'));
+                        var split = Config.Instance.Network.SeedList.OfType<string>().Select(p => p.Split(':'));
                         tasks = split.Select(p => ConnectToPeerAsync(p[0], int.Parse(p[1]))).ToArray();
                     }
 
@@ -398,7 +398,7 @@ namespace Sky.Network
 
         public async Task ConnectToPeerAsync(IPEndPoint ep)
         {
-            if (ep.Port == Config.Network.TcpPort && Config.LocalAddresses.Contains(ep.Address))
+            if (ep.Port == Config.Instance.Network.TcpPort && Config.Instance.LocalAddresses.Contains(ep.Address))
                 return;
 
             lock (_waitPeers)
@@ -444,7 +444,7 @@ namespace Sky.Network
         {
             lock (_waitPeers)
             {
-                if (_waitPeers.Count < Config.WaitPeerMax)
+                if (_waitPeers.Count < Config.Instance.WaitPeerMax)
                 {
                     lock (_badPeers)
                     {

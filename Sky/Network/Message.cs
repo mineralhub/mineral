@@ -35,7 +35,7 @@ namespace Sky.Network
 
         private const int PayloadMaxSize = 0x020000000;
 
-        public static uint MagicNumber = Config.MagicNumber;
+        public static uint MagicNumber = Config.Instance.MagicNumber;
         public CommandName Command;
         public uint Checksum;
         public byte[] Payload;

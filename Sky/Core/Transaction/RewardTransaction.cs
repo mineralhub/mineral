@@ -31,7 +31,7 @@ namespace Sky.Core
         {
             if (!base.Verify())
                 return false;
-            if (Reward != Config.BlockReward)
+            if (Reward != Config.Instance.BlockReward)
                 return false;
             return true;
         }

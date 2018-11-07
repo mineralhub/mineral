@@ -117,7 +117,7 @@ namespace Sky.Network
         private void ReceivedAddrs(AddrPayload payload)
         {
             IPEndPoint[] peers = payload.AddressList.Select(p => p.EndPoint).Where(
-                p => p.Port != Config.Network.TcpPort || !Config.LocalAddresses.Contains(p.Address)).ToArray();
+                p => p.Port != Config.Instance.Network.TcpPort || !Config.Instance.LocalAddresses.Contains(p.Address)).ToArray();
             if (0 < peers.Length)
                 PeersReceivedCallback?.Invoke(this, peers);
         }
@@ -291,7 +291,7 @@ namespace Sky.Network
 #if !NET47
             await Task.Yield();
 #endif
-            ushort port = 0 < Config.Network.TcpPort ? Config.Network.TcpPort : Config.Network.WsPort;
+            ushort port = 0 < Config.Instance.Network.TcpPort ? Config.Instance.Network.TcpPort : Config.Instance.Network.WsPort;
             if (!await SendMessageAsync(Message.Create(Message.CommandName.Version, VersionPayload.Create(port, _localNode.NodeID))))
                 return;
 

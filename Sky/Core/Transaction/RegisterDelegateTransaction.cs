@@ -13,7 +13,7 @@ namespace Sky.Core
 
         public override void CalcFee()
         {
-            Fee = Config.RegisterDelegateFee;
+            Fee = Config.Instance.RegisterDelegateFee;
         }
 
         public override void Deserialize(BinaryReader reader)
@@ -40,7 +40,7 @@ namespace Sky.Core
                 return false;
             }
 
-            if (Config.DelegateNameMaxLength < Name.Length)
+            if (Config.Instance.DelegateNameMaxLength < Name.Length)
             {
                 TxResult = ERROR_CODES.E_TX_DELEGATE_NAME_INVALID;
                 return false;

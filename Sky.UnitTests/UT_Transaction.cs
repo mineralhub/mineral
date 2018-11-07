@@ -37,7 +37,7 @@ namespace Sky.UnitTests
             _reward = new RewardTransaction
             {
                 From = _from.AddressHash,
-                Reward = Config.BlockReward
+                Reward = Config.Instance.BlockReward
             };
 
             _vote = new VoteTransaction

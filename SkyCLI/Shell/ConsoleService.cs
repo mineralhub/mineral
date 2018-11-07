@@ -10,6 +10,9 @@ namespace SkyCLI.Shell
     {
         private Dictionary<string, CommandHandler> commands = new Dictionary<string, CommandHandler>()
         {
+            // General
+            { RpcCommand.General.GetConfig, new CommandHandler(GeneralCommand.OnGetConfig) },
+
             // Block
             { RpcCommand.Block.GetBlock, new CommandHandler(BlockCommand.OnGetBlock) },
             { RpcCommand.Block.GetBlockHash, new CommandHandler(BlockCommand.OnGetBlockHash) },
@@ -43,7 +46,7 @@ namespace SkyCLI.Shell
         public override void OnHelp(string[] parameters)
         {
             string message =
-                Config.GetVersion()
+                Config.Instance.GetVersion()
 
                 + "\n"
                 + "\n" + "".PadLeft(0) + "COMMAND : "

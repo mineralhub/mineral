@@ -196,7 +196,7 @@ namespace SkyCLI.Commands
 
         public static bool OnGetAccount(string[] parameters)
         {
-            JObject obj = MakeCommand(Config.BlockVersion, RpcCommand.Wallet.GetAccount, new JArray());
+            JObject obj = MakeCommand(Config.Instance.BlockVersion, RpcCommand.Wallet.GetAccount, new JArray());
             obj = RcpClient.RequestPostAnsyc(Program.url, obj.ToString()).Result;
 
             return true;
@@ -271,7 +271,7 @@ namespace SkyCLI.Commands
             }
 
             JArray param = new JArray() { Program.Wallet.Address };
-            SendCommand(Config.BlockVersion, RpcCommand.Wallet.GetBalance, param);
+            SendCommand(Config.Instance.BlockVersion, RpcCommand.Wallet.GetBalance, param);
 
             return true;
         }
@@ -320,7 +320,7 @@ namespace SkyCLI.Commands
             tx.Sign(Program.Wallet);
 
             JArray param = new JArray(tx.ToArray());
-            SendCommand(Config.BlockVersion, RpcCommand.Wallet.SendTo, param);
+            SendCommand(Config.Instance.BlockVersion, RpcCommand.Wallet.SendTo, param);
 
             return true;
         }
@@ -368,7 +368,7 @@ namespace SkyCLI.Commands
             tx.Sign(Program.Wallet);
 
             JArray param = new JArray(tx.ToArray());
-            SendCommand(Config.BlockVersion, RpcCommand.Wallet.LockBalance, param);
+            SendCommand(Config.Instance.BlockVersion, RpcCommand.Wallet.LockBalance, param);
 
             return true;
         }
@@ -413,7 +413,7 @@ namespace SkyCLI.Commands
             tx.Sign(Program.Wallet);
 
             JArray param = new JArray(tx.ToArray());
-            SendCommand(Config.BlockVersion, RpcCommand.Wallet.UnlockBalance, param);
+            SendCommand(Config.Instance.BlockVersion, RpcCommand.Wallet.UnlockBalance, param);
 
             return true;
         }
@@ -476,7 +476,7 @@ namespace SkyCLI.Commands
             tx.Sign(Program.Wallet);
 
             JArray param = new JArray(tx.ToArray());
-            SendCommand(Config.BlockVersion, RpcCommand.Wallet.VoteWitness, param);
+            SendCommand(Config.Instance.BlockVersion, RpcCommand.Wallet.VoteWitness, param);
 
             return true;
         }
@@ -513,7 +513,7 @@ namespace SkyCLI.Commands
             }
 
             JArray param = new JArray() { Program.Wallet.Address };
-            SendCommand(Config.BlockVersion, RpcCommand.Wallet.GetVoteWitness, param);
+            SendCommand(Config.Instance.BlockVersion, RpcCommand.Wallet.GetVoteWitness, param);
 
             return true;
         }

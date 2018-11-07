@@ -22,7 +22,7 @@ namespace Sky.Core
             {
                 int TxHeight = 0;
                 Transaction txLast = storage.GetTransaction(FromAccountState.LastLockTxID, out TxHeight);
-                if (Blockchain.Instance.CurrentBlockHeight - TxHeight < Config.LockTTL)
+                if (Blockchain.Instance.CurrentBlockHeight - TxHeight < Config.Instance.LockTTL)
                 {
                     TxResult = ERROR_CODES.E_TX_LOCK_TTL_NOT_ARRIVED;
                     return false;
@@ -70,7 +70,7 @@ namespace Sky.Core
             {
                 int TxHeight = 0;
                 Transaction txLast = storage.GetTransaction(FromAccountState.LastLockTxID, out TxHeight);
-                if (Blockchain.Instance.CurrentBlockHeight - TxHeight < Config.LockTTL)
+                if (Blockchain.Instance.CurrentBlockHeight - TxHeight < Config.Instance.LockTTL)
                 {
                     TxResult = ERROR_CODES.E_TX_LOCK_TTL_NOT_ARRIVED;
                     return false;

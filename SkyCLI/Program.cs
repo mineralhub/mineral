@@ -20,9 +20,9 @@ namespace SkyCLI
 
         private static void Initialize(string[] args)
         {
-            Config.Initialize();
-            Console.WriteLine(Config.GetVersion());
-            url = @"http:\\" + Config.Network.ListenAddress + ":" + Config.Network.RpcPort;
+            Config.Instance.Initialize();
+            Console.WriteLine(Config.Instance.GetVersion());
+            url = @"http:\\" + Config.Instance.Network.ListenAddress + ":" + Config.Instance.Network.RpcPort;
         }
     }
 }

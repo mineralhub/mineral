@@ -6,6 +6,11 @@ namespace Sky.Network.RPC.Command
 {
     public partial class RpcCommand
     {
+        public struct General
+        {
+            public const string GetConfig = "getconfig";
+        }
+
         public struct Block
         {
             public const string GetBlock = "getblock";

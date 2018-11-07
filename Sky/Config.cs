@@ -1,152 +1,184 @@
-﻿    using System;
+﻿using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Net;
 using System.Net.NetworkInformation;
-
+using System.Reflection;
+using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
+using Sky.Converter;
 
 namespace Sky
 {
+    public class ConfigClassAttribute : System.Attribute
+    {
+    }
+
+    [ConfigClassAttribute]
     public class NetworkConfig
     {
-        public string ListenAddress;
-        public ushort TcpPort;
-        public ushort WsPort;
-        public ushort RpcPort;
-        public string[] SeedList;
+        [JsonProperty("listen_address")]
+        public string ListenAddress { get; set; }
+        [JsonProperty("tcp_port")]
+        public ushort TcpPort { get; set; }
+        [JsonProperty("ws_port")]
+        public ushort WsPort { get; set; }
+        [JsonProperty("rpc_port")]
+        public ushort RpcPort { get; set; }
+        [JsonProperty("seed_list")]
+        public string[] SeedList { get; set; }
     }
 
+    [ConfigClassAttribute]
     public class BlockConfig
     {
-        public int NextBlockTimeSec;
+        [JsonProperty("next_block_time_sec")]
+        public int NextBlockTimeSec { get; set; }
     }
 
+    [ConfigClassAttribute]
     public class UserConfig
     {
-        public byte[] PrivateKey;
-        public bool Witness;
+        [JsonProperty("private_key")]
+        [JsonConverter(typeof(JsonByteArrayConverter))]
+        public byte[] PrivateKey { get; set; }
+        [JsonProperty("witness")]
+        public bool Witness { get; set; }
     }
 
+    [ConfigClassAttribute]
     public class DelegateConfig
     {
-        public string Name;
-        public UInt160 Address;
+        [JsonProperty("name")]
+        public string Name { get; set; }
+        [JsonProperty("address")]
+        [JsonConverter(typeof(JsonUInt160Converter))]
+        public UInt160 Address { get; set; }
     }
 
+    [ConfigClassAttribute]
     public class AccountConfig
     {
-        public UInt160 Address;
-        public Fixed8 Balance;
+        [JsonProperty("address")]
+        [JsonConverter(typeof(JsonUInt160Converter))]
+        public UInt160 Address { get; set; }
+        [JsonProperty("balance")]
+        [JsonConverter(typeof(JsonFixed8Converter))]
+        public Fixed8 Balance { get; set; }
     }
 
+    [ConfigClassAttribute]
     public class GenesisBlockConfig
     {
-        public List<AccountConfig> Accounts;
-        public List<DelegateConfig> Delegates;
-        public int Timestamp;
+        [JsonProperty("account")]
+        public List<AccountConfig> Accounts { get; set; }
+        [JsonProperty("delegate")]
+        public List<DelegateConfig> Delegates { get; set; }
+        [JsonProperty("timestamp")]
+        public int Timestamp { get; set; }
     }
 
     public class Config
     {
-        public static NetworkConfig Network;
-        public static BlockConfig Block;
-        public static UserConfig User;
-        public static GenesisBlockConfig GenesisBlock;
-        public static short BlockVersion = 0;
-        public static short TransactionVersion = 0;
-        public static byte AddressVersion = 0;
-        public static byte StateVersion = 0;
+        private Config() { }
 
-        public static int TTLMinute;
-        public static int TTLHour;
-        public static int TTLDay;
-        public static int LockTTL;
-        public static int VoteTTL;
+        [JsonProperty("network")]
+        public NetworkConfig Network { get; set; }
+        [JsonProperty("block")]
+        public BlockConfig Block { get; set; }
+        [JsonProperty("user")]
+        public UserConfig User { get; set; }
+        [JsonProperty("genesisBlock")]
+        public GenesisBlockConfig GenesisBlock { get; set; }
 
-        public const int ProtocolVersion = 0;
-        public const int ConnectPeerMax = 10;
-        public const int WaitPeerMax = 20;
-        public const uint MagicNumber = 16;
-        public const int MaxDelegate = 5;
-        public const int RoundBlock = 100;
-        public const int DelegateNameMaxLength = 20;
-        public const int OtherSignMaxLength = 10;
-        public const int OtherSignToMaxLength = 10;
-        public const int TransferToMaxLength = 10;
-        public const int MaxTransactions = 2000;
-        public const int VoteMaxLength = 10;
-        public const int LockRedoTimes = 10;
+        [JsonProperty("block_version")]
+        public short BlockVersion { get; set; }
+        public short TransactionVersion { get; set; }
+        [JsonProperty("address_version")]
+        public byte AddressVersion { get; set; }
+        [JsonProperty("state_version")]
+        public byte StateVersion { get; set; }
 
-        public static Fixed8 DefaultFee = Fixed8.One;
-        public static Fixed8 RegisterDelegateFee = Fixed8.One * 10000;
-        public static Fixed8 VoteFee = Fixed8.One;
-        public static Fixed8 BlockReward = Fixed8.One * 250;
+        public int TTLMinute;
+        public int TTLHour;
+        public int TTLDay;
+        public int LockTTL;
+        public int VoteTTL;
 
-        public static uint Nonce = (uint)(new Random().Next());
-        public static string[] SeedList { get; private set; }
-        public static HashSet<IPAddress> LocalAddresses { get; private set; }
+        public readonly int ProtocolVersion = 0;
+        public readonly int ConnectPeerMax = 10;
+        public readonly int WaitPeerMax = 20;
+        public readonly uint MagicNumber = 16;
+        public readonly int MaxDelegate = 5;
+        public readonly int RoundBlock = 100;
+        public readonly int DelegateNameMaxLength = 20;
+        public readonly int OtherSignMaxLength = 10;
+        public readonly int OtherSignToMaxLength = 10;
+        public readonly int TransferToMaxLength = 10;
+        public readonly int MaxTransactions = 2000;
+        public readonly int VoteMaxLength = 10;
+        public readonly int LockRedoTimes = 10;
 
-        public static void Initialize()
+        [JsonConverter(typeof(JsonFixed8Converter))]
+        public Fixed8 DefaultFee = Fixed8.One;
+        [JsonConverter(typeof(JsonFixed8Converter))]
+        public Fixed8 RegisterDelegateFee = Fixed8.One * 10000;
+        [JsonConverter(typeof(JsonFixed8Converter))]
+        public Fixed8 VoteFee = Fixed8.One;
+        [JsonConverter(typeof(JsonFixed8Converter))]
+        public Fixed8 BlockReward = Fixed8.One * 250;
+
+        public uint Nonce = (uint)(new Random().Next());
+        public string[] SeedList { get; private set; }
+        public HashSet<IPAddress> LocalAddresses { get; private set; }
+
+        private static Config instance = null;
+        public static Config Instance { get { return instance = instance ?? new Config(); } }
+
+        public bool Initialize()
         {
-            JObject jobj = JObject.Parse(File.ReadAllText("./config.json"));
-            BlockVersion = jobj["block_version"].Value<short>();
-            AddressVersion = jobj["address_version"].Value<byte>();
-            StateVersion = jobj["state_version"].Value<byte>();
+            bool result = false;
 
-            // Network
-            JToken net = jobj["network"];
-            Network = new NetworkConfig();
-            Network.ListenAddress = net["listen_address"].Value<string>();
-            Network.TcpPort = net["tcp_port"].Value<ushort>();
-            Network.WsPort = net["ws_port"].Value<ushort>();
-            Network.RpcPort = net["rpc_port"].Value<ushort>();
-            Network.SeedList = net["seed_list"].Values<string>().ToArray();
-
-            LocalAddresses = new HashSet<IPAddress>();
-            if (!string.IsNullOrEmpty(Network.ListenAddress))
-                LocalAddresses.Add(IPAddress.Parse(Network.ListenAddress));
-
-            // Block
-            JToken block = jobj["block"];
-            Block = new BlockConfig();
-            Block.NextBlockTimeSec = block["next_block_time_sec"].Value<int>();
-
-            // User
-            JToken user = jobj["user"];
-            User = new UserConfig();
-            User.PrivateKey = System.Text.Encoding.UTF8.GetBytes(user["private_key"].Value<string>());
-            User.Witness = user["witness"].Value<bool>();
-
-            // GenesisBlock
-            JToken genesisBlock = jobj["genesisBlock"];
-            GenesisBlock = new GenesisBlockConfig();
-            GenesisBlock.Accounts = new List<AccountConfig>();
-            GenesisBlock.Delegates = new List<DelegateConfig>();
-            foreach (var v in genesisBlock["account"].ToArray())
+            try
             {
-                AccountConfig conf = new AccountConfig();
-                conf.Address = Wallets.WalletAccount.ToAddressHash(v["address"].Value<string>());
-                if (Fixed8.TryParse(v["balance"].ToString(), out conf.Balance) == false)
-                    throw new FormatException();
-                GenesisBlock.Accounts.Add(conf);
-            }
-            foreach (var v in genesisBlock["delegate"].ToArray())
-            {
-                DelegateConfig conf = new DelegateConfig();
-                conf.Name = v["name"].Value<string>();
-                conf.Address = Wallets.WalletAccount.ToAddressHash(v["address"].Value<string>());
-                GenesisBlock.Delegates.Add(conf);
-            }
-            GenesisBlock.Timestamp = genesisBlock["timestamp"].Value<int>();
+                string path = "./Config.json";
+                if (File.Exists(path))
+                {
+                    using (var file = File.OpenText(path))
+                    {
+                        instance = JsonConvert.DeserializeObject<Config>(file.ReadToEnd());
 
-            TTLMinute = 60 / Block.NextBlockTimeSec;
-            TTLHour = TTLMinute * 60;
-            TTLDay = TTLHour * 24;
-            LockTTL = TTLDay;
-            VoteTTL = TTLDay;
+                        instance.TTLMinute = 60 / instance.Block.NextBlockTimeSec;
+                        instance.TTLHour = instance.TTLMinute * 60;
+                        instance.TTLDay = instance.TTLHour * 24;
+                        instance.LockTTL = instance.TTLDay;
+                        instance.VoteTTL = instance.TTLDay;
+                    }
+
+                    result = true;
+                }
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e.Message);
+            }
+
+            return result;
+
+
         }
+
+        public string ToString()
+        {
+            return JsonConvert.SerializeObject(this);
+        }
+
+        public JObject ToJson()
+        {
+            return JObject.Parse(this.ToString());
+        }
+
         /*
         LocalAddresses.UnionWith(NetworkInterface.GetAllNetworkInterfaces().SelectMany(p => p.GetIPProperties().UnicastAddresses).Select(p => p.Address.MapToIPv6()));
         if (Sky.Network.UPNP.Discovery() && Sky.Network.UPNP.Enable)

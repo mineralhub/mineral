@@ -138,7 +138,7 @@ namespace Sky.Core
                 {
                     txs.Add(tx);
                     _txPool.Add(tx.Hash, tx);
-                    if (txs.Count >= Config.MaxTransactions)
+                    if (txs.Count >= Config.Instance.MaxTransactions)
                     {
                         foreach (Transaction rx in _txPool.Values)
                             _rxPool.Remove(rx.Hash);

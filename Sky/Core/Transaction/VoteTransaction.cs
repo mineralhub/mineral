@@ -27,7 +27,7 @@ namespace Sky.Core
             if (!base.Verify())
                 return false;
 
-            if (Config.VoteMaxLength < Votes.Count)
+            if (Config.Instance.VoteMaxLength < Votes.Count)
             {
                 TxResult = ERROR_CODES.E_TX_VOTE_OVERCOUNT;
                 return false;
@@ -44,7 +44,7 @@ namespace Sky.Core
             int TxHeight = 0;
 
             Transaction txLast = storage.GetTransaction(FromAccountState.LastVoteTxID, out TxHeight);
-            if (Blockchain.Instance.CurrentBlockHeight - TxHeight < Config.VoteTTL)
+            if (Blockchain.Instance.CurrentBlockHeight - TxHeight < Config.Instance.VoteTTL)
             {
                 TxResult = ERROR_CODES.E_TX_VOTE_TTL_NOT_ARRIVED;
                 return false;

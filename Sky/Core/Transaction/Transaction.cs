@@ -33,7 +33,7 @@ namespace Sky.Core
 
         public Transaction(eTransactionType type, int timestamp)
         {
-            Version = Config.TransactionVersion;
+            Version = Config.Instance.TransactionVersion;
             Type = type;
             Timestamp = timestamp;
             MallocTrasnactionData();
@@ -41,7 +41,7 @@ namespace Sky.Core
 
         public Transaction(eTransactionType type, int timestamp, TransactionBase txData)
         {
-            Version = Config.TransactionVersion;
+            Version = Config.Instance.TransactionVersion;
             Type = type;
             Timestamp = timestamp;
             Data = txData;
@@ -50,7 +50,7 @@ namespace Sky.Core
 
         public Transaction()
         {
-            Version = Config.TransactionVersion;
+            Version = Config.Instance.TransactionVersion;
         }
 
         static public Transaction DeserializeFrom(byte[] value, int offset = 0)

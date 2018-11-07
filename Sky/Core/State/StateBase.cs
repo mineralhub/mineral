@@ -9,13 +9,13 @@ namespace Sky.Core
 
         public virtual void Deserialize(BinaryReader reader)
         {
-            if (reader.ReadByte() != Config.StateVersion)
+            if (reader.ReadByte() != Config.Instance.StateVersion)
                 throw new FormatException();
         }
 
         public virtual void Serialize(BinaryWriter writer)
         {
-            writer.Write(Config.StateVersion);
+            writer.Write(Config.Instance.StateVersion);
         }
     }
 }

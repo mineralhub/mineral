@@ -16,8 +16,8 @@ namespace Tester
 {
     public class MainService
     {
-        short BlockVersion => Config.BlockVersion;
-        int GenesisBlockTimestamp => Config.GenesisBlock.Timestamp;
+        short BlockVersion => Config.Instance.BlockVersion;
+        int GenesisBlockTimestamp => Config.Instance.GenesisBlock.Timestamp;
         WalletAccount _account;
         WalletAccount _fromAccount;
         Block _genesisBlock;
@@ -39,7 +39,7 @@ namespace Tester
             }
             return;
             */
-            Config.Initialize();
+            Config.Instance.Initialize();
 
             Initialize();
             if (ValidAccount() == false)
@@ -49,7 +49,7 @@ namespace Tester
 
             StartLocalNode();
             StartRpcServer();
-            // Config.GenesisBlock.Delegates.ForEach(p => dpos.TurnTable.Enqueue(p.Address));
+            // Config.Instance.GenesisBlock.Delegates.ForEach(p => dpos.TurnTable.Enqueue(p.Address));
 
             while (true)
             {
@@ -126,14 +126,15 @@ namespace Tester
         void Initialize()
         {
             Logger.Log("---------- Initialize ----------");
-            _account = new WalletAccount(Sky.Cryptography.Helper.SHA256(Config.User.PrivateKey));
+            //_account = new WalletAccount(Sky.Cryptography.Helper.SHA256(Config.Instance.User.PrivateKey));
+            _account = new WalletAccount(Sky.Cryptography.Helper.SHA256(new byte[1]));
             _fromAccount = new WalletAccount(Sky.Cryptography.Helper.SHA256(Encoding.Default.GetBytes("256")));
             _dpos = new DPos();
 
             // create genesis block.
             {
                 List<RewardTransaction> rewardTxs = new List<RewardTransaction>();
-                Config.GenesisBlock.Accounts.ForEach(
+                Config.Instance.GenesisBlock.Accounts.ForEach(
                     p =>
                     {
                         rewardTxs.Add(new RewardTransaction
@@ -155,7 +156,7 @@ namespace Tester
                     txs.Add(tx);
                 }
 
-                Config.GenesisBlock.Delegates.ForEach(
+                Config.Instance.GenesisBlock.Delegates.ForEach(
                     p =>
                     {
                         var register = new RegisterDelegateTransaction
@@ -220,7 +221,7 @@ namespace Tester
             RewardTransaction rewardTx = new RewardTransaction
             {
                 From = _account.AddressHash,
-                Reward = Config.BlockReward
+                Reward = Config.Instance.BlockReward
             };
             var tx = new Transaction(
                 eTransactionType.RewardTransaction,
@@ -278,7 +279,7 @@ namespace Tester
             if (txIn.Count == 0)
                 return null;
 
-            var txOut = new List<TransactionOutput> { new TransactionOutput(value - Config.VoteFee, _account.AddressHash) };
+            var txOut = new List<TransactionOutput> { new TransactionOutput(value - Config.Instance.VoteFee, _account.AddressHash) };
             var txSign = new List<MakerSignature> { new MakerSignature(Sky.Cryptography.Helper.Sign(txIn[0].Hash.Data, _account.Key), _account.Key.PublicKey.ToByteArray()) };
             return new VoteTransaction(txIn, txOut, txSign);
         }
@@ -296,7 +297,7 @@ namespace Tester
         void UpdateTurnTable()
         {
             int currentHeight = Blockchain.Instance.CurrentBlockHeight;
-            UpdateTurnTable(Blockchain.Instance.GetBlock(currentHeight - currentHeight % Config.RoundBlock));
+            UpdateTurnTable(Blockchain.Instance.GetBlock(currentHeight - currentHeight % Config.Instance.RoundBlock));
         }
 
         void UpdateTurnTable(Block block)
@@ -319,7 +320,7 @@ namespace Tester
                 return 1;
             });
 
-            int delegateRange = Config.MaxDelegate < delegates.Count ? Config.MaxDelegate : delegates.Count;
+            int delegateRange = Config.Instance.MaxDelegate < delegates.Count ? Config.Instance.MaxDelegate : delegates.Count;
             List<UInt160> addrs = new List<UInt160>();
             for (int i = 0; i < delegateRange; ++i)
                 addrs.Add(delegates[i].AddressHash);
@@ -370,10 +371,10 @@ namespace Tester
 
         void StartRpcServer()
         {
-            if (0 < Config.Network.RpcPort)
+            if (0 < Config.Instance.Network.RpcPort)
             {
                 _rpcServer = new RpcServer(_node);
-                _rpcServer.Start(Config.Network.RpcPort);
+                _rpcServer.Start(Config.Instance.Network.RpcPort);
             }
         }
     }
