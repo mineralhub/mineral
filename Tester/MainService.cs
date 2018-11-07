@@ -23,7 +23,7 @@ namespace Tester
         Block _genesisBlock;
         LocalNode _node;
         RpcServer _rpcServer;
-        DPos _dpos;
+        //DPos _dpos;
 
         public void Run()
         {
@@ -59,11 +59,7 @@ namespace Tester
                     if (!_account.IsDelegate())
                         break;
                     // my turn?
-                    if (_account.AddressHash != _dpos.TurnTable.GetTurn(Blockchain.Instance.CurrentBlockHeight + 1))
-                        break;
-                    // create time?
-                    var time = _dpos.CalcBlockTime(_genesisBlock.Header.Timestamp, Blockchain.Instance.CurrentBlockHeight + 1);
-                    if (DateTime.UtcNow.ToTimestamp() < time)
+                    if (_account.AddressHash != Blockchain.Instance.GetTurn())
                         break;
                     // create
                     //System.Diagnostics.Stopwatch sw = new System.Diagnostics.Stopwatch();
@@ -129,7 +125,6 @@ namespace Tester
             //_account = new WalletAccount(Sky.Cryptography.Helper.SHA256(Config.Instance.User.PrivateKey));
             _account = new WalletAccount(Sky.Cryptography.Helper.SHA256(new byte[1]));
             _fromAccount = new WalletAccount(Sky.Cryptography.Helper.SHA256(Encoding.Default.GetBytes("256")));
-            _dpos = new DPos();
 
             // create genesis block.
             {
@@ -195,7 +190,6 @@ namespace Tester
             Logger.Log("genesis block tx. hash : " + genesisBlockTx.Hash);
 
             WalletIndexer.SetInstance(new Sky.Database.LevelDB.LevelDBWalletIndexer("./output-wallet-index"));
-            UpdateTurnTable();
             /*
             var accounts = new List<UInt160> { _delegator.AddressHash, _randomAccount.AddressHash };
             WalletIndexer.Instance.AddAccounts(accounts);
@@ -287,11 +281,6 @@ namespace Tester
 
         void PersistCompleted(object sender, Block block)
         {
-            int remain = _dpos.TurnTable.RemainUpdate(block.Height);
-            if (0 < remain)
-                return;
-
-            UpdateTurnTable();
         }
 
         void UpdateTurnTable()

@@ -52,8 +52,8 @@ namespace Sky.Network.RPC.Command
         {
             JObject json = new JObject();
             json["TurnTable"] = new JArray();
-            List<UInt160> list = Blockchain.Instance.GetTurnTable(parameters[0].Value<int>());
-            foreach (UInt160 hash in list)
+            TurnTableState table = Blockchain.Instance.GetTurnTable(parameters[0].Value<int>());
+            foreach (UInt160 hash in table.addrs)
             {
                 DelegateState state = Blockchain.Instance.storage.GetDelegateState(hash);
                 JObject jstate = new JObject();

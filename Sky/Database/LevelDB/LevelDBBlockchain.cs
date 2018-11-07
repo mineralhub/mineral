@@ -9,6 +9,7 @@ using Sky.Core;
 using System.Text;
 using Sky.Database.LevelDB;
 using Sky.Database.CacheStorage;
+using Sky.Core.DPos;
 
 namespace Sky.Database.LevelDB
 {
@@ -33,6 +34,7 @@ namespace Sky.Database.LevelDB
         private UInt256 _currentBlockHash;
         private int _currentHeaderHeight;
         private UInt256 _currentHeaderHash;
+        private DPos _dpos = new DPos();
 
         public override Block GenesisBlock => _genesisBlock;
         public override int CurrentBlockHeight => _currentBlockHeight;
@@ -109,6 +111,15 @@ namespace Sky.Database.LevelDB
                         hash = header.PrevHash;
                     }
                 }
+                Slice slice = _db.Get(ReadOptions.Default, SliceBuilder.Begin(DataEntryPrefix.SYS_CurrentTurnTable));
+                TurnTableState table = new TurnTableState();
+                using (MemoryStream ms = new MemoryStream(slice.ToArray(), false))
+                using (BinaryReader br = new BinaryReader(ms))
+                {
+                    table.Deserialize(br);
+                }
+                _dpos.TurnTable.SetTable(table.addrs);
+                _dpos.TurnTable.SetUpdateHeight(table.turnTableHeight);
             }
             else
             {
@@ -124,6 +135,7 @@ namespace Sky.Database.LevelDB
                 _currentHeaderHash = _genesisBlock.Hash;
                 Persist(_genesisBlock);
                 _db.Put(WriteOptions.Default, SliceBuilder.Begin(DataEntryPrefix.SYS_Version), Assembly.GetExecutingAssembly().GetName().Version.ToString());
+                UpdateTurnTable();
             }
 
             _threadPersistence = new Thread(PersistBlocksLoop)
@@ -205,6 +217,8 @@ namespace Sky.Database.LevelDB
                 lock (PersistLock)
                 {
                     Persist(block);
+                    if (0 >= _dpos.TurnTable.RemainUpdate(block.Height))
+                        UpdateTurnTable();
                     OnPersistCompleted(block);
                 }
                 return true;
@@ -627,11 +641,12 @@ namespace Sky.Database.LevelDB
         public override void PersistTurnTable(List<UInt160> addrs, int height)
         {
             WriteBatch batch = new WriteBatch();
-
+            TurnTableState state = new TurnTableState();
+            state.SetTurnTable(addrs, height);
             using (MemoryStream ms = new MemoryStream())
             using (BinaryWriter bw = new BinaryWriter(ms))
             {
-                bw.WriteSerializableArray(addrs);
+                state.Serialize(bw);
                 bw.Flush();
                 byte[] data = ms.ToArray();
                 batch.Put(SliceBuilder.Begin(DataEntryPrefix.SYS_CurrentTurnTable), data);
@@ -640,43 +655,71 @@ namespace Sky.Database.LevelDB
             _db.Write(WriteOptions.Default, batch);
         }
 
-        public class TurnTable
+        public override TurnTableState GetTurnTable(int turnTableHeight)
         {
-            public UInt32 Height;
-            public List<UInt160> Hashes;
-
-            public TurnTable()
-            {
-                Height = 0;
-                Hashes = new List<UInt160>();
-            }
-
-            public TurnTable(TurnTable _o)
-            {
-                Height = _o.Height;
-                Hashes = _o.Hashes;
-            }
-        }
-
-        public override List<UInt160> GetTurnTable(int height)
-        {
-            List<UInt160> turnTable = new List<UInt160>();
             IEnumerable<UInt32> _Heights = _db.Find(ReadOptions.Default, SliceBuilder.Begin(DataEntryPrefix.ST_TurnTable), (k, v) =>
             {
                 return k.ToArray().ToUInt32(1);
-            }).Where(p => p <= height).ToArray();
+            }).Where(p => p <= turnTableHeight).ToArray();
 
             List<UInt32> Heights = new List<uint>();
             foreach (UInt32 n in _Heights)
                 Heights.Add(n);
             Heights.Sort((a, b) => { return a > b ? -1 : a < b ? 1 : 0; });
-            Slice value = _db.Get(ReadOptions.Default, SliceBuilder.Begin(DataEntryPrefix.ST_TurnTable).Add(Heights.First()));
+            Slice value = _db.Get(ReadOptions.Default, SliceBuilder.Begin(DataEntryPrefix.ST_TurnTable).Add(Heights.Count > 0 ? Heights.First() : 0));
+            TurnTableState state = new TurnTableState();
             using (MemoryStream ms = new MemoryStream(value.ToArray(), false))
             using (BinaryReader br = new BinaryReader(ms))
             {
-                turnTable = br.ReadSerializableArray<UInt160>();
+                state.Deserialize(br);
             }
-            return turnTable;
+            return state;
+        }
+
+        public override UInt160 GetTurn()
+        {
+            // create time?
+            var time = _dpos.CalcBlockTime(_genesisBlock.Header.Timestamp, Blockchain.Instance.CurrentBlockHeight + 1);
+            if (DateTime.UtcNow.ToTimestamp() < time)
+                return UInt160.Zero;
+            return _dpos.TurnTable.GetTurn(Blockchain.Instance.CurrentBlockHeight + 1);
+        }
+
+        public override void UpdateTurnTable()
+        {
+            int currentHeight = Blockchain.Instance.CurrentBlockHeight;
+            UpdateTurnTable(Blockchain.Instance.GetBlock(currentHeight - currentHeight % Config.RoundBlock));
+        }
+
+        void UpdateTurnTable(Block block)
+        {
+            // calculate turn table
+            List<DelegateState> delegates = Blockchain.Instance.GetDelegateStateAll();
+            delegates.Sort((x, y) =>
+            {
+                var valueX = x.Votes.Sum(p => p.Value).Value;
+                var valueY = y.Votes.Sum(p => p.Value).Value;
+                if (valueX == valueY)
+                {
+                    if (x.AddressHash < y.AddressHash)
+                        return -1;
+                    else
+                        return 1;
+                }
+                else if (valueX < valueY)
+                    return -1;
+                return 1;
+            });
+
+            int delegateRange = Config.MaxDelegate < delegates.Count ? Config.MaxDelegate : delegates.Count;
+            List<UInt160> addrs = new List<UInt160>();
+            for (int i = 0; i < delegateRange; ++i)
+                addrs.Add(delegates[i].AddressHash);
+
+            _dpos.TurnTable.SetTable(addrs);
+            _dpos.TurnTable.SetUpdateHeight(block.Height);
+
+            PersistTurnTable(addrs, block.Height);
         }
     }
 }
