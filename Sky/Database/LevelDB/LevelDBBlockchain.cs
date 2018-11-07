@@ -688,7 +688,7 @@ namespace Sky.Database.LevelDB
         public override void UpdateTurnTable()
         {
             int currentHeight = Blockchain.Instance.CurrentBlockHeight;
-            UpdateTurnTable(Blockchain.Instance.GetBlock(currentHeight - currentHeight % Config.RoundBlock));
+            UpdateTurnTable(Blockchain.Instance.GetBlock(currentHeight - currentHeight % Config.Instance.RoundBlock));
         }
 
         void UpdateTurnTable(Block block)
@@ -711,7 +711,7 @@ namespace Sky.Database.LevelDB
                 return 1;
             });
 
-            int delegateRange = Config.MaxDelegate < delegates.Count ? Config.MaxDelegate : delegates.Count;
+            int delegateRange = Config.Instance.MaxDelegate < delegates.Count ? Config.Instance.MaxDelegate : delegates.Count;
             List<UInt160> addrs = new List<UInt160>();
             for (int i = 0; i < delegateRange; ++i)
                 addrs.Add(delegates[i].AddressHash);
