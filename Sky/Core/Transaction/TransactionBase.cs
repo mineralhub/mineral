@@ -42,6 +42,13 @@ namespace Sky.Core
                 TxResult = ERROR_CODES.E_TX_FROM_ADDRESS_INVALID;
                 return false;
             }
+            Fixed8 oFee = Fee;
+            CalcFee();
+            if ((oFee - Fee) != Fixed8.Zero)
+            {
+                TxResult = ERROR_CODES.E_TX_FEE_VALUE_MISMATCH;
+                return false;
+            }
             return true;
         }
 

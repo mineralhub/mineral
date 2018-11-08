@@ -43,11 +43,14 @@ namespace Sky.Core
 
             int TxHeight = 0;
 
-            Transaction txLast = storage.GetTransaction(FromAccountState.LastVoteTxID, out TxHeight);
-            if (Blockchain.Instance.CurrentBlockHeight - TxHeight < Config.Instance.VoteTTL)
+            if (FromAccountState.LastVoteTxID != UInt256.Zero)
             {
-                TxResult = ERROR_CODES.E_TX_VOTE_TTL_NOT_ARRIVED;
-                return false;
+                Transaction txLast = storage.GetTransaction(FromAccountState.LastVoteTxID, out TxHeight);
+                if (Blockchain.Instance.CurrentBlockHeight - TxHeight < Config.Instance.VoteTTL)
+                {
+                    TxResult = ERROR_CODES.E_TX_VOTE_TTL_NOT_ARRIVED;
+                    return false;
+                }
             }
 
             if (FromAccountState.LockBalance - Votes.Sum(p => p.Value) < Fixed8.Zero)
