@@ -53,6 +53,20 @@ namespace Sky.Core
                 }
             }
 
+            foreach(var vote in Votes)
+            {
+                if (storage.GetDelegateState(vote.Key) == null)
+                {
+                    TxResult = ERROR_CODES.E_TX_DELEGATE_NOT_REGISTERED;
+                    return false;
+                }
+                if (vote.Value == Fixed8.Zero)
+                {
+                    TxResult = ERROR_CODES.E_TX_ZERO_VOTE_VALUE_NOT_ALLOWED;
+                    return false;
+                }
+            }
+
             if (FromAccountState.LockBalance - Votes.Sum(p => p.Value) < Fixed8.Zero)
             {
                 TxResult = ERROR_CODES.E_TX_NOT_ENOUGH_LOCKBALANCE;

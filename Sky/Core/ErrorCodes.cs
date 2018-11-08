@@ -25,6 +25,8 @@
         // vote
         E_TX_VOTE_TTL_NOT_ARRIVED = 2100,
         E_TX_VOTE_OVERCOUNT,
+        E_TX_ZERO_VOTE_VALUE_NOT_ALLOWED,
+        E_TX_DELEGATE_NOT_REGISTERED,
 
         // delegate
         E_TX_DELEGATE_NAME_INVALID = 2200,
