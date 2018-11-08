@@ -126,8 +126,8 @@ namespace Tester
         void Initialize()
         {
             Logger.Log("---------- Initialize ----------");
-            //_account = new WalletAccount(Sky.Cryptography.Helper.SHA256(Config.Instance.User.PrivateKey));
-            _account = new WalletAccount(Sky.Cryptography.Helper.SHA256(new byte[1]));
+            _account = new WalletAccount(Sky.Cryptography.Helper.SHA256(Config.Instance.User.PrivateKey));
+            //_account = new WalletAccount(Sky.Cryptography.Helper.SHA256(new byte[1]));
             _fromAccount = new WalletAccount(Sky.Cryptography.Helper.SHA256(Encoding.Default.GetBytes("256")));
             _dpos = new DPos();
 
@@ -311,13 +311,13 @@ namespace Tester
                 if (valueX == valueY)
                 {
                     if (x.AddressHash < y.AddressHash)
-                        return -1;
-                    else
                         return 1;
+                    else
+                        return -1;
                 }
                 else if (valueX < valueY)
-                    return -1;
-                return 1;
+                    return 1;
+                return -1;
             });
 
             int delegateRange = Config.Instance.MaxDelegate < delegates.Count ? Config.Instance.MaxDelegate : delegates.Count;
