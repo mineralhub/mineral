@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Text;
 using Newtonsoft.Json;
+using Sky.Converter;
 
 namespace Sky.Wallets.KeyStore
 {
@@ -17,7 +18,8 @@ namespace Sky.Wallets.KeyStore
         [JsonProperty("r")]
         public int R { get; set; }
         [JsonProperty("salt")]
-        public string Salt { get; set; }
+        [JsonConverter(typeof(JsonByteArrayToHexConverter))]
+        public byte[] Salt { get; set; }
 
         public static KdfParam GetDefaultParam()
         {
@@ -28,7 +30,8 @@ namespace Sky.Wallets.KeyStore
     public class AesParam
     {
         [JsonProperty("iv")]
-        public string Iv { get; set; }
+        [JsonConverter(typeof(JsonByteArrayToHexConverter))]
+        public byte[] Iv { get; set; }
     }
 
     public class KeyStoreKdfInfo
@@ -44,7 +47,8 @@ namespace Sky.Wallets.KeyStore
         [JsonProperty("alg")]
         public string Name { get; set; }
         [JsonProperty("text")]
-        public string Text { get; set; }
+        [JsonConverter(typeof(JsonByteArrayToHexConverter))]
+        public byte[] Text { get; set; }
         [JsonProperty("params")]
         public AesParam Params { get; set; }
     }
@@ -56,7 +60,8 @@ namespace Sky.Wallets.KeyStore
         [JsonProperty("cipher")]
         public KeyStoreAesInfo Aes { get; set; }
         [JsonProperty("mac")]
-        public string Mac { get; set; }
+        [JsonConverter(typeof(JsonByteArrayToHexConverter))]
+        public byte[] Mac { get; set; }
     }
 
     public class KeyStore

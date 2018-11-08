@@ -31,7 +31,7 @@ namespace Sky.Wallets.KeyStore
                 Console.WriteLine("fail to generate scrypt.");
                 return false;
             }
-            kdf_param.Salt = salt.ToHexString();
+            kdf_param.Salt = salt;
 
             byte[] cipherkey = KeyStoreCrypto.GenerateCipherKey(derivedkey);
             byte[] iv = RandomGenerator.GenerateRandomBytes(16);
@@ -58,13 +58,13 @@ namespace Sky.Wallets.KeyStore
                     Aes = new KeyStoreAesInfo()
                     {
                         Name = AES128CTR,
-                        Text = ciphertext.ToHexString(),
+                        Text = ciphertext,
                         Params = new AesParam()
                         {
-                            Iv = iv.ToHexString(),
+                            Iv = iv
                         }
                     },
-                    Mac = mac.ToHexString()
+                    Mac = mac
                 },
             };
 
@@ -92,16 +92,16 @@ namespace Sky.Wallets.KeyStore
                                             , kdf.Params.R
                                             , kdf.Params.P
                                             , kdf.Params.Dklen
-                                            , kdf.Params.Salt.HexToBytes()
+                                            , kdf.Params.Salt
                                             , out derivedkey))
             {
                 Console.WriteLine("fail to generate scrypt.");
                 return false;
             }
 
-            byte[] iv = aes.Params.Iv.HexToBytes();
-            byte[] ciphertext = aes.Text.HexToBytes();
-            byte[] mac = keystore.Crypto.Mac.HexToBytes();
+            byte[] iv = aes.Params.Iv;
+            byte[] ciphertext = aes.Text;
+            byte[] mac = keystore.Crypto.Mac;
 
             if (!KeyStoreCrypto.VerifyMac(derivedkey, ciphertext, mac))
             {
