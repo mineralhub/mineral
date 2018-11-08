@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace Sky.Core
+﻿namespace Sky.Core
 {
     public enum ERROR_CODES
     {
