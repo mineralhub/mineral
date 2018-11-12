@@ -9,8 +9,8 @@ Supported Platforms
 Link
 ------
 * [SkyPeople](http://skypeople.co.kr/)
-* [Telegram-Global](https://t.me/MineralHubGLOBAL) - Community Group
-* [Telegram-Korea](https://t.me/MineralHubKOR) - Community Group
+* [Telegram-Global](https://t.me/MineralHubGLOBAL)
+* [Telegram-Korea](https://t.me/MineralHubKOR)
 
 Projects
 ------
