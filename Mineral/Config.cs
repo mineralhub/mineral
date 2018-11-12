@@ -142,7 +142,7 @@ namespace Mineral
 
             try
             {
-                string path = "./Config.json";
+                string path = "./config.json";
                 if (File.Exists(path))
                 {
                     using (var file = File.OpenText(path))
@@ -169,7 +169,7 @@ namespace Mineral
 
         }
 
-        public string ToString()
+        public override string ToString()
         {
             return JsonConvert.SerializeObject(this);
         }
