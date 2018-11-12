@@ -1,0 +1,53 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Text;
+
+namespace Mineral.Network.RPC.Command
+{
+    public partial class RpcCommand
+    {
+        public struct General
+        {
+            public const string GetConfig = "getconfig";
+        }
+
+        public struct Block
+        {
+            public const string GetBlock = "getblock";
+            public const string GetBlocks = "getblocks";
+            public const string GetBlockHash = "getblockhash";
+            public const string GetHeight = "getheight";
+            public const string GetCurrentBlockHash = "getcurrentblockhash";
+            public const string GetTransaction = "gettransaction";
+            public const string AddTransaction = "addtransaction";
+
+            public const string GetCadidateDelegates = "getcandidatedelegates";
+            public const string GetTurnTable = "getturntable";
+        }
+
+        public struct Node
+        {
+            public const string NodeList = "nodelist";
+        }
+
+        public struct Wallet
+        {
+            public const string CreateAccount = "createaccount";
+            public const string OpenAccount = "openaccount";
+            public const string CloseAccount = "closeaccount";
+
+            public const string BackupAccount = "backupaccount";
+
+            public const string GetAccount = "getaccount";
+            public const string GetAddress = "getaddress";
+            public const string GetBalance = "getbalance";
+            public const string SendTo = "sendto";
+
+            public const string LockBalance = "lockbalance";
+            public const string UnlockBalance = "unlockbalance";
+
+            public const string VoteWitness = "votewitness";
+            public const string GetVoteWitness = "getvotewitness";
+        }
+    }
+}

@@ -1,0 +1,21 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>netcoreapp2.0</TargetFramework>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Newtonsoft.Json" Version="11.0.2" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Mineral\Mineral.csproj" />
+  </ItemGroup>
+
+  <Target Name="PreBuild" BeforeTargets="PreBuildEvent">
+    <Exec Command="copy /y $(ProjectDir)config.json $(TargetDir)config.json" Condition=" '$(OS)' == 'Windows_NT' " />
+    <Exec Command="cp $(ProjectDir)config.json $(TargetDir)config.json" Condition=" '$(OS)' != 'Windows_NT' " />
+  </Target>
+
+</Project>

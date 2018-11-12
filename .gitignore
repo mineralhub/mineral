@@ -24,3 +24,9 @@ Sky.UnitTests/obj/
 # mac
 *.DS_Store
 Tester/error-log
+/Mineral/obj
+/Mineral/bin
+/Mineral.UnitTests/obj
+/Mineral.UnitTests/bin
+/MineralCLI/obj
+/MineralCLI/bin

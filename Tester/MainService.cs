@@ -3,14 +3,14 @@ using System.Text;
 using System.Linq;
 using System.Threading;
 using System.Collections.Generic;
-using Sky;
-using Sky.Cryptography;
-using Sky.Core;
-using Sky.Wallets;
-using Sky.Core.DPos;
-using Sky.Network;
-using Sky.Network.Payload;
-using Sky.Network.RPC;
+using Mineral;
+using Mineral.Cryptography;
+using Mineral.Core;
+using Mineral.Wallets;
+using Mineral.Core.DPos;
+using Mineral.Network;
+using Mineral.Network.Payload;
+using Mineral.Network.RPC;
 
 namespace Tester
 {
@@ -33,7 +33,7 @@ namespace Tester
             /*
             for (int i = 0 ; i < 5 ;++i)
             {
-                var account = new WalletAccount(Sky.Cryptography.Helper.SHA256(Encoding.ASCII.GetBytes((i+1).ToString())));
+                var account = new WalletAccount(Mineral.Cryptography.Helper.SHA256(Encoding.ASCII.GetBytes((i+1).ToString())));
                 Logger.Log((i+1).ToString());
                 Logger.Log(account.Address);
             }
@@ -126,9 +126,9 @@ namespace Tester
         void Initialize()
         {
             Logger.Log("---------- Initialize ----------");
-            _account = new WalletAccount(Sky.Cryptography.Helper.SHA256(Config.Instance.User.PrivateKey));
-            //_account = new WalletAccount(Sky.Cryptography.Helper.SHA256(new byte[1]));
-            _fromAccount = new WalletAccount(Sky.Cryptography.Helper.SHA256(Encoding.Default.GetBytes("256")));
+            _account = new WalletAccount(Mineral.Cryptography.Helper.SHA256(Config.Instance.User.PrivateKey));
+            //_account = new WalletAccount(Mineral.Cryptography.Helper.SHA256(new byte[1]));
+            _fromAccount = new WalletAccount(Mineral.Cryptography.Helper.SHA256(Encoding.Default.GetBytes("256")));
             _dpos = new DPos();
 
             // create genesis block.
@@ -187,14 +187,14 @@ namespace Tester
             }
 
             Logger.Log("genesis block. hash : " + _genesisBlock.Hash);
-            Blockchain.SetInstance(new Sky.Database.LevelDB.LevelDBBlockchain("./output-database", _genesisBlock));
+            Blockchain.SetInstance(new Mineral.Database.LevelDB.LevelDBBlockchain("./output-database", _genesisBlock));
             Blockchain.Instance.PersistCompleted += PersistCompleted;
             Blockchain.Instance.Run();
 
             var genesisBlockTx = Blockchain.Instance.storage.GetTransaction(_genesisBlock.Transactions[0].Hash);
             Logger.Log("genesis block tx. hash : " + genesisBlockTx.Hash);
 
-            WalletIndexer.SetInstance(new Sky.Database.LevelDB.LevelDBWalletIndexer("./output-wallet-index"));
+            WalletIndexer.SetInstance(new Mineral.Database.LevelDB.LevelDBWalletIndexer("./output-wallet-index"));
             UpdateTurnTable();
             /*
             var accounts = new List<UInt160> { _delegator.AddressHash, _randomAccount.AddressHash };
@@ -280,7 +280,7 @@ namespace Tester
                 return null;
 
             var txOut = new List<TransactionOutput> { new TransactionOutput(value - Config.Instance.VoteFee, _account.AddressHash) };
-            var txSign = new List<MakerSignature> { new MakerSignature(Sky.Cryptography.Helper.Sign(txIn[0].Hash.Data, _account.Key), _account.Key.PublicKey.ToByteArray()) };
+            var txSign = new List<MakerSignature> { new MakerSignature(Mineral.Cryptography.Helper.Sign(txIn[0].Hash.Data, _account.Key), _account.Key.PublicKey.ToByteArray()) };
             return new VoteTransaction(txIn, txOut, txSign);
         }
         */
