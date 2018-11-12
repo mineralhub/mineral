@@ -12,7 +12,7 @@ using Mineral.Network;
 using Mineral.Network.Payload;
 using Mineral.Network.RPC;
 
-namespace Tester
+namespace MineralNode
 {
     public class MainService
     {

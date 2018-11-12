@@ -5,7 +5,7 @@ VisualStudioVersion = 15.0.27130.2020
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Mineral", "Mineral\Mineral.csproj", "{01778075-0762-4F5A-B293-1EC672827A5E}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Tester", "Tester\Tester.csproj", "{33CC5B60-380C-4A5F-BED2-CE5517C39854}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MineralNode", "MineralNode\MineralNode.csproj", "{33CC5B60-380C-4A5F-BED2-CE5517C39854}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MineralCLI", "MineralCLI\MineralCLI.csproj", "{C94FB01A-C6CF-4110-8B9A-DCCE9BDEFECB}"
 	ProjectSection(ProjectDependencies) = postProject

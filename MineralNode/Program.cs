@@ -3,7 +3,7 @@ using System.Text;
 using System.IO;
 using Mineral;
 
-namespace Tester
+namespace MineralNode
 {
     class Program
     {

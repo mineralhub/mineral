@@ -30,3 +30,5 @@ Tester/error-log
 /Mineral.UnitTests/bin
 /MineralCLI/obj
 /MineralCLI/bin
+/MineralNode/obj
+/MineralNode/bin
