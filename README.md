@@ -1,10 +1,12 @@
-# mineral-dev
+# Mineral
 
+Supported Platforms
+------
 
-- ref  
-c# blockchain : https://github.com/neo-project/neo  
-level db : https://github.com/meebey/leveldb-sharp
+* Ubuntu 16.04
+* macOS
+* Windows 7 SP1 +
 
-
-- public git  
-travis-ci : https://github.com/marketplace/travis-ci/
+License
+------
+The Mineral project is licensed under the [LPGL-3.0](LICENSE)
