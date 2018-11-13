@@ -21,11 +21,10 @@ namespace Mineral.Core
             _instance = chain;
         }
 
-        static private Proof _proof = null;
-        static public Proof proof => Proof;
-        static public void SetProof(Proof proofInstance)
+        public Proof _proof { get; private set; }
+        public void SetProof(Proof proof)
         {
-            _proof = proofInstance;
+            _proof = proof;
         }
 
         public object PersistLock { get; } = new object();
@@ -56,7 +55,6 @@ namespace Mineral.Core
         public abstract bool VerityBlock(Block block);
 
         public abstract Storage storage { get; }
-        public static Proof Proof { get => _proof; set => _proof = value; }
 
         //public Transaction GetTransaction(UInt256 hash)
         //{

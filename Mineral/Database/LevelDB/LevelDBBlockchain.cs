@@ -114,7 +114,7 @@ namespace Mineral.Database.LevelDB
                 {
                     table.Deserialize(br);
                 }
-                proof.SetTurnTable(table);
+                _proof.SetTurnTable(table);
             }
             else
             {
@@ -130,7 +130,7 @@ namespace Mineral.Database.LevelDB
                 _currentHeaderHash = _genesisBlock.Hash;
                 Persist(_genesisBlock);
                 _db.Put(WriteOptions.Default, SliceBuilder.Begin(DataEntryPrefix.SYS_Version), Assembly.GetExecutingAssembly().GetName().Version.ToString());
-                proof.Update(Instance);
+                _proof.Update(this);
             }
 
             _threadPersistence = new Thread(PersistBlocksLoop)
@@ -212,8 +212,8 @@ namespace Mineral.Database.LevelDB
                 lock (PersistLock)
                 {
                     Persist(block);
-                    if (0 >= proof.RemainUpdate(block.Height))
-                        proof.Update(Blockchain.Instance);
+                    if (0 >= _proof.RemainUpdate(block.Height))
+                        _proof.Update(this);
                     OnPersistCompleted(block);
                 }
                 return true;
@@ -673,7 +673,7 @@ namespace Mineral.Database.LevelDB
 
         public override int GetTurn(UInt160 addr)
         {
-            return proof.GetCreateCount(addr, CurrentBlockHeight);
+            return _proof.GetCreateCount(addr, CurrentBlockHeight);
         }
     }
 }
