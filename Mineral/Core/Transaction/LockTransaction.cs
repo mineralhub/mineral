@@ -7,6 +7,11 @@ namespace Mineral.Core
 {
     public class UnlockTransaction : TransactionBase
     {
+        public override bool Verify()
+        {
+            return base.Verify();
+        }
+
         public override bool VerifyBlockchain(Storage storage)
         {
             if (!base.VerifyBlockchain(storage))

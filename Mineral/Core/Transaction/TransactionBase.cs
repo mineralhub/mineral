@@ -20,9 +20,9 @@ namespace Mineral.Core
         }
 
         private AccountState _fromAccountState;
-        public AccountState FromAccountState 
+        public AccountState FromAccountState
         {
-            get 
+            get
             {
                 if (_fromAccountState == null)
                     _fromAccountState = _storage.GetAccountState(From);

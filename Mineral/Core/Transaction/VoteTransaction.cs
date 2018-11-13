@@ -22,6 +22,11 @@ namespace Mineral.Core
             writer.WriteSerializableDictonary(Votes);
         }
 
+        public override void CalcFee()
+        {
+            Fee = Config.Instance.VoteFee;
+        }
+
         public override bool Verify()
         {
             if (!base.Verify())
