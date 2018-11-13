@@ -58,21 +58,14 @@ namespace MineralNode
             {
                 do
                 {
-                    // delegator?
                     if (!_account.IsDelegate())
                         break;
-                    // my turn?
-                    int numCreate = Blockchain.Instance.GetTurn(_account.AddressHash);
-
+                    int numCreate = Blockchain.Instance.Proof.GetCreateCount(
+                        _account.AddressHash,
+                        Blockchain.Instance.CurrentBlockHeight);
                     if (numCreate < 1)
                         break;
-
-                    // create
-                    //System.Diagnostics.Stopwatch sw = new System.Diagnostics.Stopwatch();
-                    //sw.Start();
                     CreateAndAddBlocks(numCreate, true);
-                    //sw.Stop();
-                    //Logger.Log("AddBlock Elapsed=" + sw.Elapsed);
                 }
                 while (false);
                 Thread.Sleep(100);

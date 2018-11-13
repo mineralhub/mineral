@@ -1,21 +1,18 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using System.Net;
-using System.Net.NetworkInformation;
-using System.Reflection;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using Mineral.Converter;
 
 namespace Mineral
 {
-    public class ConfigClassAttribute : System.Attribute
+    public class ConfigClassAttribute : Attribute
     {
     }
 
-    [ConfigClassAttribute]
+    [ConfigClass]
     public class NetworkConfig
     {
         [JsonProperty("listen_address")]
@@ -30,14 +27,14 @@ namespace Mineral
         public string[] SeedList { get; set; }
     }
 
-    [ConfigClassAttribute]
+    [ConfigClass]
     public class BlockConfig
     {
         [JsonProperty("next_block_time_sec")]
         public int NextBlockTimeSec { get; set; }
     }
 
-    [ConfigClassAttribute]
+    [ConfigClass]
     public class UserConfig
     {
         [JsonProperty("private_key")]
@@ -47,7 +44,7 @@ namespace Mineral
         public bool Witness { get; set; }
     }
 
-    [ConfigClassAttribute]
+    [ConfigClass]
     public class DelegateConfig
     {
         [JsonProperty("name")]
@@ -57,7 +54,7 @@ namespace Mineral
         public UInt160 Address { get; set; }
     }
 
-    [ConfigClassAttribute]
+    [ConfigClass]
     public class AccountConfig
     {
         [JsonProperty("address")]
@@ -68,7 +65,7 @@ namespace Mineral
         public Fixed8 Balance { get; set; }
     }
 
-    [ConfigClassAttribute]
+    [ConfigClass]
     public class GenesisBlockConfig
     {
         [JsonProperty("account")]

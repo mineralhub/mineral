@@ -670,10 +670,5 @@ namespace Mineral.Database.LevelDB
             }
             return state;
         }
-
-        public override int GetTurn(UInt160 addr)
-        {
-            return _proof.GetCreateCount(addr, CurrentBlockHeight);
-        }
     }
 }

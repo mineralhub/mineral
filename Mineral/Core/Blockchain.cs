@@ -21,7 +21,8 @@ namespace Mineral.Core
             _instance = chain;
         }
 
-        public Proof _proof { get; private set; }
+        protected Proof _proof;
+        public Proof Proof => _proof;
         public void SetProof(Proof proof)
         {
             _proof = proof;
@@ -162,6 +163,5 @@ namespace Mineral.Core
         public abstract void NormalizeTransactions(ref List<Transaction> txs);
         public abstract void PersistTurnTable(List<UInt160> addrs, int height);
         public abstract TurnTableState GetTurnTable(int height);
-        public abstract int GetTurn(UInt160 addr);
     }
 }
