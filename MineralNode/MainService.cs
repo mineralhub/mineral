@@ -127,27 +127,26 @@ namespace MineralNode
         {
             Logger.Log("---------- Initialize ----------");
             _account = new WalletAccount(Mineral.Cryptography.Helper.SHA256(Config.Instance.User.PrivateKey));
-            //_account = new WalletAccount(Mineral.Cryptography.Helper.SHA256(new byte[1]));
             _fromAccount = new WalletAccount(Mineral.Cryptography.Helper.SHA256(Encoding.Default.GetBytes("256")));
             _dpos = new DPos();
 
             // create genesis block.
             {
-                List<RewardTransaction> rewardTxs = new List<RewardTransaction>();
+                List<SupplyTransaction> supplyTxs = new List<SupplyTransaction>();
                 Config.Instance.GenesisBlock.Accounts.ForEach(
                     p =>
                     {
-                        rewardTxs.Add(new RewardTransaction
+                        supplyTxs.Add(new SupplyTransaction
                         {
                             From = p.Address,
-                            Reward = p.Balance
+                            Supply = p.Balance
                         });
                     });
 
                 var txs = new List<Transaction>();
-                foreach (var reward in rewardTxs)
+                foreach (var reward in supplyTxs)
                 {
-                    var tx = new Transaction(eTransactionType.RewardTransaction,
+                    var tx = new Transaction(eTransactionType.SupplyTransaction,
                                     GenesisBlockTimestamp - 1,
                                     reward)
                     {
@@ -217,20 +216,6 @@ namespace MineralNode
             if (txs == null)
                 txs = new List<Transaction>();
 
-            // block reward
-            RewardTransaction rewardTx = new RewardTransaction
-            {
-                From = _account.AddressHash,
-                Reward = Config.Instance.BlockReward
-            };
-            var tx = new Transaction(
-                eTransactionType.RewardTransaction,
-                DateTime.UtcNow.ToTimestamp(),
-                rewardTx
-            );
-            tx.Sign(_account);
-            txs.Insert(0, tx);
-
             var merkle = new MerkleTree(txs.Select(p => p.Hash).ToArray());
             var blockHeader = new BlockHeader
             {
@@ -255,35 +240,6 @@ namespace MineralNode
             tx.Sign(_account);
             return tx;
         }
-
-        /*
-        VoteTransaction CreateVoteTransaction()
-        {
-            // find genesis block input
-            List<TransactionInput> txIn = new List<TransactionInput>();
-            Fixed8 value = Fixed8.Zero;
-            foreach (var tx in _genesisBlock.Transactions)
-            {
-                for (int i = 0; i < tx.Outputs.Count; ++i)
-                {
-                    if (tx.Outputs[i].AddressHash == _account.AddressHash)
-                    {
-                        txIn.Add(new TransactionInput(tx.Hash, (ushort)i));
-                        value = tx.Outputs[i].Value;
-                        break;
-                    }
-                }
-                if (0 < txIn.Count)
-                    break;
-            }
-            if (txIn.Count == 0)
-                return null;
-
-            var txOut = new List<TransactionOutput> { new TransactionOutput(value - Config.Instance.VoteFee, _account.AddressHash) };
-            var txSign = new List<MakerSignature> { new MakerSignature(Mineral.Cryptography.Helper.Sign(txIn[0].Hash.Data, _account.Key), _account.Key.PublicKey.ToByteArray()) };
-            return new VoteTransaction(txIn, txOut, txSign);
-        }
-        */
 
         void PersistCompleted(object sender, Block block)
         {

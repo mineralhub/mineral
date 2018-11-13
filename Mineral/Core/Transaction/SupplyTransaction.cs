@@ -4,11 +4,11 @@ using Mineral.Database.LevelDB;
 
 namespace Mineral.Core
 {
-    public class RewardTransaction : TransactionBase
+    public class SupplyTransaction : TransactionBase
     {
-        public Fixed8 Reward;
+        public Fixed8 Supply;
 
-        public override int Size => base.Size + Reward.Size;
+        public override int Size => base.Size + Supply.Size;
 
         public override void CalcFee()
         {
@@ -18,33 +18,34 @@ namespace Mineral.Core
         public override void Deserialize(BinaryReader reader)
         {
             base.Deserialize(reader);
-            Reward = reader.ReadSerializable<Fixed8>();
+            Supply = reader.ReadSerializable<Fixed8>();
         }
 
         public override void Serialize(BinaryWriter writer)
         {
             base.Serialize(writer);
-            writer.WriteSerializable(Reward);
+            writer.WriteSerializable(Supply);
         }
 
         public override bool Verify()
         {
             if (!base.Verify())
                 return false;
-            if (Reward != Config.Instance.BlockReward)
-                return false;
             return true;
         }
 
         public override bool VerifyBlockchain(Storage storage)
         {
+            if (0 < Blockchain.Instance.CurrentBlockHeight)
+                return false;
+
             return base.VerifyBlockchain(storage);
         }
 
         public override JObject ToJson()
         {
             JObject json = base.ToJson();
-            json["reward"] = Reward.Value;
+            json["supply"] = Supply.Value;
             return json;
         }
     }

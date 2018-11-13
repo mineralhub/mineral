@@ -1,6 +1,5 @@
 ﻿using Newtonsoft.Json;
 using System;
-using System.Collections.Generic;
 using System.Text;
 
 namespace Mineral.Converter
@@ -14,12 +13,12 @@ namespace Mineral.Converter
 
         public override object ReadJson(JsonReader reader, Type objectType, object existingValue, JsonSerializer serializer)
         {
-            return System.Text.Encoding.UTF8.GetBytes(reader.Value.ToString());
+            return Encoding.UTF8.GetBytes(reader.Value.ToString());
         }
 
         public override void WriteJson(JsonWriter writer, object value, JsonSerializer serializer)
         {
-            writer.WriteValue(System.Text.Encoding.UTF8.GetString((byte[])value));
+            writer.WriteValue(Encoding.UTF8.GetString((byte[])value));
         }
     }
 
@@ -69,12 +68,12 @@ namespace Mineral.Converter
 
         public override object ReadJson(JsonReader reader, Type objectType, object existingValue, JsonSerializer serializer)
         {
-            return Fixed8.Parse(reader.Value.ToString());
+            return Fixed8.FromLongValue(long.Parse(reader.Value.ToString()));
         }
 
         public override void WriteJson(JsonWriter writer, object value, JsonSerializer serializer)
         {
-            writer.WriteValue(((Fixed8)value).ToString());
+            writer.WriteValue(((Fixed8)value).Value);
         }
     }
 }

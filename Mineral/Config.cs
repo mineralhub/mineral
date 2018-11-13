@@ -163,10 +163,7 @@ namespace Mineral
             {
                 Console.WriteLine(e.Message);
             }
-
             return result;
-
-
         }
 
         public override string ToString()

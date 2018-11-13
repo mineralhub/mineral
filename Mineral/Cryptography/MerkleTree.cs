@@ -6,12 +6,12 @@ namespace Mineral.Cryptography
     public class MerkleTree
     {
         private MerkleTreeNode _root;
-        public UInt256 RootHash => _root.Hash;
+        public UInt256 RootHash => _root != null ? _root.Hash : UInt256.Zero;
 
         public MerkleTree(UInt256[] hashes)
         {
             if (hashes.Length == 0)
-                throw new ArgumentException();
+                return;
 
             _root = Build(hashes.Select(p => new MerkleTreeNode { Hash = p }).ToArray());
         }
