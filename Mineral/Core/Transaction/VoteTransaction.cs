@@ -45,7 +45,14 @@ namespace Mineral.Core
 
             if (FromAccountState.LastVoteTxID != UInt256.Zero)
             {
-                Transaction txLast = storage.GetTransaction(FromAccountState.LastVoteTxID, out TxHeight);
+                if (Blockchain.Instance.HasTransactionPool(FromAccountState.LastLockTxID))
+                {
+                    TxHeight = Blockchain.Instance.CurrentBlockHeight;
+                }
+                else
+                {
+                    storage.GetTransaction(FromAccountState.LastVoteTxID, out TxHeight);
+                }
                 if (Blockchain.Instance.CurrentBlockHeight - TxHeight < Config.Instance.VoteTTL)
                 {
                     TxResult = ERROR_CODES.E_TX_VOTE_TTL_NOT_ARRIVED;

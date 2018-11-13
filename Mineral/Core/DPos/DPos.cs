@@ -53,7 +53,12 @@ namespace Mineral.Core.DPos
                     return 0;
                 UInt160 hash = TurnTable.GetTurn(height + i);
                 if (addr == hash)
-                    return i + TurnTable.RemainUpdate(height + i);
+                {
+                    int remain = TurnTable.RemainUpdate(height + i);
+                    if (remain < 0)
+                        return i + remain;
+                    return i;
+                }
             }
             return 0;
         }

@@ -56,11 +56,6 @@ namespace Mineral.Core
 
         public abstract Storage storage { get; }
 
-        //public Transaction GetTransaction(UInt256 hash)
-        //{
-        //    return GetTransaction(hash, out _);
-        //}
-
         public bool HasTransactionPool(UInt256 hash)
         {
             lock (PoolLock)
@@ -154,9 +149,6 @@ namespace Mineral.Core
                 _rxPool.Clear();
             }
         }
-
-        //public abstract Transaction GetTransaction(UInt256 hash, out int height);
-        //public abstract AccountState GetAccountState(UInt160 addressHash);
 
         public abstract List<DelegateState> GetDelegateStateAll();
         public abstract List<DelegateState> GetDelegateStateMakers();
