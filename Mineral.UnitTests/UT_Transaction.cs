@@ -33,18 +33,21 @@ namespace Mineral.UnitTests
                 From = _from.AddressHash,
                 To = new Dictionary<UInt160, Fixed8> { {_to.AddressHash, Fixed8.One } }
             };
+            _transfer.CalcFee();
 
             _supply = new SupplyTransaction
             {
                 From = _from.AddressHash,
                 Supply = Config.Instance.BlockReward
             };
+            _supply.CalcFee();
 
             _vote = new VoteTransaction
             {
                 From = _from.AddressHash,
                 Votes = new Dictionary<UInt160, Fixed8> { { _from.AddressHash, Fixed8.One } }
             };
+            _vote.CalcFee();
 
             _otherSign = new OtherSignTransaction
             {
@@ -53,18 +56,21 @@ namespace Mineral.UnitTests
                 Others = new HashSet<string> { _from.Address, _to.Address },
                 ExpirationBlockHeight = 10
             };
+            _otherSign.CalcFee();
 
             _sign = new SignTransaction
             {
                 From = _from.AddressHash,
                 SignTxHash = new UInt256()
             };
+            _sign.CalcFee();
 
             _register = new RegisterDelegateTransaction
             {
                 From = _from.AddressHash,
                 Name = Encoding.Default.GetBytes("delegate")
             };
+            _register.CalcFee();
 
             _transaction = new Transaction
             {
