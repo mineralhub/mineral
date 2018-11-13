@@ -7,9 +7,6 @@ using System.Threading;
 using Mineral;
 using Mineral.Core;
 using System.Text;
-using Mineral.Database.LevelDB;
-using Mineral.Database.CacheStorage;
-using Mineral.Core.DPos;
 
 namespace Mineral.Database.LevelDB
 {
@@ -34,7 +31,6 @@ namespace Mineral.Database.LevelDB
         private UInt256 _currentBlockHash;
         private int _currentHeaderHeight;
         private UInt256 _currentHeaderHash;
-        private DPos _dpos = new DPos();
 
         public override Block GenesisBlock => _genesisBlock;
         public override int CurrentBlockHeight => _currentBlockHeight;
@@ -118,8 +114,7 @@ namespace Mineral.Database.LevelDB
                 {
                     table.Deserialize(br);
                 }
-                _dpos.TurnTable.SetTable(table.addrs);
-                _dpos.TurnTable.SetUpdateHeight(table.turnTableHeight);
+                proof.SetTurnTable(table);
             }
             else
             {
@@ -135,7 +130,7 @@ namespace Mineral.Database.LevelDB
                 _currentHeaderHash = _genesisBlock.Hash;
                 Persist(_genesisBlock);
                 _db.Put(WriteOptions.Default, SliceBuilder.Begin(DataEntryPrefix.SYS_Version), Assembly.GetExecutingAssembly().GetName().Version.ToString());
-                UpdateTurnTable();
+                proof.Update(Instance);
             }
 
             _threadPersistence = new Thread(PersistBlocksLoop)
@@ -217,8 +212,8 @@ namespace Mineral.Database.LevelDB
                 lock (PersistLock)
                 {
                     Persist(block);
-                    if (0 >= _dpos.TurnTable.RemainUpdate(block.Height))
-                        UpdateTurnTable();
+                    if (0 >= proof.RemainUpdate(block.Height))
+                        proof.Update(Blockchain.Instance);
                     OnPersistCompleted(block);
                 }
                 return true;
@@ -678,55 +673,7 @@ namespace Mineral.Database.LevelDB
 
         public override int GetTurn(UInt160 addr)
         {
-            // create time?
-            int startHeight = Blockchain.Instance.CurrentBlockHeight;
-            for (int i = 1; i < Config.Instance.MaxDelegate + 1; i++)
-            {
-                var time = _dpos.CalcBlockTime(_genesisBlock.Header.Timestamp, startHeight + i);
-                if (DateTime.UtcNow.ToTimestamp() < time)
-                    return 0;
-                UInt160 hash = _dpos.TurnTable.GetTurn(startHeight + i);
-                if (addr == hash)
-                    return i;
-            }
-            return 0;
-        }
-
-        public override void UpdateTurnTable()
-        {
-            int currentHeight = Blockchain.Instance.CurrentBlockHeight;
-            UpdateTurnTable(Blockchain.Instance.GetBlock(currentHeight - currentHeight % Config.Instance.RoundBlock));
-        }
-
-        void UpdateTurnTable(Block block)
-        {
-            // calculate turn table
-            List<DelegateState> delegates = Blockchain.Instance.GetDelegateStateAll();
-            delegates.Sort((x, y) =>
-            {
-                var valueX = x.Votes.Sum(p => p.Value).Value;
-                var valueY = y.Votes.Sum(p => p.Value).Value;
-                if (valueX == valueY)
-                {
-                    if (x.AddressHash < y.AddressHash)
-                        return -1;
-                    else
-                        return 1;
-                }
-                else if (valueX < valueY)
-                    return -1;
-                return 1;
-            });
-
-            int delegateRange = Config.Instance.MaxDelegate < delegates.Count ? Config.Instance.MaxDelegate : delegates.Count;
-            List<UInt160> addrs = new List<UInt160>();
-            for (int i = 0; i < delegateRange; ++i)
-                addrs.Add(delegates[i].AddressHash);
-
-            _dpos.TurnTable.SetTable(addrs);
-            _dpos.TurnTable.SetUpdateHeight(block.Height);
-
-            PersistTurnTable(addrs, block.Height);
+            return proof.GetCreateCount(addr, CurrentBlockHeight);
         }
     }
 }

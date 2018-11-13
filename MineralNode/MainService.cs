@@ -189,6 +189,7 @@ namespace MineralNode
 
             Logger.Log("genesis block. hash : " + _genesisBlock.Hash);
             Blockchain.SetInstance(new Mineral.Database.LevelDB.LevelDBBlockchain("./output-database", _genesisBlock));
+            Blockchain.SetProof(new DPos());
             Blockchain.Instance.PersistCompleted += PersistCompleted;
             Blockchain.Instance.Run();
 

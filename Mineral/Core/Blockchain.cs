@@ -21,6 +21,13 @@ namespace Mineral.Core
             _instance = chain;
         }
 
+        static private Proof _proof = null;
+        static public Proof proof => Proof;
+        static public void SetProof(Proof proofInstance)
+        {
+            _proof = proofInstance;
+        }
+
         public object PersistLock { get; } = new object();
         public event EventHandler<Block> PersistCompleted;
 
@@ -49,6 +56,7 @@ namespace Mineral.Core
         public abstract bool VerityBlock(Block block);
 
         public abstract Storage storage { get; }
+        public static Proof Proof { get => _proof; set => _proof = value; }
 
         //public Transaction GetTransaction(UInt256 hash)
         //{
@@ -165,6 +173,5 @@ namespace Mineral.Core
         public abstract void PersistTurnTable(List<UInt160> addrs, int height);
         public abstract TurnTableState GetTurnTable(int height);
         public abstract int GetTurn(UInt160 addr);
-        public abstract void UpdateTurnTable();
     }
 }

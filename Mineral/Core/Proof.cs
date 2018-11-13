@@ -1,6 +1,10 @@
 ﻿namespace Mineral.Core
 {
-    public class Proof
+    public abstract class Proof
     {
+        public abstract int GetCreateCount(UInt160 addr, int height);
+        public abstract int RemainUpdate(int height);
+        public abstract void Update(Blockchain chain);
+        public abstract void SetTurnTable(TurnTableState state);
     }
 }
