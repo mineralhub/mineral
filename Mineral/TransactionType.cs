@@ -2,7 +2,7 @@
 {
     public enum eTransactionType : short
     {
-        RewardTransaction = 1,
+        SupplyTransaction = 1,
         TransferTransaction = 2,
         VoteTransaction = 3,
         RegisterDelegateTransaction = 4,

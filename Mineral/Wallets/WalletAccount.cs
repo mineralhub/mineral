@@ -1,7 +1,6 @@
 ﻿using Mineral.Core;
 using Mineral.Cryptography;
 using System;
-using System.Collections.Generic;
 using System.Linq;
 
 namespace Mineral.Wallets
@@ -49,6 +48,11 @@ namespace Mineral.Wallets
             return data.Base58CheckEncode();
         }
 
+        public static UInt160 ToAddressHash(byte[] pubkey)
+        {
+            return new UInt160(pubkey.SHA256().RIPEMD160());
+        }
+
         public static UInt160 ToAddressHash(string address)
         {
             byte[] data = address.Base58CheckDecode();
@@ -86,7 +90,7 @@ namespace Mineral.Wallets
 
         public Fixed8 GetBalance()
         {
-            return WalletAccount.GetBalance(AddressHash);
+            return GetBalance(AddressHash);
         }
 
         public static Fixed8 GetBalance(UInt160 addressHash)
@@ -99,7 +103,7 @@ namespace Mineral.Wallets
 
         public Fixed8 GetLockBalance()
         {
-            return WalletAccount.GetLockBalance(AddressHash);
+            return GetLockBalance(AddressHash);
         }
 
         public static Fixed8 GetLockBalance(UInt160 addressHash)
@@ -112,7 +116,7 @@ namespace Mineral.Wallets
 
         public Fixed8 GetTotalBalance()
         {
-            return WalletAccount.GetTotalBalance(AddressHash);
+            return GetTotalBalance(AddressHash);
         }
 
         public static Fixed8 GetTotalBalance(UInt160 addressHash)

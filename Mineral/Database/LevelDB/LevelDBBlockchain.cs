@@ -10,6 +10,7 @@ using System.Text;
 using Mineral.Database.LevelDB;
 using Mineral.Database.CacheStorage;
 using Mineral.Core.DPos;
+using Mineral.Wallets;
 
 namespace Mineral.Database.LevelDB
 {
@@ -266,10 +267,7 @@ namespace Mineral.Database.LevelDB
             Slice value;
             if (!_db.TryGet(ReadOptions.Default, SliceBuilder.Begin(DataEntryPrefix.DATA_Block).Add(hash), out value))
                 return null;
-            Block block = Block.FromTrimmedData(value.ToArray(), sizeof(long), p => storage.GetTransaction(p));
-            if (block.Transactions.Count == 0)
-                return null;
-            return block;
+            return Block.FromTrimmedData(value.ToArray(), sizeof(long), p => storage.GetTransaction(p));
         }
 
         public override Block GetBlock(int height)
@@ -376,11 +374,6 @@ namespace Mineral.Database.LevelDB
 
                 switch (tx.Data)
                 {
-                    case RewardTransaction rewardTx:
-                        {
-                            from.AddBalance(rewardTx.Reward);
-                        }
-                        break;
                     case TransferTransaction transTx:
                         {
                             Fixed8 totalAmount = transTx.To.Sum(p => p.Value);
@@ -423,7 +416,6 @@ namespace Mineral.Database.LevelDB
                             }
                         }
                         break;
-
                     case LockTransaction lockTx:
                         {
                             from.LastLockTxID = tx.Hash;
@@ -431,13 +423,17 @@ namespace Mineral.Database.LevelDB
                             from.AddLock(lockTx.LockValue);
                         }
                         break;
-
                     case UnlockTransaction unlockTx:
                         {
                             from.LastLockTxID = tx.Hash;
                             Fixed8 lockValue = from.LockBalance;
                             from.AddBalance(lockValue);
                             from.AddLock(-lockValue);
+                        }
+                        break;
+                    case SupplyTransaction rewardTx:
+                        {
+                            from.AddBalance(rewardTx.Supply);
                         }
                         break;
                 }
@@ -499,11 +495,6 @@ namespace Mineral.Database.LevelDB
 
                 switch (tx.Data)
                 {
-                    case RewardTransaction rewardTx:
-                        {
-                            from.AddBalance(rewardTx.Reward);
-                        }
-                        break;
                     case TransferTransaction transTx:
                         {
                             Fixed8 totalAmount = transTx.To.Sum(p => p.Value);
@@ -563,6 +554,11 @@ namespace Mineral.Database.LevelDB
                             from.AddLock(-lockValue);
                         }
                         break;
+                    case SupplyTransaction rewardTx:
+                        {
+                            from.AddBalance(rewardTx.Supply);
+                        }
+                        break;
                 }
             }
 
@@ -583,6 +579,11 @@ namespace Mineral.Database.LevelDB
                 }
             }
 
+            if (0 < block.Height)
+            {
+                AccountState producer = storage.GetAccountState(WalletAccount.ToAddressHash(block.Header.Signature.Pubkey));
+                producer.AddBalance(Config.Instance.BlockReward);
+            }
             storage.commit(batch, block.Height);
 
             batch.Put(SliceBuilder.Begin(DataEntryPrefix.SYS_CurrentBlock), SliceBuilder.Begin().Add(block.Hash).Add(block.Header.Height));
