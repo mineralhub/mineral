@@ -676,13 +676,20 @@ namespace Mineral.Database.LevelDB
             return state;
         }
 
-        public override UInt160 GetTurn()
+        public override int GetTurn(UInt160 addr)
         {
             // create time?
-            var time = _dpos.CalcBlockTime(_genesisBlock.Header.Timestamp, Blockchain.Instance.CurrentBlockHeight + 1);
-            if (DateTime.UtcNow.ToTimestamp() < time)
-                return UInt160.Zero;
-            return _dpos.TurnTable.GetTurn(Blockchain.Instance.CurrentBlockHeight + 1);
+            int startHeight = Blockchain.Instance.CurrentBlockHeight;
+            for (int i = 1; i < Config.Instance.MaxDelegate + 1; i++)
+            {
+                var time = _dpos.CalcBlockTime(_genesisBlock.Header.Timestamp, startHeight + i);
+                if (DateTime.UtcNow.ToTimestamp() < time)
+                    return 0;
+                UInt160 hash = _dpos.TurnTable.GetTurn(startHeight + i);
+                if (addr == hash)
+                    return i;
+            }
+            return 0;
         }
 
         public override void UpdateTurnTable()

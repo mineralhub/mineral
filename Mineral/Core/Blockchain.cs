@@ -164,7 +164,7 @@ namespace Mineral.Core
         public abstract void NormalizeTransactions(ref List<Transaction> txs);
         public abstract void PersistTurnTable(List<UInt160> addrs, int height);
         public abstract TurnTableState GetTurnTable(int height);
-        public abstract UInt160 GetTurn();
+        public abstract int GetTurn(UInt160 addr);
         public abstract void UpdateTurnTable();
     }
 }
