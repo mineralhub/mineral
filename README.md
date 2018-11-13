@@ -1,4 +1,4 @@
-# Mineral : Easy access, fast blockchain business maker
+# Mineral Hub : Easy access, fast blockchain business maker
 
 Mineral Hub is the infrastructure providing platform to build a Blockchain based services fast and easy for companies willing to join the Blockchain field. 
 
