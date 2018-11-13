@@ -35,8 +35,8 @@ namespace Mineral.Core
         public JObject ToJson()
         {
             JObject json = new JObject();
-            json["signature"] = Signature;
-            json["pubkey"] = Pubkey;
+            json["signature"] = Signature == null ? null : Signature.ToHexString();
+            json["pubkey"] = Pubkey == null ? null : Pubkey.ToHexString();
             return json;
         }
     }

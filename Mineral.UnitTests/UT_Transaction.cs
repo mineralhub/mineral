@@ -17,7 +17,7 @@ namespace Mineral.UnitTests
         WalletAccount _to = new WalletAccount(Encoding.Default.GetBytes("1"));
 
         TransferTransaction _transfer;
-        RewardTransaction _reward;
+        SupplyTransaction _supply;
         VoteTransaction _vote;
         OtherSignTransaction _otherSign;
         SignTransaction _sign;
@@ -34,10 +34,10 @@ namespace Mineral.UnitTests
                 To = new Dictionary<UInt160, Fixed8> { {_to.AddressHash, Fixed8.One } }
             };
 
-            _reward = new RewardTransaction
+            _supply = new SupplyTransaction
             {
                 From = _from.AddressHash,
-                Reward = Config.Instance.BlockReward
+                Supply = Config.Instance.BlockReward
             };
 
             _vote = new VoteTransaction
@@ -88,7 +88,7 @@ namespace Mineral.UnitTests
         public void Verify()
         {
             _transfer.Verify().Should().BeTrue();
-            _reward.Verify().Should().BeTrue();
+            _supply.Verify().Should().BeTrue();
             _vote.Verify().Should().BeTrue();
             _otherSign.Verify().Should().BeTrue();
             _sign.Verify().Should().BeTrue();
@@ -114,7 +114,7 @@ namespace Mineral.UnitTests
             using (MemoryStream ms = new MemoryStream())
             using (BinaryWriter bw = new BinaryWriter(ms))
             {
-                _reward.Serialize(bw);
+                _supply.Serialize(bw);
                 ms.Flush();
                 ms.ToArray().Length.Should().Be(txbase + 8); // 36
             }
