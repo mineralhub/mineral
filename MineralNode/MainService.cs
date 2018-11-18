@@ -19,7 +19,6 @@ namespace MineralNode
         short BlockVersion => Config.Instance.BlockVersion;
         int GenesisBlockTimestamp => Config.Instance.GenesisBlock.Timestamp;
         WalletAccount _account;
-        WalletAccount _fromAccount;
         Block _genesisBlock;
         LocalNode _node;
         RpcServer _rpcServer;
@@ -28,19 +27,7 @@ namespace MineralNode
         public void Run()
         {
             Logger.WriteConsole = true;
-
-            // Generate Address
-            /*
-            for (int i = 0 ; i < 5 ;++i)
-            {
-                var account = new WalletAccount(Mineral.Cryptography.Helper.SHA256(Encoding.ASCII.GetBytes((i+1).ToString())));
-                Logger.Log((i+1).ToString());
-                Logger.Log(account.Address);
-            }
-            return;
-            */
             Config.Instance.Initialize();
-
             Initialize();
             if (ValidAccount() == false)
                 return;
@@ -126,8 +113,7 @@ namespace MineralNode
         void Initialize()
         {
             Logger.Log("---------- Initialize ----------");
-            _account = new WalletAccount(Mineral.Cryptography.Helper.SHA256(Config.Instance.User.PrivateKey));
-            _fromAccount = new WalletAccount(Mineral.Cryptography.Helper.SHA256(Encoding.Default.GetBytes("256")));
+            _account = new WalletAccount(Config.Instance.User.PrivateKey);
             _dpos = new DPos();
 
             // create genesis block.
@@ -229,12 +215,12 @@ namespace MineralNode
             return new Block(blockHeader, txs);
         }
 
-        Transaction CreateTransferTransaction()
+        Transaction CreateTransferTransaction(UInt160 target, Fixed8 value)
         {
             var trans = new TransferTransaction
             {
                 From = _account.AddressHash,
-                To = new Dictionary<UInt160, Fixed8> { { _fromAccount.AddressHash, Fixed8.Satoshi } }
+                To = new Dictionary<UInt160, Fixed8> { { target, value } }
             };
             var tx = new Transaction(eTransactionType.TransferTransaction, DateTime.UtcNow.ToTimestamp(), trans);
             tx.Sign(_account);
