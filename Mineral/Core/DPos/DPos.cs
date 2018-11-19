@@ -39,26 +39,25 @@ namespace Mineral.Core.DPos
             TurnTable = new DelegateTurnTable();
         }
 
-        public int CalcBlockTime(int genesisBlockTime, long height)
+        public int CalcBlockTime(int height)
         {
-            return genesisBlockTime + (int)height * Config.Instance.Block.NextBlockTimeSec;
+            return Config.Instance.GenesisBlock.Timestamp + height * Config.Instance.Block.NextBlockTimeSec;
         }
 
-        public override int GetCreateCount(UInt160 addr, int height)
+        public override int CalcBlockHeight(int time)
         {
-            for (int i = 1; i < Config.Instance.MaxDelegate + 1; i++)
+            return (time - Config.Instance.GenesisBlock.Timestamp) / Config.Instance.Block.NextBlockTimeSec;
+        }
+
+        public override int GetCreateBlockCount(UInt160 addr, int height)
+        {
+            int targetHeight = CalcBlockHeight(DateTime.UtcNow.ToTimestamp());
+            if (TurnTable.GetTurn(targetHeight) == addr)
             {
-                var time = CalcBlockTime(Config.Instance.GenesisBlock.Timestamp, height + i);
-                if (DateTime.UtcNow.ToTimestamp() < time)
-                    return 0;
-                UInt160 hash = TurnTable.GetTurn(height + i);
-                if (addr == hash)
-                {
-                    int remain = TurnTable.RemainUpdate(height + i);
-                    if (remain < 0)
-                        return i + remain;
-                    return i;
-                }
+                int remain = TurnTable.RemainUpdate(height);
+                if (remain < targetHeight - height)
+                    return remain;
+                return targetHeight;
             }
             return 0;
         }

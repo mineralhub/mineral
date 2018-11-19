@@ -60,7 +60,7 @@ namespace MineralNode
                 {
                     if (!_account.IsDelegate())
                         break;
-                    int numCreate = Blockchain.Instance.Proof.GetCreateCount(
+                    int numCreate = Blockchain.Instance.Proof.GetCreateBlockCount(
                         _account.AddressHash,
                         Blockchain.Instance.CurrentBlockHeight);
                     if (numCreate < 1)
