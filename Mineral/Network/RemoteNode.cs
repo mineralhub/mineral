@@ -116,8 +116,9 @@ namespace Mineral.Network
 
         private void ReceivedAddrs(AddrPayload payload)
         {
-            IPEndPoint[] peers = payload.AddressList.Select(p => p.EndPoint).Where(
-                p => p.Port != Config.Instance.Network.TcpPort || !Config.Instance.LocalAddresses.Contains(p.Address)).ToArray();
+            var em = payload.AddressList.Select(p => p.EndPoint).Where(
+                p => p.Port != Config.Instance.Network.TcpPort || !Config.Instance.LocalAddresses.Contains(p.Address));
+            IPEndPoint[] peers = (em.Count() > 0) ? em.ToArray() : new IPEndPoint[0];
             if (0 < peers.Length)
                 PeersReceivedCallback?.Invoke(this, peers);
         }
@@ -364,7 +365,7 @@ namespace Mineral.Network
 
             NetworkSendProcessAsyncLoop();
 
-            lock (_localNode.syncEvent)
+            lock (_localNode._scLock)
             {
                 if (Blockchain.Instance.CurrentBlockHeight >= Version.Height + 1)
                     _localNode.isSyncing = false;

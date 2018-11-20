@@ -10,7 +10,8 @@
 		"seed_list": [ "127.0.0.1:11355", "127.0.0.1:11455" ]
 	},
 	"block": {
-		"next_block_time_sec": 5
+		"next_block_time_sec": 5,
+		"syncCheck": true
 	},
 	"user": {
 		"private_key": "1",

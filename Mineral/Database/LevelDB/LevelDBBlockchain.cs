@@ -183,9 +183,6 @@ namespace Mineral.Database.LevelDB
                 {
                     if (!block.Verify())
                         return BLOCK_ERROR.E_ERROR;
-#if DEBUG
-                    Logger.Log("Added Height: " + block.Height);
-#endif
                     WriteBatch batch = new WriteBatch();
                     OnAddHeader(block.Header, batch);
                     _db.Write(WriteOptions.Default, batch);

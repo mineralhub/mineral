@@ -32,6 +32,8 @@ namespace Mineral
     {
         [JsonProperty("next_block_time_sec")]
         public int NextBlockTimeSec { get; set; }
+        [JsonProperty("syncCheck")]
+        public bool syncCheck { get; set; }
     }
 
     [ConfigClass]
@@ -127,7 +129,7 @@ namespace Mineral
         public Fixed8 BlockReward = Fixed8.One * 250;
 
         public uint Nonce = (uint)(new Random().Next());
-        public string[] SeedList { get; private set; }
+
         public HashSet<IPAddress> LocalAddresses { get; private set; }
 
         private static Config instance = null;
@@ -151,8 +153,14 @@ namespace Mineral
                         instance.TTLDay = instance.TTLHour * 24;
                         instance.LockTTL = instance.TTLDay;
                         instance.VoteTTL = instance.TTLDay;
+                        instance.LocalAddresses = new HashSet<IPAddress>();
+                        foreach (string addr in instance.Network.SeedList)
+                        {
+                            IPAddress iaddr;
+                            if (IPAddress.TryParse(addr, out iaddr))
+                                instance.LocalAddresses.Add(iaddr);
+                        }
                     }
-
                     result = true;
                 }
             }
@@ -160,10 +168,7 @@ namespace Mineral
             {
                 Console.WriteLine(e.Message);
             }
-
             return result;
-
-
         }
 
         public override string ToString()

@@ -19,8 +19,6 @@ namespace MineralNode
         short BlockVersion => Config.Instance.BlockVersion;
         int GenesisBlockTimestamp => Config.Instance.GenesisBlock.Timestamp;
         WalletAccount _account;
-        WalletAccount _fromAccount;
-        Block _genesisBlock;
         LocalNode _node;
         RpcServer _rpcServer;
         //DPos _dpos;
@@ -58,6 +56,11 @@ namespace MineralNode
             {
                 do
                 {
+					if (_node.isSyncing)
+					{
+						break;
+					}
+
                     if (!_account.IsDelegate())
                         break;
                     int numCreate = Blockchain.Instance.Proof.GetCreateBlockCount(
@@ -65,6 +68,7 @@ namespace MineralNode
                         Blockchain.Instance.CurrentBlockHeight);
                     if (numCreate < 1)
                         break;
+
                     CreateAndAddBlocks(numCreate, true);
                 }
                 while (false);
@@ -120,10 +124,11 @@ namespace MineralNode
 
         void Initialize()
         {
-            Logger.Log("---------- Initialize ----------");
+			Block _genesisBlock;
+			Logger.Log("---------- Initialize ----------");
             _account = new WalletAccount(Mineral.Cryptography.Helper.SHA256(Config.Instance.User.PrivateKey));
             //_account = new WalletAccount(Mineral.Cryptography.Helper.SHA256(new byte[1]));
-            _fromAccount = new WalletAccount(Mineral.Cryptography.Helper.SHA256(Encoding.Default.GetBytes("256")));
+            //_fromAccount = new WalletAccount(Mineral.Cryptography.Helper.SHA256(Encoding.Default.GetBytes("256")));
 
             // create genesis block.
             {
@@ -178,6 +183,7 @@ namespace MineralNode
                     Signature = new MakerSignature()
                 };
                 _genesisBlock = new Block(blockHeader, txs);
+				Logger.Log(_genesisBlock.ToJson().ToString());
             }
 
             Logger.Log("genesis block. hash : " + _genesisBlock.Hash);
@@ -239,17 +245,17 @@ namespace MineralNode
             return new Block(blockHeader, txs);
         }
 
-        Transaction CreateTransferTransaction()
-        {
-            var trans = new TransferTransaction
-            {
-                From = _account.AddressHash,
-                To = new Dictionary<UInt160, Fixed8> { { _fromAccount.AddressHash, Fixed8.Satoshi } }
-            };
-            var tx = new Transaction(eTransactionType.TransferTransaction, DateTime.UtcNow.ToTimestamp(), trans);
-            tx.Sign(_account);
-            return tx;
-        }
+        //Transaction CreateTransferTransaction()
+        //{
+        //    var trans = new TransferTransaction
+        //    {
+        //        From = _account.AddressHash,
+        //        To = new Dictionary<UInt160, Fixed8> { { _fromAccount.AddressHash, Fixed8.Satoshi } }
+        //    };
+        //    var tx = new Transaction(eTransactionType.TransferTransaction, DateTime.UtcNow.ToTimestamp(), trans);
+        //    tx.Sign(_account);
+        //    return tx;
+        //}
 
         /*
         VoteTransaction CreateVoteTransaction()

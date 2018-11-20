@@ -57,7 +57,7 @@ namespace Mineral.Core.DPos
                 int remain = TurnTable.RemainUpdate(height);
                 if (remain < targetHeight - height)
                     return remain;
-                return targetHeight;
+                return targetHeight - height;
             }
             return 0;
         }
