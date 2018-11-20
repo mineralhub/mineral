@@ -82,7 +82,8 @@ namespace Mineral.Core
         public abstract Block GetNextBlock(UInt256 hash);
         public abstract bool VerityBlock(Block block);
 
-        public abstract Storage storage { get; }
+        protected abstract Storage _storage { get; }
+        public Storage Storage => _storage;
 
         //public Transaction GetTransaction(UInt256 hash)
         //{
@@ -112,7 +113,7 @@ namespace Mineral.Core
                     return false;
                 if (_txPool.ContainsKey(tx.Hash))
                     return false;
-                if (storage.GetTransaction(tx.Hash) != null)
+                if (_storage.GetTransaction(tx.Hash) != null)
                     return false;
                 _rxPool.Add(tx.Hash, tx);
                 return true;

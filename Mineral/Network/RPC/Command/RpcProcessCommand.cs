@@ -37,7 +37,7 @@ namespace Mineral.Network.RPC.Command
         {
             JObject json = new JObject();
             json["cadidates"] = new JArray();
-            List<DelegateState> list = Blockchain.Instance.storage.GetCadidateDelgates();
+            List<DelegateState> list = Blockchain.Instance.Storage.GetCadidateDelgates();
             foreach (DelegateState state in list)
             {
                 JObject jstate = new JObject();
@@ -55,7 +55,7 @@ namespace Mineral.Network.RPC.Command
             TurnTableState table = Blockchain.Instance.GetTurnTable(parameters[0].Value<int>());
             foreach (UInt160 hash in table.addrs)
             {
-                DelegateState state = Blockchain.Instance.storage.GetDelegateState(hash);
+                DelegateState state = Blockchain.Instance.Storage.GetDelegateState(hash);
                 JObject jstate = new JObject();
                 jstate["address"] = state.AddressHash.ToString();
                 jstate["name"] = Encoding.UTF8.GetString(state.Name); ;

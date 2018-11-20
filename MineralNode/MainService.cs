@@ -177,7 +177,7 @@ namespace MineralNode
             Blockchain.Instance.PersistCompleted += PersistCompleted;
             Blockchain.Instance.Run();
 
-            var genesisBlockTx = Blockchain.Instance.storage.GetTransaction(_genesisBlock.Transactions[0].Hash);
+            var genesisBlockTx = Blockchain.Instance.Storage.GetTransaction(_genesisBlock.Transactions[0].Hash);
             Logger.Log("genesis block tx. hash : " + genesisBlockTx.Hash);
 
             WalletIndexer.SetInstance(new Mineral.Database.LevelDB.LevelDBWalletIndexer("./output-wallet-index"));

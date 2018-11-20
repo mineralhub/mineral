@@ -47,7 +47,7 @@ namespace Mineral.Database.LevelDB
             _genesisBlock = genesisBlock;
         }
 
-        public override Storage storage
+        protected override Storage _storage
         {
             get
             {
@@ -271,7 +271,7 @@ namespace Mineral.Database.LevelDB
             Slice value;
             if (!_db.TryGet(ReadOptions.Default, SliceBuilder.Begin(DataEntryPrefix.DATA_Block).Add(hash), out value))
                 return null;
-            return Block.FromTrimmedData(value.ToArray(), sizeof(long), p => storage.GetTransaction(p));
+            return Block.FromTrimmedData(value.ToArray(), sizeof(long), p => _storage.GetTransaction(p));
         }
 
         public override Block GetBlock(int height)

@@ -95,7 +95,7 @@ namespace Mineral.Wallets
 
         public static Fixed8 GetBalance(UInt160 addressHash)
         {
-            AccountState state = Blockchain.Instance.storage.GetAccountState(addressHash);
+            AccountState state = Blockchain.Instance.Storage.GetAccountState(addressHash);
             if (state == null)
                 return Fixed8.Zero;
             return state.Balance;
@@ -108,7 +108,7 @@ namespace Mineral.Wallets
 
         public static Fixed8 GetLockBalance(UInt160 addressHash)
         {
-            AccountState state = Blockchain.Instance.storage.GetAccountState(addressHash);
+            AccountState state = Blockchain.Instance.Storage.GetAccountState(addressHash);
             if (state == null)
                 return Fixed8.Zero;
             return state.LockBalance;
@@ -121,7 +121,7 @@ namespace Mineral.Wallets
 
         public static Fixed8 GetTotalBalance(UInt160 addressHash)
         {
-            AccountState state = Blockchain.Instance.storage.GetAccountState(addressHash);
+            AccountState state = Blockchain.Instance.Storage.GetAccountState(addressHash);
             if (state == null)
                 return Fixed8.Zero;
             return state.TotalBalance;
