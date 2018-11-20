@@ -1,11 +1,43 @@
 ﻿using Mineral.Database.LevelDB;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace Mineral.Core
 {
     public abstract class Blockchain : IDisposable
     {
+        protected class CacheBlocks
+        {
+            LinkedList<Block> _blocks = new LinkedList<Block>();
+            int _capacity = 1024;
+
+            public void SetCapacity(int capacity) { _capacity = capacity; }
+            public void Add(Block block)
+            {
+                lock (_blocks)
+                {
+                    _blocks.AddLast(block);
+                    if (_capacity < _blocks.Count)
+                        _blocks.RemoveFirst();
+                }
+            }
+            public Block GetBlock(int height)
+            {
+                Block retval = null;
+                lock (_blocks)
+                    retval = _blocks.SingleOrDefault(p => p.Height == height);
+                return retval;
+            }
+            public Block GetBlock(UInt256 hash)
+            {
+                Block retval = null;
+                lock (_blocks)
+                    retval = _blocks.SingleOrDefault(p => p.Hash == hash);
+                return retval;
+            }
+        }
+
         public enum BLOCK_ERROR
         {
             E_NO_ERROR = 0,
@@ -20,6 +52,8 @@ namespace Mineral.Core
         {
             _instance = chain;
         }
+
+        protected CacheBlocks _cacheBlocks = new CacheBlocks();
 
         public object PersistLock { get; } = new object();
         public event EventHandler<Block> PersistCompleted;
@@ -166,5 +200,6 @@ namespace Mineral.Core
         public abstract TurnTableState GetTurnTable(int height);
         public abstract UInt160 GetTurn();
         public abstract void UpdateTurnTable();
+        public void SetCacheBlockCapacity(int capacity) { _cacheBlocks.SetCapacity(capacity); }
     }
 }

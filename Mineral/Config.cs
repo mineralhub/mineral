@@ -35,6 +35,8 @@ namespace Mineral
     {
         [JsonProperty("next_block_time_sec")]
         public int NextBlockTimeSec { get; set; }
+        [JsonProperty("cache_capacity")]
+        public int CacheCapacity { get; set; }
     }
 
     [ConfigClassAttribute]
