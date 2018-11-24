@@ -52,6 +52,9 @@ namespace Mineral.Network
 
         public LocalNode()
         {
+            if (!Config.Instance.Block.syncCheck)
+                isSyncing = false;
+
             _connectThread = new Thread(ConnectToPeersLoop)
             {
                 IsBackground = true,

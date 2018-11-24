@@ -60,6 +60,10 @@ namespace MineralNode
                 {
                     if (!_account.IsDelegate())
                         break;
+
+                    if (_node.isSyncing)
+                        break;
+
                     int numCreate = Blockchain.Instance.Proof.GetCreateCount(
                         _account.AddressHash,
                         Blockchain.Instance.CurrentBlockHeight);

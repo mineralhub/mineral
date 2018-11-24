@@ -32,6 +32,8 @@ namespace Mineral
     {
         [JsonProperty("next_block_time_sec")]
         public int NextBlockTimeSec { get; set; }
+        [JsonProperty("syncCheck")]
+        public bool syncCheck { get; set; }
     }
 
     [ConfigClass]
@@ -151,6 +153,8 @@ namespace Mineral
                         instance.TTLDay = instance.TTLHour * 24;
                         instance.LockTTL = instance.TTLDay;
                         instance.VoteTTL = instance.TTLDay;
+
+                        instance.LocalAddresses = new HashSet<IPAddress>();
                     }
 
                     result = true;
