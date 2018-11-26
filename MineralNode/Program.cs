@@ -2,6 +2,7 @@
 using System.Text;
 using System.IO;
 using Mineral;
+using Mineral.CommandLine;
 
 namespace MineralNode
 {
@@ -21,8 +22,10 @@ namespace MineralNode
         static void Main(string[] args)
         {
             AppDomain.CurrentDomain.UnhandledException += UnhandledException;
+
             MainService service = new MainService();
-            service.Run();
+            if (service.Initialize(args))
+                service.Run();
         }
     }
 }
