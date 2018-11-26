@@ -81,7 +81,8 @@ namespace MineralNode
             }
             else
             {
-                throw new NotImplementedException();
+                Console.WriteLine("Please input to keystore director or privatekey.");
+                return false;
             }
 
             _account = new WalletAccount(privatekey);
