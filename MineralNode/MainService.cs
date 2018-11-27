@@ -66,7 +66,7 @@ namespace MineralNode
                 if (!File.Exists(path))
                 {
                     Logger.Log(string.Format("Not found keystore file : [0]", path));
-                    return true;
+                    return false;
                 }
 
                 JObject json;
