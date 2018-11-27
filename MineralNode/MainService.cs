@@ -56,16 +56,16 @@ namespace MineralNode
             {
                 do
                 {
-					if (_node.isSyncing)
-					{
-						break;
-					}
-
                     if (!_account.IsDelegate())
                         break;
+
+                    if (_node.isSyncing)
+                        break;
+
                     int numCreate = Blockchain.Instance.Proof.GetCreateBlockCount(
                         _account.AddressHash,
                         Blockchain.Instance.CurrentBlockHeight);
+
                     if (numCreate < 1)
                         break;
 
@@ -81,7 +81,6 @@ namespace MineralNode
             List<Block> blocks = new List<Block>();
             int height = Blockchain.Instance.CurrentHeaderHeight;
             UInt256 prevhash = Blockchain.Instance.CurrentHeaderHash;
-            List<Transaction> txs = new List<Transaction>();
 
             // Transaction TPS Check.
             /*
@@ -91,7 +90,7 @@ namespace MineralNode
             */
             for (int i = 0; i < cnt; ++i)
             {
-                txs.Clear();
+                List<Transaction> txs = new List<Transaction>();
                 Blockchain.Instance.LoadTransactionPool(ref txs);
                 Blockchain.Instance.NormalizeTransactions(ref txs);
                 Block block = CreateBlock(height + i, prevhash, txs);

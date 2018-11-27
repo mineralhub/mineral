@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq;
 using Newtonsoft.Json.Linq;
 using Mineral.Cryptography;
+using System.Text;
 
 namespace Mineral.Core
 {
@@ -98,7 +99,8 @@ namespace Mineral.Core
                 return false;
             if (1 < Transactions.Where(p => p.Type == eTransactionType.RewardTransaction).Count())
                 return false;
-            if (Header.MerkleRoot != new MerkleTree(Transactions.Select(p => p.Hash).ToArray()).RootHash)
+            MerkleTree merkle = new MerkleTree(Transactions.Select(p => p.Hash).ToArray());
+            if (Header.MerkleRoot != merkle.RootHash)
                 return false;
             BlockHeader prev = Blockchain.Instance.GetHeader(Header.PrevHash);
             if (prev == null)

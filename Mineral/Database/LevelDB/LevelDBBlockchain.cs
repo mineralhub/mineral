@@ -620,6 +620,8 @@ namespace Mineral.Database.LevelDB
                     lock (PersistLock)
                     {
                         Persist(block);
+                        if (0 >= _proof.RemainUpdate(block.Height))
+                            _proof.Update(this);
                         OnPersistCompleted(block);
                     }
                     lock (_blockCache)
