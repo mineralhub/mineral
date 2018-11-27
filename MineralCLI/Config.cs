@@ -53,7 +53,7 @@ namespace MineralCLI
             {
                 Console.WriteLine("Json invalid format. " + e.Message);
             }
-            
+
             return result;
         }
     }

@@ -1,10 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using System.Net;
-using System.Net.NetworkInformation;
-using System.Reflection;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using Mineral.Converter;
@@ -15,7 +12,7 @@ namespace Mineral
     {
     }
 
-    [ConfigClassAttribute]
+    [ConfigClass]
     public class NetworkConfig
     {
         [JsonProperty("listen_address")]
@@ -30,16 +27,18 @@ namespace Mineral
         public string[] SeedList { get; set; }
     }
 
-    [ConfigClassAttribute]
+    [ConfigClass]
     public class BlockConfig
     {
         [JsonProperty("next_block_time_sec")]
         public int NextBlockTimeSec { get; set; }
         [JsonProperty("cache_capacity")]
         public int CacheCapacity { get; set; }
+        [JsonProperty("syncCheck")]
+        public bool syncCheck { get; set; }
     }
 
-    [ConfigClassAttribute]
+    [ConfigClass]
     public class DelegateConfig
     {
         [JsonProperty("name")]
@@ -49,7 +48,7 @@ namespace Mineral
         public UInt160 Address { get; set; }
     }
 
-    [ConfigClassAttribute]
+    [ConfigClass]
     public class AccountConfig
     {
         [JsonProperty("address")]
@@ -60,7 +59,7 @@ namespace Mineral
         public Fixed8 Balance { get; set; }
     }
 
-    [ConfigClassAttribute]
+    [ConfigClass]
     public class GenesisBlockConfig
     {
         [JsonProperty("account")]
@@ -120,7 +119,7 @@ namespace Mineral
         public Fixed8 BlockReward = Fixed8.One * 250;
 
         public uint Nonce = (uint)(new Random().Next());
-        public string[] SeedList { get; private set; }
+
         public HashSet<IPAddress> LocalAddresses { get; private set; }
 
         private static Config instance = null;
@@ -143,8 +142,14 @@ namespace Mineral
                         instance.TTLDay = instance.TTLHour * 24;
                         instance.LockTTL = instance.TTLDay;
                         instance.VoteTTL = instance.TTLDay;
+                        instance.LocalAddresses = new HashSet<IPAddress>();
+                        foreach (string addr in instance.Network.SeedList)
+                        {
+                            IPAddress iaddr;
+                            if (IPAddress.TryParse(addr, out iaddr))
+                                instance.LocalAddresses.Add(iaddr);
+                        }
                     }
-
                     result = true;
                 }
             }

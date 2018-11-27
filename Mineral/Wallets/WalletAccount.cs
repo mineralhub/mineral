@@ -28,10 +28,15 @@ namespace Mineral.Wallets
             return Blockchain.Instance.GetDelegateStateAll().FindIndex(p => (p.AddressHash == AddressHash)) != -1;
         }
 
+        public int IsDelegateOrder()
+        {
+            return Blockchain.Instance.GetDelegateStateAll().FindIndex(p => (p.AddressHash == AddressHash));
+        }
+
         public static WalletAccount CreateAccount()
         {
             ECKey key = new ECKey(ECKey.Generate());
-            WalletAccount account =  new WalletAccount(key.PrivateKeyBytes);
+            WalletAccount account = new WalletAccount(key.PrivateKeyBytes);
             return account;
         }
 

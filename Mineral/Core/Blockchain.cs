@@ -53,6 +53,13 @@ namespace Mineral.Core
             _instance = chain;
         }
 
+        protected Proof _proof;
+        public Proof Proof => _proof;
+        public void SetProof(Proof proof)
+        {
+            _proof = proof;
+        }
+
         protected CacheBlocks _cacheBlocks = new CacheBlocks();
 
         public object PersistLock { get; } = new object();
@@ -84,11 +91,6 @@ namespace Mineral.Core
 
         protected abstract Storage _storage { get; }
         public Storage Storage => _storage;
-
-        //public Transaction GetTransaction(UInt256 hash)
-        //{
-        //    return GetTransaction(hash, out _);
-        //}
 
         public bool HasTransactionPool(UInt256 hash)
         {
@@ -184,9 +186,6 @@ namespace Mineral.Core
             }
         }
 
-        //public abstract Transaction GetTransaction(UInt256 hash, out int height);
-        //public abstract AccountState GetAccountState(UInt160 addressHash);
-
         public abstract List<DelegateState> GetDelegateStateAll();
         public abstract List<DelegateState> GetDelegateStateMakers();
 
@@ -199,8 +198,6 @@ namespace Mineral.Core
         public abstract void NormalizeTransactions(ref List<Transaction> txs);
         public abstract void PersistTurnTable(List<UInt160> addrs, int height);
         public abstract TurnTableState GetTurnTable(int height);
-        public abstract UInt160 GetTurn();
-        public abstract void UpdateTurnTable();
         public void SetCacheBlockCapacity(int capacity) { _cacheBlocks.SetCapacity(capacity); }
     }
 }

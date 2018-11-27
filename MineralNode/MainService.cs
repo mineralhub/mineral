@@ -180,6 +180,7 @@ namespace MineralNode
         public void Run()
         {
             Logger.WriteConsole = true;
+
             if (ValidAccount() == false)
                 return;
             if (ValidBlock() == false)
@@ -193,22 +194,20 @@ namespace MineralNode
             {
                 do
                 {
-                    // delegator?
                     if (!_account.IsDelegate())
                         break;
-                    // my turn?
-                    if (_account.AddressHash != _dpos.TurnTable.GetTurn(Blockchain.Instance.CurrentBlockHeight + 1))
+
+                    if (_node.isSyncing)
                         break;
-                    // create time?
-                    var time = _dpos.CalcBlockTime(_genesisBlock.Header.Timestamp, Blockchain.Instance.CurrentBlockHeight + 1);
-                    if (DateTime.UtcNow.ToTimestamp() < time)
+
+                    int numCreate = Blockchain.Instance.Proof.GetCreateBlockCount(
+                        _account.AddressHash,
+                        Blockchain.Instance.CurrentBlockHeight);
+
+                    if (numCreate < 1)
                         break;
-                    // create
-                    //System.Diagnostics.Stopwatch sw = new System.Diagnostics.Stopwatch();
-                    //sw.Start();
-                    CreateAndAddBlocks(1, true);
-                    //sw.Stop();
-                    //Logger.Log("AddBlock Elapsed=" + sw.Elapsed);
+
+                    CreateAndAddBlocks(numCreate, true);
                 }
                 while (false);
                 Thread.Sleep(100);
@@ -220,7 +219,6 @@ namespace MineralNode
             List<Block> blocks = new List<Block>();
             int height = Blockchain.Instance.CurrentHeaderHeight;
             UInt256 prevhash = Blockchain.Instance.CurrentHeaderHash;
-            List<Transaction> txs = new List<Transaction>();
 
             // Transaction TPS Check.
             /*
@@ -230,7 +228,7 @@ namespace MineralNode
             */
             for (int i = 0; i < cnt; ++i)
             {
-                txs.Clear();
+                List<Transaction> txs = new List<Transaction>();
                 Blockchain.Instance.LoadTransactionPool(ref txs);
                 Blockchain.Instance.NormalizeTransactions(ref txs);
                 Block block = CreateBlock(height + i, prevhash, txs);
@@ -260,7 +258,6 @@ namespace MineralNode
             if (directly)
                 _node.BroadCast(Message.CommandName.BroadcastBlocks, BroadcastBlockPayload.Create(blocks));
         }
-
 
         Block CreateBlock(int height, UInt256 prevhash, List<Transaction> txs = null)
         {
@@ -294,46 +291,6 @@ namespace MineralNode
 
         void PersistCompleted(object sender, Block block)
         {
-            int remain = _dpos.TurnTable.RemainUpdate(block.Height);
-            if (0 < remain)
-                return;
-
-            UpdateTurnTable();
-        }
-
-        void UpdateTurnTable()
-        {
-            int currentHeight = Blockchain.Instance.CurrentBlockHeight;
-            UpdateTurnTable(Blockchain.Instance.GetBlock(currentHeight - currentHeight % Config.Instance.RoundBlock));
-        }
-
-        void UpdateTurnTable(Block block)
-        {
-            // calculate turn table
-            List<DelegateState> delegates = Blockchain.Instance.GetDelegateStateAll();
-            delegates.Sort((x, y) =>
-            {
-                var valueX = x.Votes.Sum(p => p.Value).Value;
-                var valueY = y.Votes.Sum(p => p.Value).Value;
-                if (valueX == valueY)
-                {
-                    if (x.AddressHash < y.AddressHash)
-                        return 1;
-                    else
-                        return -1;
-                }
-                else if (valueX < valueY)
-                    return 1;
-                return -1;
-            });
-
-            int delegateRange = Config.Instance.MaxDelegate < delegates.Count ? Config.Instance.MaxDelegate : delegates.Count;
-            List<UInt160> addrs = new List<UInt160>();
-            for (int i = 0; i < delegateRange; ++i)
-                addrs.Add(delegates[i].AddressHash);
-
-            _dpos.TurnTable.SetTable(addrs);
-            _dpos.TurnTable.SetUpdateHeight(block.Height);
         }
 
         bool ValidAccount()

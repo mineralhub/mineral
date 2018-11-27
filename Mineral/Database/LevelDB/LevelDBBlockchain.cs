@@ -7,8 +7,6 @@ using System.Threading;
 using Mineral;
 using Mineral.Core;
 using System.Text;
-using Mineral.Core.DPos;
-using Mineral.Wallets;
 
 namespace Mineral.Database.LevelDB
 {
@@ -33,7 +31,6 @@ namespace Mineral.Database.LevelDB
         private UInt256 _currentBlockHash;
         private int _currentHeaderHeight;
         private UInt256 _currentHeaderHash;
-        private DPos _dpos = new DPos();
 
         public override Block GenesisBlock => _genesisBlock;
         public override int CurrentBlockHeight => _currentBlockHeight;
@@ -117,8 +114,7 @@ namespace Mineral.Database.LevelDB
                 {
                     table.Deserialize(br);
                 }
-                _dpos.TurnTable.SetTable(table.addrs);
-                _dpos.TurnTable.SetUpdateHeight(table.turnTableHeight);
+                _proof.SetTurnTable(table);
             }
             else
             {
@@ -134,7 +130,7 @@ namespace Mineral.Database.LevelDB
                 _currentHeaderHash = _genesisBlock.Hash;
                 Persist(_genesisBlock);
                 _db.Put(WriteOptions.Default, SliceBuilder.Begin(DataEntryPrefix.SYS_Version), Assembly.GetExecutingAssembly().GetName().Version.ToString());
-                UpdateTurnTable();
+                _proof.Update(this);
             }
 
             _threadPersistence = new Thread(PersistBlocksLoop)
@@ -187,9 +183,6 @@ namespace Mineral.Database.LevelDB
                 {
                     if (!block.Verify())
                         return BLOCK_ERROR.E_ERROR;
-#if DEBUG
-                    Logger.Log("Added Height: " + block.Height);
-#endif
                     WriteBatch batch = new WriteBatch();
                     OnAddHeader(block.Header, batch);
                     _db.Write(WriteOptions.Default, batch);
@@ -216,8 +209,8 @@ namespace Mineral.Database.LevelDB
                 lock (PersistLock)
                 {
                     Persist(block);
-                    if (0 >= _dpos.TurnTable.RemainUpdate(block.Height))
-                        UpdateTurnTable();
+                    if (0 >= _proof.RemainUpdate(block.Height))
+                        _proof.Update(this);
                     OnPersistCompleted(block);
                 }
                 return true;
@@ -637,6 +630,8 @@ namespace Mineral.Database.LevelDB
                     lock (PersistLock)
                     {
                         Persist(block);
+                        if (0 >= _proof.RemainUpdate(block.Height))
+                            _proof.Update(this);
                         OnPersistCompleted(block);
                     }
                     lock (_waitPersistBlocks)
@@ -683,52 +678,6 @@ namespace Mineral.Database.LevelDB
                 state.Deserialize(br);
             }
             return state;
-        }
-
-        public override UInt160 GetTurn()
-        {
-            // create time?
-            var time = _dpos.CalcBlockTime(_genesisBlock.Header.Timestamp, Blockchain.Instance.CurrentBlockHeight + 1);
-            if (DateTime.UtcNow.ToTimestamp() < time)
-                return UInt160.Zero;
-            return _dpos.TurnTable.GetTurn(Blockchain.Instance.CurrentBlockHeight + 1);
-        }
-
-        public override void UpdateTurnTable()
-        {
-            int currentHeight = Blockchain.Instance.CurrentBlockHeight;
-            UpdateTurnTable(Blockchain.Instance.GetBlock(currentHeight - currentHeight % Config.Instance.RoundBlock));
-        }
-
-        void UpdateTurnTable(Block block)
-        {
-            // calculate turn table
-            List<DelegateState> delegates = Blockchain.Instance.GetDelegateStateAll();
-            delegates.Sort((x, y) =>
-            {
-                var valueX = x.Votes.Sum(p => p.Value).Value;
-                var valueY = y.Votes.Sum(p => p.Value).Value;
-                if (valueX == valueY)
-                {
-                    if (x.AddressHash < y.AddressHash)
-                        return -1;
-                    else
-                        return 1;
-                }
-                else if (valueX < valueY)
-                    return -1;
-                return 1;
-            });
-
-            int delegateRange = Config.Instance.MaxDelegate < delegates.Count ? Config.Instance.MaxDelegate : delegates.Count;
-            List<UInt160> addrs = new List<UInt160>();
-            for (int i = 0; i < delegateRange; ++i)
-                addrs.Add(delegates[i].AddressHash);
-
-            _dpos.TurnTable.SetTable(addrs);
-            _dpos.TurnTable.SetUpdateHeight(block.Height);
-
-            PersistTurnTable(addrs, block.Height);
         }
     }
 }
