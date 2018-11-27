@@ -1,44 +1,44 @@
 ﻿using Mineral;
-using Mineral.CommandLine;
+using MineralNode.CommandLine;
+using MineralNode.CommandLine.Attributes;
 using System;
 using System.Collections.Generic;
-using System.Text;
+using System.Reflection;
 
 namespace MineralNode
 {
     public class Options
     {
-        public class OptionName
-        {
-            public const string ConfigDir = "--configidr";
-            public const string KeyStoreDir = "--keystoredir";
-            public const string KeyStorePassword = "--keystorepassword";
-            public const string PrivateKey = "--privatekey";
-        }
-
-        #region Option Properties
-        [CommandAttribute(Name = OptionName.ConfigDir, Description = "Directory for the config file(config.json)")]
-        public string ConfigDir { get; set; }
-
-        [CommandAttribute(Name = OptionName.KeyStoreDir, Description = "Directory for the keystroe file(.keystore)")]
-        public string KeyStoreDir { get; set; }
-
-        [CommandAttribute(Name = OptionName.KeyStorePassword, Description = "keystore password")]
-        public string KeyStorePassword { get; set; }
-
-        [CommandAttribute(Name = OptionName.PrivateKey, Description = "Wallet private key")]
-        public string PrivateKey { get; set; }
-        #endregion
-
         public readonly string[] arg_indicator = new string[] { "-", "--" };
-        private ParseResult data = null;
+        private Dictionary<string, string> data = new Dictionary<string, string>();
+        private Dictionary<string, string> error = new Dictionary<string, string>();
+
+        public OptionDefault Default { get; set; }
+        public OptionWallet Wallet { get; set; }
+
+        public bool IsHelp { get; private set; }
+        public bool IsValid { get { return IsValidOption(); } }
 
         public Options(string[] args)
         {
-            data = ArgumentsParser.ApplyArgument<Options>(ArgumentsParser.ParseArguments(args, new string[] { "-", "--" }), this);
+            Dictionary<string, string> arguments = ArgumentsParser.ParseArguments(args, arg_indicator);
+
+            if (arguments.ContainsKey(OptionName.H) || arguments.ContainsKey(OptionName.Help))
+            {
+                IsHelp = true;
+                arguments.Remove(OptionName.H);
+                arguments.Remove(OptionName.Help);
+            }
+
+            Default = new OptionDefault();
+            Wallet = new OptionWallet();
+
+            ApplyArgument<OptionDefault, DefaultAttribute>(arguments);
+            ApplyArgument<OptionWallet, WalletAttribute>(arguments);
+            error = arguments;
         }
 
-        public bool IsValid()
+        private bool IsValidOption()
         {
             if (data == null)
             {
@@ -46,14 +46,16 @@ namespace MineralNode
                 return false;
             }
 
-            if (data.ErrorResults.Count > 0)
+            if (error.Count > 0)
             {
-                string message = "Invalid option : " + data.ErrorResults[0];
+                System.Collections.IEnumerator em = error.Keys.GetEnumerator();
+                em.MoveNext();
+                string message = "Invalid option : " + em.Current;
                 Logger.Log(message);
                 return false;
             }
 
-            if (data.Results.ContainsKey(OptionName.KeyStoreDir) && data.Results.ContainsKey(OptionName.PrivateKey))
+            if (data.ContainsKey(OptionName.KeyStoreDir) && data.ContainsKey(OptionName.PrivateKey))
             {
                 string message = OptionName.KeyStoreDir + "and " + OptionName.PrivateKey + "can't used together.";
                 Logger.Log(message);
@@ -61,5 +63,29 @@ namespace MineralNode
             }
             return true;
         }
+
+        public void ApplyArgument<T1, T2>(Dictionary<string, string> argument)
+        {
+            Queue<string> keys = new Queue<string>(argument.Keys);
+            while (keys.Count > 0)
+            {
+                string key = keys.Dequeue();
+                foreach (PropertyInfo p in typeof(T1).GetProperties())
+                {
+                    Attribute attr = p.GetCustomAttribute(typeof(T2));
+                    if (attr != null)
+                    {
+                        if (((ICommandLineAttribute)attr).Name == key)
+                        {
+                            p.SetValue(Wallet, argument[key]);
+                            data.Add(key, argument[key]);
+                            argument.Remove(key);
+                            break;
+                        }
+                    }
+                }
+            }
+        }
     }
 }
+

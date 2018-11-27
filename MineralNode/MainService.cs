@@ -15,29 +15,38 @@ using Mineral.Wallets.KeyStore;
 using System.IO;
 using Newtonsoft.Json.Linq;
 using Newtonsoft.Json;
+using System.Reflection;
+using MineralNode.CommandLine;
+using MineralNode.CommandLine.Attributes;
 
 namespace MineralNode
 {
     public class MainService
     {
-        short BlockVersion => Config.Instance.BlockVersion;
-        int GenesisBlockTimestamp => Config.Instance.GenesisBlock.Timestamp;
-        WalletAccount _account;
-        Block _genesisBlock;
-        LocalNode _node;
-        RpcServer _rpcServer;
-        DPos _dpos;
-        Options option;
+        private short BlockVersion => Config.Instance.BlockVersion;
+        private int GenesisBlockTimestamp => Config.Instance.GenesisBlock.Timestamp;
+        private WalletAccount _account;
+        private Block _genesisBlock;
+        private LocalNode _node;
+        private RpcServer _rpcServer;
+        private DPos _dpos;
+        private Options option;
 
         public bool InitOption(string[] args)
         {
             option = new Options(args);
-            return option.IsValid();
+
+            if (option.IsHelp || !option.IsValid)
+            {
+                OnHelpMessage();
+                return false;
+            }
+            return true;
         }
 
         public bool InitConfig()
         {
-            string path = option.ConfigDir ?? "./config.json";
+            string path = option.Default.ConfigDir ?? "./config.json";
             return Config.Instance.Initialize(path);
         }
 
@@ -45,15 +54,15 @@ namespace MineralNode
         {
             string path;
             byte[] privatekey = null;
-            if (!string.IsNullOrEmpty(option.KeyStoreDir))
+            if (!string.IsNullOrEmpty(option.Wallet.KeyStoreDir))
             {
-                if (string.IsNullOrEmpty(option.KeyStorePassword))
+                if (string.IsNullOrEmpty(option.Wallet.KeyStorePassword))
                 {
                     Logger.Log("Keystore password is empty.");
                     return false;
                 }
 
-                path = option.KeyStoreDir.Contains(".keystore") ? option.KeyStoreDir : option.KeyStoreDir + ".keystore";
+                path = option.Wallet.KeyStoreDir.Contains(".keystore") ? option.Wallet.KeyStoreDir : option.Wallet.KeyStoreDir + ".keystore";
                 if (!File.Exists(path))
                 {
                     Logger.Log(string.Format("Not found keystore file : [0]", path));
@@ -69,15 +78,15 @@ namespace MineralNode
                 KeyStore keystore = new KeyStore();
                 keystore = JsonConvert.DeserializeObject<KeyStore>(json.ToString());
 
-                if (!KeyStoreService.DecryptKeyStore(option.KeyStorePassword, keystore, out privatekey))
+                if (!KeyStoreService.DecryptKeyStore(option.Wallet.KeyStorePassword, keystore, out privatekey))
                 {
                     Logger.Log("Fail to decrypt keystore file.");
                     return false;
                 }
             }
-            else if (!string.IsNullOrEmpty(option.PrivateKey))
+            else if (!string.IsNullOrEmpty(option.Wallet.PrivateKey))
             {
-                privatekey = option.PrivateKey.HexToBytes();
+                privatekey = option.Wallet.PrivateKey.HexToBytes();
             }
             else
             {
@@ -163,58 +172,45 @@ namespace MineralNode
 
         public bool Initialize(string[] args)
         {
-            Logger.Log("---------- MainService Initialize ----------");
-
             bool result = true;
+            Logger.WriteConsole = true;
+            Logger.Log("---------- MainService Initialize Start ----------");
 
             if (result) result = InitOption(args);
             if (result) result = InitConfig();
             if (result) result = InitAccount();
             if (result) result = InitGenesisBlock();
-
             return result;
         }
 
-
         public void Run()
         {
-            Logger.WriteConsole = true;
-            if (ValidAccount() == false)
-                return;
-            if (ValidBlock() == false)
-                return;
-
             StartLocalNode();
             StartRpcServer();
-            // Config.Instance.GenesisBlock.Delegates.ForEach(p => dpos.TurnTable.Enqueue(p.Address));
 
             while (true)
             {
-                do
-                {
-                    // delegator?
-                    if (!_account.IsDelegate())
-                        break;
-                    // my turn?
-                    if (_account.AddressHash != _dpos.TurnTable.GetTurn(Blockchain.Instance.CurrentBlockHeight + 1))
-                        break;
-                    // create time?
-                    var time = _dpos.CalcBlockTime(_genesisBlock.Header.Timestamp, Blockchain.Instance.CurrentBlockHeight + 1);
-                    if (DateTime.UtcNow.ToTimestamp() < time)
-                        break;
-                    // create
-                    //System.Diagnostics.Stopwatch sw = new System.Diagnostics.Stopwatch();
-                    //sw.Start();
-                    CreateAndAddBlocks(1, true);
-                    //sw.Stop();
-                    //Logger.Log("AddBlock Elapsed=" + sw.Elapsed);
-                }
-                while (false);
+                // delegator?
+                if (!_account.IsDelegate())
+                    break;
+                // my turn?
+                if (_account.AddressHash != _dpos.TurnTable.GetTurn(Blockchain.Instance.CurrentBlockHeight + 1))
+                    break;
+                // create time?
+                var time = _dpos.CalcBlockTime(_genesisBlock.Header.Timestamp, Blockchain.Instance.CurrentBlockHeight + 1);
+                if (DateTime.UtcNow.ToTimestamp() < time)
+                    break;
+                // create
+                //System.Diagnostics.Stopwatch sw = new System.Diagnostics.Stopwatch();
+                //sw.Start();
+                CreateAndAddBlocks(1, true);
+                //sw.Stop();
+                //Logger.Log("AddBlock Elapsed=" + sw.Elapsed);
                 Thread.Sleep(100);
             }
         }
 
-        void CreateAndAddBlocks(int cnt, bool directly)
+        private void CreateAndAddBlocks(int cnt, bool directly)
         {
             List<Block> blocks = new List<Block>();
             int height = Blockchain.Instance.CurrentHeaderHeight;
@@ -261,7 +257,7 @@ namespace MineralNode
         }
 
 
-        Block CreateBlock(int height, UInt256 prevhash, List<Transaction> txs = null)
+        private Block CreateBlock(int height, UInt256 prevhash, List<Transaction> txs = null)
         {
             if (txs == null)
                 txs = new List<Transaction>();
@@ -279,7 +275,7 @@ namespace MineralNode
             return new Block(blockHeader, txs);
         }
 
-        Transaction CreateTransferTransaction(UInt160 target, Fixed8 value)
+        private Transaction CreateTransferTransaction(UInt160 target, Fixed8 value)
         {
             var trans = new TransferTransaction
             {
@@ -291,7 +287,7 @@ namespace MineralNode
             return tx;
         }
 
-        void PersistCompleted(object sender, Block block)
+        private void PersistCompleted(object sender, Block block)
         {
             int remain = _dpos.TurnTable.RemainUpdate(block.Height);
             if (0 < remain)
@@ -300,13 +296,13 @@ namespace MineralNode
             UpdateTurnTable();
         }
 
-        void UpdateTurnTable()
+        private void UpdateTurnTable()
         {
             int currentHeight = Blockchain.Instance.CurrentBlockHeight;
             UpdateTurnTable(Blockchain.Instance.GetBlock(currentHeight - currentHeight % Config.Instance.RoundBlock));
         }
 
-        void UpdateTurnTable(Block block)
+        private void UpdateTurnTable(Block block)
         {
             // calculate turn table
             List<DelegateState> delegates = Blockchain.Instance.GetDelegateStateAll();
@@ -335,28 +331,7 @@ namespace MineralNode
             _dpos.TurnTable.SetUpdateHeight(block.Height);
         }
 
-        bool ValidAccount()
-        {
-            Logger.Log("---------- Check Account ----------");
-            Logger.Log("address : " + _account.Address + " length : " + _account.Address.Length);
-            Logger.Log("addressHash : " + _account.AddressHash + " byte size : " + _account.AddressHash.Size);
-            Logger.Log("pubkey : " + _account.Key.PublicKey.ToByteArray().ToHexString());
-            var hashToAddr = WalletAccount.ToAddress(_account.AddressHash);
-            bool validHashToAddr = hashToAddr == _account.Address;
-            Logger.Log("- check addressHash to address : " + validHashToAddr);
-            if (!validHashToAddr)
-                return false;
-            bool validAddress = WalletAccount.IsAddress(_account.Address);
-            Logger.Log("check is address : " + validAddress);
-            if (!validAddress)
-                return false;
-            var generate = new ECKey(ECKey.Generate());
-            Logger.Log("generate prikey : " + generate.PrivateKeyBytes.ToHexString());
-            Logger.Log("generate pubkey : " + generate.PublicKey.ToByteArray().ToHexString());
-            return true;
-        }
-
-        bool ValidBlock()
+        private bool ValidBlock()
         {
             BlockHeader heightHeader = Blockchain.Instance.GetHeader(0);
             BlockHeader hashHeader = Blockchain.Instance.GetHeader(heightHeader.Hash);
@@ -369,19 +344,74 @@ namespace MineralNode
             return true;
         }
 
-        void StartLocalNode()
+        private void StartLocalNode()
         {
             _node = new LocalNode();
             _node.Listen();
         }
 
-        void StartRpcServer()
+        private void StartRpcServer()
         {
             if (0 < Config.Instance.Network.RpcPort)
             {
                 _rpcServer = new RpcServer(_node);
                 _rpcServer.Start(Config.Instance.Network.RpcPort);
             }
+        }
+
+        private void OnHelpMessage()
+        {
+            AssemblyName assembly = Assembly.GetEntryAssembly().GetName();
+
+            // VERSION
+            string message = string.Empty
+                + "\n"
+                + (assembly.Name + "".PadLeft(2) + assembly.Version.ToString()) 
+                ;
+
+            // USAGE
+            message += string.Empty
+                + "\n"
+                + "\n" + "".PadLeft(0) + "USAGE : "
+                + "\n" + "".PadLeft(10) + string.Format("Mineral.dll {0} <dir> {1} <password> [options]", OptionName.KeyStoreDir, OptionName.KeyStorePassword)
+                + "\n" + "".PadLeft(10) + string.Format("Mineral.dll {0} <key> [options]", OptionName.PrivateKey)
+                ;
+
+            // DEFAULT OPTIONS
+            message += string.Empty
+                + "\n"
+                + "\n" + "".PadLeft(1) + "--DEFAULT OPTIONS : ";
+            foreach (PropertyInfo info in typeof(OptionDefault).GetProperties())
+            {
+                DefaultAttribute attr = (DefaultAttribute)info.GetCustomAttribute(typeof(DefaultAttribute));
+                if (attr != null)
+                {
+                    message += "\n" + "".PadLeft(4);
+                    message += string.Format("{0,-25} {1}", attr.Name, attr.Description);
+                }
+            }
+
+            // WALLET OPTIONS
+            message += string.Empty
+                + "\n"
+                + "\n" + "".PadLeft(1) + "--WALLET OPTIONS : ";
+            foreach (PropertyInfo info in typeof(OptionWallet).GetProperties())
+            {
+                WalletAttribute attr = (WalletAttribute)info.GetCustomAttribute(typeof(WalletAttribute));
+                if (attr != null)
+                {
+                    message += "\n" + "".PadLeft(4);
+                    message += string.Format("{0,-25} {1}", attr.Name, attr.Description);
+                }
+            }
+
+            message += string.Empty
+                + "\n"
+                + "\n" + "".PadLeft(0) + "MISC OPTION :"
+                + "\n" + "".PadLeft(4) + "-h   -help"
+                ;
+
+            Console.WriteLine(message);
         }
     }
 }
