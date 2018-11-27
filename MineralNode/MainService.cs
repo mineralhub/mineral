@@ -38,7 +38,7 @@ namespace MineralNode
 
             if (option.IsHelp || !option.IsValid)
             {
-                OnHelpMessage();
+                option.ShowHelpMessage();
                 return false;
             }
             return true;
@@ -191,21 +191,17 @@ namespace MineralNode
             while (true)
             {
                 // delegator?
-                if (!_account.IsDelegate())
-                    break;
+                if (!_account.IsDelegate()) break;
+
                 // my turn?
-                if (_account.AddressHash != _dpos.TurnTable.GetTurn(Blockchain.Instance.CurrentBlockHeight + 1))
-                    break;
+                if (_account.AddressHash != _dpos.TurnTable.GetTurn(Blockchain.Instance.CurrentBlockHeight + 1)) break;
+
                 // create time?
                 var time = _dpos.CalcBlockTime(_genesisBlock.Header.Timestamp, Blockchain.Instance.CurrentBlockHeight + 1);
-                if (DateTime.UtcNow.ToTimestamp() < time)
-                    break;
-                // create
-                //System.Diagnostics.Stopwatch sw = new System.Diagnostics.Stopwatch();
-                //sw.Start();
+                if (DateTime.UtcNow.ToTimestamp() < time) break;
+
                 CreateAndAddBlocks(1, true);
-                //sw.Stop();
-                //Logger.Log("AddBlock Elapsed=" + sw.Elapsed);
+
                 Thread.Sleep(100);
             }
         }
@@ -217,12 +213,6 @@ namespace MineralNode
             UInt256 prevhash = Blockchain.Instance.CurrentHeaderHash;
             List<Transaction> txs = new List<Transaction>();
 
-            // Transaction TPS Check.
-            /*
-            var tx = CreateTransferTransaction();
-            for (int i = 0; i < 1000; ++i)
-                txs.Add(tx);
-            */
             for (int i = 0; i < cnt; ++i)
             {
                 txs.Clear();
@@ -357,61 +347,6 @@ namespace MineralNode
                 _rpcServer = new RpcServer(_node);
                 _rpcServer.Start(Config.Instance.Network.RpcPort);
             }
-        }
-
-        private void OnHelpMessage()
-        {
-            AssemblyName assembly = Assembly.GetEntryAssembly().GetName();
-
-            // VERSION
-            string message = string.Empty
-                + "\n"
-                + (assembly.Name + "".PadLeft(2) + assembly.Version.ToString()) 
-                ;
-
-            // USAGE
-            message += string.Empty
-                + "\n"
-                + "\n" + "".PadLeft(0) + "USAGE : "
-                + "\n" + "".PadLeft(10) + string.Format("Mineral.dll {0} <dir> {1} <password> [options]", OptionName.KeyStoreDir, OptionName.KeyStorePassword)
-                + "\n" + "".PadLeft(10) + string.Format("Mineral.dll {0} <key> [options]", OptionName.PrivateKey)
-                ;
-
-            // DEFAULT OPTIONS
-            message += string.Empty
-                + "\n"
-                + "\n" + "".PadLeft(1) + "--DEFAULT OPTIONS : ";
-            foreach (PropertyInfo info in typeof(OptionDefault).GetProperties())
-            {
-                DefaultAttribute attr = (DefaultAttribute)info.GetCustomAttribute(typeof(DefaultAttribute));
-                if (attr != null)
-                {
-                    message += "\n" + "".PadLeft(4);
-                    message += string.Format("{0,-25} {1}", attr.Name, attr.Description);
-                }
-            }
-
-            // WALLET OPTIONS
-            message += string.Empty
-                + "\n"
-                + "\n" + "".PadLeft(1) + "--WALLET OPTIONS : ";
-            foreach (PropertyInfo info in typeof(OptionWallet).GetProperties())
-            {
-                WalletAttribute attr = (WalletAttribute)info.GetCustomAttribute(typeof(WalletAttribute));
-                if (attr != null)
-                {
-                    message += "\n" + "".PadLeft(4);
-                    message += string.Format("{0,-25} {1}", attr.Name, attr.Description);
-                }
-            }
-
-            message += string.Empty
-                + "\n"
-                + "\n" + "".PadLeft(0) + "MISC OPTION :"
-                + "\n" + "".PadLeft(4) + "-h   -help"
-                ;
-
-            Console.WriteLine(message);
         }
     }
 }

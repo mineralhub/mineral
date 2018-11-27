@@ -86,6 +86,61 @@ namespace MineralNode
                 }
             }
         }
+
+        public void ShowHelpMessage()
+        {
+            AssemblyName assembly = Assembly.GetEntryAssembly().GetName();
+
+            // VERSION
+            string message = string.Empty
+                + "\n"
+                + (assembly.Name + "".PadLeft(2) + assembly.Version.ToString())
+                ;
+
+            // USAGE
+            message += string.Empty
+                + "\n"
+                + "\n" + "".PadLeft(0) + "USAGE : "
+                + "\n" + "".PadLeft(10) + string.Format("Mineral.dll {0} <dir> {1} <password> [options]", OptionName.KeyStoreDir, OptionName.KeyStorePassword)
+                + "\n" + "".PadLeft(10) + string.Format("Mineral.dll {0} <key> [options]", OptionName.PrivateKey)
+                ;
+
+            // DEFAULT OPTIONS
+            message += string.Empty
+                + "\n"
+                + "\n" + "".PadLeft(1) + "--DEFAULT OPTIONS : ";
+            foreach (PropertyInfo info in typeof(OptionDefault).GetProperties())
+            {
+                DefaultAttribute attr = (DefaultAttribute)info.GetCustomAttribute(typeof(DefaultAttribute));
+                if (attr != null)
+                {
+                    message += "\n" + "".PadLeft(4);
+                    message += string.Format("{0,-25} {1}", attr.Name, attr.Description);
+                }
+            }
+
+            // WALLET OPTIONS
+            message += string.Empty
+                + "\n"
+                + "\n" + "".PadLeft(1) + "--WALLET OPTIONS : ";
+            foreach (PropertyInfo info in typeof(OptionWallet).GetProperties())
+            {
+                WalletAttribute attr = (WalletAttribute)info.GetCustomAttribute(typeof(WalletAttribute));
+                if (attr != null)
+                {
+                    message += "\n" + "".PadLeft(4);
+                    message += string.Format("{0,-25} {1}", attr.Name, attr.Description);
+                }
+            }
+
+            message += string.Empty
+                + "\n"
+                + "\n" + "".PadLeft(0) + "MISC OPTION :"
+                + "\n" + "".PadLeft(4) + "-h   -help"
+                ;
+
+            Console.WriteLine(message);
+        }
     }
 }
 
