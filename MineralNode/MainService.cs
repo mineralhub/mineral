@@ -149,6 +149,7 @@ namespace MineralNode
 
             Logger.Log("genesis block. hash : " + _genesisBlock.Hash);
             Blockchain.SetInstance(new Mineral.Database.LevelDB.LevelDBBlockchain("./output-database", _genesisBlock));
+            Blockchain.Instance.SetProof(new DPos());
             Blockchain.Instance.SetCacheBlockCapacity(Config.Instance.Block.CacheCapacity);
             Blockchain.Instance.PersistCompleted += PersistCompleted;
             Blockchain.Instance.Run();
@@ -157,7 +158,6 @@ namespace MineralNode
             Logger.Log("genesis block tx. hash : " + genesisBlockTx.Hash);
 
             WalletIndexer.SetInstance(new Mineral.Database.LevelDB.LevelDBWalletIndexer("./output-wallet-index"));
-            UpdateTurnTable();
 
             return true;
         }
