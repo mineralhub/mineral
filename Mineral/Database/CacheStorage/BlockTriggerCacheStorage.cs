@@ -1,31 +1,30 @@
 ﻿using Mineral.Core;
 using Mineral.Database.LevelDB;
-using System.Collections.Generic;
 
 namespace Mineral.Database.CacheStorage
 {
     internal class BlockTriggerCacheStorage
     {
-        DbCache<SerializeInteger, BlockTriggerState> _cache;
+        DbCache<SerializableInt32, BlockTriggerState> _cache;
 
         public BlockTriggerCacheStorage(DB db)
         {
-            _cache = new DbCache<SerializeInteger, BlockTriggerState>(db, DataEntryPrefix.ST_BlockTrigger);
+            _cache = new DbCache<SerializableInt32, BlockTriggerState>(db, DataEntryPrefix.ST_BlockTrigger);
         }
 
         public BlockTriggerState GetAndChange(int height)
         {
-            return GetAndChange(new SerializeInteger(height));
+            return GetAndChange(new SerializableInt32(height));
         }
 
-        public BlockTriggerState GetAndChange(SerializeInteger height)
+        public BlockTriggerState GetAndChange(SerializableInt32 height)
         {
             return _cache.GetAndChange(height, () => new BlockTriggerState());
         }
 
         public BlockTriggerState TryGet(int height)
         {
-            return _cache.TryGet(new SerializeInteger(height));
+            return _cache.TryGet(new SerializableInt32(height));
         }
 
         public void Clean(int height)

@@ -45,6 +45,12 @@ namespace MineralCLI.Commands
             string password = ConsoleServiceBase.ReadPasswordString("Password : ");
             string confirm = ConsoleServiceBase.ReadPasswordString("Confirm password : ");
 
+            if (string.IsNullOrEmpty(password) || string.IsNullOrEmpty(confirm))
+            {
+                Console.WriteLine("Invalid password.");
+                return true;
+            }
+
             if (!password.Equals(confirm))
             {
                 Console.WriteLine("Password do not match.");
@@ -108,6 +114,12 @@ namespace MineralCLI.Commands
             }
 
             string password = ConsoleServiceBase.ReadPasswordString("Password: ");
+
+            if (string.IsNullOrEmpty(password))
+            {
+                Console.WriteLine("Invalid password.");
+                return true;
+            }
 
             KeyStore keystore = new KeyStore();
             keystore = JsonConvert.DeserializeObject<KeyStore>(json.ToString());

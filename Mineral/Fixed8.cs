@@ -51,6 +51,16 @@ namespace Mineral
             return Equals((Fixed8)obj);
         }
 
+        public static Fixed8 FromLongValue(long value)
+        {
+            Fixed8 retval;
+            checked
+            {
+                retval = new Fixed8(value * D);
+            }
+            return retval;
+        }
+
         public static Fixed8 FromDecimal(decimal value)
         {
             value *= D;

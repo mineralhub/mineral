@@ -18,7 +18,7 @@ namespace Mineral.Database.LevelDB
         private List<UInt256> _headerIndices = new List<UInt256>();
         private uint _storedHeaderCount = 0;
 
-        private Dictionary<UInt256, Block> _blockCache = new Dictionary<UInt256, Block>();
+        private Dictionary<UInt256, Block> _waitPersistBlocks = new Dictionary<UInt256, Block>();
         private Dictionary<UInt256, BlockHeader> _headerCache = new Dictionary<UInt256, BlockHeader>();
 
         private AutoResetEvent _newBlockEvent = new AutoResetEvent(false);
@@ -44,7 +44,7 @@ namespace Mineral.Database.LevelDB
             _genesisBlock = genesisBlock;
         }
 
-        public override Storage storage
+        protected override Storage _storage
         {
             get
             {
@@ -156,10 +156,10 @@ namespace Mineral.Database.LevelDB
 
         public override BLOCK_ERROR AddBlock(Block block)
         {
-            lock (_blockCache)
+            lock (_waitPersistBlocks)
             {
-                if (!_blockCache.ContainsKey(block.Hash))
-                    _blockCache.Add(block.Hash, block);
+                if (!_waitPersistBlocks.ContainsKey(block.Hash))
+                    _waitPersistBlocks.Add(block.Hash, block);
             }
 
             lock (PoolLock)
@@ -233,6 +233,9 @@ namespace Mineral.Database.LevelDB
 
         public override BlockHeader GetHeader(int height)
         {
+            Block block = _cacheBlocks.GetBlock(height);
+            if (block != null)
+                return block.Header;
             UInt256 hash = GetBlockHash(height);
             if (hash == null)
                 return null;
@@ -255,17 +258,20 @@ namespace Mineral.Database.LevelDB
 
         public override Block GetBlock(UInt256 hash)
         {
+            Block block = _cacheBlocks.GetBlock(hash);
+            if (block != null)
+                return block;
             Slice value;
             if (!_db.TryGet(ReadOptions.Default, SliceBuilder.Begin(DataEntryPrefix.DATA_Block).Add(hash), out value))
                 return null;
-            Block block = Block.FromTrimmedData(value.ToArray(), sizeof(long), p => storage.GetTransaction(p));
-            if (block.Transactions.Count == 0)
-                return null;
-            return block;
+            return Block.FromTrimmedData(value.ToArray(), sizeof(long), p => _storage.GetTransaction(p));
         }
 
         public override Block GetBlock(int height)
         {
+            Block block = _cacheBlocks.GetBlock(height);
+            if (block != null)
+                return block;
             UInt256 hash = GetBlockHash(height);
             if (hash == null)
                 return null;
@@ -305,9 +311,9 @@ namespace Mineral.Database.LevelDB
         {
             if (txs.Count == 0)
                 return;
-            lock (_blockCache)
+            lock (_waitPersistBlocks)
             {
-                foreach (Block block in _blockCache.Values)
+                foreach (Block block in _waitPersistBlocks.Values)
                 {
                     int counter = txs.Count;
                     while (counter > 0)
@@ -368,11 +374,6 @@ namespace Mineral.Database.LevelDB
 
                 switch (tx.Data)
                 {
-                    case RewardTransaction rewardTx:
-                        {
-                            from.AddBalance(rewardTx.Reward);
-                        }
-                        break;
                     case TransferTransaction transTx:
                         {
                             Fixed8 totalAmount = transTx.To.Sum(p => p.Value);
@@ -415,7 +416,6 @@ namespace Mineral.Database.LevelDB
                             }
                         }
                         break;
-
                     case LockTransaction lockTx:
                         {
                             from.LastLockTxID = tx.Hash;
@@ -423,13 +423,17 @@ namespace Mineral.Database.LevelDB
                             from.AddLock(lockTx.LockValue);
                         }
                         break;
-
                     case UnlockTransaction unlockTx:
                         {
                             from.LastLockTxID = tx.Hash;
                             Fixed8 lockValue = from.LockBalance;
                             from.AddBalance(lockValue);
                             from.AddLock(-lockValue);
+                        }
+                        break;
+                    case SupplyTransaction rewardTx:
+                        {
+                            from.AddBalance(rewardTx.Supply);
                         }
                         break;
                 }
@@ -491,11 +495,6 @@ namespace Mineral.Database.LevelDB
 
                 switch (tx.Data)
                 {
-                    case RewardTransaction rewardTx:
-                        {
-                            from.AddBalance(rewardTx.Reward);
-                        }
-                        break;
                     case TransferTransaction transTx:
                         {
                             Fixed8 totalAmount = transTx.To.Sum(p => p.Value);
@@ -555,6 +554,11 @@ namespace Mineral.Database.LevelDB
                             from.AddLock(-lockValue);
                         }
                         break;
+                    case SupplyTransaction rewardTx:
+                        {
+                            from.AddBalance(rewardTx.Supply);
+                        }
+                        break;
                 }
             }
 
@@ -575,12 +579,19 @@ namespace Mineral.Database.LevelDB
                 }
             }
 
+            if (0 < block.Height)
+            {
+                AccountState producer = storage.GetAccountState(WalletAccount.ToAddressHash(block.Header.Signature.Pubkey));
+                producer.AddBalance(Config.Instance.BlockReward);
+            }
             storage.commit(batch, block.Height);
 
             batch.Put(SliceBuilder.Begin(DataEntryPrefix.SYS_CurrentBlock), SliceBuilder.Begin().Add(block.Hash).Add(block.Header.Height));
             _db.Write(WriteOptions.Default, batch);
             _currentBlockHeight = block.Header.Height;
             _currentBlockHash = block.Header.Hash;
+            _cacheBlocks.Add(block);
+
 
             StringBuilder sb = new StringBuilder();
             sb.AppendLine("persist block : " + block.Height);
@@ -606,14 +617,13 @@ namespace Mineral.Database.LevelDB
                         hash = _headerIndices[_currentBlockHeight + 1];
                     }
                     Block block;
-                    lock (_blockCache)
+                    lock (_waitPersistBlocks)
                     {
-                        if (!_blockCache.TryGetValue(hash, out block))
+                        if (!_waitPersistBlocks.TryGetValue(hash, out block))
                             break;
                     }
 
                     // Compare block's previous hash is CurrentBlockHash
-
                     if (block.Header.PrevHash != CurrentBlockHash)
                         break;
 
@@ -624,9 +634,9 @@ namespace Mineral.Database.LevelDB
                             _proof.Update(this);
                         OnPersistCompleted(block);
                     }
-                    lock (_blockCache)
+                    lock (_waitPersistBlocks)
                     {
-                        _blockCache.Remove(hash);
+                        _waitPersistBlocks.Remove(hash);
                     }
                 }
             }

@@ -88,14 +88,14 @@ namespace Mineral.Core
                 case eTransactionType.RegisterDelegateTransaction:
                     Data = new RegisterDelegateTransaction();
                     break;
-                case eTransactionType.RewardTransaction:
-                    Data = new RewardTransaction();
-                    break;
                 case eTransactionType.LockTransaction:
                     Data = new LockTransaction();
                     break;
                 case eTransactionType.UnlockTransaction:
                     Data = new UnlockTransaction();
+                    break;
+                case eTransactionType.SupplyTransaction:
+                    Data = new SupplyTransaction();
                     break;
                 default:
                     Data = new TransactionBase();
@@ -166,7 +166,7 @@ namespace Mineral.Core
         public bool VerifyBlockchain(Storage storage = null)
         {
             if (storage == null)
-                storage = Blockchain.Instance.storage;
+                storage = Blockchain.Instance.Storage;
 
             if (storage.GetTransaction(Hash) != null)
             {

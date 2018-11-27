@@ -99,8 +99,7 @@ namespace Mineral.Core
                 return false;
             if (1 < Transactions.Where(p => p.Type == eTransactionType.RewardTransaction).Count())
                 return false;
-            MerkleTree merkle = new MerkleTree(Transactions.Select(p => p.Hash).ToArray());
-            if (Header.MerkleRoot != merkle.RootHash)
+            if (Header.MerkleRoot != new MerkleTree(Transactions.Select(p => p.Hash).ToArray()).RootHash)
                 return false;
             BlockHeader prev = Blockchain.Instance.GetHeader(Header.PrevHash);
             if (prev == null)

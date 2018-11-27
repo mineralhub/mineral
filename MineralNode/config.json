@@ -11,12 +11,8 @@
 	},
 	"block": {
 		"next_block_time_sec": 5,
+    "cache_capacity": 1024,
 		"syncCheck": true
-	},
-	"user": {
-		"private_key": "1",
-		"witness": true
-
 	},
 	"genesisBlock": {
 		"account": [

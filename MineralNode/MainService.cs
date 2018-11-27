@@ -11,6 +11,10 @@ using Mineral.Core.DPos;
 using Mineral.Network;
 using Mineral.Network.Payload;
 using Mineral.Network.RPC;
+using Mineral.Wallets.KeyStore;
+using System.IO;
+using Newtonsoft.Json.Linq;
+using Newtonsoft.Json;
 
 namespace MineralNode
 {
@@ -19,29 +23,163 @@ namespace MineralNode
         short BlockVersion => Config.Instance.BlockVersion;
         int GenesisBlockTimestamp => Config.Instance.GenesisBlock.Timestamp;
         WalletAccount _account;
+        Block _genesisBlock;
         LocalNode _node;
         RpcServer _rpcServer;
-        //DPos _dpos;
+        DPos _dpos;
+        Options option;
+
+        public bool InitOption(string[] args)
+        {
+            option = new Options(args);
+            return option.IsValid();
+        }
+
+        public bool InitConfig()
+        {
+            string path = option.ConfigDir ?? "./config.json";
+            return Config.Instance.Initialize(path);
+        }
+
+        public bool InitAccount()
+        {
+            string path;
+            byte[] privatekey = null;
+            if (!string.IsNullOrEmpty(option.KeyStoreDir))
+            {
+                if (string.IsNullOrEmpty(option.KeyStorePassword))
+                {
+                    Logger.Log("Keystore password is empty.");
+                    return false;
+                }
+
+                path = option.KeyStoreDir.Contains(".keystore") ? option.KeyStoreDir : option.KeyStoreDir + ".keystore";
+                if (!File.Exists(path))
+                {
+                    Logger.Log(string.Format("Not found keystore file : [0]", path));
+                    return true;
+                }
+
+                JObject json;
+                using (var file = File.OpenText(path))
+                {
+                    string data = file.ReadToEnd();
+                    json = JObject.Parse(data);
+                }
+                KeyStore keystore = new KeyStore();
+                keystore = JsonConvert.DeserializeObject<KeyStore>(json.ToString());
+
+                if (!KeyStoreService.DecryptKeyStore(option.KeyStorePassword, keystore, out privatekey))
+                {
+                    Logger.Log("Fail to decrypt keystore file.");
+                    return false;
+                }
+            }
+            else if (!string.IsNullOrEmpty(option.PrivateKey))
+            {
+                privatekey = option.PrivateKey.HexToBytes();
+            }
+            else
+            {
+                Console.WriteLine("Please input to keystore director or privatekey.");
+                return false;
+            }
+
+            _account = new WalletAccount(privatekey);
+
+            return true;
+        }
+
+        public bool InitGenesisBlock()
+        {
+            _dpos = new DPos();
+            {
+                List<SupplyTransaction> supplyTxs = new List<SupplyTransaction>();
+                Config.Instance.GenesisBlock.Accounts.ForEach(
+                    p =>
+                    {
+                        supplyTxs.Add(new SupplyTransaction
+                        {
+                            From = p.Address,
+                            Supply = p.Balance
+                        });
+                    });
+
+                var txs = new List<Transaction>();
+                foreach (var reward in supplyTxs)
+                {
+                    var tx = new Transaction(eTransactionType.SupplyTransaction,
+                                    GenesisBlockTimestamp - 1,
+                                    reward)
+                    {
+                        Signature = new MakerSignature()
+                    };
+                    txs.Add(tx);
+                }
+
+                Config.Instance.GenesisBlock.Delegates.ForEach(
+                    p =>
+                    {
+                        var register = new RegisterDelegateTransaction
+                        {
+                            Name = Encoding.UTF8.GetBytes(p.Name),
+                            From = p.Address
+                        };
+                        var tx = new Transaction(eTransactionType.RegisterDelegateTransaction,
+                                                 GenesisBlockTimestamp - 1,
+                                                 register)
+                        {
+                            Signature = new MakerSignature()
+                        };
+                        txs.Add(tx);
+                    });
+
+                var merkle = new MerkleTree(txs.Select(p => p.Hash).ToArray());
+                var blockHeader = new BlockHeader
+                {
+                    PrevHash = UInt256.Zero,
+                    MerkleRoot = merkle.RootHash,
+                    Version = BlockVersion,
+                    Timestamp = GenesisBlockTimestamp,
+                    Height = 0,
+                    Signature = new MakerSignature()
+                };
+                _genesisBlock = new Block(blockHeader, txs);
+            }
+
+            Logger.Log("genesis block. hash : " + _genesisBlock.Hash);
+            Blockchain.SetInstance(new Mineral.Database.LevelDB.LevelDBBlockchain("./output-database", _genesisBlock));
+            Blockchain.Instance.SetCacheBlockCapacity(Config.Instance.Block.CacheCapacity);
+            Blockchain.Instance.PersistCompleted += PersistCompleted;
+            Blockchain.Instance.Run();
+
+            var genesisBlockTx = Blockchain.Instance.Storage.GetTransaction(_genesisBlock.Transactions[0].Hash);
+            Logger.Log("genesis block tx. hash : " + genesisBlockTx.Hash);
+
+            WalletIndexer.SetInstance(new Mineral.Database.LevelDB.LevelDBWalletIndexer("./output-wallet-index"));
+            UpdateTurnTable();
+
+            return true;
+        }
+
+        public bool Initialize(string[] args)
+        {
+            Logger.Log("---------- MainService Initialize ----------");
+
+            bool result = true;
+
+            if (result) result = InitOption(args);
+            if (result) result = InitConfig();
+            if (result) result = InitAccount();
+            if (result) result = InitGenesisBlock();
+
+            return result;
+        }
+
 
         public void Run()
         {
             Logger.WriteConsole = true;
-
-            // Generate Address
-            /*
-            for (int i = 0 ; i < 5 ;++i)
-            {
-                var account = new WalletAccount(Mineral.Cryptography.Helper.SHA256(Encoding.ASCII.GetBytes((i+1).ToString())));
-                Logger.Log((i+1).ToString());
-                Logger.Log(account.Address);
-            }
-            return;
-            */
-
-            Config.Instance.Initialize();
-            //int times = DateTime.UtcNow.ToTimestamp();
-            //Config.Instance.GenesisBlock.Timestamp = times + 5;
-            Initialize();
 
             if (ValidAccount() == false)
                 return;
@@ -121,115 +259,10 @@ namespace MineralNode
                 _node.BroadCast(Message.CommandName.BroadcastBlocks, BroadcastBlockPayload.Create(blocks));
         }
 
-        void Initialize()
-        {
-			Block _genesisBlock;
-			Logger.Log("---------- Initialize ----------");
-            _account = new WalletAccount(Mineral.Cryptography.Helper.SHA256(Config.Instance.User.PrivateKey));
-            //_account = new WalletAccount(Mineral.Cryptography.Helper.SHA256(new byte[1]));
-            //_fromAccount = new WalletAccount(Mineral.Cryptography.Helper.SHA256(Encoding.Default.GetBytes("256")));
-
-            // create genesis block.
-            {
-                List<RewardTransaction> rewardTxs = new List<RewardTransaction>();
-                Config.Instance.GenesisBlock.Accounts.ForEach(
-                    p =>
-                    {
-                        rewardTxs.Add(new RewardTransaction
-                        {
-                            From = p.Address,
-                            Reward = p.Balance
-                        });
-                    });
-
-                var txs = new List<Transaction>();
-                foreach (var reward in rewardTxs)
-                {
-                    var tx = new Transaction(eTransactionType.RewardTransaction,
-                                    GenesisBlockTimestamp - 1,
-                                    reward)
-                    {
-                        Signature = new MakerSignature()
-                    };
-                    txs.Add(tx);
-                }
-
-                Config.Instance.GenesisBlock.Delegates.ForEach(
-                    p =>
-                    {
-                        var register = new RegisterDelegateTransaction
-                        {
-                            Name = Encoding.UTF8.GetBytes(p.Name),
-                            From = p.Address
-                        };
-                        var tx = new Transaction(eTransactionType.RegisterDelegateTransaction,
-                                                 GenesisBlockTimestamp - 1,
-                                                 register)
-                        {
-                            Signature = new MakerSignature()
-                        };
-                        txs.Add(tx);
-                    });
-
-                var merkle = new MerkleTree(txs.Select(p => p.Hash).ToArray());
-                var blockHeader = new BlockHeader
-                {
-                    PrevHash = UInt256.Zero,
-                    MerkleRoot = merkle.RootHash,
-                    Version = BlockVersion,
-                    Timestamp = GenesisBlockTimestamp,
-                    Height = 0,
-                    Signature = new MakerSignature()
-                };
-                _genesisBlock = new Block(blockHeader, txs);
-				Logger.Log(_genesisBlock.ToJson().ToString());
-            }
-
-            Logger.Log("genesis block. hash : " + _genesisBlock.Hash);
-            Blockchain.SetInstance(new Mineral.Database.LevelDB.LevelDBBlockchain("./output-database", _genesisBlock));
-            Blockchain.Instance.SetProof(new DPos());
-            Blockchain.Instance.PersistCompleted += PersistCompleted;
-            Blockchain.Instance.Run();
-
-            var genesisBlockTx = Blockchain.Instance.storage.GetTransaction(_genesisBlock.Transactions[0].Hash);
-            Logger.Log("genesis block tx. hash : " + genesisBlockTx.Hash);
-
-            WalletIndexer.SetInstance(new Mineral.Database.LevelDB.LevelDBWalletIndexer("./output-wallet-index"));
-
-            /*
-            var accounts = new List<UInt160> { _delegator.AddressHash, _randomAccount.AddressHash };
-            WalletIndexer.Instance.AddAccounts(accounts);
-            WalletIndexer.Instance.BalanceChange += (obj, e) =>
-            {
-                foreach (var addrHash in e.ChangedAccount.Keys)
-                {
-                    foreach (var value in e.ChangedAccount[addrHash])
-                    {
-                        //Logger.Log("change account. addr : " + WalletAccount.ToAddress(addrHash) + ", added : " + value);
-                    }
-                }
-            };
-            */
-        }
-
         Block CreateBlock(int height, UInt256 prevhash, List<Transaction> txs = null)
         {
             if (txs == null)
                 txs = new List<Transaction>();
-
-            // block reward
-            RewardTransaction rewardTx = new RewardTransaction
-            {
-                From = _account.AddressHash,
-                Reward = Config.Instance.BlockReward
-            };
-            var tx = new Transaction(
-                eTransactionType.RewardTransaction,
-                DateTime.UtcNow.ToTimestamp(),
-                rewardTx
-            );
-            tx.Sign(_account);
-            txs.Insert(0, tx);
 
             var merkle = new MerkleTree(txs.Select(p => p.Hash).ToArray());
             var blockHeader = new BlockHeader
@@ -244,46 +277,17 @@ namespace MineralNode
             return new Block(blockHeader, txs);
         }
 
-        //Transaction CreateTransferTransaction()
-        //{
-        //    var trans = new TransferTransaction
-        //    {
-        //        From = _account.AddressHash,
-        //        To = new Dictionary<UInt160, Fixed8> { { _fromAccount.AddressHash, Fixed8.Satoshi } }
-        //    };
-        //    var tx = new Transaction(eTransactionType.TransferTransaction, DateTime.UtcNow.ToTimestamp(), trans);
-        //    tx.Sign(_account);
-        //    return tx;
-        //}
-
-        /*
-        VoteTransaction CreateVoteTransaction()
+        Transaction CreateTransferTransaction(UInt160 target, Fixed8 value)
         {
-            // find genesis block input
-            List<TransactionInput> txIn = new List<TransactionInput>();
-            Fixed8 value = Fixed8.Zero;
-            foreach (var tx in _genesisBlock.Transactions)
+            var trans = new TransferTransaction
             {
-                for (int i = 0; i < tx.Outputs.Count; ++i)
-                {
-                    if (tx.Outputs[i].AddressHash == _account.AddressHash)
-                    {
-                        txIn.Add(new TransactionInput(tx.Hash, (ushort)i));
-                        value = tx.Outputs[i].Value;
-                        break;
-                    }
-                }
-                if (0 < txIn.Count)
-                    break;
-            }
-            if (txIn.Count == 0)
-                return null;
-
-            var txOut = new List<TransactionOutput> { new TransactionOutput(value - Config.Instance.VoteFee, _account.AddressHash) };
-            var txSign = new List<MakerSignature> { new MakerSignature(Mineral.Cryptography.Helper.Sign(txIn[0].Hash.Data, _account.Key), _account.Key.PublicKey.ToByteArray()) };
-            return new VoteTransaction(txIn, txOut, txSign);
+                From = _account.AddressHash,
+                To = new Dictionary<UInt160, Fixed8> { { target, value } }
+            };
+            var tx = new Transaction(eTransactionType.TransferTransaction, DateTime.UtcNow.ToTimestamp(), trans);
+            tx.Sign(_account);
+            return tx;
         }
-        */
 
         void PersistCompleted(object sender, Block block)
         {

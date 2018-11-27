@@ -32,18 +32,10 @@ namespace Mineral
     {
         [JsonProperty("next_block_time_sec")]
         public int NextBlockTimeSec { get; set; }
+        [JsonProperty("cache_capacity")]
+        public int CacheCapacity { get; set; }
         [JsonProperty("syncCheck")]
         public bool syncCheck { get; set; }
-    }
-
-    [ConfigClass]
-    public class UserConfig
-    {
-        [JsonProperty("private_key")]
-        [JsonConverter(typeof(JsonByteArrayConverter))]
-        public byte[] PrivateKey { get; set; }
-        [JsonProperty("witness")]
-        public bool Witness { get; set; }
     }
 
     [ConfigClass]
@@ -86,8 +78,6 @@ namespace Mineral
         public NetworkConfig Network { get; set; }
         [JsonProperty("block")]
         public BlockConfig Block { get; set; }
-        [JsonProperty("user")]
-        public UserConfig User { get; set; }
         [JsonProperty("genesisBlock")]
         public GenesisBlockConfig GenesisBlock { get; set; }
 
@@ -135,13 +125,12 @@ namespace Mineral
         private static Config instance = null;
         public static Config Instance { get { return instance = instance ?? new Config(); } }
 
-        public bool Initialize()
+        public bool Initialize(string path)
         {
             bool result = false;
 
             try
             {
-                string path = "./config.json";
                 if (File.Exists(path))
                 {
                     using (var file = File.OpenText(path))

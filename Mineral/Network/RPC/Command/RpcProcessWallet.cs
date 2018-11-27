@@ -48,7 +48,7 @@ namespace Mineral.Network.RPC.Command
         public static JObject OnGetVoteWitness(object obj, JArray parameters)
         {
             UInt160 addressHash = WalletAccount.ToAddressHash(parameters[0].ToString());
-            AccountState state = Blockchain.Instance.storage.GetAccountState(addressHash);
+            AccountState state = Blockchain.Instance.Storage.GetAccountState(addressHash);
 
             JObject json = new JObject();
             json["votes"] = new JArray();

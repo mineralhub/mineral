@@ -17,7 +17,7 @@ namespace Mineral.UnitTests
         WalletAccount _to = new WalletAccount(Encoding.Default.GetBytes("1"));
 
         TransferTransaction _transfer;
-        RewardTransaction _reward;
+        SupplyTransaction _supply;
         VoteTransaction _vote;
         OtherSignTransaction _otherSign;
         SignTransaction _sign;
@@ -33,18 +33,21 @@ namespace Mineral.UnitTests
                 From = _from.AddressHash,
                 To = new Dictionary<UInt160, Fixed8> { {_to.AddressHash, Fixed8.One } }
             };
+            _transfer.CalcFee();
 
-            _reward = new RewardTransaction
+            _supply = new SupplyTransaction
             {
                 From = _from.AddressHash,
-                Reward = Config.Instance.BlockReward
+                Supply = Config.Instance.BlockReward
             };
+            _supply.CalcFee();
 
             _vote = new VoteTransaction
             {
                 From = _from.AddressHash,
                 Votes = new Dictionary<UInt160, Fixed8> { { _from.AddressHash, Fixed8.One } }
             };
+            _vote.CalcFee();
 
             _otherSign = new OtherSignTransaction
             {
@@ -53,18 +56,21 @@ namespace Mineral.UnitTests
                 Others = new HashSet<string> { _from.Address, _to.Address },
                 ExpirationBlockHeight = 10
             };
+            _otherSign.CalcFee();
 
             _sign = new SignTransaction
             {
                 From = _from.AddressHash,
                 SignTxHash = new UInt256()
             };
+            _sign.CalcFee();
 
             _register = new RegisterDelegateTransaction
             {
                 From = _from.AddressHash,
                 Name = Encoding.Default.GetBytes("delegate")
             };
+            _register.CalcFee();
 
             _transaction = new Transaction
             {
@@ -88,7 +94,7 @@ namespace Mineral.UnitTests
         public void Verify()
         {
             _transfer.Verify().Should().BeTrue();
-            _reward.Verify().Should().BeTrue();
+            _supply.Verify().Should().BeTrue();
             _vote.Verify().Should().BeTrue();
             _otherSign.Verify().Should().BeTrue();
             _sign.Verify().Should().BeTrue();
@@ -114,7 +120,7 @@ namespace Mineral.UnitTests
             using (MemoryStream ms = new MemoryStream())
             using (BinaryWriter bw = new BinaryWriter(ms))
             {
-                _reward.Serialize(bw);
+                _supply.Serialize(bw);
                 ms.Flush();
                 ms.ToArray().Length.Should().Be(txbase + 8); // 36
             }
