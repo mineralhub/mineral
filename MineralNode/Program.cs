@@ -2,7 +2,6 @@
 using System.Text;
 using System.IO;
 using Mineral;
-using Mineral.CommandLine;
 
 namespace MineralNode
 {
