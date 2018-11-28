@@ -7,6 +7,7 @@ using System.Threading;
 using Mineral;
 using Mineral.Core;
 using System.Text;
+using Mineral.Wallets;
 
 namespace Mineral.Database.LevelDB
 {
