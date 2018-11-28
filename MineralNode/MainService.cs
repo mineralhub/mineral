@@ -191,20 +191,23 @@ namespace MineralNode
 
             while (true)
             {
-                if (!_account.IsDelegate())
-                    break;
+                do
+                {
+                    if (!_account.IsDelegate())
+                        break;
 
-                if (_node.isSyncing)
-                    break;
+                    if (_node.isSyncing)
+                        break;
 
-                int numCreate = Blockchain.Instance.Proof.GetCreateBlockCount(
-                    _account.AddressHash,
-                    Blockchain.Instance.CurrentBlockHeight);
+                    int numCreate = Blockchain.Instance.Proof.GetCreateBlockCount(
+                        _account.AddressHash,
+                        Blockchain.Instance.CurrentBlockHeight);
 
-                if (numCreate < 1)
-                    break;
+                    if (numCreate < 1)
+                        break;
 
-                CreateAndAddBlocks(numCreate, true);
+                    CreateAndAddBlocks(numCreate, true);
+                } while (false);
                 Thread.Sleep(100);
             }
         }
