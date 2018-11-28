@@ -11,7 +11,7 @@
 	},
 	"block": {
 		"next_block_time_sec": 5,
-    "cache_capacity": 1024,
+        "cache_capacity": 1024,
 		"syncCheck": true
 	},
 	"genesisBlock": {
