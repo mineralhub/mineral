@@ -40,7 +40,11 @@ namespace Mineral.Network
                 }
                 catch (ArgumentException) { }
                 catch (ObjectDisposedException) { }
-                catch (Exception e) when (e is FormatException || e is IOException || e is WebSocketException || e is OperationCanceledException)
+                catch(OperationCanceledException)
+                {
+                    Disconnect(false, true);
+                }
+                catch (Exception e) when (e is FormatException || e is IOException || e is WebSocketException)
                 {
                     Disconnect(false);
                 }
@@ -54,14 +58,17 @@ namespace Mineral.Network
                 return false;
 
             ArraySegment<byte> segment = new ArraySegment<byte>(message.ToArray());
-            CancellationTokenSource source = new CancellationTokenSource(10000);
+            CancellationTokenSource source = new CancellationTokenSource(TimeSpan.FromSeconds(5));
             try
             {
                 await _socket.SendAsync(segment, WebSocketMessageType.Binary, true, source.Token);
                 return true;
             }
             catch (ObjectDisposedException) { }
-            catch (Exception ex) when (ex is WebSocketException || ex is OperationCanceledException)
+            catch(OperationCanceledException) {
+                Disconnect(false, true);
+            }
+            catch (Exception ex) when (ex is WebSocketException)
             {
                 Disconnect(false);
             }

@@ -13,12 +13,12 @@ namespace Mineral.Converter
 
         public override object ReadJson(JsonReader reader, Type objectType, object existingValue, JsonSerializer serializer)
         {
-            return Encoding.UTF8.GetBytes(reader.Value.ToString());
+            return reader.Value.ToString().HexToBytes();
         }
 
         public override void WriteJson(JsonWriter writer, object value, JsonSerializer serializer)
         {
-            writer.WriteValue(Encoding.UTF8.GetString((byte[])value));
+            writer.WriteValue(((byte[])value).ToHexString());
         }
     }
 

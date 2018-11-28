@@ -1,9 +1,6 @@
 ﻿using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
 using System;
-using System.Collections.Generic;
 using System.IO;
-using System.Text;
 
 namespace MineralCLI
 {
@@ -54,9 +51,9 @@ namespace MineralCLI
             }
             catch (Exception e)
             {
-                Console.WriteLine("Json invalid format");
+                Console.WriteLine("Json invalid format. " + e.Message);
             }
-            
+
             return result;
         }
     }

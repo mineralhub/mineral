@@ -43,7 +43,9 @@ namespace Mineral.Network
         public bool isSyncing = true;
         public List<KeyValuePair<Guid, Block>> broadcastBlocks = new List<KeyValuePair<Guid, Block>>();
         private readonly object _respLock = new Object();
-        public AutoResetEvent syncEvent = new AutoResetEvent(false);
+        public readonly object _scLock = new Object();
+        public ulong syncCounter = 0;
+        //public AutoResetEvent syncEvent = new AutoResetEvent(false);
 
         public long lastBlockTime = 0;
         public long LastTime { get { return swPing.ElapsedMilliseconds; } }
@@ -52,6 +54,9 @@ namespace Mineral.Network
 
         public LocalNode()
         {
+            if (!Config.Instance.Block.syncCheck)
+                isSyncing = false;
+
             _connectThread = new Thread(ConnectToPeersLoop)
             {
                 IsBackground = true,
@@ -217,6 +222,12 @@ namespace Mineral.Network
         {
             lock (_respLock)
             {
+                foreach (Block block in blocks)
+                {
+                    if (block.Height == Blockchain.Instance.CurrentBlockHeight + 1 && Blockchain.Instance.CurrentBlockHash == block.Header.PrevHash)
+                        isSyncing = false;
+                }
+
                 if (!isSyncing)
                 {
                     foreach (Block block in blocks)
@@ -224,6 +235,9 @@ namespace Mineral.Network
 #if DEBUG
                         Logger.Log("[AddBroadcastBlocks] Block height: " + block.Height);
 #endif
+                        if (block.Height < Blockchain.Instance.CurrentBlockHeight + 1)
+                            continue;
+
                         Blockchain.BLOCK_ERROR eRET = Blockchain.Instance.AddBlock(block);
                         if (eRET != Blockchain.BLOCK_ERROR.E_NO_ERROR)
                         {
@@ -232,7 +246,7 @@ namespace Mineral.Network
                                 isSyncing = true;
                                 return true;
                             }
-                            Logger.Log("[AddBroadcastBlocks] Blockchain.Instance.AddBlock(block) failed.");
+                            Logger.Log("[AddBroadcastBlocks] Blockchain.Instance.AddBlock(block) failed. : " + eRET);
                             return false;
                         }
                     }
@@ -266,45 +280,18 @@ namespace Mineral.Network
 
                 foreach (Block block in blocks)
                 {
-                    if (Blockchain.Instance.AddBlock(block) != Blockchain.BLOCK_ERROR.E_NO_ERROR)
+                    Blockchain.BLOCK_ERROR eRET = Blockchain.Instance.AddBlock(block);
+                    if (eRET != Blockchain.BLOCK_ERROR.E_NO_ERROR)
                     {
-                        Logger.Log("Blockchain.Instance.AddBlock(block) failed.");
+                        Logger.Log("Blockchain.Instance.AddBlock(block) failed. : " + eRET);
                         return false;
                     }
-
-                    if (block.Hash == firstPrevHash)
-                    {
-                        foreach (KeyValuePair<Guid, Block> gblock in broadcastBlocks)
-                        {
-                            if (!Blockchain.Instance.AddBlockDirectly(gblock.Value))
-                            {
-                                broadcastBlocks.Clear();
-
-                                return true;
-                                //lock (_connectedPeers)
-                                //{
-                                //    foreach (RemoteNode rnode in _connectedPeers)
-                                //    {
-                                //        if (rnode.Version.NodeID == gblock.Key)
-                                //        {
-                                //            Logger.Log("Blockchain.Instance.AddBlock(gblock.Value) failed.");
-                                //            rnode.Disconnect(true, false);
-                                //            return rnode != node;
-                                //        }
-                                //    }
-                                //}
-
-                                //return true;
-                            }
-                        }
-                        broadcastBlocks.Clear();
-                        isSyncing = false;
-                        return true;
-                    }
-
                     lastAddHash = block.Hash;
                 }
-                syncEvent.Set();
+                lock (_scLock)
+                {
+                    syncCounter++;
+                }
             }
             return true;
         }
@@ -314,8 +301,13 @@ namespace Mineral.Network
             Stopwatch swTimeout = new Stopwatch();
             long lastPing = 0;
             lastAddHash = Blockchain.Instance.CurrentBlockHash;
+
             if (isSyncing)
-                syncEvent.Set();
+                lock (_scLock)
+                {
+                    syncCounter++;
+                }
+            swTimeout.Start();
 
             while (!_cancelTokenSource.IsCancellationRequested)
             {
@@ -323,10 +315,30 @@ namespace Mineral.Network
                 lock (_connectedPeers)
                     connectedCount = _connectedPeers.Count;
 
+                int syncHeight = Blockchain.Instance.Proof.CalcBlockHeight(DateTime.UtcNow.ToTimestamp());
+                int diffHeight = syncHeight - Blockchain.Instance.CurrentBlockHeight;
+
+                if (isSyncing && diffHeight == 0)
+                {
+                    isSyncing = false;
+                }
+                else if (!isSyncing && diffHeight > Config.Instance.MaxDelegate)
+                {
+                    if (Config.Instance.Block.syncCheck)
+                        isSyncing = true;
+                }
+
                 if (connectedCount > 0)
                 {
-                    if (!syncEvent.WaitOne(100))
+                    bool bSleep = false;
+                    lock (_scLock)
                     {
+                        bSleep = (syncCounter == 0);
+                        syncCounter = 0;
+                    }
+                    if (bSleep)
+                    {
+                        Thread.Sleep(50);
                         if (swTimeout.ElapsedMilliseconds < 5000)
                             continue;
                     }
@@ -334,8 +346,8 @@ namespace Mineral.Network
                     RemoteNode pingNode = null;
                     int pingHeight = -1;
 
-                    long nowTimestamp = DateTime.Now.ToTimestamp();
-                    bool bPing = (nowTimestamp - lastPing) >= 5000;
+                    long nowTimestamp = DateTime.UtcNow.ToTimestamp();
+                    bool bPing = (nowTimestamp - lastPing) >= Config.Instance.Block.NextBlockTimeSec * 1000;
                     if (bPing)
                         lastPing = nowTimestamp;
 
@@ -366,14 +378,14 @@ namespace Mineral.Network
                 }
                 else
                 {
-                    Thread.Sleep(1000);
+                    Thread.Sleep(100);
                 }
             }
         }
 
         public async Task ConnectToPeerAsync(string host, int port)
         {
-            IPAddress addr;
+            IPAddress addr = null;
             if (IPAddress.TryParse(host, out addr))
             {
                 addr = addr.MapToIPv6();

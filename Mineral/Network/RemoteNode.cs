@@ -116,8 +116,9 @@ namespace Mineral.Network
 
         private void ReceivedAddrs(AddrPayload payload)
         {
-            IPEndPoint[] peers = payload.AddressList.Select(p => p.EndPoint).Where(
-                p => p.Port != Config.Instance.Network.TcpPort || !Config.Instance.LocalAddresses.Contains(p.Address)).ToArray();
+            var em = payload.AddressList.Select(p => p.EndPoint).Where(
+                p => p.Port != Config.Instance.Network.TcpPort || !Config.Instance.LocalAddresses.Contains(p.Address));
+            IPEndPoint[] peers = (em.Count() > 0) ? em.ToArray() : new IPEndPoint[0];
             if (0 < peers.Length)
                 PeersReceivedCallback?.Invoke(this, peers);
         }
@@ -295,7 +296,7 @@ namespace Mineral.Network
             if (!await SendMessageAsync(Message.Create(Message.CommandName.Version, VersionPayload.Create(port, _localNode.NodeID))))
                 return;
 
-            Message message = await ReceiveMessageAsync(HalfMinute);
+            Message message = await ReceiveMessageAsync(TimeSpan.FromMinutes(5));
             if (message == null)
                 return;
 
@@ -319,6 +320,14 @@ namespace Mineral.Network
                 return;
             }
 
+            // 이미 있는 노드이거나 블럭된 노드이면 Disconnect
+            if (_localNode.HasNode(this, true))
+            {
+                await SendMessageAsync(Message.Create(Message.CommandName.Verack, VerackPayload.Create(_localNode.NodeID)));
+                Disconnect(false, false);
+                return;
+            }
+
             if (ListenerEndPoint != null)
             {
                 if (ListenerEndPoint.Port != Version.Port)
@@ -338,15 +347,10 @@ namespace Mineral.Network
                 return;
             }
 
-            if (_localNode.HasNode(this, true))
-            {
-                Disconnect(false, false);
-                return;
-            }
 #if DEBUG
             Logger.Log("Version : " + ListenerEndPoint + ", " + Version.NodeID);
 #endif
-            if (!await SendMessageAsync(Message.Create(Message.CommandName.Verack)))
+            if (!await SendMessageAsync(Message.Create(Message.CommandName.Verack, VerackPayload.Create(_localNode.NodeID))))
                 return;
 
             message = await ReceiveMessageAsync(HalfMinute);
@@ -359,12 +363,11 @@ namespace Mineral.Network
                 return;
             }
 
-            //if (Blockchain.Instance.CurrentHeaderHeight < Version.Height)
-            //	EnqueueMessage(Message.CommandName.RequestHeaders, GetBlocksPayload.Create(Blockchain.Instance.CurrentHeaderHash));
+            VerackPayload verack = message.Payload.Serializable<VerackPayload>();
 
             NetworkSendProcessAsyncLoop();
 
-            lock (_localNode.syncEvent)
+            lock (_localNode._scLock)
             {
                 if (Blockchain.Instance.CurrentBlockHeight >= Version.Height + 1)
                     _localNode.isSyncing = false;
