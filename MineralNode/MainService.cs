@@ -46,6 +46,7 @@ namespace MineralNode
 
         public bool InitConfig()
         {
+            Logger.Log("---------- MainService Initialize Start ----------");
             string path = option.Default.ConfigDir ?? "./config.json";
             return Config.Instance.Initialize(path);
         }
@@ -175,7 +176,6 @@ namespace MineralNode
         {
             bool result = true;
             Logger.WriteConsole = true;
-            Logger.Log("---------- MainService Initialize Start ----------");
 
             if (result) result = InitOption(args);
             if (result) result = InitConfig();
