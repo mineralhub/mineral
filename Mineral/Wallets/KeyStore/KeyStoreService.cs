@@ -68,7 +68,7 @@ namespace Mineral.Wallets.KeyStore
                 },
             };
 
-            string json = JsonConvert.SerializeObject(keystore);
+            string json = JsonConvert.SerializeObject(keystore, Formatting.Indented);
             using (var file = File.CreateText(path))
             {
                 file.Write(json);

@@ -2,6 +2,7 @@
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Mineral.Cryptography;
 using Mineral.Wallets;
+using Mineral.Wallets.KeyStore;
 using System.Text;
 
 namespace Mineral.UnitTests
@@ -46,6 +47,17 @@ namespace Mineral.UnitTests
         public void ValidAddress()
         {
             WalletAccount.IsAddress(_account.Address).Should().BeTrue();
+        }
+
+        [TestMethod]
+        public void MakeKeyStoreFile()
+        {
+            string path = "mineral.keystore";
+            string password = "1";
+            byte[] privatekey = Encoding.Default.GetBytes("mineral");
+
+            WalletAccount account = new WalletAccount(Mineral.Cryptography.Helper.SHA256(privatekey));
+            KeyStoreService.GenerateKeyStore(path, password, account.Key.PrivateKeyBytes, account.Address).Should().BeTrue();
         }
     }
 }
