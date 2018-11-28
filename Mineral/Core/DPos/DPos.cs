@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 
 namespace Mineral.Core.DPos
 {
@@ -25,15 +26,11 @@ namespace Mineral.Core.DPos
 
         public UInt160 GetTurn(int height)
         {
-            int remain = RemainUpdate(height);
-            if (remain < 0)
-                return null;
-
             return _table[(height - UpdateHeight) % Count];
         }
     }
 
-    public class DPos: Proof
+    public class DPos : Proof
     {
         public DelegateTurnTable TurnTable { get; protected set; }
 
@@ -42,9 +39,74 @@ namespace Mineral.Core.DPos
             TurnTable = new DelegateTurnTable();
         }
 
-        public int CalcBlockTime(int genesisBlockTime, long height)
+        public int CalcBlockTime(int height)
         {
-            return genesisBlockTime + (int)height * Config.Instance.Block.NextBlockTimeSec;
+            return Config.Instance.GenesisBlock.Timestamp + height * Config.Instance.Block.NextBlockTimeSec;
+        }
+
+        public override int CalcBlockHeight(int time)
+        {
+            return (time - Config.Instance.GenesisBlock.Timestamp) / Config.Instance.Block.NextBlockTimeSec;
+        }
+
+        public override int GetCreateBlockCount(UInt160 addr, int height)
+        {
+            int targetHeight = CalcBlockHeight(DateTime.UtcNow.ToTimestamp());
+            if (TurnTable.GetTurn(targetHeight) == addr)
+            {
+                int remain = TurnTable.RemainUpdate(height);
+                if (remain < targetHeight - height)
+                    return remain;
+                return targetHeight - height;
+            }
+            return 0;
+        }
+
+        public override int RemainUpdate(int height)
+        {
+            return TurnTable.RemainUpdate(height);
+        }
+
+        public override void Update(Blockchain chain)
+        {
+            int currentHeight = chain.CurrentBlockHeight;
+            UpdateTurnTable(chain, chain.GetBlock(currentHeight - currentHeight % Config.Instance.RoundBlock));
+        }
+
+        private void UpdateTurnTable(Blockchain chain, Block block)
+        {
+            // calculate turn table
+            List<DelegateState> delegates = chain.GetDelegateStateAll();
+            delegates.Sort((x, y) =>
+            {
+                var valueX = x.Votes.Sum(p => p.Value).Value;
+                var valueY = y.Votes.Sum(p => p.Value).Value;
+                if (valueX == valueY)
+                {
+                    if (x.AddressHash < y.AddressHash)
+                        return -1;
+                    else
+                        return 1;
+                }
+                else if (valueX < valueY)
+                    return -1;
+                return 1;
+            });
+
+            int delegateRange = Config.Instance.MaxDelegate < delegates.Count ? Config.Instance.MaxDelegate : delegates.Count;
+            List<UInt160> addrs = new List<UInt160>();
+            for (int i = 0; i < delegateRange; ++i)
+                addrs.Add(delegates[i].AddressHash);
+
+            TurnTable.SetTable(addrs);
+            TurnTable.SetUpdateHeight(block.Height);
+            chain.PersistTurnTable(addrs, block.Height);
+        }
+
+        public override void SetTurnTable(TurnTableState state)
+        {
+            TurnTable.SetTable(state.addrs);
+            TurnTable.SetUpdateHeight(state.turnTableHeight);
         }
     }
 }

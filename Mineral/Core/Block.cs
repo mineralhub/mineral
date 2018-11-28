@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq;
 using Newtonsoft.Json.Linq;
 using Mineral.Cryptography;
+using System.Text;
 
 namespace Mineral.Core
 {
@@ -93,6 +94,10 @@ namespace Mineral.Core
             if (Header.Verify() == false)
                 return false;
             if (Transactions.Count == 0)
+                return false;
+            if (Transactions[0].Type != eTransactionType.RewardTransaction)
+                return false;
+            if (1 < Transactions.Where(p => p.Type == eTransactionType.RewardTransaction).Count())
                 return false;
             if (Header.MerkleRoot != new MerkleTree(Transactions.Select(p => p.Hash).ToArray()).RootHash)
                 return false;

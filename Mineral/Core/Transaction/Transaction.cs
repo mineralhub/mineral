@@ -166,7 +166,7 @@ namespace Mineral.Core
         public bool VerifyBlockchain(Storage storage = null)
         {
             if (storage == null)
-                storage = Blockchain.Instance.storage;
+                storage = Blockchain.Instance.Storage;
 
             if (storage.GetTransaction(Hash) != null)
             {

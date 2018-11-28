@@ -14,7 +14,7 @@ namespace Mineral.Core
             get 
             {
                 if (_reference == null)
-                    _reference = Blockchain.Instance.storage.GetTransaction(SignTxHash).Data as OtherSignTransaction;
+                    _reference = Blockchain.Instance.Storage.GetTransaction(SignTxHash).Data as OtherSignTransaction;
 
                 return _reference;
             }
@@ -44,7 +44,7 @@ namespace Mineral.Core
             if (!base.VerifyBlockchain(storage))
                 return false;
 
-            Transaction tx = Blockchain.Instance.storage.GetTransaction(SignTxHash);
+            Transaction tx = Blockchain.Instance.Storage.GetTransaction(SignTxHash);
             if (tx == null || tx.Type != eTransactionType.OtherSignTransaction)
                 return false;
 

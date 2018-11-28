@@ -1,11 +1,43 @@
 ﻿using Mineral.Database.LevelDB;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace Mineral.Core
 {
     public abstract class Blockchain : IDisposable
     {
+        protected class CacheBlocks
+        {
+            LinkedList<Block> _blocks = new LinkedList<Block>();
+            int _capacity = 1024;
+
+            public void SetCapacity(int capacity) { _capacity = capacity; }
+            public void Add(Block block)
+            {
+                lock (_blocks)
+                {
+                    _blocks.AddLast(block);
+                    if (_capacity < _blocks.Count)
+                        _blocks.RemoveFirst();
+                }
+            }
+            public Block GetBlock(int height)
+            {
+                Block retval = null;
+                lock (_blocks)
+                    retval = _blocks.SingleOrDefault(p => p.Height == height);
+                return retval;
+            }
+            public Block GetBlock(UInt256 hash)
+            {
+                Block retval = null;
+                lock (_blocks)
+                    retval = _blocks.SingleOrDefault(p => p.Hash == hash);
+                return retval;
+            }
+        }
+
         public enum BLOCK_ERROR
         {
             E_NO_ERROR = 0,
@@ -20,6 +52,15 @@ namespace Mineral.Core
         {
             _instance = chain;
         }
+
+        protected Proof _proof;
+        public Proof Proof => _proof;
+        public void SetProof(Proof proof)
+        {
+            _proof = proof;
+        }
+
+        protected CacheBlocks _cacheBlocks = new CacheBlocks();
 
         public object PersistLock { get; } = new object();
         public event EventHandler<Block> PersistCompleted;
@@ -48,12 +89,8 @@ namespace Mineral.Core
         public abstract Block GetNextBlock(UInt256 hash);
         public abstract bool VerityBlock(Block block);
 
-        public abstract Storage storage { get; }
-
-        //public Transaction GetTransaction(UInt256 hash)
-        //{
-        //    return GetTransaction(hash, out _);
-        //}
+        protected abstract Storage _storage { get; }
+        public Storage Storage => _storage;
 
         public bool HasTransactionPool(UInt256 hash)
         {
@@ -78,7 +115,7 @@ namespace Mineral.Core
                     return false;
                 if (_txPool.ContainsKey(tx.Hash))
                     return false;
-                if (storage.GetTransaction(tx.Hash) != null)
+                if (_storage.GetTransaction(tx.Hash) != null)
                     return false;
                 _rxPool.Add(tx.Hash, tx);
                 return true;
@@ -149,9 +186,6 @@ namespace Mineral.Core
             }
         }
 
-        //public abstract Transaction GetTransaction(UInt256 hash, out int height);
-        //public abstract AccountState GetAccountState(UInt160 addressHash);
-
         public abstract List<DelegateState> GetDelegateStateAll();
         public abstract List<DelegateState> GetDelegateStateMakers();
 
@@ -164,7 +198,6 @@ namespace Mineral.Core
         public abstract void NormalizeTransactions(ref List<Transaction> txs);
         public abstract void PersistTurnTable(List<UInt160> addrs, int height);
         public abstract TurnTableState GetTurnTable(int height);
-        public abstract UInt160 GetTurn();
-        public abstract void UpdateTurnTable();
+        public void SetCacheBlockCapacity(int capacity) { _cacheBlocks.SetCapacity(capacity); }
     }
 }

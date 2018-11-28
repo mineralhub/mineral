@@ -79,7 +79,11 @@ namespace Mineral.Network
             }
             catch (ArgumentException) { }
             catch (ObjectDisposedException) { }
-            catch (Exception ex) when (ex is FormatException || ex is IOException || ex is OperationCanceledException)
+            catch (OperationCanceledException)
+            {
+                Disconnect(false, true);
+            }
+            catch (Exception ex) when (ex is FormatException || ex is IOException)
             {
                 Disconnect(false);
             }
@@ -96,15 +100,19 @@ namespace Mineral.Network
                 return false;
 
             byte[] buf = message.ToArray();
-            CancellationTokenSource source = new CancellationTokenSource(10000);
-            source.Token.Register(() => Disconnect(false));
+            CancellationTokenSource source = new CancellationTokenSource(TimeSpan.FromSeconds(5));
+            source.Token.Register(() => Disconnect(false, true));
             try
             {
                 await _stream.WriteAsync(buf, 0, buf.Length, source.Token);
                 return true;
             }
             catch (ObjectDisposedException) { }
-            catch (Exception ex) when (ex is IOException || ex is OperationCanceledException)
+            catch(OperationCanceledException)
+            {
+                Disconnect(false, true);
+            }
+            catch (Exception ex) when (ex is IOException)
             {
                 Disconnect(false);
             }

@@ -11,7 +11,6 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.ResponseCompression;
 using Microsoft.Extensions.DependencyInjection;
 using Newtonsoft.Json.Linq;
-using Mineral.Core;
 using System.Collections.Generic;
 using Mineral.Network.RPC.Command;
 
@@ -189,13 +188,18 @@ namespace Mineral.Network.RPC
             return response;
         }
 
-        public void Start(ushort port, string sslCert = null, string password = null)
+        public void Start(ushort port, long maxBodySize = 10 * 1024, string sslCert = null, string password = null)
         {
-            _host = new WebHostBuilder().UseKestrel(options => options.Listen(IPAddress.Any, port, listenOptions =>
-            {
-                if (!string.IsNullOrEmpty(sslCert))
-                    listenOptions.UseHttps(sslCert, password);
-            }))
+            _host = new WebHostBuilder().UseKestrel(options =>
+                {
+                    options.Listen(IPAddress.Any, port, listenOptions =>
+                    {
+                        if (!string.IsNullOrEmpty(sslCert))
+                            listenOptions.UseHttps(sslCert, password);
+                    });
+                    options.Limits.MaxRequestBodySize = maxBodySize;
+                }                
+            )
             .Configure(app =>
             {
                 app.UseResponseCompression();
@@ -216,6 +220,6 @@ namespace Mineral.Network.RPC
             })
             .Build();
             _host.Start();
-        }
+}
     }
 }

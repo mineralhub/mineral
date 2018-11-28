@@ -88,7 +88,7 @@ namespace Mineral.Network.RPC.Command
 
         public static JObject OnGetTransaction(object obj, JArray parameters)
         {
-            Transaction tx = Blockchain.Instance.storage.GetTransaction(UInt256.FromHexString(parameters[0].Value<string>()));
+            Transaction tx = Blockchain.Instance.Storage.GetTransaction(UInt256.FromHexString(parameters[0].Value<string>()));
             return tx.ToJson();
         }
     }

@@ -94,4 +94,36 @@ namespace Mineral.Network.Payload
             writer.Write(Height);
         }
     }
+
+    public class VerackPayload : ISerializable
+    {
+        public Guid NodeID;
+
+        public int Size => 16/*Guid bytes*/;
+
+        public static VerackPayload Create(Guid _guid)
+        {
+            return new VerackPayload
+            {
+                NodeID = _guid
+            };
+        }
+
+        public void Deserialize(BinaryReader reader)
+        {
+            try
+            {
+                NodeID = new Guid(reader.ReadBytes(16));
+            }
+            catch (Exception e)
+            {
+                throw e;
+            }
+        }
+
+        public void Serialize(BinaryWriter writer)
+        {
+            writer.Write(NodeID.ToByteArray());
+        }
+    }
 }
