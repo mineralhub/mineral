@@ -13,9 +13,9 @@
     <ProjectReference Include="..\Mineral\Mineral.csproj" />
   </ItemGroup>
 
-  <Target Name="PreBuild" BeforeTargets="PreBuildEvent">
-    <Exec Command="copy /y $(ProjectDir)config.json $(TargetDir)config.json" Condition=" '$(OS)' == 'Windows_NT' " />
-    <Exec Command="cp $(ProjectDir)config.json $(TargetDir)config.json" Condition=" '$(OS)' != 'Windows_NT' " />
+  <Target Name="PostBuild" AfterTargets="PostBuildEvent">
+    <Exec Command="if not exist &quot;$(TargetDir)config.json&quot; copy &quot;$(ProjectDir)config.json&quot; &quot;$(TargetDir)config.json&quot;" Condition=" '$(OS)' == 'Windows_NT' " />
+    <Exec Command="[ -f $(TargetDir)config.json ] || cp $(ProjectDir)config.json $(TargetDir)config.json" Condition=" '$(OS)' != 'Windows_NT' " />
   </Target>
 
 </Project>
