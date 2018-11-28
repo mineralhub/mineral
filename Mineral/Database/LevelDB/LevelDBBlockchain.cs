@@ -7,6 +7,7 @@ using System.Threading;
 using Mineral;
 using Mineral.Core;
 using System.Text;
+using Mineral.Wallets;
 
 namespace Mineral.Database.LevelDB
 {
@@ -351,8 +352,8 @@ namespace Mineral.Database.LevelDB
 
         public override bool VerityBlock(Block block)
         {
-            Snapshot _snap = _db.GetSnapshot();
-            Storage storage = Storage.NewStorage(_db, new ReadOptions() { Snapshot = _snap });
+            Snapshot snapshot = _db.GetSnapshot();
+            Storage storage = Storage.NewStorage(_db, new ReadOptions() { Snapshot = snapshot });
 
             List<Transaction> errList = new List<Transaction>();
 
@@ -456,7 +457,7 @@ namespace Mineral.Database.LevelDB
                 }
             }
             storage.Dispose();
-            _snap.Dispose();
+            snapshot.Dispose();
             if (errList.Count == 0)
                 return true;
             var list = block.Transactions.Except(errList);
