@@ -35,7 +35,7 @@ namespace Mineral
         [JsonProperty("cache_capacity")]
         public int CacheCapacity { get; set; }
         [JsonProperty("syncCheck")]
-        public bool syncCheck { get; set; }
+        public bool syncCheck { get; set; } = true;
     }
 
     [ConfigClass]

@@ -54,9 +54,7 @@ namespace Mineral.Network
 
         public LocalNode()
         {
-            if (!Config.Instance.Block.syncCheck)
-                isSyncing = false;
-
+            isSyncing = Config.Instance.Block.syncCheck;
             _connectThread = new Thread(ConnectToPeersLoop)
             {
                 IsBackground = true,
@@ -303,10 +301,12 @@ namespace Mineral.Network
             lastAddHash = Blockchain.Instance.CurrentBlockHash;
 
             if (isSyncing)
+            {
                 lock (_scLock)
                 {
                     syncCounter++;
                 }
+            }
             swTimeout.Start();
 
             while (!_cancelTokenSource.IsCancellationRequested)
