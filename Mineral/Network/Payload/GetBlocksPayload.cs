@@ -31,4 +31,34 @@ namespace Mineral.Network.Payload
             writer.WriteSerializable(HashStop);
         }
     }
+
+    internal class GetBlocksFromHeightPayload : ISerializable
+    {
+        public int Start { get; private set; }
+        public int End { get; private set; }
+
+        public int Size => sizeof(int) + sizeof(int);
+
+        public static GetBlocksFromHeightPayload Create(int start, int end = 0)
+        {
+            return new GetBlocksFromHeightPayload
+            {
+                Start = start,
+                End = end
+            };
+        }
+
+        public void Deserialize(BinaryReader reader)
+        {
+            Start = reader.ReadInt32();
+            End = reader.ReadInt32();
+
+        }
+
+        public void Serialize(BinaryWriter writer)
+        {
+            writer.Write(Start);
+            writer.Write(End);
+        }
+    }
 }

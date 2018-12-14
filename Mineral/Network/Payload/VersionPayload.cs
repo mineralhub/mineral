@@ -61,17 +61,14 @@ namespace Mineral.Network.Payload
 
     public class PingPayload : ISerializable
     {
-        public int Timestamp;
-        public int Height;
+        public long Timestamp;
+        public int Size => sizeof(long);
 
-        public int Size => sizeof(int) + sizeof(int);
-
-        public static VersionPayload Create()
+        public static PingPayload Create()
         {
-            return new VersionPayload
+            return new PingPayload
             {
-                Timestamp = DateTime.Now.ToTimestamp(),
-                Height = Core.Blockchain.Instance.CurrentBlockHeight,
+                Timestamp = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds(),
             };
         }
 
@@ -79,8 +76,7 @@ namespace Mineral.Network.Payload
         {
             try
             {
-                Timestamp = reader.ReadInt32();
-                Height = reader.ReadInt32();
+                Timestamp = reader.ReadInt64();
             }
             catch (Exception e)
             {
@@ -91,6 +87,47 @@ namespace Mineral.Network.Payload
         public void Serialize(BinaryWriter writer)
         {
             writer.Write(Timestamp);
+        }
+    }
+
+    public class PongPayload : ISerializable
+    {
+        public long Ping;
+        public long Pong;
+        public int Height;
+
+        public int Size => sizeof(long) + sizeof(long) + sizeof(int);
+        public long LatencyMs => Pong - Ping;
+
+        public static PongPayload Create(long pingtime, int height)
+        {
+            return new PongPayload
+            {
+                Ping = pingtime,
+                Pong = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds(),
+                Height = height
+            };
+        }
+
+        public void Deserialize(BinaryReader reader)
+        {
+            try
+            {
+                Ping = reader.ReadInt64();
+                Pong = reader.ReadInt64();
+                Height = reader.ReadInt32();
+            }
+            catch (Exception e)
+            {
+                Logger.Log("deserialize PongPayload Exception.");
+                throw e;
+            }
+        }
+
+        public void Serialize(BinaryWriter writer)
+        {
+            writer.Write(Ping);
+            writer.Write(Pong);
             writer.Write(Height);
         }
     }

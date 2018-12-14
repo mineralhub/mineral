@@ -87,6 +87,7 @@ namespace Mineral.Core
         public abstract Block GetBlock(UInt256 hash);
         public abstract Block GetBlock(int height);
         public abstract Block GetNextBlock(UInt256 hash);
+        public abstract List<Block> GetBlocks(int start, int end);
         public abstract bool VerityBlock(Block block);
 
         protected abstract Storage _storage { get; }

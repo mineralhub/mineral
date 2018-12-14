@@ -15,9 +15,6 @@ using Mineral.Wallets.KeyStore;
 using System.IO;
 using Newtonsoft.Json.Linq;
 using Newtonsoft.Json;
-using System.Reflection;
-using MineralNode.CommandLine;
-using MineralNode.CommandLine.Attributes;
 
 namespace MineralNode
 {
@@ -196,7 +193,7 @@ namespace MineralNode
                     if (!_account.IsDelegate())
                         break;
 
-                    if (_node.isSyncing)
+                    if (_node._isSyncing)
                         break;
 
                     int numCreate = Blockchain.Instance.Proof.GetCreateBlockCount(

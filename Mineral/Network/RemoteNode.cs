@@ -12,6 +12,31 @@ namespace Mineral.Network
 {
     public abstract class RemoteNode : IDisposable
     {
+        struct PingPong 
+        {
+            public static readonly int LoopTimeSecond = 10;
+
+            public long LatencyMs { get; private set; }
+            public bool Waiting { get; private set; }
+            public int LastPongTime { get; private set; }
+
+            public void Ping()
+            {
+                Waiting = true;
+            }
+
+            public void Pong(PongPayload payload)
+            {
+                LatencyMs = payload.LatencyMs;
+                Waiting = false;
+                LastPongTime = DateTime.UtcNow.ToTimestamp();
+            }
+
+            public bool IsCheckTime => 
+                Waiting == false 
+                && LastPongTime + LoopTimeSecond <= DateTime.UtcNow.ToTimestamp();
+        }
+
         protected LocalNode _localNode;
 
         private static readonly TimeSpan HalfMinute = TimeSpan.FromSeconds(30);
@@ -23,13 +48,14 @@ namespace Mineral.Network
 
         private Queue<Message> _messageQueueHigh = new Queue<Message>();
         private Queue<Message> _messageQueueLow = new Queue<Message>();
-        public long pingOutTime = 0;
-        public long pingTime = 86400000;
         public bool IsConnected => _connected == 1 ? true : false;
         protected int _connected;
         public VersionPayload Version { get; private set; }
         public IPEndPoint RemoteEndPoint { get; protected set; }
         public IPEndPoint ListenerEndPoint { get; protected set; }
+
+        PingPong _pingpong = new PingPong();
+        public long Latency => _pingpong.LatencyMs;
 
         public RemoteNode(LocalNode node, IPEndPoint remoteEndPoint = null)
         {
@@ -172,6 +198,15 @@ namespace Mineral.Network
             EnqueueMessage(Message.CommandName.ResponseBlocks, BlocksPayload.Create(blocks));
         }
 
+        private void ReceivedRequestBlocksFromHeight(GetBlocksFromHeightPayload payload)
+        {
+            if (!_localNode.IsServiceEnable)
+                return;
+
+            List<Block> blocks = Blockchain.Instance.GetBlocks(payload.Start, payload.End == 0 ? payload.Start + BlocksPayload.MaxCount : payload.End);
+            EnqueueMessage(Message.CommandName.ResponseBlocks, BlocksPayload.Create(blocks));
+        }
+
         private void ReceivedResponseBlocks(BlocksPayload payload)
         {
             if (!_localNode.IsServiceEnable)
@@ -212,15 +247,15 @@ namespace Mineral.Network
                     break;
 
                 case Message.CommandName.Ping:
-                    EnqueueMessage(Message.CommandName.Pong, PingPayload.Create());
+                    PingPayload ping = message.Payload.Serializable<PingPayload>();
+                    EnqueueMessage(Message.CommandName.Pong, PongPayload.Create(ping.Timestamp, Blockchain.Instance.CurrentBlockHeight));
                     break;
 
                 case Message.CommandName.Pong:
                     {
-                        pingTime = DateTime.Now.ToTimestamp() - pingOutTime;
-                        PingPayload pong = message.Payload.Serializable<PingPayload>();
-                        Version.Timestamp = pong.Timestamp;
+                        PongPayload pong = message.Payload.Serializable<PongPayload>();
                         Version.Height = pong.Height;
+                        _pingpong.Pong(pong);
                     }
                     break;
 
@@ -235,6 +270,9 @@ namespace Mineral.Network
                     break;
                 case Message.CommandName.RequestBlocks:
                     ReceivedRequestBlocks(message.Payload.Serializable<GetBlocksPayload>());
+                    break;
+                case Message.CommandName.RequestBlocksFromHeight:
+                    ReceivedRequestBlocksFromHeight(message.Payload.Serializable<GetBlocksFromHeightPayload>());
                     break;
                 case Message.CommandName.ResponseHeaders:
                     break;
@@ -284,6 +322,22 @@ namespace Mineral.Network
                 {
                     await SendMessageAsync(message);
                 }
+            }
+        }
+
+        private async void PingPongAsyncLoop()
+        {
+#if !NET47
+            await Task.Yield();
+#endif
+            while (IsConnected)
+            {
+                if (_pingpong.IsCheckTime) 
+                {
+                    _pingpong.Ping();
+                    EnqueueMessage(Message.CommandName.Ping, PingPayload.Create());
+                }
+                Thread.Sleep(100);
             }
         }
 
@@ -366,12 +420,10 @@ namespace Mineral.Network
             VerackPayload verack = message.Payload.Serializable<VerackPayload>();
 
             NetworkSendProcessAsyncLoop();
+            PingPongAsyncLoop();
 
-            lock (_localNode._scLock)
-            {
-                if (Blockchain.Instance.CurrentBlockHeight >= Version.Height + 1)
-                    _localNode.isSyncing = false;
-            }
+            if (Blockchain.Instance.CurrentBlockHeight >= Version.Height + 1)
+                _localNode._isSyncing = false;
 
             while (IsConnected)
             {
@@ -386,7 +438,8 @@ namespace Mineral.Network
                 }
                 catch (EndOfStreamException e)
                 {
-                    Logger.Log(e.Message);
+
+                    Logger.Log(e.Message + "\n" + e.StackTrace);
                     Disconnect(false);
                     break;
                 }
@@ -396,12 +449,6 @@ namespace Mineral.Network
                     break;
                 }
             }
-        }
-
-        public void SendPing()
-        {
-            pingOutTime = DateTime.Now.ToTimestamp();
-            EnqueueMessage(Message.CommandName.Ping);
         }
     }
 }

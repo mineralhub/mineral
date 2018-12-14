@@ -288,6 +288,19 @@ namespace Mineral.Database.LevelDB
             return GetBlock(block.Height + 1);
         }
 
+        public override List<Block> GetBlocks(int start, int end)
+        {
+            List<Block> blocks = new List<Block>();
+            for (int i = start; i < end; ++i)
+            {
+                Block block = GetBlock(i);
+                if (block == null)
+                    break;
+                blocks.Add(block);
+            }
+            return blocks;
+        }
+
         public override List<DelegateState> GetDelegateStateAll()
         {
             return new List<DelegateState>(_db.Find<DelegateState>(ReadOptions.Default, DataEntryPrefix.ST_Delegate));

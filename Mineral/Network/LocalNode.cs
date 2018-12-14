@@ -40,12 +40,9 @@ namespace Mineral.Network
         private Stopwatch swPing = new Stopwatch();
         public UInt256 lastAddHash = UInt256.Zero;
         public int lastAddHeight = 0;
-        public bool isSyncing = true;
+        public bool _isSyncing = true;
         public List<KeyValuePair<Guid, Block>> broadcastBlocks = new List<KeyValuePair<Guid, Block>>();
         private readonly object _respLock = new Object();
-        public readonly object _scLock = new Object();
-        public ulong syncCounter = 0;
-        //public AutoResetEvent syncEvent = new AutoResetEvent(false);
 
         public long lastBlockTime = 0;
         public long LastTime { get { return swPing.ElapsedMilliseconds; } }
@@ -54,18 +51,20 @@ namespace Mineral.Network
 
         public LocalNode()
         {
-            isSyncing = Config.Instance.Block.syncCheck;
+            _isSyncing = Config.Instance.Block.syncCheck;
             _connectThread = new Thread(ConnectToPeersLoop)
             {
                 IsBackground = true,
                 Name = "Mineral.LocalNode.ConnectToPeersLoop"
             };
-            _syncThread = new Thread(SyncBlocks)
+            if (_isSyncing) 
             {
-                IsBackground = true,
-                Name = "Mineral.LocalNode.SyncBlocks"
-            };
-
+                _syncThread = new Thread(SyncBlocks)
+                {
+                    IsBackground = true,
+                    Name = "Mineral.LocalNode.SyncBlocks"
+                };
+            }
         }
 
         public void Dispose()
@@ -102,7 +101,8 @@ namespace Mineral.Network
                             }
                         }
                         _connectThread.Start();
-                        _syncThread.Start();
+                        if (_syncThread != null)
+                            _syncThread.Start();
 
                         if (0 < tcpPort)
                         {
@@ -181,7 +181,6 @@ namespace Mineral.Network
                         {
                             foreach (RemoteNode node in _connectedPeers)
                             {
-                                node.pingOutTime = LastTime;
                                 node.RequestAddrs();
                             }
                         }
@@ -218,168 +217,64 @@ namespace Mineral.Network
 
         public bool AddBroadcastBlocks(List<Block> blocks, RemoteNode node)
         {
-            lock (_respLock)
-            {
-                foreach (Block block in blocks)
-                {
-                    if (block.Height == Blockchain.Instance.CurrentBlockHeight + 1 && Blockchain.Instance.CurrentBlockHash == block.Header.PrevHash)
-                        isSyncing = false;
-                }
-
-                if (!isSyncing)
-                {
-                    foreach (Block block in blocks)
-                    {
-#if DEBUG
-                        Logger.Log("[AddBroadcastBlocks] Block height: " + block.Height);
-#endif
-                        if (block.Height < Blockchain.Instance.CurrentBlockHeight + 1)
-                            continue;
-
-                        Blockchain.BLOCK_ERROR eRET = Blockchain.Instance.AddBlock(block);
-                        if (eRET != Blockchain.BLOCK_ERROR.E_NO_ERROR)
-                        {
-                            if (eRET == Blockchain.BLOCK_ERROR.E_ERROR_HEIGHT)
-                            {
-                                isSyncing = true;
-                                return true;
-                            }
-                            Logger.Log("[AddBroadcastBlocks] Blockchain.Instance.AddBlock(block) failed. : " + eRET);
-                            return false;
-                        }
-                    }
-                    return true;
-                }
-                else
-                {
-                    foreach (Block block in blocks)
-                    {
-                        Blockchain.Instance.AddTxPool(block.Transactions);
-                        broadcastBlocks.Add(new KeyValuePair<Guid, Block>(node.Version.NodeID, block));
-                    }
-
-                    if (broadcastBlocks.Count > 2000)
-                        broadcastBlocks.RemoveRange(0, 1000);
-                }
+            if (_isSyncing)
                 return true;
+
+            foreach (Block block in blocks)
+            {
+                Blockchain.BLOCK_ERROR err = Blockchain.Instance.AddBlock(block);
+                if (err != Blockchain.BLOCK_ERROR.E_NO_ERROR)
+                    Logger.Log("[error] AddBroadcastBlocks failed. error : " + err);
             }
+            return true;
         }
 
         public bool AddResponseBlocks(List<Block> blocks, RemoteNode node)
         {
-            UInt256 firstPrevHash = UInt256.Zero;
-            lock (_respLock)
+            foreach (Block block in blocks)
             {
-                if (!isSyncing)
-                    return true;
-
-                if (broadcastBlocks.Count > 0)
-                    firstPrevHash = broadcastBlocks.First().Value.Header.PrevHash;
-
-                foreach (Block block in blocks)
+                Blockchain.BLOCK_ERROR eRET = Blockchain.Instance.AddBlock(block);
+                if (eRET != Blockchain.BLOCK_ERROR.E_NO_ERROR)
                 {
-                    Blockchain.BLOCK_ERROR eRET = Blockchain.Instance.AddBlock(block);
-                    if (eRET != Blockchain.BLOCK_ERROR.E_NO_ERROR)
-                    {
-                        Logger.Log("Blockchain.Instance.AddBlock(block) failed. : " + eRET);
-                        return false;
-                    }
-                    lastAddHash = block.Hash;
+                    Logger.Log("Blockchain.Instance.AddBlock(block) failed. : " + eRET);
+                    continue;
                 }
-                lock (_scLock)
-                {
-                    syncCounter++;
-                }
+                lastAddHash = block.Hash;
             }
             return true;
         }
 
         private void SyncBlocks()
         {
-            Stopwatch swTimeout = new Stopwatch();
-            long lastPing = 0;
             lastAddHash = Blockchain.Instance.CurrentBlockHash;
-
-            if (isSyncing)
-            {
-                lock (_scLock)
-                {
-                    syncCounter++;
-                }
-            }
-            swTimeout.Start();
-
-            while (!_cancelTokenSource.IsCancellationRequested)
+            while (!_cancelTokenSource.IsCancellationRequested && _isSyncing)
             {
                 int connectedCount = 0;
                 lock (_connectedPeers)
                     connectedCount = _connectedPeers.Count;
 
                 int syncHeight = Blockchain.Instance.Proof.CalcBlockHeight(DateTime.UtcNow.ToTimestamp());
-                int diffHeight = syncHeight - Blockchain.Instance.CurrentBlockHeight;
+                int localHeight = Blockchain.Instance.CurrentBlockHeight;
+                if (connectedCount == 0)
+                    continue;
 
-                if (isSyncing && diffHeight == 0)
+                if (localHeight < syncHeight - 1
+                    && _isSyncing)
                 {
-                    isSyncing = false;
-                }
-                else if (!isSyncing && diffHeight > Config.Instance.MaxDelegate)
-                {
-                    if (Config.Instance.Block.syncCheck)
-                        isSyncing = true;
-                }
-
-                if (connectedCount > 0)
-                {
-                    bool bSleep = false;
-                    lock (_scLock)
-                    {
-                        bSleep = (syncCounter == 0);
-                        syncCounter = 0;
-                    }
-                    if (bSleep)
-                    {
-                        Thread.Sleep(50);
-                        if (swTimeout.ElapsedMilliseconds < 5000)
-                            continue;
-                    }
-
-                    RemoteNode pingNode = null;
-                    int pingHeight = -1;
-
-                    long nowTimestamp = DateTime.UtcNow.ToTimestamp();
-                    bool bPing = (nowTimestamp - lastPing) >= Config.Instance.Block.NextBlockTimeSec * 1000;
-                    if (bPing)
-                        lastPing = nowTimestamp;
-
                     lock (_connectedPeers)
                     {
-                        foreach (RemoteNode node in _connectedPeers)
-                        {
-                            if (node.Version != null)
-                            {
-                                if (bPing)
-                                    node.SendPing();
-
-                                if (node.Version.Height > pingHeight)
-                                {
-                                    pingHeight = node.Version.Height;
-                                    pingNode = node;
-                                }
-                            }
-                        }
-                    }
-
-                    if (pingNode != null)
-                    {
-                        if (isSyncing)
-                            pingNode.EnqueueMessage(Message.CommandName.RequestBlocks, GetBlocksPayload.Create(lastAddHash));
-                        swTimeout.Restart();
+                        IEnumerable<RemoteNode> nodes = _connectedPeers
+                            .Where(p => 0 < p.Latency)
+                            .OrderBy(p => p.Latency);
+                        if (nodes.Any())
+                            nodes.First().EnqueueMessage(Message.CommandName.RequestBlocksFromHeight, GetBlocksFromHeightPayload.Create(Blockchain.Instance.CurrentHeaderHeight + 1));
                     }
                 }
                 else
                 {
-                    Thread.Sleep(100);
+                    _isSyncing = false;
                 }
+                Thread.Sleep(5000);
             }
         }
 
@@ -531,8 +426,11 @@ namespace Mineral.Network
 
         public void BroadCast(Message.CommandName name, ISerializable payload = null)
         {
-            foreach (RemoteNode node in _connectedPeers)
-                node.EnqueueMessage(name, payload);
+            lock (_connectedPeers)
+            {
+                foreach (RemoteNode node in _connectedPeers)
+                    node.EnqueueMessage(name, payload);
+            }
         }
     }
 }
