@@ -356,6 +356,7 @@ namespace Mineral.Network
 
             if (message.Command != Message.CommandName.Version)
             {
+                Logger.Log("message.Command != Message.CommandName.Version");
                 Disconnect(true);
                 return;
             }
@@ -365,19 +366,21 @@ namespace Mineral.Network
             }
             catch (EndOfStreamException)
             {
+                Logger.Log("exception. VersionPayload EndOfStreamException");
                 Disconnect(false);
                 return;
             }
             catch (FormatException)
             {
+                Logger.Log("exception. VersionPayload FormatException");
                 Disconnect(true);
                 return;
             }
 
-            // 이미 있는 노드이거나 블럭된 노드이면 Disconnect
             if (_localNode.HasNode(this, true))
             {
                 await SendMessageAsync(Message.Create(Message.CommandName.Verack, VerackPayload.Create(_localNode.NodeID)));
+                Logger.Log("_localNode.HasNode");
                 Disconnect(false, false);
                 return;
             }
@@ -386,6 +389,7 @@ namespace Mineral.Network
             {
                 if (ListenerEndPoint.Port != Version.Port)
                 {
+                    Logger.Log("ListenerEndPoint.Port != Version.Port");
                     Disconnect(true, false);
                     return;
                 }
@@ -397,6 +401,7 @@ namespace Mineral.Network
 
             if (_localNode.HasPeer(this))
             {
+                Logger.Log("_localNode.HasPeer");
                 Disconnect(false, false);
                 return;
             }

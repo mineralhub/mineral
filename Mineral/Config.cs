@@ -5,6 +5,8 @@ using System.Net;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using Mineral.Converter;
+using System.Net.NetworkInformation;
+using System.Linq;
 
 namespace Mineral
 {
@@ -143,6 +145,7 @@ namespace Mineral
                         instance.LockTTL = instance.TTLDay;
                         instance.VoteTTL = instance.TTLDay;
                         instance.LocalAddresses = new HashSet<IPAddress>();
+                        instance.LocalAddresses.UnionWith(NetworkInterface.GetAllNetworkInterfaces().SelectMany(p => p.GetIPProperties().UnicastAddresses).Select(p => p.Address.MapToIPv6()));
                         foreach (string addr in instance.Network.SeedList)
                         {
                             IPAddress iaddr;
@@ -171,7 +174,6 @@ namespace Mineral
         }
 
         /*
-        LocalAddresses.UnionWith(NetworkInterface.GetAllNetworkInterfaces().SelectMany(p => p.GetIPProperties().UnicastAddresses).Select(p => p.Address.MapToIPv6()));
         if (Mineral.Network.UPNP.Discovery() && Mineral.Network.UPNP.Enable)
         {
             LocalAddresses.Add(Mineral.Network.UPNP.GetExternalIP());

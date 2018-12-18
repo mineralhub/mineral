@@ -290,10 +290,19 @@ namespace Mineral.Database.LevelDB
 
         public override List<Block> GetBlocks(int start, int end)
         {
-            List<Block> blocks = new List<Block>();
-            for (int i = start; i < end; ++i)
+            List<UInt256> hashes = new List<UInt256>();
+            lock (_headerIndices)
             {
-                Block block = GetBlock(i);
+                if (_headerIndices.Count <= start)
+                    return new List<Block>();
+                if (_headerIndices.Count <= end)
+                    end = _headerIndices.Count;
+                hashes = _headerIndices.GetRange(start, end - start);
+            }
+            List<Block> blocks = new List<Block>();
+            for (int i = 0; i < hashes.Count; ++i)
+            { 
+                Block block = GetBlock(hashes[i]);
                 if (block == null)
                     break;
                 blocks.Add(block);

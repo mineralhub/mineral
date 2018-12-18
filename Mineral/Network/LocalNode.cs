@@ -37,16 +37,12 @@ namespace Mineral.Network
         public Guid NodeID { get { return nodeID; } }
         public Dictionary<Guid, IPEndPoint> NodeSet = new Dictionary<Guid, IPEndPoint>();
 
-        private Stopwatch swPing = new Stopwatch();
         public UInt256 lastAddHash = UInt256.Zero;
         public int lastAddHeight = 0;
         public bool _isSyncing = true;
         public List<KeyValuePair<Guid, Block>> broadcastBlocks = new List<KeyValuePair<Guid, Block>>();
-        private readonly object _respLock = new Object();
 
         public long lastBlockTime = 0;
-        public long LastTime { get { return swPing.ElapsedMilliseconds; } }
-
         public bool IsServiceEnable { get { return !_cancelTokenSource.IsCancellationRequested; } }
 
         public LocalNode()
@@ -85,7 +81,6 @@ namespace Mineral.Network
             {
                 Task.Run(() =>
                 {
-                    swPing.Restart();
                     int tcpPort = Config.Instance.Network.TcpPort;
                     int wsPort = Config.Instance.Network.WsPort;
                     try
@@ -208,11 +203,8 @@ namespace Mineral.Network
 
         public bool AddBroadcastTransactions(List<Transaction> transactions, RemoteNode node)
         {
-            lock (_respLock)
-            {
-                Blockchain.Instance.AddTransactionPool(transactions);
-                return true;
-            }
+            Blockchain.Instance.AddTransactionPool(transactions);
+            return true;
         }
 
         public bool AddBroadcastBlocks(List<Block> blocks, RemoteNode node)
