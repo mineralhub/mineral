@@ -11,7 +11,6 @@ using System.Threading.Tasks;
 using System.Linq;
 using Mineral.Core;
 using Mineral.Network.Payload;
-using System.Diagnostics;
 
 namespace Mineral.Network
 {
@@ -25,35 +24,25 @@ namespace Mineral.Network
         private List<RemoteNode> _validPeers = new List<RemoteNode>();
         private HashSet<IPEndPoint> _waitPeers = new HashSet<IPEndPoint>();
         private HashSet<IPEndPoint> _badPeers = new HashSet<IPEndPoint>();
-        private HashSet<IPEndPoint> _localPoints = new HashSet<IPEndPoint>();
 
         private Thread _connectThread;
         private Thread _syncThread;
 
         private CancellationTokenSource _cancelTokenSource = new CancellationTokenSource();
 
-        private Guid nodeID = Guid.NewGuid();
-
-        public Guid NodeID { get { return nodeID; } }
-        public Dictionary<Guid, IPEndPoint> NodeSet = new Dictionary<Guid, IPEndPoint>();
-
-        public UInt256 lastAddHash = UInt256.Zero;
-        public int lastAddHeight = 0;
-        public bool _isSyncing = true;
-        public List<KeyValuePair<Guid, Block>> broadcastBlocks = new List<KeyValuePair<Guid, Block>>();
-
-        public long lastBlockTime = 0;
+        public bool IsSyncing { get; private set; } = true;
         public bool IsServiceEnable { get { return !_cancelTokenSource.IsCancellationRequested; } }
+        public Guid NodeID { get; } = Guid.NewGuid();
 
         public LocalNode()
         {
-            _isSyncing = Config.Instance.Block.syncCheck;
+            IsSyncing = Config.Instance.Block.syncCheck;
             _connectThread = new Thread(ConnectToPeersLoop)
             {
                 IsBackground = true,
                 Name = "Mineral.LocalNode.ConnectToPeersLoop"
             };
-            if (_isSyncing) 
+            if (IsSyncing) 
             {
                 _syncThread = new Thread(SyncBlocks)
                 {
@@ -209,7 +198,7 @@ namespace Mineral.Network
 
         public bool AddBroadcastBlocks(List<Block> blocks, RemoteNode node)
         {
-            if (_isSyncing)
+            if (IsSyncing)
                 return true;
 
             foreach (Block block in blocks)
@@ -231,15 +220,13 @@ namespace Mineral.Network
                     Logger.Log("Blockchain.Instance.AddBlock(block) failed. : " + eRET);
                     continue;
                 }
-                lastAddHash = block.Hash;
             }
             return true;
         }
 
         private void SyncBlocks()
         {
-            lastAddHash = Blockchain.Instance.CurrentBlockHash;
-            while (!_cancelTokenSource.IsCancellationRequested && _isSyncing)
+            while (!_cancelTokenSource.IsCancellationRequested && IsSyncing)
             {
                 int connectedCount = 0;
                 lock (_connectedPeers)
@@ -251,7 +238,7 @@ namespace Mineral.Network
                     continue;
 
                 if (localHeight < syncHeight - 1
-                    && _isSyncing)
+                    && IsSyncing)
                 {
                     lock (_connectedPeers)
                     {
@@ -264,7 +251,7 @@ namespace Mineral.Network
                 }
                 else
                 {
-                    _isSyncing = false;
+                    IsSyncing = false;
                 }
                 Thread.Sleep(5000);
             }
@@ -350,7 +337,6 @@ namespace Mineral.Network
                         lock (_connectedPeers)
                         {
                             _waitPeers.UnionWith(endPoints);
-                            _waitPeers.ExceptWith(_localPoints);
                             _waitPeers.ExceptWith(_badPeers);
                             _waitPeers.ExceptWith(_connectedPeers.Select(p => p.ListenerEndPoint));
                         }
@@ -376,22 +362,6 @@ namespace Mineral.Network
             {
                 return _connectedPeers.Where(p => p != node && p.ListenerEndPoint != null).Any(
                     p => p.ListenerEndPoint.Address.Equals(node.ListenerEndPoint) && p.Version?.Nonce == node.Version.Nonce);
-            }
-        }
-
-        public bool HasNode(RemoteNode node, bool bAdd = false)
-        {
-            if (NodeID.Equals(node.Version.NodeID))
-                return true;
-
-            lock (NodeSet)
-            {
-                if (NodeSet.ContainsKey(node.Version.NodeID))
-                    return true;
-
-                if (bAdd)
-                    NodeSet.Add(node.Version.NodeID, node.ListenerEndPoint);
-                return false;
             }
         }
 

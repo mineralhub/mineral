@@ -85,18 +85,6 @@ namespace Mineral.Network
 #if DEBUG
                 Logger.Log("OnDisconnected. RemoteEndPoint : " + RemoteEndPoint);
 #endif
-                if (Version != null)
-                {
-                    if (removeNode)
-                    {
-                        lock (_localNode.NodeSet)
-                            _localNode.NodeSet.Remove(Version.NodeID);
-                    }
-                    else
-                    {
-                        Logger.Log("Block node: " + Version.NodeID);
-                    }
-                }
                 DisconnectedCallback?.Invoke(this, error);
             }
         }
@@ -377,14 +365,6 @@ namespace Mineral.Network
                 return;
             }
 
-            if (_localNode.HasNode(this, true))
-            {
-                await SendMessageAsync(Message.Create(Message.CommandName.Verack, VerackPayload.Create(_localNode.NodeID)));
-                Logger.Log("_localNode.HasNode");
-                Disconnect(false, false);
-                return;
-            }
-
             if (ListenerEndPoint != null)
             {
                 if (ListenerEndPoint.Port != Version.Port)
@@ -426,9 +406,6 @@ namespace Mineral.Network
 
             NetworkSendProcessAsyncLoop();
             PingPongAsyncLoop();
-
-            if (Blockchain.Instance.CurrentBlockHeight >= Version.Height + 1)
-                _localNode._isSyncing = false;
 
             while (IsConnected)
             {

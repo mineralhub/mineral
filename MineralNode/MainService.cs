@@ -193,7 +193,7 @@ namespace MineralNode
                     if (!_account.IsDelegate())
                         break;
 
-                    if (_node._isSyncing)
+                    if (_node.IsSyncing)
                         break;
 
                     int numCreate = Blockchain.Instance.Proof.GetCreateBlockCount(
