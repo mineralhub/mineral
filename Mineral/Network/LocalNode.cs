@@ -21,7 +21,6 @@ namespace Mineral.Network
         private TcpListener _tcpListener;
         private IWebHost _wsHost;
         private List<RemoteNode> _connectedPeers = new List<RemoteNode>();
-        private List<RemoteNode> _validPeers = new List<RemoteNode>();
         private HashSet<IPEndPoint> _waitPeers = new HashSet<IPEndPoint>();
         private HashSet<IPEndPoint> _badPeers = new HashSet<IPEndPoint>();
 
