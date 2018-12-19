@@ -115,7 +115,7 @@ namespace MineralNode
                 var txs = new List<Transaction>();
                 foreach (var reward in supplyTxs)
                 {
-                    var tx = new Transaction(eTransactionType.SupplyTransaction,
+                    var tx = new Transaction(TransactionType.SupplyTransaction,
                                     GenesisBlockTimestamp - 1,
                                     reward)
                     {
@@ -132,7 +132,7 @@ namespace MineralNode
                             Name = Encoding.UTF8.GetBytes(p.Name),
                             From = p.Address
                         };
-                        var tx = new Transaction(eTransactionType.RegisterDelegateTransaction,
+                        var tx = new Transaction(TransactionType.RegisterDelegateTransaction,
                                                  GenesisBlockTimestamp - 1,
                                                  register)
                         {
@@ -273,7 +273,7 @@ namespace MineralNode
                 From = _account.AddressHash,
                 To = new Dictionary<UInt160, Fixed8> { { target, value } }
             };
-            var tx = new Transaction(eTransactionType.TransferTransaction, DateTime.UtcNow.ToTimestamp(), trans);
+            var tx = new Transaction(TransactionType.TransferTransaction, DateTime.UtcNow.ToTimestamp(), trans);
             tx.Sign(_account);
             return tx;
         }

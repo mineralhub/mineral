@@ -328,7 +328,7 @@ namespace MineralCLI.Commands
                 To = new Dictionary<UInt160, Fixed8> { { to_address, value } }
             };
 
-            Transaction tx = new Transaction(eTransactionType.TransferTransaction, DateTime.UtcNow.ToTimestamp(), trans);
+            Transaction tx = new Transaction(TransactionType.TransferTransaction, DateTime.UtcNow.ToTimestamp(), trans);
             tx.Sign(Program.Wallet);
 
             JArray param = new JArray(tx.ToArray());
@@ -376,7 +376,7 @@ namespace MineralCLI.Commands
                 LockValue = value
             };
 
-            Transaction tx = new Transaction(eTransactionType.LockTransaction, DateTime.UtcNow.ToTimestamp(), trans);
+            Transaction tx = new Transaction(TransactionType.LockTransaction, DateTime.UtcNow.ToTimestamp(), trans);
             tx.Sign(Program.Wallet);
 
             JArray param = new JArray(tx.ToArray());
@@ -421,7 +421,7 @@ namespace MineralCLI.Commands
                 From = Program.Wallet.AddressHash
             };
 
-            Transaction tx = new Transaction(eTransactionType.UnlockTransaction, DateTime.UtcNow.ToTimestamp(), trans);
+            Transaction tx = new Transaction(TransactionType.UnlockTransaction, DateTime.UtcNow.ToTimestamp(), trans);
             tx.Sign(Program.Wallet);
 
             JArray param = new JArray(tx.ToArray());
@@ -484,7 +484,7 @@ namespace MineralCLI.Commands
                 Votes = votes
             };
 
-            Transaction tx = new Transaction(eTransactionType.VoteTransaction, DateTime.UtcNow.ToTimestamp(), trans);
+            Transaction tx = new Transaction(TransactionType.VoteTransaction, DateTime.UtcNow.ToTimestamp(), trans);
             tx.Sign(Program.Wallet);
 
             JArray param = new JArray(tx.ToArray());

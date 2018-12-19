@@ -10,16 +10,16 @@ namespace Mineral.Core
     public class Transaction : IVerifiable
     {
         public short Version;
-        public eTransactionType Type;
+        public TransactionType Type;
         public int Timestamp;
         public TransactionBase Data;
         public MakerSignature Signature;
 
         public UInt160 From => Data.From;
         public Fixed8 Fee => Data.Fee;
-        public ERROR_CODES TxResult = ERROR_CODES.E_NO_ERROR;
+        public ErrorCodes TxResult = ErrorCodes.E_NO_ERROR;
 
-        public virtual int Size => sizeof(short) + sizeof(eTransactionType) + sizeof(int) + Data.Size + Signature.Size;
+        public virtual int Size => sizeof(short) + sizeof(TransactionType) + sizeof(int) + Data.Size + Signature.Size;
         private UInt256 _hash = null;
         public UInt256 Hash
         {
@@ -31,7 +31,7 @@ namespace Mineral.Core
             }
         }
 
-        public Transaction(eTransactionType type, int timestamp)
+        public Transaction(TransactionType type, int timestamp)
         {
             Version = Config.Instance.TransactionVersion;
             Type = type;
@@ -39,7 +39,7 @@ namespace Mineral.Core
             MallocTrasnactionData();
         }
 
-        public Transaction(eTransactionType type, int timestamp, TransactionBase txData)
+        public Transaction(TransactionType type, int timestamp, TransactionBase txData)
         {
             Version = Config.Instance.TransactionVersion;
             Type = type;
@@ -79,22 +79,22 @@ namespace Mineral.Core
         {
             switch (Type)
             {
-                case eTransactionType.TransferTransaction:
+                case TransactionType.TransferTransaction:
                     Data = new TransferTransaction();
                     break;
-                case eTransactionType.VoteTransaction:
+                case TransactionType.VoteTransaction:
                     Data = new VoteTransaction();
                     break;
-                case eTransactionType.RegisterDelegateTransaction:
+                case TransactionType.RegisterDelegateTransaction:
                     Data = new RegisterDelegateTransaction();
                     break;
-                case eTransactionType.LockTransaction:
+                case TransactionType.LockTransaction:
                     Data = new LockTransaction();
                     break;
-                case eTransactionType.UnlockTransaction:
+                case TransactionType.UnlockTransaction:
                     Data = new UnlockTransaction();
                     break;
-                case eTransactionType.SupplyTransaction:
+                case TransactionType.SupplyTransaction:
                     Data = new SupplyTransaction();
                     break;
                 default:
@@ -107,7 +107,7 @@ namespace Mineral.Core
         public void DeserializeUnsigned(BinaryReader reader)
         {
             Version = reader.ReadInt16();
-            Type = (eTransactionType)reader.ReadInt16();
+            Type = (TransactionType)reader.ReadInt16();
             Timestamp = reader.ReadInt32();
             MallocTrasnactionData();
             Data.Deserialize(reader);
@@ -152,7 +152,7 @@ namespace Mineral.Core
         {
             if (VerifySignature() == false)
             {
-                TxResult = ERROR_CODES.E_TX_SIGNATURE_INVALID;
+                TxResult = ErrorCodes.E_TX_SIGNATURE_INVALID;
                 return false;
             }
             if (!Data.Verify())
@@ -170,7 +170,7 @@ namespace Mineral.Core
 
             if (storage.GetTransaction(Hash) != null)
             {
-                TxResult = ERROR_CODES.E_SYS_EXIST_TRANSACTION;
+                TxResult = ErrorCodes.E_SYS_EXIST_TRANSACTION;
                 return false;
             }
             if (!Data.VerifyBlockchain(storage))

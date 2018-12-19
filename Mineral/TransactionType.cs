@@ -1,6 +1,6 @@
 ﻿namespace Mineral
 {
-    public enum eTransactionType : short
+    public enum TransactionType : short
     {
         SupplyTransaction = 1,
         TransferTransaction = 2,

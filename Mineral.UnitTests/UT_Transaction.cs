@@ -75,7 +75,7 @@ namespace Mineral.UnitTests
             _transaction = new Transaction
             {
                 Version = 0,
-                Type = eTransactionType.TransferTransaction,
+                Type = TransactionType.TransferTransaction,
                 Timestamp = DateTime.UtcNow.ToTimestamp(),
                 Data = _transfer,
             };

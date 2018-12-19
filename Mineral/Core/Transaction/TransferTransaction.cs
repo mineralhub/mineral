@@ -35,14 +35,14 @@ namespace Mineral.Core
 
             if (To.ContainsKey(From))
             {
-                TxResult = ERROR_CODES.E_TX_SELF_TRANSFER_NOT_ALLOWED;
+                TxResult = ErrorCodes.E_TX_SELF_TRANSFER_NOT_ALLOWED;
                 return false;
             }
 
             foreach (Fixed8 v in To.Values)
                 if (v < Fixed8.Satoshi)
                 {
-                    TxResult = ERROR_CODES.E_TX_TOO_SMALL_TRANSFER_BALANCE;
+                    TxResult = ErrorCodes.E_TX_TOO_SMALL_TRANSFER_BALANCE;
                     return false;
                 }
             return true;
@@ -55,7 +55,7 @@ namespace Mineral.Core
 
             if (FromAccountState.Balance - Fee - To.Sum(p => p.Value) < Fixed8.Zero)
             {
-                TxResult = ERROR_CODES.E_TX_NOT_ENOUGH_BALANCE;
+                TxResult = ErrorCodes.E_TX_NOT_ENOUGH_BALANCE;
                 return false;
             }
             return true;

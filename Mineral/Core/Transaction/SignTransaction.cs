@@ -45,7 +45,7 @@ namespace Mineral.Core
                 return false;
 
             Transaction tx = Blockchain.Instance.Storage.GetTransaction(SignTxHash);
-            if (tx == null || tx.Type != eTransactionType.OtherSignTransaction)
+            if (tx == null || tx.Type != TransactionType.OtherSignTransaction)
                 return false;
 
             OtherSignTransaction osignTx = tx.Data as OtherSignTransaction;

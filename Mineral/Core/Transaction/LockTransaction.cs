@@ -19,7 +19,7 @@ namespace Mineral.Core
 
             if (FromAccountState.LockBalance == Fixed8.Zero)
             {
-                TxResult = ERROR_CODES.E_TX_NO_LOCK_BALANCE;
+                TxResult = ErrorCodes.E_TX_NO_LOCK_BALANCE;
                 return false;
             }
 
@@ -36,7 +36,7 @@ namespace Mineral.Core
                 }
                 if (Blockchain.Instance.CurrentBlockHeight - TxHeight < Config.Instance.LockTTL)
                 {
-                    TxResult = ERROR_CODES.E_TX_LOCK_TTL_NOT_ARRIVED;
+                    TxResult = ErrorCodes.E_TX_LOCK_TTL_NOT_ARRIVED;
                     return false;
                 }
             }
@@ -74,7 +74,7 @@ namespace Mineral.Core
 
             if (LockValue < Fixed8.Zero)
             {
-                TxResult = ERROR_CODES.E_TX_LOCK_VALUE_CANNOT_NEGATIVE;
+                TxResult = ErrorCodes.E_TX_LOCK_VALUE_CANNOT_NEGATIVE;
                 return false;
             }
 
@@ -91,14 +91,14 @@ namespace Mineral.Core
                 }
                 if (Blockchain.Instance.CurrentBlockHeight - TxHeight < Config.Instance.LockTTL)
                 {
-                    TxResult = ERROR_CODES.E_TX_LOCK_TTL_NOT_ARRIVED;
+                    TxResult = ErrorCodes.E_TX_LOCK_TTL_NOT_ARRIVED;
                     return false;
                 }
             }
 
             if (FromAccountState.Balance - LockValue - Fee < Fixed8.Zero)
             {
-                TxResult = ERROR_CODES.E_TX_NOT_ENOUGH_BALANCE;
+                TxResult = ErrorCodes.E_TX_NOT_ENOUGH_BALANCE;
                 return false;
             }
             return true;

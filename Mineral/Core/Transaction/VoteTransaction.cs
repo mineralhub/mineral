@@ -34,7 +34,7 @@ namespace Mineral.Core
 
             if (Config.Instance.VoteMaxLength < Votes.Count)
             {
-                TxResult = ERROR_CODES.E_TX_VOTE_OVERCOUNT;
+                TxResult = ErrorCodes.E_TX_VOTE_OVERCOUNT;
                 return false;
             }
 
@@ -60,7 +60,7 @@ namespace Mineral.Core
                 }
                 if (Blockchain.Instance.CurrentBlockHeight - TxHeight < Config.Instance.VoteTTL)
                 {
-                    TxResult = ERROR_CODES.E_TX_VOTE_TTL_NOT_ARRIVED;
+                    TxResult = ErrorCodes.E_TX_VOTE_TTL_NOT_ARRIVED;
                     return false;
                 }
             }
@@ -69,19 +69,19 @@ namespace Mineral.Core
             {
                 if (storage.GetDelegateState(vote.Key) == null)
                 {
-                    TxResult = ERROR_CODES.E_TX_DELEGATE_NOT_REGISTERED;
+                    TxResult = ErrorCodes.E_TX_DELEGATE_NOT_REGISTERED;
                     return false;
                 }
                 if (vote.Value == Fixed8.Zero)
                 {
-                    TxResult = ERROR_CODES.E_TX_ZERO_VOTE_VALUE_NOT_ALLOWED;
+                    TxResult = ErrorCodes.E_TX_ZERO_VOTE_VALUE_NOT_ALLOWED;
                     return false;
                 }
             }
 
             if (FromAccountState.LockBalance - Votes.Sum(p => p.Value) < Fixed8.Zero)
             {
-                TxResult = ERROR_CODES.E_TX_NOT_ENOUGH_LOCKBALANCE;
+                TxResult = ErrorCodes.E_TX_NOT_ENOUGH_LOCKBALANCE;
                 return false;
             }
 

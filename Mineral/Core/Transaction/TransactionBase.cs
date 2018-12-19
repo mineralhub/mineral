@@ -33,20 +33,20 @@ namespace Mineral.Core
 
         public virtual int Size => Fee.Size + From.Size;
 
-        public virtual ERROR_CODES TxResult { get; protected set; } = ERROR_CODES.E_NO_ERROR;
+        public virtual ErrorCodes TxResult { get; protected set; } = ErrorCodes.E_NO_ERROR;
 
         public virtual bool Verify()
         {
             if (From == null)
             {
-                TxResult = ERROR_CODES.E_TX_FROM_ADDRESS_INVALID;
+                TxResult = ErrorCodes.E_TX_FROM_ADDRESS_INVALID;
                 return false;
             }
             Fixed8 oFee = Fee;
             CalcFee();
             if ((oFee - Fee) != Fixed8.Zero)
             {
-                TxResult = ERROR_CODES.E_TX_FEE_VALUE_MISMATCH;
+                TxResult = ErrorCodes.E_TX_FEE_VALUE_MISMATCH;
                 return false;
             }
             return true;
@@ -57,12 +57,12 @@ namespace Mineral.Core
             UsingStorage(storage);
             if (FromAccountState == null)
             {
-                TxResult = ERROR_CODES.E_TX_FROM_ACCOUNT_INVALID;
+                TxResult = ErrorCodes.E_TX_FROM_ACCOUNT_INVALID;
                 return false;
             }
             if (FromAccountState.Balance - Fee < Fixed8.Zero)
             {
-                TxResult = ERROR_CODES.E_TX_NOT_ENOUGH_BALANCE;
+                TxResult = ErrorCodes.E_TX_NOT_ENOUGH_BALANCE;
                 return false;
             }
             return true;

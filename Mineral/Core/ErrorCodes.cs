@@ -1,6 +1,6 @@
 ﻿namespace Mineral.Core
 {
-    public enum ERROR_CODES
+    public enum ErrorCodes
     {
         E_NO_ERROR = 0,
         E_SYS_ERROR = 1,
