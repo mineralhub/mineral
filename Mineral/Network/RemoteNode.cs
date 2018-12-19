@@ -43,7 +43,7 @@ namespace Mineral.Network
         private static readonly TimeSpan OneMinute = TimeSpan.FromMinutes(1);
         private static readonly TimeSpan HalfHour = TimeSpan.FromMinutes(30);
 
-        public event Action<RemoteNode, bool> DisconnectedCallback;
+        public event Action<RemoteNode, DisconnectType> DisconnectedCallback;
         public event Action<RemoteNode, IPEndPoint[]> PeersReceivedCallback;
 
         private Queue<Message> _messageQueueHigh = new Queue<Message>();
@@ -74,24 +74,24 @@ namespace Mineral.Network
             }
             else
             {
-                Disconnect(false, false);
+                Disconnect(DisconnectType.Exception, "Failed Interlocked.Exchange.");
             }
         }
 
-        public virtual void Disconnect(bool error, bool removeNode = true)
+        public virtual void Disconnect(DisconnectType type, string log)
         {
             if (Interlocked.Exchange(ref _connected, 0) == 1)
             {
 #if DEBUG
                 Logger.Log("OnDisconnected. RemoteEndPoint : " + RemoteEndPoint);
 #endif
-                DisconnectedCallback?.Invoke(this, error);
+                DisconnectedCallback?.Invoke(this, type);
             }
         }
 
         public virtual void Dispose()
         {
-            Disconnect(false);
+            Disconnect(DisconnectType.None, "Dispose");
         }
 
         public void EnqueueMessage(Message.CommandName command, ISerializable payload = null)
@@ -201,7 +201,7 @@ namespace Mineral.Network
                 return;
 
             if (!_localNode.AddResponseBlocks(payload.Blocks, this))
-                Disconnect(true, false);
+                Disconnect(DisconnectType.InvalidBlock, "Failed AddResponseBlocks.");
         }
 
         private void ReceivedBroadcastBlocks(BroadcastBlockPayload payload)
@@ -210,7 +210,7 @@ namespace Mineral.Network
                 return;
 
             if (!_localNode.AddBroadcastBlocks(payload.Blocks, this))
-                Disconnect(true, false);
+                Disconnect(DisconnectType.InvalidBlock, "Failed AddBroadcastBlocks.");
         }
 
         private void ReceivedBroadcastTransactions(TransactionsPayload payload)
@@ -219,7 +219,7 @@ namespace Mineral.Network
                 return;
 
             if (!_localNode.AddBroadcastTransactions(payload.Transactions, this))
-                Disconnect(true, false);
+                Disconnect(DisconnectType.InvalidTransaction, "Failed AddBroadcastTransactions.");
         }
 
         private void OnMessageReceived(Message message)
@@ -231,7 +231,7 @@ namespace Mineral.Network
             {
                 case Message.CommandName.Version:
                 case Message.CommandName.Verack:
-                    Disconnect(true);
+                    Disconnect(DisconnectType.InvalidMessageFlow, "OnMessageReceived " + message.Command);
                     break;
 
                 case Message.CommandName.Ping:
@@ -344,8 +344,7 @@ namespace Mineral.Network
 
             if (message.Command != Message.CommandName.Version)
             {
-                Logger.Log("message.Command != Message.CommandName.Version");
-                Disconnect(true);
+                Disconnect(DisconnectType.InvalidMessageFlow, "message.Command != Message.CommandName.Version");
                 return;
             }
             try
@@ -354,14 +353,12 @@ namespace Mineral.Network
             }
             catch (EndOfStreamException)
             {
-                Logger.Log("exception. VersionPayload EndOfStreamException");
-                Disconnect(false);
+                Disconnect(DisconnectType.Exception, "VersionPayload EndOfStreamException");
                 return;
             }
             catch (FormatException)
             {
-                Logger.Log("exception. VersionPayload FormatException");
-                Disconnect(true);
+                Disconnect(DisconnectType.Exception, "VersionPayload FormatException");
                 return;
             }
 
@@ -369,8 +366,7 @@ namespace Mineral.Network
             {
                 if (ListenerEndPoint.Port != Version.Port)
                 {
-                    Logger.Log("ListenerEndPoint.Port != Version.Port");
-                    Disconnect(true, false);
+                    Disconnect(DisconnectType.InvalidData, "ListenerEndPoint.Port != Version.Port");
                     return;
                 }
             }
@@ -381,8 +377,7 @@ namespace Mineral.Network
 
             if (_localNode.HasPeer(this))
             {
-                Logger.Log("_localNode.HasPeer");
-                Disconnect(false, false);
+                Disconnect(DisconnectType.MultiConnection, "HasPeer");
                 return;
             }
 
@@ -398,7 +393,7 @@ namespace Mineral.Network
 
             if (message.Command != Message.CommandName.Verack)
             {
-                Disconnect(true);
+                Disconnect(DisconnectType.InvalidMessageFlow, "message.Command != Message.CommandName.Verack");
                 return;
             }
 
@@ -422,12 +417,12 @@ namespace Mineral.Network
                 {
 
                     Logger.Log(e.Message + "\n" + e.StackTrace);
-                    Disconnect(false);
+                    Disconnect(DisconnectType.Exception, message.Command + ". EndOfStreamException");
                     break;
                 }
                 catch (FormatException)
                 {
-                    Disconnect(true);
+                    Disconnect(DisconnectType.Exception, message.Command + ". FormatException");
                     break;
                 }
             }

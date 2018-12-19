@@ -30,14 +30,14 @@ namespace Mineral.Network
             _socket = socket;
         }
 
-        public override void Disconnect(bool error, bool removeNode = false)
+        public override void Disconnect(DisconnectType type, string log)
         {
             if (_socket != null)
                 _socket.Dispose();
             if (_stream != null)
                 _stream.Dispose();
 
-            base.Disconnect(error, removeNode);
+            base.Disconnect(type, log);
         }
 
         internal override void OnConnected()
@@ -63,7 +63,7 @@ namespace Mineral.Network
             }
             catch (SocketException)
             {
-                Disconnect(false);
+                Disconnect(DisconnectType.Exception, "SocketException.");
                 return false;
             }
             return true;
@@ -72,20 +72,14 @@ namespace Mineral.Network
         protected override async Task<Message> ReceiveMessageAsync(TimeSpan timeout)
         {
             CancellationTokenSource source = new CancellationTokenSource(timeout);
-            source.Token.Register(() => Disconnect(false));
+            source.Token.Register(() => Disconnect(DisconnectType.Exception, "Failed Token Register."));
             try
             {
                 return await Message.DeserializeFromAsync(_stream, source.Token);
             }
-            catch (ArgumentException) { }
-            catch (ObjectDisposedException) { }
-            catch (OperationCanceledException)
+            catch (Exception e)
             {
-                Disconnect(false, true);
-            }
-            catch (Exception ex) when (ex is FormatException || ex is IOException)
-            {
-                Disconnect(false);
+                Disconnect(DisconnectType.Exception, e.GetType().ToString());
             }
             finally
             {
@@ -101,20 +95,15 @@ namespace Mineral.Network
 
             byte[] buf = message.ToArray();
             CancellationTokenSource source = new CancellationTokenSource(TimeSpan.FromSeconds(5));
-            source.Token.Register(() => Disconnect(false, true));
+            source.Token.Register(() => Disconnect(DisconnectType.Exception, "Failed Token Register."));
             try
             {
                 await _stream.WriteAsync(buf, 0, buf.Length, source.Token);
                 return true;
             }
-            catch (ObjectDisposedException) { }
-            catch(OperationCanceledException)
+            catch (Exception e)
             {
-                Disconnect(false, true);
-            }
-            catch (Exception ex) when (ex is IOException)
-            {
-                Disconnect(false);
+                Disconnect(DisconnectType.Exception, e.GetType().ToString());
             }
             finally
             {

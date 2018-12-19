@@ -296,29 +296,30 @@ namespace Mineral.Network
 
         private void OnConnected(RemoteNode node)
         {
-            lock (_connectedPeers)
+            if (HasPeer(node))
             {
-                if (node.ListenerEndPoint != null && _connectedPeers.Any(p => node.ListenerEndPoint.Equals(p.ListenerEndPoint)))
-                {
-                    node.Disconnect(false);
-                    return;
-                }
-
-                _connectedPeers.Add(node);
+                node.Disconnect(DisconnectType.MultiConnection, "Has Peer");
+                return;
             }
+            _connectedPeers.Add(node);
             node.DisconnectedCallback += OnDisconnected;
             node.PeersReceivedCallback += OnPeersReceived;
             node.OnConnected();
         }
 
-        private void OnDisconnected(RemoteNode node, bool error)
+        private void OnDisconnected(RemoteNode node, DisconnectType type)
         {
             node.DisconnectedCallback -= OnDisconnected;
             node.PeersReceivedCallback -= OnPeersReceived;
-            if (error && node.ListenerEndPoint != null)
+            if (node.ListenerEndPoint != null)
             {
-                lock (_badPeers)
-                    _badPeers.Add(node.ListenerEndPoint);
+                /*
+                if (type == DisconnectType.InvalidBlock)
+                {
+                    lock (_badPeers)
+                        _badPeers.Add(node.ListenerEndPoint);
+                }
+                */
             }
 
             lock (_connectedPeers)
