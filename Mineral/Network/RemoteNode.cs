@@ -48,8 +48,11 @@ namespace Mineral.Network
 
         private Queue<Message> _messageQueueHigh = new Queue<Message>();
         private Queue<Message> _messageQueueLow = new Queue<Message>();
-        public bool IsConnected => _connected == 1 ? true : false;
         protected int _connected;
+        private int _height;
+        public int Height { get { return Interlocked.CompareExchange(ref _height, 0, 0); } }
+
+        public bool IsConnected => _connected == 1 ? true : false;
         public VersionPayload Version { get; private set; }
         public IPEndPoint RemoteEndPoint { get; protected set; }
         public IPEndPoint ListenerEndPoint { get; protected set; }
@@ -133,7 +136,7 @@ namespace Mineral.Network
             var em = payload.AddressList.Select(p => p.EndPoint).Where(
                 p => p.Port != Config.Instance.Network.TcpPort || !Config.Instance.LocalAddresses.Contains(p.Address));
             IPEndPoint[] peers = (em.Count() > 0) ? em.ToArray() : new IPEndPoint[0];
-            if (0 < peers.Length)
+            //if (0 < peers.Length)
                 PeersReceivedCallback?.Invoke(this, peers);
         }
 
@@ -142,7 +145,7 @@ namespace Mineral.Network
             if (!_localNode.IsServiceEnable)
                 return;
 
-            List<RemoteNode> connectedPeers = _localNode.CloneConnectedPeers();
+            List<RemoteNode> connectedPeers = NetworkManager.Instance.CloneConnectedPeers();
             IEnumerable<RemoteNode> hostPeers = connectedPeers.Where(p => p.ListenerEndPoint != null && p.Version != null);
             List<AddressInfo> addrs = hostPeers.Select(p => AddressInfo.Create(p.ListenerEndPoint, p.Version.Version, p.Version.Timestamp)).ToList();
             EnqueueMessage(Message.CommandName.ResponseAddrs, AddrPayload.Create(addrs));
@@ -200,6 +203,9 @@ namespace Mineral.Network
             if (!_localNode.IsServiceEnable)
                 return;
 
+            if (!NetworkManager.Instance.SyncBlockManager.SetSyncResponse(Version.NodeID))
+                return;
+
             if (!_localNode.AddResponseBlocks(payload.Blocks, this))
                 Disconnect(DisconnectType.InvalidBlock, "Failed AddResponseBlocks.");
         }
@@ -242,7 +248,7 @@ namespace Mineral.Network
                 case Message.CommandName.Pong:
                     {
                         PongPayload pong = message.Payload.Serializable<PongPayload>();
-                        Version.Height = pong.Height;
+                        Interlocked.Exchange(ref _height, pong.Height);
                         _pingpong.Pong(pong);
                     }
                     break;
@@ -375,7 +381,7 @@ namespace Mineral.Network
                 ListenerEndPoint = new IPEndPoint(RemoteEndPoint.Address, Version.Port);
             }
 
-            if (_localNode.HasPeer(this))
+            if (NetworkManager.Instance.HasPeer(this))
             {
                 Disconnect(DisconnectType.MultiConnection, "HasPeer");
                 return;

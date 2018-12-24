@@ -20,10 +20,10 @@ namespace Mineral.Network
         private int _disposedFlag;
         private TcpListener _tcpListener;
         private IWebHost _wsHost;
-        private List<RemoteNode> _connectedPeers = new List<RemoteNode>();
         private HashSet<IPEndPoint> _waitPeers = new HashSet<IPEndPoint>();
         private HashSet<IPEndPoint> _badPeers = new HashSet<IPEndPoint>();
 
+        private Thread _acceptThread;
         private Thread _connectThread;
         private Thread _syncThread;
 
@@ -36,11 +36,6 @@ namespace Mineral.Network
         public LocalNode()
         {
             IsSyncing = Config.Instance.Block.syncCheck;
-            _connectThread = new Thread(ConnectToPeersLoop)
-            {
-                IsBackground = true,
-                Name = "Mineral.LocalNode.ConnectToPeersLoop"
-            };
             if (IsSyncing) 
             {
                 _syncThread = new Thread(SyncBlocks)
@@ -83,7 +78,6 @@ namespace Mineral.Network
                                     UPNP.PortMapping(wsPort, ProtocolType.Tcp, "MINERAL-WEBSOCKET");
                             }
                         }
-                        _connectThread.Start();
                         if (_syncThread != null)
                             _syncThread.Start();
 
@@ -94,8 +88,18 @@ namespace Mineral.Network
                             try
                             {
                                 _tcpListener.Start();
-                                Task.Run(() => AcceptPeersLoop());
-                                Task.Run(() => ConnectToPeersLoop());
+                                _acceptThread = new Thread(AcceptPeersLoop)
+                                {
+                                    IsBackground = true,
+                                    Name = "Mineral.LocalNode.AcceptPeersLoop"
+                                };
+                                _acceptThread.Start();
+                                _connectThread = new Thread(ConnectToPeersLoop)
+                                {
+                                    IsBackground = true,
+                                    Name = "Mineral.LocalNode.ConnectToPeersLoop"
+                                };
+                                _connectThread.Start();
                             }
                             catch (SocketException) { }
                         }
@@ -140,11 +144,8 @@ namespace Mineral.Network
         {
             while (!_cancelTokenSource.IsCancellationRequested)
             {
-                int connectedCount = 0;
-                lock (_connectedPeers)
-                    connectedCount = _connectedPeers.Count;
-
-                if (connectedCount < Config.Instance.ConnectPeerMax)
+                List<RemoteNode> peers = NetworkManager.Instance.CloneConnectedPeers();
+                if (peers.Count < Config.Instance.ConnectPeerMax)
                 {
                     Task[] tasks = { };
                     int waitCount = 0;
@@ -155,17 +156,14 @@ namespace Mineral.Network
                     {
                         IPEndPoint[] eps;
                         lock (_waitPeers)
-                            eps = _waitPeers.Take(Config.Instance.ConnectPeerMax - connectedCount).ToArray();
+                            eps = _waitPeers.Take(Config.Instance.ConnectPeerMax - peers.Count).ToArray();
                         tasks = eps.Select(p => ConnectToPeerAsync(p)).ToArray();
                     }
-                    else if (0 < connectedCount)
+                    else if (0 < peers.Count)
                     {
-                        lock (_connectedPeers)
+                        foreach (RemoteNode node in peers)
                         {
-                            foreach (RemoteNode node in _connectedPeers)
-                            {
-                                node.RequestAddrs();
-                            }
+                            node.RequestAddrs();
                         }
                     }
                     else if (Config.Instance.Network.SeedList != null)
@@ -225,34 +223,51 @@ namespace Mineral.Network
 
         private void SyncBlocks()
         {
+            SyncBlockManager syncBlockManager = NetworkManager.Instance.SyncBlockManager;
             while (!_cancelTokenSource.IsCancellationRequested && IsSyncing)
             {
-                int connectedCount = 0;
-                lock (_connectedPeers)
-                    connectedCount = _connectedPeers.Count;
+                List<RemoteNode> peers = NetworkManager.Instance.CloneConnectedPeers();
+                if (peers.Count == 0)
+                    continue;
 
                 int syncHeight = Blockchain.Instance.Proof.CalcBlockHeight(DateTime.UtcNow.ToTimestamp());
                 int localHeight = Blockchain.Instance.CurrentBlockHeight;
-                if (connectedCount == 0)
-                    continue;
 
                 if (localHeight < syncHeight - 1
                     && IsSyncing)
                 {
-                    lock (_connectedPeers)
-                    {
-                        IEnumerable<RemoteNode> nodes = _connectedPeers
+
+                    IEnumerable<RemoteNode> orderby = peers
                             .Where(p => 0 < p.Latency)
                             .OrderBy(p => p.Latency);
-                        if (nodes.Any())
-                            nodes.First().EnqueueMessage(Message.CommandName.RequestBlocksFromHeight, GetBlocksFromHeightPayload.Create(Blockchain.Instance.CurrentHeaderHeight + 1));
+                    if (orderby.Any())
+                    {
+                        int headerHeight = Blockchain.Instance.CurrentHeaderHeight;
+                        foreach (RemoteNode node in orderby)
+                        {
+                            if (headerHeight < node.Height)
+                            {
+                                syncBlockManager.SetSyncRequest(node.Version.NodeID);
+                                node.EnqueueMessage(Message.CommandName.RequestBlocksFromHeight, GetBlocksFromHeightPayload.Create(headerHeight + 1));
+                                break;
+                            }
+                        }
+                    }
+                    long t = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
+                    while (syncBlockManager.GetSyncBlockState() == SyncBlockState.Request)
+                    {
+                        Thread.Sleep(100);
+                        if (3000 < DateTimeOffset.UtcNow.ToUnixTimeMilliseconds() - t)
+                        {
+                            syncBlockManager.SetSyncCancel();
+                            break;
+                        }
                     }
                 }
                 else
                 {
                     IsSyncing = false;
                 }
-                Thread.Sleep(5000);
             }
         }
 
@@ -296,12 +311,13 @@ namespace Mineral.Network
 
         private void OnConnected(RemoteNode node)
         {
-            if (HasPeer(node))
+            if (NetworkManager.Instance.HasPeer(node))
             {
                 node.Disconnect(DisconnectType.MultiConnection, "Has Peer");
                 return;
             }
-            _connectedPeers.Add(node);
+            NetworkManager.Instance.AddConnectedPeer(node);
+
             node.DisconnectedCallback += OnDisconnected;
             node.PeersReceivedCallback += OnPeersReceived;
             node.OnConnected();
@@ -322,8 +338,7 @@ namespace Mineral.Network
                 */
             }
 
-            lock (_connectedPeers)
-                _connectedPeers.Remove(node);
+            NetworkManager.Instance.RemoveConnectedPeer(node);
         }
 
         private void OnPeersReceived(RemoteNode node, IPEndPoint[] endPoints)
@@ -334,12 +349,10 @@ namespace Mineral.Network
                 {
                     lock (_badPeers)
                     {
-                        lock (_connectedPeers)
-                        {
-                            _waitPeers.UnionWith(endPoints);
-                            _waitPeers.ExceptWith(_badPeers);
-                            _waitPeers.ExceptWith(_connectedPeers.Select(p => p.ListenerEndPoint));
-                        }
+                        List<RemoteNode> connected = NetworkManager.Instance.CloneConnectedPeers();
+                        _waitPeers.UnionWith(endPoints);
+                        _waitPeers.ExceptWith(_badPeers);
+                        _waitPeers.ExceptWith(connected.Select(p => p.ListenerEndPoint));
                     }
                 }
             }
@@ -354,23 +367,6 @@ namespace Mineral.Network
             IPEndPoint ep = new IPEndPoint(context.Connection.RemoteIpAddress, context.Connection.RemotePort);
             WebSocketRemoteNode node = new WebSocketRemoteNode(ws, this, ep);
             OnConnected(node);
-        }
-
-        public bool HasPeer(RemoteNode node)
-        {
-            lock (_connectedPeers)
-            {
-                return _connectedPeers.Where(p => p != node && p.ListenerEndPoint != null).Any(
-                    p => p.ListenerEndPoint.Address.Equals(node.ListenerEndPoint) && p.Version?.Nonce == node.Version.Nonce);
-            }
-        }
-
-        public List<RemoteNode> CloneConnectedPeers()
-        {
-            lock (_connectedPeers)
-            {
-                return new List<RemoteNode>(_connectedPeers);
-            }
         }
 
         public bool AddTransaction(Transaction tx, bool bBroadcast = true)
@@ -388,11 +384,9 @@ namespace Mineral.Network
 
         public void BroadCast(Message.CommandName name, ISerializable payload = null)
         {
-            lock (_connectedPeers)
-            {
-                foreach (RemoteNode node in _connectedPeers)
-                    node.EnqueueMessage(name, payload);
-            }
+            List<RemoteNode> peers = NetworkManager.Instance.CloneConnectedPeers();
+            foreach (RemoteNode node in peers)
+                node.EnqueueMessage(name, payload);
         }
     }
 }
