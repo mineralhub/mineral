@@ -23,10 +23,6 @@ namespace Mineral.Network
         private HashSet<IPEndPoint> _waitPeers = new HashSet<IPEndPoint>();
         private HashSet<IPEndPoint> _badPeers = new HashSet<IPEndPoint>();
 
-        private Thread _acceptThread;
-        private Thread _connectThread;
-        private Thread _syncThread;
-
         private CancellationTokenSource _cancelTokenSource = new CancellationTokenSource();
 
         public bool IsSyncing { get; private set; } = true;
@@ -36,14 +32,6 @@ namespace Mineral.Network
         public LocalNode()
         {
             IsSyncing = Config.Instance.Block.syncCheck;
-            if (IsSyncing) 
-            {
-                _syncThread = new Thread(SyncBlocks)
-                {
-                    IsBackground = true,
-                    Name = "Mineral.LocalNode.SyncBlocks"
-                };
-            }
         }
 
         public void Dispose()
@@ -78,8 +66,8 @@ namespace Mineral.Network
                                     UPNP.PortMapping(wsPort, ProtocolType.Tcp, "MINERAL-WEBSOCKET");
                             }
                         }
-                        if (_syncThread != null)
-                            _syncThread.Start();
+                        if (IsSyncing)
+                            Task.Run(() => SyncBlocks());
 
                         if (0 < tcpPort)
                         {
@@ -88,18 +76,8 @@ namespace Mineral.Network
                             try
                             {
                                 _tcpListener.Start();
-                                _acceptThread = new Thread(AcceptPeersLoop)
-                                {
-                                    IsBackground = true,
-                                    Name = "Mineral.LocalNode.AcceptPeersLoop"
-                                };
-                                _acceptThread.Start();
-                                _connectThread = new Thread(ConnectToPeersLoop)
-                                {
-                                    IsBackground = true,
-                                    Name = "Mineral.LocalNode.ConnectToPeersLoop"
-                                };
-                                _connectThread.Start();
+                                Task.Run(() => AcceptPeersLoop());
+                                Task.Run(() => ConnectToPeersLoop());
                             }
                             catch (SocketException) { }
                         }
