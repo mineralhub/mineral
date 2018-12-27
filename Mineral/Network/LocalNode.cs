@@ -20,8 +20,6 @@ namespace Mineral.Network
         private int _disposedFlag;
         private TcpListener _tcpListener;
         private IWebHost _wsHost;
-        private HashSet<IPEndPoint> _waitPeers = new HashSet<IPEndPoint>();
-        private HashSet<IPEndPoint> _badPeers = new HashSet<IPEndPoint>();
 
         private CancellationTokenSource _cancelTokenSource = new CancellationTokenSource();
 
@@ -122,19 +120,14 @@ namespace Mineral.Network
         {
             while (!_cancelTokenSource.IsCancellationRequested)
             {
-                List<RemoteNode> peers = NetworkManager.Instance.CloneConnectedPeers();
+                HashSet<RemoteNode> peers = NetworkManager.Instance.ConnectedPeers.Clone();
                 if (peers.Count < Config.Instance.ConnectPeerMax)
                 {
                     Task[] tasks = { };
-                    int waitCount = 0;
-                    lock (_waitPeers)
-                        waitCount = _waitPeers.Count;
-
-                    if (0 < waitCount)
+                    HashSet<IPEndPoint> waitPeers = NetworkManager.Instance.WaitPeers.Clone();
+                    if (0 < waitPeers.Count)
                     {
-                        IPEndPoint[] eps;
-                        lock (_waitPeers)
-                            eps = _waitPeers.Take(Config.Instance.ConnectPeerMax - peers.Count).ToArray();
+                        IPEndPoint[] eps = waitPeers.Take(Config.Instance.ConnectPeerMax - peers.Count).ToArray();
                         tasks = eps.Select(p => ConnectToPeerAsync(p)).ToArray();
                     }
                     else if (0 < peers.Count)
@@ -204,7 +197,7 @@ namespace Mineral.Network
             SyncBlockManager syncBlockManager = NetworkManager.Instance.SyncBlockManager;
             while (!_cancelTokenSource.IsCancellationRequested && IsSyncing)
             {
-                List<RemoteNode> peers = NetworkManager.Instance.CloneConnectedPeers();
+                HashSet<RemoteNode> peers = NetworkManager.Instance.ConnectedPeers.Clone();
                 if (peers.Count == 0)
                     continue;
 
@@ -279,9 +272,7 @@ namespace Mineral.Network
             if (ep.Port == Config.Instance.Network.TcpPort && Config.Instance.LocalAddresses.Contains(ep.Address))
                 return;
 
-            lock (_waitPeers)
-                _waitPeers.Remove(ep);
-
+            NetworkManager.Instance.WaitPeers.Remove(ep);
             TcpRemoteNode node = new TcpRemoteNode(this, ep);
             if (await node.ConnectAsync())
                 OnConnected(node);
@@ -289,12 +280,12 @@ namespace Mineral.Network
 
         private void OnConnected(RemoteNode node)
         {
-            if (NetworkManager.Instance.HasPeer(node))
+            if (NetworkManager.Instance.ConnectedPeers.HasPeer(node))
             {
                 node.Disconnect(DisconnectType.MultiConnection, "Has Peer");
                 return;
             }
-            NetworkManager.Instance.AddConnectedPeer(node);
+            NetworkManager.Instance.ConnectedPeers.Add(node);
 
             node.DisconnectedCallback += OnDisconnected;
             node.PeersReceivedCallback += OnPeersReceived;
@@ -316,24 +307,21 @@ namespace Mineral.Network
                 */
             }
 
-            NetworkManager.Instance.RemoveConnectedPeer(node);
+            NetworkManager.Instance.ConnectedPeers.Remove(node);
         }
 
         private void OnPeersReceived(RemoteNode node, IPEndPoint[] endPoints)
         {
-            lock (_waitPeers)
-            {
-                if (_waitPeers.Count < Config.Instance.WaitPeerMax)
-                {
-                    lock (_badPeers)
-                    {
-                        List<RemoteNode> connected = NetworkManager.Instance.CloneConnectedPeers();
-                        _waitPeers.UnionWith(endPoints);
-                        _waitPeers.ExceptWith(_badPeers);
-                        _waitPeers.ExceptWith(connected.Select(p => p.ListenerEndPoint));
-                    }
-                }
-            }
+            HashSet<IPEndPoint> wait = NetworkManager.Instance.WaitPeers.Clone();
+            if (Config.Instance.WaitPeerMax < wait.Count)
+                return;
+
+            HashSet<RemoteNode> connected = NetworkManager.Instance.ConnectedPeers.Clone();
+            HashSet<IPEndPoint> bad = NetworkManager.Instance.BadPeers.Clone();
+            wait.UnionWith(endPoints);
+            wait.ExceptWith(bad);
+            wait.ExceptWith(connected.Select(p => p.ListenerEndPoint));
+            NetworkManager.Instance.WaitPeers.Add(wait);
         }
 
         private async Task AcceptWebSocketAsync(HttpContext context)
@@ -362,7 +350,7 @@ namespace Mineral.Network
 
         public void BroadCast(Message.CommandName name, ISerializable payload = null)
         {
-            List<RemoteNode> peers = NetworkManager.Instance.CloneConnectedPeers();
+            var peers = NetworkManager.Instance.ConnectedPeers.Clone();
             foreach (RemoteNode node in peers)
                 node.EnqueueMessage(name, payload);
         }

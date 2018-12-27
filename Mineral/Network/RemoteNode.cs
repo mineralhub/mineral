@@ -145,7 +145,7 @@ namespace Mineral.Network
             if (!_localNode.IsServiceEnable)
                 return;
 
-            List<RemoteNode> connectedPeers = NetworkManager.Instance.CloneConnectedPeers();
+            HashSet<RemoteNode> connectedPeers = NetworkManager.Instance.ConnectedPeers.Clone();
             IEnumerable<RemoteNode> hostPeers = connectedPeers.Where(p => p.ListenerEndPoint != null && p.Version != null);
             List<AddressInfo> addrs = hostPeers.Select(p => AddressInfo.Create(p.ListenerEndPoint, p.Version.Version, p.Version.Timestamp)).ToList();
             EnqueueMessage(Message.CommandName.ResponseAddrs, AddrPayload.Create(addrs));
@@ -381,7 +381,7 @@ namespace Mineral.Network
                 ListenerEndPoint = new IPEndPoint(RemoteEndPoint.Address, Version.Port);
             }
 
-            if (NetworkManager.Instance.HasPeer(this))
+            if (NetworkManager.Instance.ConnectedPeers.HasPeer(this))
             {
                 Disconnect(DisconnectType.MultiConnection, "HasPeer");
                 return;
