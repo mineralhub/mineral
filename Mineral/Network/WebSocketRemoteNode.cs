@@ -11,7 +11,7 @@ namespace Mineral.Network
     {
         private WebSocket _socket;
 
-        public WebSocketRemoteNode(WebSocket ws, LocalNode node, IPEndPoint remoteEndPoint) : base(node, remoteEndPoint)
+        public WebSocketRemoteNode(WebSocket ws, IPEndPoint remoteEndPoint) : base(remoteEndPoint)
         {
             _socket = ws;
         }

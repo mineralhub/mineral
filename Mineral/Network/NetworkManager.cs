@@ -63,8 +63,8 @@ namespace Mineral.Network
     {
         protected HashSet<T> _list = new HashSet<T>();
 
-        public void Add(T v) { lock (_list) _list.Add(v); }
-        public void Add(HashSet<T> v) { lock (_list) _list.UnionWith(v); }
+        public virtual void Add(T v) { lock (_list) _list.Add(v); }
+        public virtual void Add(HashSet<T> v) { lock (_list) _list.UnionWith(v); }
         public void Remove(T v) { lock (_list) _list.Remove(v); }
         public HashSet<T> Clone() 
         {
@@ -99,5 +99,6 @@ namespace Mineral.Network
         public SafePeerList<IPEndPoint> WaitPeers { get; } = new SafePeerList<IPEndPoint>();
         public SafePeerList<IPEndPoint> BadPeers { get; } = new SafePeerList<IPEndPoint>();
         public SyncBlockManager SyncBlockManager { get; } = new SyncBlockManager();
+        public Guid NodeID { get; } = Guid.NewGuid();
     }
 }

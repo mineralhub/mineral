@@ -25,7 +25,6 @@ namespace Mineral.Network
 
         public bool IsSyncing { get; private set; } = true;
         public bool IsServiceEnable { get { return !_cancelTokenSource.IsCancellationRequested; } }
-        public Guid NodeID { get; } = Guid.NewGuid();
 
         public LocalNode()
         {
@@ -111,7 +110,7 @@ namespace Mineral.Network
                 {
                     continue;
                 }
-                TcpRemoteNode node = new TcpRemoteNode(this, socket);
+                TcpRemoteNode node = new TcpRemoteNode(socket);
                 OnConnected(node);
             }
         }
@@ -158,13 +157,13 @@ namespace Mineral.Network
             }
         }
 
-        public bool AddBroadcastTransactions(List<Transaction> transactions, RemoteNode node)
+        public bool AddBroadcastTransactions(RemoteNode node, List<Transaction> transactions)
         {
             Blockchain.Instance.AddTransactionPool(transactions);
             return true;
         }
 
-        public bool AddBroadcastBlocks(List<Block> blocks, RemoteNode node)
+        public bool AddBroadcastBlocks(RemoteNode node, List<Block> blocks)
         {
             if (IsSyncing)
                 return true;
@@ -178,7 +177,7 @@ namespace Mineral.Network
             return true;
         }
 
-        public bool AddResponseBlocks(List<Block> blocks, RemoteNode node)
+        public bool AddResponseBlocks(RemoteNode node, List<Block> blocks)
         {
             foreach (Block block in blocks)
             {
@@ -207,7 +206,6 @@ namespace Mineral.Network
                 if (localHeight < syncHeight - 1
                     && IsSyncing)
                 {
-
                     IEnumerable<RemoteNode> orderby = peers
                             .Where(p => 0 < p.Latency)
                             .OrderBy(p => p.Latency);
@@ -273,7 +271,7 @@ namespace Mineral.Network
                 return;
 
             NetworkManager.Instance.WaitPeers.Remove(ep);
-            TcpRemoteNode node = new TcpRemoteNode(this, ep);
+            TcpRemoteNode node = new TcpRemoteNode(ep);
             if (await node.ConnectAsync())
                 OnConnected(node);
         }
@@ -289,6 +287,9 @@ namespace Mineral.Network
 
             node.DisconnectedCallback += OnDisconnected;
             node.PeersReceivedCallback += OnPeersReceived;
+            node.BroadcastBlocksCallback += AddBroadcastBlocks;
+            node.BroadcastTransactionsCallback += AddBroadcastTransactions;
+            node.ResponseBlocksCallback += AddResponseBlocks;
             node.OnConnected();
         }
 
@@ -296,6 +297,10 @@ namespace Mineral.Network
         {
             node.DisconnectedCallback -= OnDisconnected;
             node.PeersReceivedCallback -= OnPeersReceived;
+            node.BroadcastBlocksCallback -= AddBroadcastBlocks;
+            node.BroadcastTransactionsCallback -= AddBroadcastTransactions;
+            node.ResponseBlocksCallback -= AddResponseBlocks;
+
             if (node.ListenerEndPoint != null)
             {
                 /*
@@ -331,7 +336,7 @@ namespace Mineral.Network
 
             WebSocket ws = await context.WebSockets.AcceptWebSocketAsync();
             IPEndPoint ep = new IPEndPoint(context.Connection.RemoteIpAddress, context.Connection.RemotePort);
-            WebSocketRemoteNode node = new WebSocketRemoteNode(ws, this, ep);
+            WebSocketRemoteNode node = new WebSocketRemoteNode(ws, ep);
             OnConnected(node);
         }
 

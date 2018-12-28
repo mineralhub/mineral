@@ -37,14 +37,15 @@ namespace Mineral.Network
                 && LastPongTime + LoopTimeSecond <= DateTime.UtcNow.ToTimestamp();
         }
 
-        protected LocalNode _localNode;
-
         private static readonly TimeSpan HalfMinute = TimeSpan.FromSeconds(30);
         private static readonly TimeSpan OneMinute = TimeSpan.FromMinutes(1);
         private static readonly TimeSpan HalfHour = TimeSpan.FromMinutes(30);
 
         public event Action<RemoteNode, DisconnectType> DisconnectedCallback;
         public event Action<RemoteNode, IPEndPoint[]> PeersReceivedCallback;
+        public event Func<RemoteNode, List<Transaction>, bool> BroadcastTransactionsCallback;
+        public event Func<RemoteNode, List<Block>, bool> BroadcastBlocksCallback;
+        public event Func<RemoteNode, List<Block>, bool> ResponseBlocksCallback;
 
         private Queue<Message> _messageQueueHigh = new Queue<Message>();
         private Queue<Message> _messageQueueLow = new Queue<Message>();
@@ -60,9 +61,8 @@ namespace Mineral.Network
         PingPong _pingpong = new PingPong();
         public long Latency => _pingpong.LatencyMs;
 
-        public RemoteNode(LocalNode node, IPEndPoint remoteEndPoint = null)
+        public RemoteNode(IPEndPoint remoteEndPoint = null)
         {
-            _localNode = node;
             RemoteEndPoint = remoteEndPoint;
         }
 
@@ -88,7 +88,7 @@ namespace Mineral.Network
 #if DEBUG
                 Logger.Log("OnDisconnected. RemoteEndPoint : " + RemoteEndPoint);
 #endif
-                DisconnectedCallback?.Invoke(this, type);
+                DisconnectedCallback.Invoke(this, type);
             }
         }
 
@@ -133,18 +133,14 @@ namespace Mineral.Network
 
         private void ReceivedAddrs(AddrPayload payload)
         {
-            var em = payload.AddressList.Select(p => p.EndPoint).Where(
-                p => p.Port != Config.Instance.Network.TcpPort || !Config.Instance.LocalAddresses.Contains(p.Address));
-            IPEndPoint[] peers = (em.Count() > 0) ? em.ToArray() : new IPEndPoint[0];
-            //if (0 < peers.Length)
-                PeersReceivedCallback?.Invoke(this, peers);
+            var peers = payload.AddressList.Select(p => p.EndPoint).Where(
+                p => p.Port != Config.Instance.Network.TcpPort || !Config.Instance.LocalAddresses.Contains(p.Address)).ToArray();
+            if (0 < peers.Length)
+                PeersReceivedCallback.Invoke(this, peers);
         }
 
         private void ReceivedRequestAddrs()
         {
-            if (!_localNode.IsServiceEnable)
-                return;
-
             HashSet<RemoteNode> connectedPeers = NetworkManager.Instance.ConnectedPeers.Clone();
             IEnumerable<RemoteNode> hostPeers = connectedPeers.Where(p => p.ListenerEndPoint != null && p.Version != null);
             List<AddressInfo> addrs = hostPeers.Select(p => AddressInfo.Create(p.ListenerEndPoint, p.Version.Version, p.Version.Timestamp)).ToList();
@@ -153,9 +149,6 @@ namespace Mineral.Network
 
         private void ReceivedRequestHeaders(GetBlocksPayload payload)
         {
-            if (!_localNode.IsServiceEnable)
-                return;
-
             List<BlockHeader> headers = new List<BlockHeader>();
             UInt256 hash = payload.HashStart;
             do
@@ -172,9 +165,6 @@ namespace Mineral.Network
 
         private void ReceivedRequestBlocks(GetBlocksPayload payload)
         {
-            if (!_localNode.IsServiceEnable)
-                return;
-
             List<Block> blocks = new List<Block>();
             UInt256 hash = payload.HashStart;
             do
@@ -191,40 +181,28 @@ namespace Mineral.Network
 
         private void ReceivedRequestBlocksFromHeight(GetBlocksFromHeightPayload payload)
         {
-            if (!_localNode.IsServiceEnable)
-                return;
-
             List<Block> blocks = Blockchain.Instance.GetBlocks(payload.Start, payload.End == 0 ? payload.Start + BlocksPayload.MaxCount : payload.End);
             EnqueueMessage(Message.CommandName.ResponseBlocks, BlocksPayload.Create(blocks));
         }
 
         private void ReceivedResponseBlocks(BlocksPayload payload)
         {
-            if (!_localNode.IsServiceEnable)
-                return;
-
             if (!NetworkManager.Instance.SyncBlockManager.SetSyncResponse(Version.NodeID))
                 return;
 
-            if (!_localNode.AddResponseBlocks(payload.Blocks, this))
+            if (!ResponseBlocksCallback.Invoke(this, payload.Blocks))
                 Disconnect(DisconnectType.InvalidBlock, "Failed AddResponseBlocks.");
         }
 
         private void ReceivedBroadcastBlocks(BroadcastBlockPayload payload)
         {
-            if (!_localNode.IsServiceEnable)
-                return;
-
-            if (!_localNode.AddBroadcastBlocks(payload.Blocks, this))
+            if (!BroadcastBlocksCallback(this, payload.Blocks))
                 Disconnect(DisconnectType.InvalidBlock, "Failed AddBroadcastBlocks.");
         }
 
         private void ReceivedBroadcastTransactions(TransactionsPayload payload)
         {
-            if (!_localNode.IsServiceEnable)
-                return;
-
-            if (!_localNode.AddBroadcastTransactions(payload.Transactions, this))
+            if (!BroadcastTransactionsCallback(this, payload.Transactions))
                 Disconnect(DisconnectType.InvalidTransaction, "Failed AddBroadcastTransactions.");
         }
 
@@ -341,7 +319,7 @@ namespace Mineral.Network
             await Task.Yield();
 #endif
             ushort port = 0 < Config.Instance.Network.TcpPort ? Config.Instance.Network.TcpPort : Config.Instance.Network.WsPort;
-            if (!await SendMessageAsync(Message.Create(Message.CommandName.Version, VersionPayload.Create(port, _localNode.NodeID))))
+            if (!await SendMessageAsync(Message.Create(Message.CommandName.Version, VersionPayload.Create(port, NetworkManager.Instance.NodeID))))
                 return;
 
             Message message = await ReceiveMessageAsync(TimeSpan.FromMinutes(5));
@@ -390,7 +368,7 @@ namespace Mineral.Network
 #if DEBUG
             Logger.Log("Version : " + ListenerEndPoint + ", " + Version.NodeID);
 #endif
-            if (!await SendMessageAsync(Message.Create(Message.CommandName.Verack, VerackPayload.Create(_localNode.NodeID))))
+            if (!await SendMessageAsync(Message.Create(Message.CommandName.Verack, VerackPayload.Create(NetworkManager.Instance.NodeID))))
                 return;
 
             message = await ReceiveMessageAsync(HalfMinute);

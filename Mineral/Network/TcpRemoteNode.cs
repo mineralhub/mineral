@@ -1,5 +1,4 @@
 ﻿using System;
-using System.IO;
 using System.Net;
 using System.Net.Sockets;
 using System.Threading;
@@ -13,8 +12,7 @@ namespace Mineral.Network
         private NetworkStream _stream;
 
         // connect peer
-        public TcpRemoteNode(LocalNode node, IPEndPoint listenerEndPoint)
-            : base(node)
+        public TcpRemoteNode(IPEndPoint listenerEndPoint)
         {
             AddressFamily addrf = listenerEndPoint.AddressFamily;
             if (listenerEndPoint.Address.IsIPv4MappedToIPv6)
@@ -24,8 +22,8 @@ namespace Mineral.Network
         }
 
         // accept peer
-        public TcpRemoteNode(LocalNode node, Socket socket)
-            : base(node, new IPEndPoint(((IPEndPoint)socket.RemoteEndPoint).Address.MapToIPv6(), ((IPEndPoint)socket.RemoteEndPoint).Port))
+        public TcpRemoteNode(Socket socket)
+            : base(new IPEndPoint(((IPEndPoint)socket.RemoteEndPoint).Address.MapToIPv6(), ((IPEndPoint)socket.RemoteEndPoint).Port))
         {
             _socket = socket;
         }
