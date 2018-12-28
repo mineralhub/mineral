@@ -157,40 +157,6 @@ namespace Mineral.Network
             }
         }
 
-        public bool AddBroadcastTransactions(RemoteNode node, List<Transaction> transactions)
-        {
-            Blockchain.Instance.AddTransactionPool(transactions);
-            return true;
-        }
-
-        public bool AddBroadcastBlocks(RemoteNode node, List<Block> blocks)
-        {
-            if (IsSyncing)
-                return true;
-
-            foreach (Block block in blocks)
-            {
-                Blockchain.BLOCK_ERROR err = Blockchain.Instance.AddBlock(block);
-                if (err != Blockchain.BLOCK_ERROR.E_NO_ERROR)
-                    Logger.Log("[error] AddBroadcastBlocks failed. error : " + err);
-            }
-            return true;
-        }
-
-        public bool AddResponseBlocks(RemoteNode node, List<Block> blocks)
-        {
-            foreach (Block block in blocks)
-            {
-                Blockchain.BLOCK_ERROR eRET = Blockchain.Instance.AddBlock(block);
-                if (eRET != Blockchain.BLOCK_ERROR.E_NO_ERROR)
-                {
-                    Logger.Log("Blockchain.Instance.AddBlock(block) failed. : " + eRET);
-                    continue;
-                }
-            }
-            return true;
-        }
-
         private void SyncBlocks()
         {
             SyncBlockManager syncBlockManager = NetworkManager.Instance.SyncBlockManager;
@@ -202,7 +168,6 @@ namespace Mineral.Network
 
                 int syncHeight = Blockchain.Instance.Proof.CalcBlockHeight(DateTime.UtcNow.ToTimestamp());
                 int localHeight = Blockchain.Instance.CurrentBlockHeight;
-
                 if (localHeight < syncHeight - 1
                     && IsSyncing)
                 {
@@ -226,7 +191,7 @@ namespace Mineral.Network
                     while (syncBlockManager.GetSyncBlockState() == SyncBlockState.Request)
                     {
                         Thread.Sleep(100);
-                        if (3000 < DateTimeOffset.UtcNow.ToUnixTimeMilliseconds() - t)
+                        if (5000 < DateTimeOffset.UtcNow.ToUnixTimeMilliseconds() - t)
                         {
                             syncBlockManager.SetSyncCancel();
                             break;
@@ -287,9 +252,6 @@ namespace Mineral.Network
 
             node.DisconnectedCallback += OnDisconnected;
             node.PeersReceivedCallback += OnPeersReceived;
-            node.BroadcastBlocksCallback += AddBroadcastBlocks;
-            node.BroadcastTransactionsCallback += AddBroadcastTransactions;
-            node.ResponseBlocksCallback += AddResponseBlocks;
             node.OnConnected();
         }
 
@@ -297,9 +259,6 @@ namespace Mineral.Network
         {
             node.DisconnectedCallback -= OnDisconnected;
             node.PeersReceivedCallback -= OnPeersReceived;
-            node.BroadcastBlocksCallback -= AddBroadcastBlocks;
-            node.BroadcastTransactionsCallback -= AddBroadcastTransactions;
-            node.ResponseBlocksCallback -= AddResponseBlocks;
 
             if (node.ListenerEndPoint != null)
             {

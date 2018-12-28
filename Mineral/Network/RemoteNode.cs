@@ -43,9 +43,6 @@ namespace Mineral.Network
 
         public event Action<RemoteNode, DisconnectType> DisconnectedCallback;
         public event Action<RemoteNode, IPEndPoint[]> PeersReceivedCallback;
-        public event Func<RemoteNode, List<Transaction>, bool> BroadcastTransactionsCallback;
-        public event Func<RemoteNode, List<Block>, bool> BroadcastBlocksCallback;
-        public event Func<RemoteNode, List<Block>, bool> ResponseBlocksCallback;
 
         private Queue<Message> _messageQueueHigh = new Queue<Message>();
         private Queue<Message> _messageQueueLow = new Queue<Message>();
@@ -187,23 +184,36 @@ namespace Mineral.Network
 
         private void ReceivedResponseBlocks(BlocksPayload payload)
         {
+            foreach (Block block in payload.Blocks)
+            {
+                Blockchain.BLOCK_ERROR eRET = Blockchain.Instance.AddBlock(block);
+                if (eRET != Blockchain.BLOCK_ERROR.E_NO_ERROR)
+                {
+                    Disconnect(DisconnectType.InvalidBlock, "Failed AddResponseBlocks.");
+                    break;
+                }
+            }
             if (!NetworkManager.Instance.SyncBlockManager.SetSyncResponse(Version.NodeID))
                 return;
-
-            if (!ResponseBlocksCallback.Invoke(this, payload.Blocks))
-                Disconnect(DisconnectType.InvalidBlock, "Failed AddResponseBlocks.");
         }
 
         private void ReceivedBroadcastBlocks(BroadcastBlockPayload payload)
         {
-            if (!BroadcastBlocksCallback(this, payload.Blocks))
-                Disconnect(DisconnectType.InvalidBlock, "Failed AddBroadcastBlocks.");
+            foreach (Block block in payload.Blocks)
+            {
+                Blockchain.BLOCK_ERROR err = Blockchain.Instance.AddBlock(block);
+                if (err != Blockchain.BLOCK_ERROR.E_NO_ERROR &&
+                    err != Blockchain.BLOCK_ERROR.E_ERROR_HEIGHT)
+                {
+                    Disconnect(DisconnectType.InvalidBlock, "Failed AddBroadcastBlocks.");
+                    break;
+                }
+            }
         }
 
         private void ReceivedBroadcastTransactions(TransactionsPayload payload)
         {
-            if (!BroadcastTransactionsCallback(this, payload.Transactions))
-                Disconnect(DisconnectType.InvalidTransaction, "Failed AddBroadcastTransactions.");
+            Blockchain.Instance.AddTransactionPool(payload.Transactions);
         }
 
         private void OnMessageReceived(Message message)
