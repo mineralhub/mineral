@@ -9,32 +9,48 @@ namespace Mineral.Core
     {
         protected class CacheBlocks
         {
+            Dictionary<int, Block> _heimap = new Dictionary<int, Block>();
+            Dictionary<UInt256, Block> _hashmap = new Dictionary<UInt256, Block>();
             LinkedList<Block> _blocks = new LinkedList<Block>();
-            int _capacity = 1024;
+            int _capacity = 40960;
 
             public void SetCapacity(int capacity) { _capacity = capacity; }
             public void Add(Block block)
             {
-                lock (_blocks)
+                lock (this)
                 {
+                    if (_heimap.ContainsKey(block.Height))
+                        return;
+                    _heimap.Add(block.Height, block);
+                    if (_hashmap.ContainsKey(block.Hash))
+                        return;
+                    _hashmap.Add(block.Hash, block);
                     _blocks.AddLast(block);
+
                     if (_capacity < _blocks.Count)
+                    {
+                        Block _rmv = _blocks.First();
+                        _heimap.Remove(_rmv.Height);
+                        _hashmap.Remove(_rmv.Hash);
                         _blocks.RemoveFirst();
+                    }
                 }
             }
+
             public Block GetBlock(int height)
             {
-                Block retval = null;
-                lock (_blocks)
-                    retval = _blocks.SingleOrDefault(p => p.Height == height);
-                return retval;
+                lock (this)
+                    if (_heimap.ContainsKey(height))
+                        return _heimap[height];
+                return null;
             }
+
             public Block GetBlock(UInt256 hash)
             {
-                Block retval = null;
-                lock (_blocks)
-                    retval = _blocks.SingleOrDefault(p => p.Hash == hash);
-                return retval;
+                lock (this)
+                    if (_hashmap.ContainsKey(hash))
+                        return _hashmap[hash];
+                return null;
             }
         }
 
