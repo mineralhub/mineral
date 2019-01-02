@@ -263,7 +263,6 @@ namespace Mineral.Database.LevelDB
             if (!_db.TryGet(ReadOptions.Default, SliceBuilder.Begin(DataEntryPrefix.DATA_Block).Add(hash), out value))
                 return null;
             block = Block.FromTrimmedData(value.ToArray(), sizeof(long), p => _storage.GetTransaction(p));
-            _cacheChain.AddBlock(block);
             return block;
         }
 
