@@ -9,32 +9,48 @@ namespace Mineral.Core
     {
         protected class CacheBlocks
         {
-            LinkedList<Block> _blocks = new LinkedList<Block>();
-            int _capacity = 1024;
+            private Dictionary<int, Block> _heightBlocks = new Dictionary<int, Block>();
+            private Dictionary<UInt256, Block> _hashBlocks = new Dictionary<UInt256, Block>();
+            private LinkedList<Block> _blocks = new LinkedList<Block>();
+            private int _capacity = 40960;
 
             public void SetCapacity(int capacity) { _capacity = capacity; }
             public void Add(Block block)
             {
-                lock (_blocks)
+                lock (this)
                 {
+                    if (_heightBlocks.ContainsKey(block.Height))
+                        return;
+                    _heightBlocks.Add(block.Height, block);
+                    if (_hashBlocks.ContainsKey(block.Hash))
+                        return;
+                    _hashBlocks.Add(block.Hash, block);
                     _blocks.AddLast(block);
+
                     if (_capacity < _blocks.Count)
+                    {
+                        Block _rmv = _blocks.First();
+                        _heightBlocks.Remove(_rmv.Height);
+                        _hashBlocks.Remove(_rmv.Hash);
                         _blocks.RemoveFirst();
+                    }
                 }
             }
+
             public Block GetBlock(int height)
             {
-                Block retval = null;
-                lock (_blocks)
-                    retval = _blocks.SingleOrDefault(p => p.Height == height);
-                return retval;
+                lock (this)
+                    if (_heightBlocks.ContainsKey(height))
+                        return _heightBlocks[height];
+                return null;
             }
+
             public Block GetBlock(UInt256 hash)
             {
-                Block retval = null;
-                lock (_blocks)
-                    retval = _blocks.SingleOrDefault(p => p.Hash == hash);
-                return retval;
+                lock (this)
+                    if (_hashBlocks.ContainsKey(hash))
+                        return _hashBlocks[hash];
+                return null;
             }
         }
 

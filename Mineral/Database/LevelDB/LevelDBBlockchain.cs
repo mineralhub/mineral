@@ -187,6 +187,7 @@ namespace Mineral.Database.LevelDB
                     WriteBatch batch = new WriteBatch();
                     OnAddHeader(block.Header, batch);
                     _db.Write(WriteOptions.Default, batch);
+                    _cacheBlocks.Add(block);
                 }
                 if (block.Height < _headerIndices.Count)
                     _newBlockEvent.Set();
@@ -214,6 +215,7 @@ namespace Mineral.Database.LevelDB
                         _proof.Update(this);
                     OnPersistCompleted(block);
                 }
+                _cacheBlocks.Add(block);
                 return true;
             }
             return false;
@@ -265,7 +267,9 @@ namespace Mineral.Database.LevelDB
             Slice value;
             if (!_db.TryGet(ReadOptions.Default, SliceBuilder.Begin(DataEntryPrefix.DATA_Block).Add(hash), out value))
                 return null;
-            return Block.FromTrimmedData(value.ToArray(), sizeof(long), p => _storage.GetTransaction(p));
+            block = Block.FromTrimmedData(value.ToArray(), sizeof(long), p => _storage.GetTransaction(p));
+            _cacheBlocks.Add(block);
+            return block;
         }
 
         public override Block GetBlock(int height)
@@ -301,7 +305,7 @@ namespace Mineral.Database.LevelDB
             }
             List<Block> blocks = new List<Block>();
             for (int i = 0; i < hashes.Count; ++i)
-            { 
+            {
                 Block block = GetBlock(hashes[i]);
                 if (block == null)
                     break;
