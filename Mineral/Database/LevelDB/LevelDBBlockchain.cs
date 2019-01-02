@@ -16,7 +16,6 @@ namespace Mineral.Database.LevelDB
         private string _path;
         private DB _db;
 
-        private List<UInt256> _headerIndices = new List<UInt256>();
         private uint _storedHeaderCount = 0;
 
         private Dictionary<UInt256, Block> _waitPersistBlocks = new Dictionary<UInt256, Block>();
@@ -86,9 +85,10 @@ namespace Mineral.Database.LevelDB
                     }
                 }).OrderBy(p => p.Index).SelectMany(p => p.Hashes).ToArray();
 
+                int height = 0;
                 foreach (UInt256 headerHash in headerHashes)
                 {
-                    _headerIndices.Add(headerHash);
+                    _cacheChain.AddHeaderIndex(height++, headerHash);
                     ++_storedHeaderCount;
                 }
 
@@ -97,14 +97,14 @@ namespace Mineral.Database.LevelDB
                     BlockHeader[] headers = _db.Find(options, SliceBuilder.Begin(DataEntryPrefix.DATA_Block), (k, v) =>
                                                      BlockHeader.FromArray(v.ToArray(), sizeof(long))).OrderBy(p => p.Height).ToArray();
                     for (int i = 0; i < headers.Length; ++i)
-                        _headerIndices.Add(headers[i].Hash);
+                        _cacheChain.AddHeaderIndex(i, headers[i].Hash);
                 }
                 else if (_storedHeaderCount <= _currentHeaderHeight)
                 {
-                    for (UInt256 hash = _currentHeaderHash; hash != _headerIndices[(int)_storedHeaderCount - 1];)
+                    for (UInt256 hash = _currentHeaderHash; hash != _cacheChain.HeaderIndices[(int)_storedHeaderCount - 1];)
                     {
                         BlockHeader header = BlockHeader.FromArray(_db.Get(options, SliceBuilder.Begin(DataEntryPrefix.DATA_Block).Add(hash)).ToArray(), sizeof(long));
-                        _headerIndices.Insert((int)_storedHeaderCount, hash);
+                        _cacheChain.AddHeaderIndex(header.Height, header.Hash);
                         hash = header.PrevHash;
                     }
                 }
@@ -126,7 +126,7 @@ namespace Mineral.Database.LevelDB
                         batch.Delete(it.Key());
                 }
                 _db.Write(WriteOptions.Default, batch);
-                _headerIndices.Add(_genesisBlock.Hash);
+                _cacheChain.AddHeaderIndex(_genesisBlock.Height, _genesisBlock.Hash);
                 _currentBlockHash = _genesisBlock.Hash;
                 _currentHeaderHash = _genesisBlock.Hash;
                 Persist(_genesisBlock);
@@ -175,35 +175,30 @@ namespace Mineral.Database.LevelDB
                 }
             }
 
-            lock (_headerIndices)
+            int height = _cacheChain.HeaderHeight;
+            if (height + 1 == block.Height)
             {
-                if (_headerIndices.Count <= block.Height - 1)
-                    return BLOCK_ERROR.E_ERROR_HEIGHT;
-
-                if (_headerIndices.Count == block.Height)
-                {
-                    if (!block.Verify())
-                        return BLOCK_ERROR.E_ERROR;
-                    WriteBatch batch = new WriteBatch();
-                    OnAddHeader(block.Header, batch);
-                    _db.Write(WriteOptions.Default, batch);
-                    _cacheBlocks.Add(block);
-                }
-                if (block.Height < _headerIndices.Count)
-                    _newBlockEvent.Set();
+                if (!block.Verify())
+                    return BLOCK_ERROR.E_ERROR;
+                WriteBatch batch = new WriteBatch();
+                OnAddHeader(block.Header, batch);
+                _db.Write(WriteOptions.Default, batch);
+                _cacheChain.AddBlock(block);
+                _newBlockEvent.Set();
             }
+            else
+                return BLOCK_ERROR.E_ERROR_HEIGHT;
+
             return BLOCK_ERROR.E_NO_ERROR;
         }
 
         public override bool AddBlockDirectly(Block block)
         {
-            while (_headerIndices.Count > CurrentBlockHeight + 1)
-                Thread.Sleep(10);
-
             if (block.Height != CurrentBlockHeight + 1)
                 return false;
 
-            if (block.Height == _headerIndices.Count)
+            int height = _cacheChain.HeaderHeight;
+            if (height + 1 == block.Height)
             {
                 WriteBatch batch = new WriteBatch();
                 OnAddHeader(block.Header, batch);
@@ -215,7 +210,7 @@ namespace Mineral.Database.LevelDB
                         _proof.Update(this);
                     OnPersistCompleted(block);
                 }
-                _cacheBlocks.Add(block);
+                _cacheChain.AddBlock(block);
                 return true;
             }
             return false;
@@ -236,7 +231,7 @@ namespace Mineral.Database.LevelDB
 
         public override BlockHeader GetHeader(int height)
         {
-            Block block = _cacheBlocks.GetBlock(height);
+            Block block = _cacheChain.GetBlock(height);
             if (block != null)
                 return block.Header;
             UInt256 hash = GetBlockHash(height);
@@ -261,20 +256,20 @@ namespace Mineral.Database.LevelDB
 
         public override Block GetBlock(UInt256 hash)
         {
-            Block block = _cacheBlocks.GetBlock(hash);
+            Block block = _cacheChain.GetBlock(hash);
             if (block != null)
                 return block;
             Slice value;
             if (!_db.TryGet(ReadOptions.Default, SliceBuilder.Begin(DataEntryPrefix.DATA_Block).Add(hash), out value))
                 return null;
             block = Block.FromTrimmedData(value.ToArray(), sizeof(long), p => _storage.GetTransaction(p));
-            _cacheBlocks.Add(block);
+            _cacheChain.AddBlock(block);
             return block;
         }
 
         public override Block GetBlock(int height)
         {
-            Block block = _cacheBlocks.GetBlock(height);
+            Block block = _cacheChain.GetBlock(height);
             if (block != null)
                 return block;
             UInt256 hash = GetBlockHash(height);
@@ -294,23 +289,16 @@ namespace Mineral.Database.LevelDB
 
         public override List<Block> GetBlocks(int start, int end)
         {
-            List<UInt256> hashes = new List<UInt256>();
-            lock (_headerIndices)
-            {
-                if (_headerIndices.Count <= start)
-                    return new List<Block>();
-                if (_headerIndices.Count <= end)
-                    end = _headerIndices.Count;
-                hashes = _headerIndices.GetRange(start, end - start);
-            }
+            var hashes = _cacheChain.HeaderIndices.Values.Skip(start).Take(end - start);
             List<Block> blocks = new List<Block>();
-            for (int i = 0; i < hashes.Count; ++i)
+            foreach (var hash in hashes)
             {
-                Block block = GetBlock(hashes[i]);
+                Block block = GetBlock(hash);
                 if (block == null)
                     break;
                 blocks.Add(block);
             }
+
             return blocks;
         }
 
@@ -326,12 +314,8 @@ namespace Mineral.Database.LevelDB
 
         private UInt256 GetBlockHash(int height)
         {
-            lock (_headerIndices)
-            {
-                if (_headerIndices.Count <= height)
-                    return null;
-                return _headerIndices[height];
-            }
+            _cacheChain.HeaderIndices.TryGetValue(height, out UInt256 hash);
+            return hash;
         }
 
         public override void NormalizeTransactions(ref List<Transaction> txs)
@@ -357,13 +341,13 @@ namespace Mineral.Database.LevelDB
 
         private void OnAddHeader(BlockHeader header, WriteBatch batch)
         {
-            _headerIndices.Add(header.Hash);
+            _cacheChain.AddHeaderIndex(header.Height, header.Hash);
             while (_storedHeaderCount <= header.Height - 2000)
             {
                 using (MemoryStream ms = new MemoryStream())
                 using (BinaryWriter bw = new BinaryWriter(ms))
                 {
-                    bw.WriteSerializableArray(_headerIndices.Skip((int)_storedHeaderCount).Take(2000));
+                    bw.WriteSerializableArray(_cacheChain.HeaderIndices.Values.Skip((int)_storedHeaderCount).Take(2000));
                     bw.Flush();
                     batch.Put(SliceBuilder.Begin(DataEntryPrefix.IX_HeaderHashList).Add(_storedHeaderCount), ms.ToArray());
                 }
@@ -372,7 +356,7 @@ namespace Mineral.Database.LevelDB
             batch.Put(SliceBuilder.Begin(DataEntryPrefix.DATA_Block).Add(header.Hash), SliceBuilder.Begin().Add(0L).Add(header.ToArray()));
             batch.Put(SliceBuilder.Begin(DataEntryPrefix.SYS_CurrentHeader), SliceBuilder.Begin().Add(header.Hash).Add(header.Height));
 
-            _currentHeaderHeight = _headerIndices.Count - 1;
+            _currentHeaderHeight = header.Height;
             _currentHeaderHash = header.Hash;
         }
 
@@ -617,7 +601,7 @@ namespace Mineral.Database.LevelDB
             _db.Write(WriteOptions.Default, batch);
             _currentBlockHeight = block.Header.Height;
             _currentBlockHash = block.Header.Hash;
-            _cacheBlocks.Add(block);
+            _cacheChain.AddBlock(block);
 
 
             StringBuilder sb = new StringBuilder();
@@ -636,13 +620,8 @@ namespace Mineral.Database.LevelDB
 
                 while (!_disposed)
                 {
-                    UInt256 hash;
-                    lock (_headerIndices)
-                    {
-                        if (_headerIndices.Count <= _currentBlockHeight + 1)
-                            break;
-                        hash = _headerIndices[_currentBlockHeight + 1];
-                    }
+                    if (!_cacheChain.HeaderIndices.TryGetValue(_currentBlockHeight + 1, out UInt256 hash))
+                        break;
                     Block block;
                     lock (_waitPersistBlocks)
                     {

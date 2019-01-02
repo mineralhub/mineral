@@ -83,13 +83,13 @@ namespace Mineral.Network
             if (Interlocked.Exchange(ref _connected, 0) == 1)
             {
 #if DEBUG
-                Logger.Log("OnDisconnected. RemoteEndPoint : " + RemoteEndPoint);
+                Logger.Log("OnDisconnected. RemoteEndPoint : " + RemoteEndPoint + "\nType : " + type.ToString() + "\nLog : " + log);
 #endif
                 DisconnectedCallback.Invoke(this, type);
             }
         }
 
-        public virtual void Dispose()
+        public virtual void Dispose() 
         {
             Disconnect(DisconnectType.None, "Dispose");
         }
@@ -186,8 +186,9 @@ namespace Mineral.Network
         {
             foreach (Block block in payload.Blocks)
             {
-                Blockchain.BLOCK_ERROR eRET = Blockchain.Instance.AddBlock(block);
-                if (eRET != Blockchain.BLOCK_ERROR.E_NO_ERROR)
+                Blockchain.BLOCK_ERROR err = Blockchain.Instance.AddBlock(block);
+                if (err != Blockchain.BLOCK_ERROR.E_NO_ERROR &&
+                    err != Blockchain.BLOCK_ERROR.E_ERROR_HEIGHT)
                 {
                     Disconnect(DisconnectType.InvalidBlock, "Failed AddResponseBlocks.");
                     break;

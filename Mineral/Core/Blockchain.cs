@@ -1,5 +1,6 @@
 ﻿using Mineral.Database.LevelDB;
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -7,50 +8,44 @@ namespace Mineral.Core
 {
     public abstract class Blockchain : IDisposable
     {
-        protected class CacheBlocks
+        protected class CacheChain
         {
-            private Dictionary<int, Block> _heightBlocks = new Dictionary<int, Block>();
-            private Dictionary<UInt256, Block> _hashBlocks = new Dictionary<UInt256, Block>();
-            private LinkedList<Block> _blocks = new LinkedList<Block>();
+            public ConcurrentDictionary<int, UInt256> HeaderIndices { get; } = new ConcurrentDictionary<int, UInt256>();
+            public ConcurrentDictionary<UInt256, Block> HashBlocks { get; } = new ConcurrentDictionary<UInt256, Block>();
             private int _capacity = 40960;
 
-            public void SetCapacity(int capacity) { _capacity = capacity; }
-            public void Add(Block block)
-            {
-                lock (this)
-                {
-                    if (_heightBlocks.ContainsKey(block.Height))
-                        return;
-                    _heightBlocks.Add(block.Height, block);
-                    if (_hashBlocks.ContainsKey(block.Hash))
-                        return;
-                    _hashBlocks.Add(block.Hash, block);
-                    _blocks.AddLast(block);
+            public int HeaderHeight => HeaderIndices.Count - 1;
 
-                    if (_capacity < _blocks.Count)
-                    {
-                        Block _rmv = _blocks.First();
-                        _heightBlocks.Remove(_rmv.Height);
-                        _hashBlocks.Remove(_rmv.Hash);
-                        _blocks.RemoveFirst();
-                    }
-                }
+            public void SetCapacity(int capacity) { _capacity = capacity; }
+            public bool AddBlock(Block block)
+            {
+                if (!HeaderIndices.TryGetValue(block.Height, out UInt256 hash))
+                    return false;
+                if (hash != block.Hash)
+                    return false;
+                if (!HashBlocks.TryAdd(block.Hash, block))
+                    return false;
+                if (_capacity < HashBlocks.Count)
+                    HashBlocks.Remove(HeaderIndices[HeaderIndices.Count - _capacity - 1], out _);
+                return true;
             }
 
             public Block GetBlock(int height)
             {
-                lock (this)
-                    if (_heightBlocks.ContainsKey(height))
-                        return _heightBlocks[height];
-                return null;
+                if (!HeaderIndices.TryGetValue(height, out UInt256 hash))
+                    return null;
+                return GetBlock(hash);
             }
 
             public Block GetBlock(UInt256 hash)
             {
-                lock (this)
-                    if (_hashBlocks.ContainsKey(hash))
-                        return _hashBlocks[hash];
-                return null;
+                HashBlocks.TryGetValue(hash, out Block block);
+                return block;
+            }
+
+            public bool AddHeaderIndex(int height, UInt256 hash)
+            {
+                return HeaderIndices.TryAdd(height, hash);
             }
         }
 
@@ -76,7 +71,7 @@ namespace Mineral.Core
             _proof = proof;
         }
 
-        protected CacheBlocks _cacheBlocks = new CacheBlocks();
+        protected CacheChain _cacheChain = new CacheChain();
 
         public object PersistLock { get; } = new object();
         public event EventHandler<Block> PersistCompleted;
@@ -215,6 +210,6 @@ namespace Mineral.Core
         public abstract void NormalizeTransactions(ref List<Transaction> txs);
         public abstract void PersistTurnTable(List<UInt160> addrs, int height);
         public abstract TurnTableState GetTurnTable(int height);
-        public void SetCacheBlockCapacity(int capacity) { _cacheBlocks.SetCapacity(capacity); }
+        public void SetCacheBlockCapacity(int capacity) { _cacheChain.SetCapacity(capacity); }
     }
 }
