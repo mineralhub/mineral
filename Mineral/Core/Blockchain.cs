@@ -9,29 +9,29 @@ namespace Mineral.Core
     {
         protected class CacheBlocks
         {
-            Dictionary<int, Block> _heimap = new Dictionary<int, Block>();
-            Dictionary<UInt256, Block> _hashmap = new Dictionary<UInt256, Block>();
-            LinkedList<Block> _blocks = new LinkedList<Block>();
-            int _capacity = 40960;
+            private Dictionary<int, Block> _heightBlocks = new Dictionary<int, Block>();
+            private Dictionary<UInt256, Block> _hashBlocks = new Dictionary<UInt256, Block>();
+            private LinkedList<Block> _blocks = new LinkedList<Block>();
+            private int _capacity = 40960;
 
             public void SetCapacity(int capacity) { _capacity = capacity; }
             public void Add(Block block)
             {
                 lock (this)
                 {
-                    if (_heimap.ContainsKey(block.Height))
+                    if (_heightBlocks.ContainsKey(block.Height))
                         return;
-                    _heimap.Add(block.Height, block);
-                    if (_hashmap.ContainsKey(block.Hash))
+                    _heightBlocks.Add(block.Height, block);
+                    if (_hashBlocks.ContainsKey(block.Hash))
                         return;
-                    _hashmap.Add(block.Hash, block);
+                    _hashBlocks.Add(block.Hash, block);
                     _blocks.AddLast(block);
 
                     if (_capacity < _blocks.Count)
                     {
                         Block _rmv = _blocks.First();
-                        _heimap.Remove(_rmv.Height);
-                        _hashmap.Remove(_rmv.Hash);
+                        _heightBlocks.Remove(_rmv.Height);
+                        _hashBlocks.Remove(_rmv.Hash);
                         _blocks.RemoveFirst();
                     }
                 }
@@ -40,16 +40,16 @@ namespace Mineral.Core
             public Block GetBlock(int height)
             {
                 lock (this)
-                    if (_heimap.ContainsKey(height))
-                        return _heimap[height];
+                    if (_heightBlocks.ContainsKey(height))
+                        return _heightBlocks[height];
                 return null;
             }
 
             public Block GetBlock(UInt256 hash)
             {
                 lock (this)
-                    if (_hashmap.ContainsKey(hash))
-                        return _hashmap[hash];
+                    if (_hashBlocks.ContainsKey(hash))
+                        return _hashBlocks[hash];
                 return null;
             }
         }
