@@ -26,7 +26,7 @@ namespace Mineral.Core
                 if (!HashBlocks.TryAdd(block.Hash, block))
                     return false;
                 if (_capacity < HashBlocks.Count)
-                    HashBlocks.Remove(HeaderIndices[HeaderIndices.Count - _capacity - 1], out _);
+                    HashBlocks.TryRemove(HeaderIndices[HeaderIndices.Count - _capacity - 1], out _);
                 return true;
             }
 

@@ -1,24 +1,42 @@
 ﻿using System;
-using System.Collections.Generic;
+using System.Collections.Concurrent;
 using System.IO;
-using System.Text;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace Mineral
 {
     public static class Logger
     {
-        static private object _writeLock = new object();
         static public bool WriteConsole = false;
+        static private ConcurrentQueue<string> _queue = new ConcurrentQueue<string>();
+
+        static Logger()
+        {
+            Task.Run(() => Process());
+        }
 
         static public void Log(string log)
         {
-            lock(_writeLock)
-            {
-                if (WriteConsole)
-                    Console.WriteLine(log);
+            _queue.Enqueue(log);
+        }
 
-                File.AppendAllText("./output-log", log + "\n");
+        static void Process()
+        {
+            while (true)
+            {
+                if (_queue.TryDequeue(out string log))
+                {
+                    if (WriteConsole)
+                        Console.WriteLine(log);
+                    File.AppendAllText("./output-log", log + "\n");
+                }
+                else
+                {
+                    Thread.Sleep(50);
+                }
             }
+
         }
     }
 }
