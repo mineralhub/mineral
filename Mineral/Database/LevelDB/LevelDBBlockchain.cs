@@ -263,7 +263,6 @@ namespace Mineral.Database.LevelDB
             if (!_db.TryGet(ReadOptions.Default, SliceBuilder.Begin(DataEntryPrefix.DATA_Block).Add(hash), out value))
                 return null;
             block = Block.FromTrimmedData(value.ToArray(), sizeof(long), p => _storage.GetTransaction(p));
-            _cacheChain.AddBlock(block);
             return block;
         }
 
@@ -601,8 +600,6 @@ namespace Mineral.Database.LevelDB
             _db.Write(WriteOptions.Default, batch);
             _currentBlockHeight = block.Header.Height;
             _currentBlockHash = block.Header.Hash;
-            _cacheChain.AddBlock(block);
-
 
             StringBuilder sb = new StringBuilder();
             sb.AppendLine("persist block : " + block.Height);
