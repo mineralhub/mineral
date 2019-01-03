@@ -5,7 +5,7 @@ using Mineral.Wallets;
 using Mineral.Wallets.KeyStore;
 using System.Text;
 
-namespace Mineral.UnitTests
+namespace Mineral.UnitTests.Wallet
 {
     [TestClass]
     public class UT_Account

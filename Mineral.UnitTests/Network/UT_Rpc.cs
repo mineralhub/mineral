@@ -2,7 +2,7 @@
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Mineral.Network.RPC;
 
-namespace Mineral.UnitTests
+namespace Mineral.UnitTests.Network
 {
     [TestClass]
     public class UT_Rpc

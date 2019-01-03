@@ -7,7 +7,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Text;
 
-namespace Mineral.UnitTests
+namespace Mineral.UnitTests.BlcokChain
 {
     [TestClass]
     public class UT_Transaction
