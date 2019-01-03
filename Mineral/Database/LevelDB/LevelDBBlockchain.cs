@@ -8,6 +8,7 @@ using Mineral;
 using Mineral.Core;
 using System.Text;
 using Mineral.Wallets;
+using System.Threading.Tasks;
 
 namespace Mineral.Database.LevelDB
 {
@@ -22,8 +23,6 @@ namespace Mineral.Database.LevelDB
         private Dictionary<UInt256, BlockHeader> _headerCache = new Dictionary<UInt256, BlockHeader>();
 
         private AutoResetEvent _newBlockEvent = new AutoResetEvent(false);
-        private Thread _threadPersistence = null;
-
         private bool _disposed = false;
 
         private Block _genesisBlock;
@@ -134,19 +133,13 @@ namespace Mineral.Database.LevelDB
                 _proof.Update(this);
             }
 
-            _threadPersistence = new Thread(PersistBlocksLoop)
-            {
-                Name = $"{nameof(LevelDBBlockchain)}.{nameof(PersistBlocksLoop)}"
-            };
-            _threadPersistence.Start();
+            Task.Run(() => PersistBlocksLoop());
         }
 
         public override void Dispose()
         {
             _disposed = true;
             _newBlockEvent.Set();
-            if (_threadPersistence.ThreadState.HasFlag(ThreadState.Unstarted))
-                _threadPersistence.Join();
             _newBlockEvent.Dispose();
             if (_db != null)
             {
