@@ -34,17 +34,21 @@ namespace Mineral
 
         static Logger()
         {
-            Task.Run(() => {
+            Task.Run(() =>
+            {
                 Process();
             });
         }
 
         static public void Log(string log, LogLevel logLevel = LogLevel.INFO)
         {
-            TypedLog logdata;
-            _queue.Enqueue(logdata = new TypedLog() { timeStamp = DateTime.Now, logType = logLevel, message = log });
-            if (WriteConsole && logdata.logType <= WriteLogLevel)
-                Console.WriteLine(logdata);
+            TypedLog logdata = new TypedLog() { timeStamp = DateTime.Now, logType = logLevel, message = log };
+            if (logdata.logType <= WriteLogLevel)
+            {
+                _queue.Enqueue(logdata);
+                if (WriteConsole)
+                    Console.WriteLine(logdata);
+            }
         }
 
         static public void Info(string log)

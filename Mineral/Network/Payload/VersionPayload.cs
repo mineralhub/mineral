@@ -119,7 +119,7 @@ namespace Mineral.Network.Payload
             }
             catch (Exception e)
             {
-                Logger.Log("deserialize PongPayload Exception.");
+                Logger.Error("deserialize PongPayload Exception.");
                 throw e;
             }
         }

@@ -68,7 +68,7 @@ namespace Mineral.Network
             if (Interlocked.Exchange(ref _connected, 1) == 0)
             {
 #if DEBUG
-                Logger.Log("OnConnected. RemoteEndPoint : " + RemoteEndPoint);
+                Logger.Debug("OnConnected. RemoteEndPoint : " + RemoteEndPoint);
 #endif
                 NetworkProcessAsyncLoop();
             }
@@ -83,7 +83,7 @@ namespace Mineral.Network
             if (Interlocked.Exchange(ref _connected, 0) == 1)
             {
 #if DEBUG
-                Logger.Log("OnDisconnected. RemoteEndPoint : " + RemoteEndPoint + "\nType : " + type.ToString() + "\nLog : " + log);
+                Logger.Debug("OnDisconnected. RemoteEndPoint : " + RemoteEndPoint + "\nType : " + type.ToString() + "\nLog : " + log);
 #endif
                 DisconnectedCallback.Invoke(this, type);
             }
@@ -220,7 +220,7 @@ namespace Mineral.Network
         private void OnMessageReceived(Message message)
         {
 #if DEBUG
-            Logger.Log(message.Command.ToString());
+            Logger.Debug(message.Command.ToString());
 #endif
             switch (message.Command)
             {
@@ -377,7 +377,7 @@ namespace Mineral.Network
             }
 
 #if DEBUG
-            Logger.Log("Version : " + ListenerEndPoint + ", " + Version.NodeID);
+            Logger.Debug("Version : " + ListenerEndPoint + ", " + Version.NodeID);
 #endif
             if (!await SendMessageAsync(Message.Create(Message.CommandName.Verack, VerackPayload.Create(NetworkManager.Instance.NodeID))))
                 return;
@@ -411,7 +411,7 @@ namespace Mineral.Network
                 catch (EndOfStreamException e)
                 {
 
-                    Logger.Log(e.Message + "\n" + e.StackTrace);
+                    Logger.Error(e.Message + "\n" + e.StackTrace);
                     Disconnect(DisconnectType.Exception, message.Command + ". EndOfStreamException");
                     break;
                 }

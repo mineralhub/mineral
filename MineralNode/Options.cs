@@ -42,7 +42,7 @@ namespace MineralNode
         {
             if (data == null)
             {
-                Logger.Log("option data not loaded.");
+                Logger.Warning("option data not loaded.");
                 return false;
             }
 
@@ -51,14 +51,14 @@ namespace MineralNode
                 System.Collections.IEnumerator em = error.Keys.GetEnumerator();
                 em.MoveNext();
                 string message = "Invalid option : " + em.Current;
-                Logger.Log(message);
+                Logger.Warning(message);
                 return false;
             }
 
             if (data.ContainsKey(OptionName.KeyStoreDir) && data.ContainsKey(OptionName.PrivateKey))
             {
                 string message = OptionName.KeyStoreDir + "and " + OptionName.PrivateKey + "can't used together.";
-                Logger.Log(message);
+                Logger.Warning(message);
                 return false;
             }
             return true;

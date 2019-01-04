@@ -487,7 +487,7 @@ namespace Mineral.Database.LevelDB
                     byte[] eCodeBytes = BitConverter.GetBytes((Int64)tx.Data.TxResult).Take(8).ToArray();
                     batch.Put(SliceBuilder.Begin(DataEntryPrefix.DATA_TxResult).Add(tx.Hash), SliceBuilder.Begin().Add(eCodeBytes));
 #if DEBUG
-                    Logger.Log("verified == false transaction. " + tx.ToJson());
+                    Logger.Debug("verified == false transaction. " + tx.ToJson());
 #endif
                     continue;
                 }

@@ -43,7 +43,7 @@ namespace MineralNode
 
         public bool InitConfig()
         {
-            Logger.Log("---------- MainService Initialize Start ----------");
+            Logger.Info("---------- MainService Initialize Start ----------");
             string path = option.Default.ConfigDir ?? "./config.json";
             return Config.Instance.Initialize(path);
         }
@@ -56,14 +56,14 @@ namespace MineralNode
             {
                 if (string.IsNullOrEmpty(option.Wallet.KeyStorePassword))
                 {
-                    Logger.Log("Keystore password is empty.");
+                    Logger.Warning("Keystore password is empty.");
                     return false;
                 }
 
                 path = option.Wallet.KeyStoreDir.Contains(".keystore") ? option.Wallet.KeyStoreDir : option.Wallet.KeyStoreDir + ".keystore";
                 if (!File.Exists(path))
                 {
-                    Logger.Log(string.Format("Not found keystore file : [0]", path));
+                    Logger.Warning(string.Format("Not found keystore file : [0]", path));
                     return false;
                 }
 
@@ -78,7 +78,7 @@ namespace MineralNode
 
                 if (!KeyStoreService.DecryptKeyStore(option.Wallet.KeyStorePassword, keystore, out privatekey))
                 {
-                    Logger.Log("Fail to decrypt keystore file.");
+                    Logger.Warning("Fail to decrypt keystore file.");
                     return false;
                 }
             }
@@ -154,7 +154,7 @@ namespace MineralNode
                 _genesisBlock = new Block(blockHeader, txs);
             }
 
-            Logger.Log("genesis block. hash : " + _genesisBlock.Hash);
+            Logger.Debug("genesis block. hash : " + _genesisBlock.Hash);
             Blockchain.SetInstance(new Mineral.Database.LevelDB.LevelDBBlockchain("./output-database", _genesisBlock));
             Blockchain.Instance.SetProof(new DPos());
             Blockchain.Instance.SetCacheBlockCapacity(Config.Instance.Block.CacheCapacity);
@@ -162,7 +162,7 @@ namespace MineralNode
             Blockchain.Instance.Run();
 
             var genesisBlockTx = Blockchain.Instance.Storage.GetTransaction(_genesisBlock.Transactions[0].Hash);
-            Logger.Log("genesis block tx. hash : " + genesisBlockTx.Hash);
+            Logger.Debug("genesis block tx. hash : " + genesisBlockTx.Hash);
 
             WalletIndexer.SetInstance(new Mineral.Database.LevelDB.LevelDBWalletIndexer("./output-wallet-index"));
 
@@ -223,10 +223,10 @@ namespace MineralNode
 
                 if (!Blockchain.Instance.VerityBlock(block))
                 {
-                    Logger.Log("Block [" + block.Height + ":" + block.Hash + "] has unconfirmed transactions.");
+                    Logger.Warning("Block [" + block.Height + ":" + block.Hash + "] has unconfirmed transactions.");
                     if (!Blockchain.Instance.VerityBlock(block))
                     {
-                        Logger.Log("Block [" + block.Height + ":" + block.Hash + "] has not verified.");
+                        Logger.Warning("Block [" + block.Height + ":" + block.Hash + "] has not verified.");
                     }
                 }
 

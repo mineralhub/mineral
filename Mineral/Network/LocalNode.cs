@@ -87,7 +87,7 @@ namespace Mineral.Network
                     }
                     catch (Exception e)
                     {
-                        Logger.Log(e.Message);
+                        Logger.Error(e.Message);
                     }
                 });
             }
