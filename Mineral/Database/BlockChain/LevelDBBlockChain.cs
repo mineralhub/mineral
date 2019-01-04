@@ -15,6 +15,12 @@ namespace Mineral.Database.BlockChain
         public LevelDBBlockChain(string path)
         {
             this.db = DB.Open(path, new Options { CreateIfMissing = true });
+            NewStorage();
+        }
+
+        public void Dispose()
+        {
+            this.db.Dispose();
         }
 
         #region Properties
@@ -74,6 +80,24 @@ namespace Mineral.Database.BlockChain
             batch.Put(SliceBuilder.Begin(DataEntryPrefix.DATA_TxResult).Add(tx.Hash), SliceBuilder.Begin().Add(txRes));
         }
 
+        public void PutCurrentTurnTalbe(WriteBatch batch, byte[] data)
+        {
+            batch.Put(SliceBuilder.Begin(DataEntryPrefix.SYS_CurrentTurnTable), data);
+        }
+
+        public void PutTurnTable(WriteBatch batch, TurnTableState state)
+        {
+            using (MemoryStream ms = new MemoryStream())
+            using (BinaryWriter bw = new BinaryWriter(ms))
+            {
+                state.Serialize(bw);
+                bw.Flush();
+                byte[] data = ms.ToArray();
+                batch.Put(SliceBuilder.Begin(DataEntryPrefix.SYS_CurrentTurnTable), data);
+                batch.Put(SliceBuilder.Begin(DataEntryPrefix.ST_TurnTable).Add(state.turnTableHeight), data);
+            }
+        }
+
         public void BatchWrite(WriteOptions option, WriteBatch batch)
         {
             this.db.Write(option, batch);
@@ -107,6 +131,7 @@ namespace Mineral.Database.BlockChain
                 headerHash = new UInt256();
                 headerHeight = 0;
             }
+
             return result;
         }
 
@@ -124,6 +149,7 @@ namespace Mineral.Database.BlockChain
                 blockHash = new UInt256();
                 blockHeight = 0;
             }
+
             return result;
         }
 
@@ -139,7 +165,7 @@ namespace Mineral.Database.BlockChain
             return result;
         }
 
-        public bool TryGetBlockHeader(UInt256 blockHash, out Block block)
+        public bool TryGetBlock(UInt256 blockHash, out Block block)
         {
             Slice value;
             bool result = this.db.TryGet(new ReadOptions { FillCache = false }, SliceBuilder.Begin(DataEntryPrefix.DATA_Block).Add(blockHash), out value);
@@ -147,6 +173,72 @@ namespace Mineral.Database.BlockChain
                 block = Block.FromTrimmedData(value.ToArray(), sizeof(long), p => Storage.GetTransaction(p));
             else
                 block = null;
+
+            return result;
+        }
+
+        public bool TryGetTransaction(UInt256 txHash, out Transaction tx)
+        {
+            Slice value;
+            bool result = this.db.TryGet(new ReadOptions { FillCache = false }, SliceBuilder.Begin(DataEntryPrefix.DATA_Transaction).Add(txHash), out value);
+            if (result)
+                tx = Transaction.DeserializeFrom(value.ToArray().Skip(sizeof(int)).ToArray());
+            else
+                tx = null;
+
+            return result;
+        }
+
+        public bool TryGetTransactionResult(UInt256 txHash, out ErrorCodes code)
+        {
+            Slice value;
+            bool result = this.db.TryGet(new ReadOptions { FillCache = false }, SliceBuilder.Begin(DataEntryPrefix.DATA_TxResult).Add(txHash), out value);
+            if (result)
+                code = (ErrorCodes)value.ToInt64();
+            else
+                code = ErrorCodes.E_NO_ERROR;
+
+            return result;
+        }
+
+        public bool TryGetCurrentTurnTable(out TurnTableState state)
+        {
+            state = new TurnTableState();
+            Slice value;
+            bool result = db.TryGet(ReadOptions.Default, SliceBuilder.Begin(DataEntryPrefix.SYS_CurrentTurnTable), out value);
+            if (result)
+            {
+                using (MemoryStream ms = new MemoryStream(value.ToArray(), false))
+                using (BinaryReader br = new BinaryReader(ms))
+                {
+                    state.Deserialize(br);
+                }
+            }
+            else
+            {
+                state = null;
+            }
+
+            return result;
+        }
+
+        public bool TryGetTurnTable(int height, out TurnTableState state)
+        {
+            state = new TurnTableState();
+            Slice value;
+            bool result = this.db.TryGet(ReadOptions.Default, SliceBuilder.Begin(DataEntryPrefix.ST_TurnTable).Add(height), out value);
+            if (result)
+            {
+                using (MemoryStream ms = new MemoryStream(value.ToArray(), false))
+                using (BinaryReader br = new BinaryReader(ms))
+                {
+                    state.Deserialize(br);
+                }
+            }
+            else
+            {
+                state = null;
+            }
 
             return result;
         }
@@ -169,10 +261,10 @@ namespace Mineral.Database.BlockChain
             return new UInt256(value.ToArray().Take(32).ToArray());
         }
 
-        public uint GetCurrentHeaderHeight()
+        public int GetCurrentHeaderHeight()
         {
             Slice value = this.db.Get(new ReadOptions { FillCache = false }, SliceBuilder.Begin(DataEntryPrefix.SYS_CurrentHeader));
-            return value.ToArray().ToUInt32(32);
+            return value.ToArray().ToInt32(32);
         }
 
         public UInt256 GetCurrentBlockHash()
@@ -181,10 +273,10 @@ namespace Mineral.Database.BlockChain
             return new UInt256(value.ToArray().Take(32).ToArray());
         }
 
-        public uint GetCurrentBlockHeight()
+        public int GetCurrentBlockHeight()
         {
             Slice value = this.db.Get(new ReadOptions { FillCache = false }, SliceBuilder.Begin(DataEntryPrefix.SYS_CurrentBlock));
-            return value.ToArray().ToUInt32(32);
+            return value.ToArray().ToInt32(32);
         }
 
         public BlockHeader GetBlockHeader(UInt256 blockHash)
@@ -253,11 +345,11 @@ namespace Mineral.Database.BlockChain
             return table;
         }
 
-        public IEnumerable<UInt32> GetTurnTableHegihtList(int height)
+        public IEnumerable<int> GetTurnTableHeightList(int height)
         {
             return this.db.Find(ReadOptions.Default, SliceBuilder.Begin(DataEntryPrefix.ST_TurnTable), (k, v) =>
             {
-                return k.ToArray().ToUInt32(1);
+                return k.ToArray().ToInt32(1);
             }).Where(p => p <= height).ToArray();
         }
 
@@ -287,6 +379,30 @@ namespace Mineral.Database.BlockChain
         public void PutBlock(Block block)
         {
             this.db.Put(WriteOptions.Default, SliceBuilder.Begin(DataEntryPrefix.DATA_Block).Add(block.Hash), SliceBuilder.Begin().Add(0L).Add(block.ToArray()));
+        }
+
+        public void PutHeaderHashList(int prefix_count, IEnumerable<UInt256> headerHashList)
+        {
+            using (MemoryStream ms = new MemoryStream())
+            using (BinaryWriter bw = new BinaryWriter(ms))
+            {
+                bw.WriteSerializableArray(headerHashList);
+                bw.Flush();
+                this.db.Put(WriteOptions.Default, SliceBuilder.Begin(DataEntryPrefix.IX_HeaderHashList).Add(prefix_count), ms.ToArray());
+            }
+        }
+
+        public void PutTurnTable(TurnTableState state)
+        {
+            using (MemoryStream ms = new MemoryStream())
+            using (BinaryWriter bw = new BinaryWriter(ms))
+            {
+                state.Serialize(bw);
+                bw.Flush();
+                byte[] data = ms.ToArray();
+                this.db.Put(WriteOptions.Default, SliceBuilder.Begin(DataEntryPrefix.SYS_CurrentTurnTable), data);
+                this.db.Put(WriteOptions.Default, SliceBuilder.Begin(DataEntryPrefix.ST_TurnTable).Add(state.turnTableHeight), data);
+            }
         }
         #endregion
     }
