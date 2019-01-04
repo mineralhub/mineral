@@ -172,7 +172,6 @@ namespace MineralNode
         public bool Initialize(string[] args)
         {
             bool result = true;
-            Logger.WriteConsole = true;
 
             if (result) result = InitOption(args);
             if (result) result = InitConfig();

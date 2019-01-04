@@ -120,6 +120,13 @@ namespace Mineral
         [JsonConverter(typeof(JsonFixed8Converter))]
         public Fixed8 BlockReward = Fixed8.One * 250;
 
+        [JsonProperty("log-level")]
+        [JsonConverter(typeof(JsonLogLevelConverter))]
+        public LogLevel WriteLogLevel = LogLevel.INFO;
+
+        [JsonProperty("log-console")]
+        public bool WriteLogConsole = false;
+
         public uint Nonce = (uint)(new Random().Next());
 
         public HashSet<IPAddress> LocalAddresses { get; private set; }
@@ -160,6 +167,9 @@ namespace Mineral
             {
                 Console.WriteLine(e.Message);
             }
+            Logger.WriteConsole = Instance.WriteLogConsole;
+            Logger.WriteLogLevel = Instance.WriteLogLevel;
+
             return result;
         }
 

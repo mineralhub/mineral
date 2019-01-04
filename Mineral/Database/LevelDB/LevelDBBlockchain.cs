@@ -594,12 +594,7 @@ namespace Mineral.Database.LevelDB
             _currentBlockHeight = block.Header.Height;
             _currentBlockHash = block.Header.Hash;
 
-            StringBuilder sb = new StringBuilder();
-            sb.AppendLine("persist block : " + block.Height);
-#if FALSE
-            sb.AppendLine(block.ToJson().ToString());
-#endif
-            Logger.Log(sb.ToString());
+            Logger.Debug("persist block : " + block.Height);
         }
 
         private void PersistBlocksLoop()

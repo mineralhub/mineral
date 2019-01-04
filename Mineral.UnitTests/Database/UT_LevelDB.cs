@@ -40,7 +40,7 @@ namespace Mineral.UnitTests.Database
                 this.db.Put(write_option, SliceBuilder.Begin(this.prefix).Add(this.key), this.value);
                 result = true;
             }
-            catch (Exception e)
+            catch
             {
                 result = false;
             }
@@ -59,7 +59,7 @@ namespace Mineral.UnitTests.Database
                     result = this.value.SequenceEqual(slice.ToArray());
                 }
             }
-            catch (Exception e)
+            catch
             {
                 result = false;
             }
@@ -75,7 +75,7 @@ namespace Mineral.UnitTests.Database
                 Slice slice = this.db.Get(read_option, SliceBuilder.Begin(this.prefix).Add(this.key));
                 result = this.value.SequenceEqual(slice.ToArray());
             }
-            catch (Exception e)
+            catch
             {
                 result = false;
             }
@@ -91,7 +91,7 @@ namespace Mineral.UnitTests.Database
                 this.db.Delete(this.write_option, SliceBuilder.Begin(prefix).Add(this.key));
                 result = true;
             }
-            catch (Exception e)
+            catch
             {
                 result = false;
             }
@@ -119,7 +119,7 @@ namespace Mineral.UnitTests.Database
                 this.db.Write(this.write_option, batch);
                 result = true;
             }
-            catch (Exception e)
+            catch
             {
                 result = false;
             }

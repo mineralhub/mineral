@@ -60,7 +60,7 @@ namespace Mineral.UnitTests.Database
                 if (this.chainDb.TryGetCurrentHeader(out blockHash, out blockHeight))
                     result = (this.block.Header.Hash.Equals(blockHash) && this.block.Height.Equals(blockHeight));
             }
-            catch (Exception e)
+            catch
             {
                 result = false;
             }
@@ -83,7 +83,7 @@ namespace Mineral.UnitTests.Database
                 if (this.chainDb.TryGetCurrentBlock(out blockHash, out blockHeight))
                     result = (block.Header.Hash.Equals(blockHash) && block.Height.Equals(blockHeight));
             }
-            catch (Exception e)
+            catch
             {
                 result = false;
             }
@@ -106,7 +106,7 @@ namespace Mineral.UnitTests.Database
                 if (this.chainDb.TryGetBlock(this.block.Hash, out value))
                     result = block.Header.Hash.Equals(value.Hash);
             }
-            catch (Exception e)
+            catch
             {
                 result = false;
             }
@@ -129,7 +129,7 @@ namespace Mineral.UnitTests.Database
                 if (this.chainDb.TryGetBlockHeader(this.block.Hash, out value))
                     result = block.Header.Hash.Equals(value.Hash);
             }
-            catch (Exception e)
+            catch
             {
                 result = false;
             }
@@ -164,7 +164,7 @@ namespace Mineral.UnitTests.Database
                 if (this.chainDb.TryGetTransaction(tx.Hash, out value))
                     result = tx.Hash.Equals(value.Hash);
             }
-            catch (Exception e)
+            catch
             {
                 result = false;
             }
@@ -200,7 +200,7 @@ namespace Mineral.UnitTests.Database
                 if (this.chainDb.TryGetTransactionResult(tx.Hash, out code))
                     result = tx.Data.TxResult.Equals(code);
             }
-            catch (Exception e)
+            catch
             {
                 result = false;
             }
@@ -229,7 +229,7 @@ namespace Mineral.UnitTests.Database
                     result = state.turnTableHeight.Equals(resState.turnTableHeight);
                 }
             }
-            catch (Exception e)
+            catch
             {
                 result = false;
             }
@@ -258,7 +258,7 @@ namespace Mineral.UnitTests.Database
                     result = state.turnTableHeight.Equals(resState.turnTableHeight);
                 }
             }
-            catch (Exception e)
+            catch
             {
                 result = false;
             }
@@ -276,7 +276,7 @@ namespace Mineral.UnitTests.Database
 
                 result = this.chainDb.GetVersion().Equals(version);
             }
-            catch (Exception e)
+            catch
             {
                 result = false;
             }
@@ -292,7 +292,7 @@ namespace Mineral.UnitTests.Database
                 this.chainDb.PutCurrentHeader(this.block.Header);
                 result = this.chainDb.GetCurrentHeaderHash().Equals(this.block.Header.Hash);
             }
-            catch (Exception e)
+            catch
             {
                 result = false;
             }
@@ -308,7 +308,7 @@ namespace Mineral.UnitTests.Database
                 this.chainDb.PutCurrentHeader(this.block.Header);
                 result = this.chainDb.GetCurrentHeaderHeight().Equals(this.block.Header.Height);
             }
-            catch (Exception e)
+            catch
             {
                 result = false;
             }
@@ -324,7 +324,7 @@ namespace Mineral.UnitTests.Database
                 this.chainDb.PutCurrentBlock(this.block);
                 result = this.chainDb.GetCurrentBlockHash().Equals(this.block.Hash);
             }
-            catch (Exception e)
+            catch
             {
                 result = false;
             }
@@ -340,7 +340,7 @@ namespace Mineral.UnitTests.Database
                 this.chainDb.PutCurrentBlock(this.block);
                 result = this.chainDb.GetCurrentBlockHeight().Equals(this.block.Height);
             }
-            catch (Exception e)
+            catch
             {
                 result = false;
             }
@@ -356,7 +356,7 @@ namespace Mineral.UnitTests.Database
                 this.chainDb.PutBlock(this.block);
                 result = this.chainDb.GetBlockHeader(this.block.Header.Hash).Hash.Equals(this.block.Header.Hash);
             }
-            catch (Exception e)
+            catch
             {
                 result = false;
             }
@@ -372,7 +372,7 @@ namespace Mineral.UnitTests.Database
                 this.chainDb.PutBlock(this.block);
                 result = this.chainDb.GetBlock(this.block.Hash).Hash.Equals(this.block.Hash);
             }
-            catch (Exception e)
+            catch
             {
                 result = false;
             }
@@ -403,7 +403,7 @@ namespace Mineral.UnitTests.Database
                 this.chainDb.PutHeaderHashList(1, hashList);
                 result = new List<UInt256>(this.chainDb.GetHeaderHashList()).Count.Equals(hashList.Count);
             }
-            catch (Exception e)
+            catch
             {
                 result = false;
             }
@@ -419,7 +419,7 @@ namespace Mineral.UnitTests.Database
                 this.chainDb.PutBlock(block);
                 result = new List<BlockHeader>(this.chainDb.GetBlockHeaderList()).Count > 0;
             }
-            catch (Exception e)
+            catch
             {
                 result = false;
             }
@@ -435,7 +435,7 @@ namespace Mineral.UnitTests.Database
                 this.chainDb.PutBlock(block);
                 result = new List<UInt256>(this.chainDb.GetBlockHeaderHashList()).Count > 0;
             }
-            catch (Exception e)
+            catch
             {
                 result = false;
             }
@@ -458,7 +458,7 @@ namespace Mineral.UnitTests.Database
                 TurnTableState res = this.chainDb.GetCurrentTurnTable();
                 result = state.turnTableHeight.Equals(res.turnTableHeight);
             }
-            catch (Exception e)
+            catch
             {
                 result = false;
             }
@@ -481,7 +481,7 @@ namespace Mineral.UnitTests.Database
                 TurnTableState res = this.chainDb.GetTurnTable(this.block.Height);
                 result = state.turnTableHeight.Equals(res.turnTableHeight);
             }
-            catch (Exception e)
+            catch
             {
                 result = false;
             }
@@ -503,7 +503,7 @@ namespace Mineral.UnitTests.Database
                 this.chainDb.PutTurnTable(state);
                 result = new List<int>(this.chainDb.GetTurnTableHeightList(this.block.Height)).Count > 0;
             }
-            catch (Exception e)
+            catch
             {
                 result = false;
             }
@@ -527,7 +527,7 @@ namespace Mineral.UnitTests.Database
                 List<DelegateState> delegates = new List<DelegateState>(this.chainDb.GetDelegateStateAll());
                 result = delegates.Find(x => x.Name.SequenceEqual(name) && x.AddressHash == addressHash) != null;
             }
-            catch (Exception e)
+            catch
             {
                 result = false;
             }

@@ -2,6 +2,8 @@
 	"block_version": 1,
 	"address_version": 0,
 	"state_version": 0,
+	"log-level": "DEBUG",
+	"log-console": true,
 	"network": {
 		"listen_address": "0.0.0.0",
 		"tcp_port": 11255,
@@ -11,7 +13,7 @@
 	},
 	"block": {
 		"next_block_time_sec": 5,
-        "cache_capacity": 1024,
+		"cache_capacity": 1024,
 		"syncCheck": true
 	},
 	"genesisBlock": {
