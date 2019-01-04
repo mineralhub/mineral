@@ -12,7 +12,6 @@ namespace Mineral.UnitTests.BlcokChain
     [TestClass]
     public class UT_Transaction
     {
-        
         WalletAccount _from = new WalletAccount(Encoding.Default.GetBytes("0"));
         WalletAccount _to = new WalletAccount(Encoding.Default.GetBytes("1"));
 
