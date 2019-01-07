@@ -43,7 +43,6 @@ namespace Mineral.Core
         private UInt256 currentHeaderHash = UInt256.Zero;
 
         private CacheChain cacheChain = new CacheChain();
-        private List<UInt256> headerIndices = new List<UInt256>();
         private Dictionary<UInt256, Block> waitPersistBlocks = new Dictionary<UInt256, Block>();
         private Dictionary<UInt256, BlockHeader> cacheHeaders = new Dictionary<UInt256, BlockHeader>();
 
@@ -293,12 +292,10 @@ namespace Mineral.Core
                 UInt256 blockHash = UInt256.Zero;
                 IEnumerable<UInt256> headerHashs;
 
-                if (this.manager.TryGetCurrentBlock(out blockHash, out blockHeight))
+                if (this.manager.TryGetCurrentBlock(out this.currentBlockHash, out this.currentBlockHeight))
                 {
                     headerHashs = this.manager.GetHeaderHashList();
-                    this.headerIndices.AddRange(headerHashs);
 
-                    // TODO : Index 제대로 확인
                     int height = 0;
                     foreach (UInt256 headerHash in headerHashs)
                     {
@@ -320,7 +317,7 @@ namespace Mineral.Core
                     }
                     else if (this.storeHeaderCount <= this.currentHeaderHeight)
                     {
-                        for (UInt256 hash = this.currentHeaderHash; hash != this.headerIndices[(int)this.storeHeaderCount - 1];)
+                        for (UInt256 hash = this.currentHeaderHash; hash != this.cacheChain.HeaderIndices[(int)this.storeHeaderCount - 1];)
                         {
                             BlockHeader header = this.manager.GetBlockHeader(hash);
                             this.cacheChain.AddHeaderIndex(header.Height, header.Hash);
