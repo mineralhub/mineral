@@ -311,9 +311,8 @@ namespace Mineral.Core
 
                     if (this.storeHeaderCount == 0)
                     {
-                        height = 0;
                         foreach (BlockHeader blockHeader in this.manager.GetBlockHeaderList())
-                            this.cacheChain.AddHeaderIndex(height, blockHeader.Hash);
+                            this.cacheChain.AddHeaderIndex(blockHeader.Height, blockHeader.Hash);
                     }
                     else if (this.storeHeaderCount <= this.currentHeaderHeight)
                     {
