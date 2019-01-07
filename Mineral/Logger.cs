@@ -28,7 +28,7 @@ namespace Mineral
 
     public static class Logger
     {
-        static public bool WriteConsole = false;
+        static public bool WriteConsole = true;
         static public LogLevel WriteLogLevel = LogLevel.INFO;
         static private ConcurrentQueue<TypedLog> _queue = new ConcurrentQueue<TypedLog>();
 
