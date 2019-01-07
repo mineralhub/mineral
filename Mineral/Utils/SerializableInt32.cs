@@ -1,7 +1,7 @@
 ﻿using System;
 using System.IO;
 
-namespace Mineral
+namespace Mineral.Utils
 {
     public class SerializableInt32 : IEquatable<SerializableInt32>, IComparable<SerializableInt32>, ISerializable
     {

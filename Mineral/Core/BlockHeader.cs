@@ -2,6 +2,7 @@
 using Mineral.Cryptography;
 using Newtonsoft.Json.Linq;
 using System.Text;
+using Mineral.Utils;
 
 namespace Mineral.Core
 {
@@ -96,9 +97,9 @@ namespace Mineral.Core
         {
             if (!VerifySignature())
                 return false;
-            if (Hash == Blockchain.Instance.GenesisBlock.Hash)
+            if (Hash == BlockChain.Instance.GenesisBlock.Hash)
                 return false;
-            if (Blockchain.Instance.ContainsBlock(Hash))
+            if (BlockChain.Instance.ContainsBlock(Hash))
                 return false;
             return true;
         }

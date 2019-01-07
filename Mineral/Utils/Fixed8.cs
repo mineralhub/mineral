@@ -2,7 +2,7 @@
 using System.Globalization;
 using System.IO;
 
-namespace Mineral
+namespace Mineral.Utils
 {
     public struct Fixed8 : IComparable<Fixed8>, IEquatable<Fixed8>, IFormattable, ISerializable
     {

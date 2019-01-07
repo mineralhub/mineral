@@ -1,4 +1,6 @@
-﻿namespace Mineral.Cryptography
+﻿using Mineral.Utils;
+
+namespace Mineral.Cryptography
 {
     internal class MerkleTreeNode
     {

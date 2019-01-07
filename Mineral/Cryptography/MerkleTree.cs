@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Mineral.Utils;
+using System;
 using System.Linq;
 
 namespace Mineral.Cryptography

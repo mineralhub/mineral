@@ -2,8 +2,10 @@
 using System.Collections.Generic;
 using System.Text;
 using Mineral.Core;
+using Mineral.Core.Transactions;
 using Mineral.Database.CacheStorage;
 using Mineral.Database.LevelDB;
+using Mineral.Utils;
 
 namespace Mineral.Database.LevelDB
 {
@@ -127,7 +129,7 @@ namespace Mineral.Database.LevelDB
 
         public List<DelegateState> GetCadidateDelgates()
         {
-            return Blockchain.Instance.GetDelegateStateAll();
+            return Core.BlockChain.Instance.GetDelegateStateAll();
         }
     }
 }

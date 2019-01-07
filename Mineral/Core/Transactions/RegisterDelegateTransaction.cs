@@ -3,7 +3,7 @@ using System.Text;
 using Newtonsoft.Json.Linq;
 using Mineral.Database.LevelDB;
 
-namespace Mineral.Core
+namespace Mineral.Core.Transactions
 {
     public class RegisterDelegateTransaction : TransactionBase
     {
@@ -36,13 +36,13 @@ namespace Mineral.Core
 
             if (Name == null || Name.Length == 0)
             {
-                TxResult = ErrorCodes.E_TX_DELEGATE_NAME_INVALID;
+                TxResult = MINERAL_ERROR_CODES.TX_DELEGATE_NAME_INVALID;
                 return false;
             }
 
             if (Config.Instance.DelegateNameMaxLength < Name.Length)
             {
-                TxResult = ErrorCodes.E_TX_DELEGATE_NAME_INVALID;
+                TxResult = MINERAL_ERROR_CODES.TX_DELEGATE_NAME_INVALID;
                 return false;
             }
             return true;
@@ -55,7 +55,7 @@ namespace Mineral.Core
 
             if (storage.GetDelegateState(From) != null)
             {
-                TxResult = ErrorCodes.E_TX_DELEGATE_ALREADY_REGISTER;
+                TxResult = MINERAL_ERROR_CODES.TX_DELEGATE_ALREADY_REGISTER;
                 return false;
             }
             return true;

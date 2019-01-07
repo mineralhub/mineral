@@ -5,13 +5,13 @@ using System.Text;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using Mineral;
-using Mineral.Core;
-using Mineral.Cryptography;
 using Mineral.Network.RPC.Command;
 using Mineral.Wallets;
 using Mineral.Wallets.KeyStore;
 using MineralCLI.Network;
 using MineralCLI.Shell;
+using Mineral.Utils;
+using Mineral.Core.Transactions;
 
 namespace MineralCLI.Commands
 {
@@ -328,7 +328,7 @@ namespace MineralCLI.Commands
                 To = new Dictionary<UInt160, Fixed8> { { to_address, value } }
             };
 
-            Transaction tx = new Transaction(TransactionType.TransferTransaction, DateTime.UtcNow.ToTimestamp(), trans);
+            Transaction tx = new Transaction(TransactionType.Transfer, DateTime.UtcNow.ToTimestamp(), trans);
             tx.Sign(Program.Wallet);
 
             JArray param = new JArray(tx.ToArray());
@@ -376,7 +376,7 @@ namespace MineralCLI.Commands
                 LockValue = value
             };
 
-            Transaction tx = new Transaction(TransactionType.LockTransaction, DateTime.UtcNow.ToTimestamp(), trans);
+            Transaction tx = new Transaction(TransactionType.Lock, DateTime.UtcNow.ToTimestamp(), trans);
             tx.Sign(Program.Wallet);
 
             JArray param = new JArray(tx.ToArray());
@@ -421,7 +421,7 @@ namespace MineralCLI.Commands
                 From = Program.Wallet.AddressHash
             };
 
-            Transaction tx = new Transaction(TransactionType.UnlockTransaction, DateTime.UtcNow.ToTimestamp(), trans);
+            Transaction tx = new Transaction(TransactionType.Unlock, DateTime.UtcNow.ToTimestamp(), trans);
             tx.Sign(Program.Wallet);
 
             JArray param = new JArray(tx.ToArray());
@@ -484,7 +484,7 @@ namespace MineralCLI.Commands
                 Votes = votes
             };
 
-            Transaction tx = new Transaction(TransactionType.VoteTransaction, DateTime.UtcNow.ToTimestamp(), trans);
+            Transaction tx = new Transaction(TransactionType.Vote, DateTime.UtcNow.ToTimestamp(), trans);
             tx.Sign(Program.Wallet);
 
             JArray param = new JArray(tx.ToArray());

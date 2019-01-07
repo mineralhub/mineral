@@ -11,6 +11,9 @@ using System.Threading.Tasks;
 using System.Linq;
 using Mineral.Core;
 using Mineral.Network.Payload;
+using Mineral.Core.Transactions;
+using Microsoft.Extensions.Logging;
+using Mineral.Utils;
 
 namespace Mineral.Network
 {
@@ -87,7 +90,7 @@ namespace Mineral.Network
                     }
                     catch (Exception e)
                     {
-                        Logger.Error(e.Message);
+                        Logger.Log(e.Message);
                     }
                 });
             }
@@ -166,8 +169,8 @@ namespace Mineral.Network
                 if (peers.Count == 0)
                     continue;
 
-                int syncHeight = Blockchain.Instance.Proof.CalcBlockHeight(DateTime.UtcNow.ToTimestamp());
-                int localHeight = Blockchain.Instance.CurrentBlockHeight;
+                int syncHeight = BlockChain.Instance.Proof.CalcBlockHeight(DateTime.UtcNow.ToTimestamp());
+                int localHeight = BlockChain.Instance.CurrentBlockHeight;
                 if (localHeight < syncHeight - 1
                     && IsSyncing)
                 {
@@ -176,7 +179,7 @@ namespace Mineral.Network
                             .OrderBy(p => p.Latency);
                     if (orderby.Any())
                     {
-                        int headerHeight = Blockchain.Instance.CurrentHeaderHeight;
+                        int headerHeight = BlockChain.Instance.CurrentHeaderHeight;
                         foreach (RemoteNode node in orderby)
                         {
                             if (headerHeight < node.Height)
@@ -301,7 +304,7 @@ namespace Mineral.Network
 
         public bool AddTransaction(Transaction tx, bool bBroadcast = true)
         {
-            Blockchain.Instance.AddTransactionPool(tx);
+            BlockChain.Instance.AddTransactionPool(tx);
             if (bBroadcast)
                 BroadCast(Message.CommandName.BroadcastTransactions, TransactionsPayload.Create(tx));
             return true;
@@ -309,7 +312,7 @@ namespace Mineral.Network
 
         public void RemoveTransactionPool(List<Transaction> txs)
         {
-            Blockchain.Instance.RemoveTransactionPool(txs);
+            BlockChain.Instance.RemoveTransactionPool(txs);
         }
 
         public void BroadCast(Message.CommandName name, ISerializable payload = null)

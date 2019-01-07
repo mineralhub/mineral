@@ -1,6 +1,7 @@
 ﻿using FluentAssertions;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Mineral.Core;
+using Mineral.Core.Transactions;
+using Mineral.Utils;
 using Mineral.Wallets;
 using System;
 using System.Collections.Generic;
@@ -74,7 +75,7 @@ namespace Mineral.UnitTests.BlcokChain
             _transaction = new Transaction
             {
                 Version = 0,
-                Type = TransactionType.TransferTransaction,
+                Type = TransactionType.Transfer,
                 Timestamp = DateTime.UtcNow.ToTimestamp(),
                 Data = _transfer,
             };

@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.IO;
+using Mineral.Utils;
 using Mineral.Wallets;
 
 namespace Mineral.Core

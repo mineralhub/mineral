@@ -1,4 +1,5 @@
 ﻿using Mineral.Core;
+using Mineral.Core.Transactions;
 using System.Collections.Generic;
 using System.IO;
 

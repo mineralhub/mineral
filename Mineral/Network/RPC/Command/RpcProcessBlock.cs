@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.Text;
 using Newtonsoft.Json.Linq;
 using Mineral.Core;
+using Mineral.Core.Transactions;
+using Mineral.Utils;
 
 namespace Mineral.Network.RPC.Command
 {
@@ -12,10 +14,10 @@ namespace Mineral.Network.RPC.Command
         {
             Block block = null;
             if (parameters[0].Type == JTokenType.Integer)
-                block = Blockchain.Instance.GetBlock(parameters[0].Value<int>());
+                block = BlockChain.Instance.GetBlock(parameters[0].Value<int>());
             else
-                block = Blockchain.Instance.GetBlock(UInt256.FromHexString(parameters[0].Value<string>()));
-            BlockHeader nextHeader = Blockchain.Instance.GetNextHeader(block.Hash);
+                block = BlockChain.Instance.GetBlock(UInt256.FromHexString(parameters[0].Value<string>()));
+            BlockHeader nextHeader = BlockChain.Instance.GetNextHeader(block.Hash);
             JObject json = block.ToJson();
             json["nextblockhash"] = nextHeader == null ? "" : nextHeader.Hash.ToString();
 
@@ -34,7 +36,7 @@ namespace Mineral.Network.RPC.Command
             for (int i = start; i < end; ++i) 
             {
                 prevBlock = currBlock;
-                currBlock = Blockchain.Instance.GetBlock(i);
+                currBlock = BlockChain.Instance.GetBlock(i);
                 if (prevBlock != null)
                 {
                     jobj = prevBlock.ToJson();
@@ -48,7 +50,7 @@ namespace Mineral.Network.RPC.Command
 
             if (currBlock != null)
             {
-                BlockHeader nextHeader = Blockchain.Instance.GetNextHeader(currBlock.Hash);
+                BlockHeader nextHeader = BlockChain.Instance.GetNextHeader(currBlock.Hash);
                 jobj = currBlock.ToJson();
                 jobj["nextblockhash"] = nextHeader == null ? "" : nextHeader.Hash.ToString();
                 jarr.Add(jobj);
@@ -64,7 +66,7 @@ namespace Mineral.Network.RPC.Command
             int height = -1;
             if (int.TryParse(parameters[0].ToString(), out height))
             {
-                Block block = Blockchain.Instance.GetBlock(height);
+                Block block = BlockChain.Instance.GetBlock(height);
                 json["hash"] = block.Hash.ToString();
             }
 
@@ -74,21 +76,21 @@ namespace Mineral.Network.RPC.Command
         public static JObject OnGetHeight(object obj, JArray parameters)
         {
             JObject json = new JObject();
-            json["blockheight"] = Blockchain.Instance.CurrentBlockHeight;
-            json["headerheight"] = Blockchain.Instance.CurrentHeaderHeight;
+            json["blockheight"] = BlockChain.Instance.CurrentBlockHeight;
+            json["headerheight"] = BlockChain.Instance.CurrentHeaderHeight;
             return json;
         }
 
         public static JObject OnGetCurrentBlockHash(object obj, JArray parameters)
         {
             JObject json = new JObject();
-            json["hash"] = Blockchain.Instance.CurrentBlockHash.ToString();
+            json["hash"] = BlockChain.Instance.CurrentBlockHash.ToString();
             return json;
         }
 
         public static JObject OnGetTransaction(object obj, JArray parameters)
         {
-            Transaction tx = Blockchain.Instance.Storage.GetTransaction(UInt256.FromHexString(parameters[0].Value<string>()));
+            Transaction tx = BlockChain.Instance.GetTransaction(UInt256.FromHexString(parameters[0].Value<string>()));
             return tx.ToJson();
         }
     }

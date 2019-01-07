@@ -1,8 +1,9 @@
 ﻿using System.IO;
 using Newtonsoft.Json.Linq;
 using Mineral.Database.LevelDB;
+using Mineral.Utils;
 
-namespace Mineral.Core
+namespace Mineral.Core.Transactions
 {
     public class SignTransaction : TransactionBase
     {
@@ -14,7 +15,7 @@ namespace Mineral.Core
             get 
             {
                 if (_reference == null)
-                    _reference = Blockchain.Instance.Storage.GetTransaction(SignTxHash).Data as OtherSignTransaction;
+                    _reference = BlockChain.Instance.GetTransaction(SignTxHash).Data as OtherSignTransaction;
 
                 return _reference;
             }
@@ -44,8 +45,8 @@ namespace Mineral.Core
             if (!base.VerifyBlockchain(storage))
                 return false;
 
-            Transaction tx = Blockchain.Instance.Storage.GetTransaction(SignTxHash);
-            if (tx == null || tx.Type != TransactionType.OtherSignTransaction)
+            Transaction tx = BlockChain.Instance.GetTransaction(SignTxHash);
+            if (tx == null || tx.Type != TransactionType.OtherSign)
                 return false;
 
             OtherSignTransaction osignTx = tx.Data as OtherSignTransaction;

@@ -1,8 +1,10 @@
 ﻿using FluentAssertions;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Mineral.Core;
+using Mineral.Core.Transactions;
 using Mineral.Database.BlockChain;
 using Mineral.Database.LevelDB;
+using Mineral.Utils;
 using Mineral.Wallets;
 using System;
 using System.Collections.Generic;
@@ -149,7 +151,7 @@ namespace Mineral.UnitTests.Database
                     To = new Dictionary<UInt160, Fixed8> { { toAddress.AddressHash, Fixed8.One } }
                 };
 
-                Transaction tx = new Transaction(TransactionType.TransferTransaction, DateTime.UtcNow.ToTimestamp(), transfer);
+                Transaction tx = new Transaction(TransactionType.Transfer, DateTime.UtcNow.ToTimestamp(), transfer);
                 tx.Sign(this.account);
 
                 block.Transactions.Add(tx);
@@ -184,7 +186,7 @@ namespace Mineral.UnitTests.Database
                     To = new Dictionary<UInt160, Fixed8> { { toAddress.AddressHash, Fixed8.One } }
                 };
 
-                Transaction tx = new Transaction(TransactionType.TransferTransaction, DateTime.UtcNow.ToTimestamp(), transfer);
+                Transaction tx = new Transaction(TransactionType.Transfer, DateTime.UtcNow.ToTimestamp(), transfer);
                 tx.Sign(this.account);
                 tx.Verify();
 
@@ -196,7 +198,7 @@ namespace Mineral.UnitTests.Database
                 this.chainDb.PutTransactionResult(batch, tx);
                 this.chainDb.BatchWrite(this.write_option, batch);
 
-                ErrorCodes code;
+                MINERAL_ERROR_CODES code;
                 if (this.chainDb.TryGetTransactionResult(tx.Hash, out code))
                     result = tx.Data.TxResult.Equals(code);
             }

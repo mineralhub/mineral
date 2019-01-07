@@ -4,8 +4,9 @@ using System.Text;
 using Mineral.Wallets;
 using Newtonsoft.Json.Linq;
 using Mineral.Database.LevelDB;
+using Mineral.Utils;
 
-namespace Mineral.Core
+namespace Mineral.Core.Transactions
 {
     public class Transaction : IVerifiable
     {
@@ -17,7 +18,7 @@ namespace Mineral.Core
 
         public UInt160 From => Data.From;
         public Fixed8 Fee => Data.Fee;
-        public ErrorCodes TxResult = ErrorCodes.E_NO_ERROR;
+        public MINERAL_ERROR_CODES TxResult = MINERAL_ERROR_CODES.NO_ERROR;
 
         public virtual int Size => sizeof(short) + sizeof(TransactionType) + sizeof(int) + Data.Size + Signature.Size;
         private UInt256 _hash = null;
@@ -79,22 +80,22 @@ namespace Mineral.Core
         {
             switch (Type)
             {
-                case TransactionType.TransferTransaction:
+                case TransactionType.Transfer:
                     Data = new TransferTransaction();
                     break;
-                case TransactionType.VoteTransaction:
+                case TransactionType.Vote:
                     Data = new VoteTransaction();
                     break;
-                case TransactionType.RegisterDelegateTransaction:
+                case TransactionType.RegisterDelegate:
                     Data = new RegisterDelegateTransaction();
                     break;
-                case TransactionType.LockTransaction:
+                case TransactionType.Lock:
                     Data = new LockTransaction();
                     break;
-                case TransactionType.UnlockTransaction:
+                case TransactionType.Unlock:
                     Data = new UnlockTransaction();
                     break;
-                case TransactionType.SupplyTransaction:
+                case TransactionType.Supply:
                     Data = new SupplyTransaction();
                     break;
                 default:
@@ -152,7 +153,7 @@ namespace Mineral.Core
         {
             if (VerifySignature() == false)
             {
-                TxResult = ErrorCodes.E_TX_SIGNATURE_INVALID;
+                TxResult = MINERAL_ERROR_CODES.TX_SIGNATURE_INVALID;
                 return false;
             }
             if (!Data.Verify())
@@ -166,11 +167,11 @@ namespace Mineral.Core
         public bool VerifyBlockchain(Storage storage = null)
         {
             if (storage == null)
-                storage = Blockchain.Instance.Storage;
+                storage = BlockChain.Instance.NewStorage();
 
             if (storage.GetTransaction(Hash) != null)
             {
-                TxResult = ErrorCodes.E_SYS_EXIST_TRANSACTION;
+                TxResult = MINERAL_ERROR_CODES.SYS_EXIST_TRANSACTION;
                 return false;
             }
             if (!Data.VerifyBlockchain(storage))

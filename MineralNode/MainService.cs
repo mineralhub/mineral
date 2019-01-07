@@ -15,6 +15,10 @@ using Mineral.Wallets.KeyStore;
 using System.IO;
 using Newtonsoft.Json.Linq;
 using Newtonsoft.Json;
+using Mineral.Utils;
+using Mineral.Database.LevelDB;
+using Mineral.Database.BlockChain;
+using Mineral.Core.Transactions;
 
 namespace MineralNode
 {
@@ -115,7 +119,7 @@ namespace MineralNode
                 var txs = new List<Transaction>();
                 foreach (var reward in supplyTxs)
                 {
-                    var tx = new Transaction(TransactionType.SupplyTransaction,
+                    var tx = new Transaction(TransactionType.Supply,
                                     GenesisBlockTimestamp - 1,
                                     reward)
                     {
@@ -132,7 +136,7 @@ namespace MineralNode
                             Name = Encoding.UTF8.GetBytes(p.Name),
                             From = p.Address
                         };
-                        var tx = new Transaction(TransactionType.RegisterDelegateTransaction,
+                        var tx = new Transaction(TransactionType.RegisterDelegate,
                                                  GenesisBlockTimestamp - 1,
                                                  register)
                         {
@@ -155,16 +159,15 @@ namespace MineralNode
             }
 
             Logger.Debug("genesis block. hash : " + _genesisBlock.Hash);
-            Blockchain.SetInstance(new Mineral.Database.LevelDB.LevelDBBlockchain("./output-database", _genesisBlock));
-            Blockchain.Instance.SetProof(new DPos());
-            Blockchain.Instance.SetCacheBlockCapacity(Config.Instance.Block.CacheCapacity);
-            Blockchain.Instance.PersistCompleted += PersistCompleted;
-            Blockchain.Instance.Run();
 
-            var genesisBlockTx = Blockchain.Instance.Storage.GetTransaction(_genesisBlock.Transactions[0].Hash);
+            BlockChain.Instance.Initialize("./output-database", _genesisBlock);
+            BlockChain.Instance.SetCacheBlockCapacity(Config.Instance.Block.CacheCapacity);
+            BlockChain.Instance.PersistCompleted += PersistCompleted;
+
+            var genesisBlockTx = BlockChain.Instance.GetTransaction(_genesisBlock.Transactions[0].Hash);
             Logger.Debug("genesis block tx. hash : " + genesisBlockTx.Hash);
 
-            WalletIndexer.SetInstance(new Mineral.Database.LevelDB.LevelDBWalletIndexer("./output-wallet-index"));
+            WalletIndexer.SetInstance(new LevelDBWalletIndexer("./output-wallet-index"));
 
             return true;
         }
@@ -195,9 +198,9 @@ namespace MineralNode
                     if (_node.IsSyncing)
                         break;
 
-                    int numCreate = Blockchain.Instance.Proof.GetCreateBlockCount(
+                    int numCreate = BlockChain.Instance.Proof.GetCreateBlockCount(
                         _account.AddressHash,
-                        Blockchain.Instance.CurrentBlockHeight);
+                        BlockChain.Instance.CurrentBlockHeight);
 
                     if (numCreate < 1)
                         break;
@@ -208,23 +211,25 @@ namespace MineralNode
             }
         }
 
+        // TODO : clean & move
         private void CreateAndAddBlocks(int cnt, bool directly)
         {
             List<Block> blocks = new List<Block>();
-            int height = Blockchain.Instance.CurrentHeaderHeight;
-            UInt256 prevhash = Blockchain.Instance.CurrentHeaderHash;
+            int height = BlockChain.Instance.CurrentHeaderHeight;
+            UInt256 prevhash = BlockChain.Instance.CurrentHeaderHash;
 
             for (int i = 0; i < cnt; ++i)
             {
                 List<Transaction> txs = new List<Transaction>();
-                Blockchain.Instance.LoadTransactionPool(ref txs);
-                Blockchain.Instance.NormalizeTransactions(ref txs);
+                BlockChain.Instance.LoadTransactionPool(ref txs);
+                BlockChain.Instance.NormalizeTransactions(ref txs);
                 Block block = CreateBlock(height + i, prevhash, txs);
-
-                if (!Blockchain.Instance.VerityBlock(block))
+                
+                // TODO : else 처리
+                if (!BlockChain.Instance.VerityBlock(block))
                 {
                     Logger.Warning("Block [" + block.Height + ":" + block.Hash + "] has unconfirmed transactions.");
-                    if (!Blockchain.Instance.VerityBlock(block))
+                    if (!BlockChain.Instance.VerityBlock(block))
                     {
                         Logger.Warning("Block [" + block.Height + ":" + block.Hash + "] has not verified.");
                     }
@@ -234,11 +239,11 @@ namespace MineralNode
 
                 if (directly)
                 {
-                    Blockchain.Instance.AddBlockDirectly(block);
+                    BlockChain.Instance.AddBlockDirectly(block);
                 }
                 else
                 {
-                    Blockchain.Instance.AddBlock(block);
+                    BlockChain.Instance.AddBlock(block);
                 }
                 blocks.Add(block);
             }
@@ -265,33 +270,8 @@ namespace MineralNode
             return new Block(blockHeader, txs);
         }
 
-        private Transaction CreateTransferTransaction(UInt160 target, Fixed8 value)
-        {
-            var trans = new TransferTransaction
-            {
-                From = _account.AddressHash,
-                To = new Dictionary<UInt160, Fixed8> { { target, value } }
-            };
-            var tx = new Transaction(TransactionType.TransferTransaction, DateTime.UtcNow.ToTimestamp(), trans);
-            tx.Sign(_account);
-            return tx;
-        }
-
         private void PersistCompleted(object sender, Block block)
         {
-        }
-
-        private bool ValidBlock()
-        {
-            BlockHeader heightHeader = Blockchain.Instance.GetHeader(0);
-            BlockHeader hashHeader = Blockchain.Instance.GetHeader(heightHeader.Hash);
-            if (heightHeader == null || hashHeader == null)
-                return false;
-            Block heightBlock = Blockchain.Instance.GetBlock(0);
-            Block hashBlock = Blockchain.Instance.GetBlock(heightBlock.Hash);
-            if (heightBlock == null || hashBlock == null)
-                return false;
-            return true;
         }
 
         private void StartLocalNode()

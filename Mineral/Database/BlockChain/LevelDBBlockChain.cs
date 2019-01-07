@@ -1,10 +1,15 @@
 ﻿using Mineral.Core;
+using Mineral.Core.Transactions;
 using Mineral.Database.LevelDB;
+using Mineral.Utils;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Runtime.CompilerServices;
+using System.Text;
 
+[assembly: InternalsVisibleTo("Mineral.UnitTests")]
 namespace Mineral.Database.BlockChain
 {
     internal class LevelDBBlockChain
@@ -189,14 +194,14 @@ namespace Mineral.Database.BlockChain
             return result;
         }
 
-        public bool TryGetTransactionResult(UInt256 txHash, out ErrorCodes code)
+        public bool TryGetTransactionResult(UInt256 txHash, out MINERAL_ERROR_CODES code)
         {
             Slice value;
             bool result = this.db.TryGet(new ReadOptions { FillCache = false }, SliceBuilder.Begin(DataEntryPrefix.DATA_TxResult).Add(txHash), out value);
             if (result)
-                code = (ErrorCodes)value.ToInt64();
+                code = (MINERAL_ERROR_CODES)value.ToInt64();
             else
-                code = ErrorCodes.E_NO_ERROR;
+                code = MINERAL_ERROR_CODES.NO_ERROR;
 
             return result;
         }

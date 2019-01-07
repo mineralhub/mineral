@@ -8,6 +8,7 @@ using System.Security.Cryptography;
 using System.Text;
 using System.Numerics;
 using System.Globalization;
+using Mineral.Utils;
 
 namespace Mineral
 {

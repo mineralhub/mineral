@@ -7,6 +7,7 @@ using System.Linq;
 using Mineral.Core;
 using Mineral.Network.Payload;
 using System.IO;
+using Mineral.Utils;
 
 namespace Mineral.Network
 {
@@ -68,7 +69,7 @@ namespace Mineral.Network
             if (Interlocked.Exchange(ref _connected, 1) == 0)
             {
 #if DEBUG
-                Logger.Debug("OnConnected. RemoteEndPoint : " + RemoteEndPoint);
+                Logger.Log("OnConnected. RemoteEndPoint : " + RemoteEndPoint);
 #endif
                 NetworkProcessAsyncLoop();
             }
@@ -83,7 +84,7 @@ namespace Mineral.Network
             if (Interlocked.Exchange(ref _connected, 0) == 1)
             {
 #if DEBUG
-                Logger.Debug("OnDisconnected. RemoteEndPoint : " + RemoteEndPoint + "\nType : " + type.ToString() + "\nLog : " + log);
+                Logger.Log("OnDisconnected. RemoteEndPoint : " + RemoteEndPoint + "\nType : " + type.ToString() + "\nLog : " + log);
 #endif
                 DisconnectedCallback.Invoke(this, type);
             }
@@ -150,7 +151,7 @@ namespace Mineral.Network
             UInt256 hash = payload.HashStart;
             do
             {
-                BlockHeader header = Blockchain.Instance.GetNextHeader(hash);
+                BlockHeader header = BlockChain.Instance.GetNextHeader(hash);
                 if (header == null)
                     break;
                 headers.Add(header);
@@ -166,7 +167,7 @@ namespace Mineral.Network
             UInt256 hash = payload.HashStart;
             do
             {
-                Block block = Blockchain.Instance.GetNextBlock(hash);
+                Block block = BlockChain.Instance.GetNextBlock(hash);
                 if (block == null)
                     break;
                 blocks.Add(block);
@@ -178,7 +179,7 @@ namespace Mineral.Network
 
         private void ReceivedRequestBlocksFromHeight(GetBlocksFromHeightPayload payload)
         {
-            List<Block> blocks = Blockchain.Instance.GetBlocks(payload.Start, payload.End == 0 ? payload.Start + BlocksPayload.MaxCount : payload.End);
+            List<Block> blocks = BlockChain.Instance.GetBlocks(payload.Start, payload.End == 0 ? payload.Start + BlocksPayload.MaxCount : payload.End);
             EnqueueMessage(Message.CommandName.ResponseBlocks, BlocksPayload.Create(blocks));
         }
 
@@ -186,9 +187,9 @@ namespace Mineral.Network
         {
             foreach (Block block in payload.Blocks)
             {
-                Blockchain.BLOCK_ERROR err = Blockchain.Instance.AddBlock(block);
-                if (err != Blockchain.BLOCK_ERROR.E_NO_ERROR &&
-                    err != Blockchain.BLOCK_ERROR.E_ERROR_HEIGHT)
+                BlockChain.ERROR_BLOCK err = BlockChain.Instance.AddBlock(block);
+                if (err != BlockChain.ERROR_BLOCK.NO_ERROR &&
+                    err != BlockChain.ERROR_BLOCK.ERROR_HEIGHT)
                 {
                     Disconnect(DisconnectType.InvalidBlock, "Failed AddResponseBlocks.");
                     break;
@@ -202,9 +203,9 @@ namespace Mineral.Network
         {
             foreach (Block block in payload.Blocks)
             {
-                Blockchain.BLOCK_ERROR err = Blockchain.Instance.AddBlock(block);
-                if (err != Blockchain.BLOCK_ERROR.E_NO_ERROR &&
-                    err != Blockchain.BLOCK_ERROR.E_ERROR_HEIGHT)
+                BlockChain.ERROR_BLOCK err = BlockChain.Instance.AddBlock(block);
+                if (err != BlockChain.ERROR_BLOCK.NO_ERROR &&
+                    err != BlockChain.ERROR_BLOCK.ERROR_HEIGHT)
                 {
                     Disconnect(DisconnectType.InvalidBlock, "Failed AddBroadcastBlocks.");
                     break;
@@ -214,13 +215,13 @@ namespace Mineral.Network
 
         private void ReceivedBroadcastTransactions(TransactionsPayload payload)
         {
-            Blockchain.Instance.AddTransactionPool(payload.Transactions);
+            BlockChain.Instance.AddTransactionPool(payload.Transactions);
         }
 
         private void OnMessageReceived(Message message)
         {
 #if DEBUG
-            Logger.Debug(message.Command.ToString());
+            Logger.Log(message.Command.ToString());
 #endif
             switch (message.Command)
             {
@@ -231,7 +232,7 @@ namespace Mineral.Network
 
                 case Message.CommandName.Ping:
                     PingPayload ping = message.Payload.Serializable<PingPayload>();
-                    EnqueueMessage(Message.CommandName.Pong, PongPayload.Create(ping.Timestamp, Blockchain.Instance.CurrentBlockHeight));
+                    EnqueueMessage(Message.CommandName.Pong, PongPayload.Create(ping.Timestamp, BlockChain.Instance.CurrentBlockHeight));
                     break;
 
                 case Message.CommandName.Pong:
@@ -377,7 +378,7 @@ namespace Mineral.Network
             }
 
 #if DEBUG
-            Logger.Debug("Version : " + ListenerEndPoint + ", " + Version.NodeID);
+            Logger.Log("Version : " + ListenerEndPoint + ", " + Version.NodeID);
 #endif
             if (!await SendMessageAsync(Message.Create(Message.CommandName.Verack, VerackPayload.Create(NetworkManager.Instance.NodeID))))
                 return;
@@ -411,7 +412,7 @@ namespace Mineral.Network
                 catch (EndOfStreamException e)
                 {
 
-                    Logger.Error(e.Message + "\n" + e.StackTrace);
+                    Logger.Log(e.Message + "\n" + e.StackTrace);
                     Disconnect(DisconnectType.Exception, message.Command + ". EndOfStreamException");
                     break;
                 }
