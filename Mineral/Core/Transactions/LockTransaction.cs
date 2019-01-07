@@ -2,8 +2,9 @@
 using System.IO;
 using Newtonsoft.Json.Linq;
 using Mineral.Database.LevelDB;
+using Mineral.Utils;
 
-namespace Mineral.Core
+namespace Mineral.Core.Transactions
 {
     public class UnlockTransaction : TransactionBase
     {
@@ -19,24 +20,24 @@ namespace Mineral.Core
 
             if (FromAccountState.LockBalance == Fixed8.Zero)
             {
-                TxResult = ErrorCodes.E_TX_NO_LOCK_BALANCE;
+                TxResult = MINERAL_ERROR_CODES.TX_NO_LOCK_BALANCE;
                 return false;
             }
 
             if (FromAccountState.LastLockTxID != UInt256.Zero)
             {
                 int TxHeight = 0;
-                if (Blockchain.Instance.HasTransactionPool(FromAccountState.LastLockTxID))
+                if (BlockChain.Instance.HasTransactionPool(FromAccountState.LastLockTxID))
                 {
-                    TxHeight = Blockchain.Instance.CurrentBlockHeight;
+                    TxHeight = BlockChain.Instance.CurrentBlockHeight;
                 }
                 else
                 {
                     storage.GetTransaction(FromAccountState.LastLockTxID, out TxHeight);
                 }
-                if (Blockchain.Instance.CurrentBlockHeight - TxHeight < Config.Instance.LockTTL)
+                if (BlockChain.Instance.CurrentBlockHeight - TxHeight < Config.Instance.LockTTL)
                 {
-                    TxResult = ErrorCodes.E_TX_LOCK_TTL_NOT_ARRIVED;
+                    TxResult = MINERAL_ERROR_CODES.TX_LOCK_TTL_NOT_ARRIVED;
                     return false;
                 }
             }
@@ -74,31 +75,31 @@ namespace Mineral.Core
 
             if (LockValue < Fixed8.Zero)
             {
-                TxResult = ErrorCodes.E_TX_LOCK_VALUE_CANNOT_NEGATIVE;
+                TxResult = MINERAL_ERROR_CODES.TX_LOCK_VALUE_CANNOT_NEGATIVE;
                 return false;
             }
 
             if (FromAccountState.LastLockTxID != UInt256.Zero)
             {
                 int TxHeight = 0;
-                if (Blockchain.Instance.HasTransactionPool(FromAccountState.LastLockTxID))
+                if (BlockChain.Instance.HasTransactionPool(FromAccountState.LastLockTxID))
                 {
-                    TxHeight = Blockchain.Instance.CurrentBlockHeight;
+                    TxHeight = BlockChain.Instance.CurrentBlockHeight;
                 }
                 else
                 {
                     storage.GetTransaction(FromAccountState.LastLockTxID, out TxHeight);
                 }
-                if (Blockchain.Instance.CurrentBlockHeight - TxHeight < Config.Instance.LockTTL)
+                if (BlockChain.Instance.CurrentBlockHeight - TxHeight < Config.Instance.LockTTL)
                 {
-                    TxResult = ErrorCodes.E_TX_LOCK_TTL_NOT_ARRIVED;
+                    TxResult = MINERAL_ERROR_CODES.TX_LOCK_TTL_NOT_ARRIVED;
                     return false;
                 }
             }
 
             if (FromAccountState.Balance - LockValue - Fee < Fixed8.Zero)
             {
-                TxResult = ErrorCodes.E_TX_NOT_ENOUGH_BALANCE;
+                TxResult = MINERAL_ERROR_CODES.TX_NOT_ENOUGH_BALANCE;
                 return false;
             }
             return true;

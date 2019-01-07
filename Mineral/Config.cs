@@ -7,6 +7,7 @@ using Newtonsoft.Json.Linq;
 using Mineral.Converter;
 using System.Net.NetworkInformation;
 using System.Linq;
+using Mineral.Utils;
 
 namespace Mineral
 {

@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Mineral
+namespace Mineral.Utils
 {
     public class UInt256 : UIntBase, IComparable<UInt256>, IEquatable<UInt256>
     { 

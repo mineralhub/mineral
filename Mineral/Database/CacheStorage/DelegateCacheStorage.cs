@@ -1,5 +1,7 @@
 ﻿using Mineral.Core;
+using Mineral.Core.Transactions;
 using Mineral.Database.LevelDB;
+using Mineral.Utils;
 
 namespace Mineral.Database.CacheStorage
 {
@@ -25,7 +27,7 @@ namespace Mineral.Database.CacheStorage
             }
         }
 
-        public void Downvote(System.Collections.Generic.Dictionary<UInt160,Fixed8> Votes)
+        public void Downvote(System.Collections.Generic.Dictionary<UInt160, Fixed8> Votes)
         {
             foreach (var v in Votes)
             {

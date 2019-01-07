@@ -1,6 +1,8 @@
 ﻿using FluentAssertions;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Mineral.Core;
+using Mineral.Core.Transactions;
+using Mineral.Utils;
 using Mineral.Wallets;
 using System.Collections.Generic;
 using System.IO;

@@ -1,8 +1,9 @@
 ﻿using System.IO;
 using Newtonsoft.Json.Linq;
 using Mineral.Database.LevelDB;
+using Mineral.Utils;
 
-namespace Mineral.Core
+namespace Mineral.Core.Transactions
 {
     public class SupplyTransaction : TransactionBase
     {
@@ -36,7 +37,7 @@ namespace Mineral.Core
 
         public override bool VerifyBlockchain(Storage storage)
         {
-            if (0 < Blockchain.Instance.CurrentBlockHeight)
+            if (0 < BlockChain.Instance.CurrentBlockHeight)
                 return false;
 
             return base.VerifyBlockchain(storage);

@@ -2,8 +2,9 @@
 using System.IO;
 using Newtonsoft.Json.Linq;
 using Mineral.Database.LevelDB;
+using Mineral.Utils;
 
-namespace Mineral.Core
+namespace Mineral.Core.Transactions
 {
     public class VoteTransaction : TransactionBase
     {
@@ -34,7 +35,7 @@ namespace Mineral.Core
 
             if (Config.Instance.VoteMaxLength < Votes.Count)
             {
-                TxResult = ErrorCodes.E_TX_VOTE_OVERCOUNT;
+                TxResult = MINERAL_ERROR_CODES.TX_VOTE_OVERCOUNT;
                 return false;
             }
 
@@ -50,17 +51,17 @@ namespace Mineral.Core
 
             if (FromAccountState.LastVoteTxID != UInt256.Zero)
             {
-                if (Blockchain.Instance.HasTransactionPool(FromAccountState.LastLockTxID))
+                if (BlockChain.Instance.HasTransactionPool(FromAccountState.LastLockTxID))
                 {
-                    TxHeight = Blockchain.Instance.CurrentBlockHeight;
+                    TxHeight = BlockChain.Instance.CurrentBlockHeight;
                 }
                 else
                 {
                     storage.GetTransaction(FromAccountState.LastVoteTxID, out TxHeight);
                 }
-                if (Blockchain.Instance.CurrentBlockHeight - TxHeight < Config.Instance.VoteTTL)
+                if (BlockChain.Instance.CurrentBlockHeight - TxHeight < Config.Instance.VoteTTL)
                 {
-                    TxResult = ErrorCodes.E_TX_VOTE_TTL_NOT_ARRIVED;
+                    TxResult = MINERAL_ERROR_CODES.TX_VOTE_TTL_NOT_ARRIVED;
                     return false;
                 }
             }
@@ -69,19 +70,19 @@ namespace Mineral.Core
             {
                 if (storage.GetDelegateState(vote.Key) == null)
                 {
-                    TxResult = ErrorCodes.E_TX_DELEGATE_NOT_REGISTERED;
+                    TxResult = MINERAL_ERROR_CODES.TX_DELEGATE_NOT_REGISTERED;
                     return false;
                 }
                 if (vote.Value == Fixed8.Zero)
                 {
-                    TxResult = ErrorCodes.E_TX_ZERO_VOTE_VALUE_NOT_ALLOWED;
+                    TxResult = MINERAL_ERROR_CODES.TX_ZERO_VOTE_VALUE_NOT_ALLOWED;
                     return false;
                 }
             }
 
             if (FromAccountState.LockBalance - Votes.Sum(p => p.Value) < Fixed8.Zero)
             {
-                TxResult = ErrorCodes.E_TX_NOT_ENOUGH_LOCKBALANCE;
+                TxResult = MINERAL_ERROR_CODES.TX_NOT_ENOUGH_LOCKBALANCE;
                 return false;
             }
 

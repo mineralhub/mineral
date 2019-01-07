@@ -1,4 +1,6 @@
-﻿using System;
+﻿using Mineral.Core.Transactions;
+using Mineral.Utils;
+using System;
 using System.Collections.Generic;
 
 namespace Mineral.Core

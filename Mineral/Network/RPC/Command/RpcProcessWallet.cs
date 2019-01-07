@@ -5,6 +5,7 @@ using Newtonsoft.Json.Linq;
 using Mineral.Core;
 using Mineral.Cryptography;
 using Mineral.Wallets;
+using Mineral.Utils;
 
 namespace Mineral.Network.RPC.Command
 {
@@ -48,7 +49,7 @@ namespace Mineral.Network.RPC.Command
         public static JObject OnGetVoteWitness(object obj, JArray parameters)
         {
             UInt160 addressHash = WalletAccount.ToAddressHash(parameters[0].ToString());
-            AccountState state = Blockchain.Instance.Storage.GetAccountState(addressHash);
+            AccountState state = BlockChain.Instance.GetAccountState(addressHash);
 
             JObject json = new JObject();
             json["votes"] = new JArray();

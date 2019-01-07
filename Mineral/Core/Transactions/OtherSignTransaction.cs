@@ -2,8 +2,9 @@
 using System.IO;
 using Newtonsoft.Json.Linq;
 using Mineral.Database.LevelDB;
+using Mineral.Utils;
 
-namespace Mineral.Core
+namespace Mineral.Core.Transactions
 {
     public class OtherSignTransaction : TransactionBase
     {
@@ -56,7 +57,7 @@ namespace Mineral.Core
             if (!base.VerifyBlockchain(storage))
                 return false;
 
-            if (ExpirationBlockHeight < Blockchain.Instance.CurrentBlockHeight)
+            if (ExpirationBlockHeight < BlockChain.Instance.CurrentBlockHeight)
                 return false;
 
             if (FromAccountState.Balance - Fee - To.Sum(p => p.Value) < Fixed8.Zero)

@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Mineral.Utils;
+using System;
 using System.IO;
 
 namespace Mineral.Network.Payload
@@ -23,7 +24,7 @@ namespace Mineral.Network.Payload
                 Timestamp = DateTime.Now.ToTimestamp(),
                 Port = (ushort)port,
                 Nonce = Config.Instance.Nonce,
-                Height = Core.Blockchain.Instance.CurrentBlockHeight,
+                Height = Core.BlockChain.Instance.CurrentBlockHeight,
                 Relay = true,
                 NodeID = _guid
             };
@@ -119,7 +120,7 @@ namespace Mineral.Network.Payload
             }
             catch (Exception e)
             {
-                Logger.Error("deserialize PongPayload Exception.");
+                Logger.Log("deserialize PongPayload Exception.");
                 throw e;
             }
         }

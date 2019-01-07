@@ -2,7 +2,7 @@
 using System.Linq;
 using System.IO;
 
-namespace Mineral
+namespace Mineral.Utils
 {
     public abstract class UIntBase : IEquatable<UIntBase>, IComparable<UIntBase>, ISerializable
     {

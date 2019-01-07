@@ -1,8 +1,9 @@
 ﻿using System.IO;
 using Newtonsoft.Json.Linq;
 using Mineral.Database.LevelDB;
+using Mineral.Utils;
 
-namespace Mineral.Core
+namespace Mineral.Core.Transactions
 {
     public class TransactionBase : ISerializable
     {
@@ -33,20 +34,20 @@ namespace Mineral.Core
 
         public virtual int Size => Fee.Size + From.Size;
 
-        public virtual ErrorCodes TxResult { get; protected set; } = ErrorCodes.E_NO_ERROR;
+        public virtual MINERAL_ERROR_CODES TxResult { get; protected set; } = MINERAL_ERROR_CODES.NO_ERROR;
 
         public virtual bool Verify()
         {
             if (From == null)
             {
-                TxResult = ErrorCodes.E_TX_FROM_ADDRESS_INVALID;
+                TxResult = MINERAL_ERROR_CODES.TX_FROM_ADDRESS_INVALID;
                 return false;
             }
             Fixed8 oFee = Fee;
             CalcFee();
             if ((oFee - Fee) != Fixed8.Zero)
             {
-                TxResult = ErrorCodes.E_TX_FEE_VALUE_MISMATCH;
+                TxResult = MINERAL_ERROR_CODES.TX_FEE_VALUE_MISMATCH;
                 return false;
             }
             return true;
@@ -57,12 +58,12 @@ namespace Mineral.Core
             UsingStorage(storage);
             if (FromAccountState == null)
             {
-                TxResult = ErrorCodes.E_TX_FROM_ACCOUNT_INVALID;
+                TxResult = MINERAL_ERROR_CODES.TX_FROM_ACCOUNT_INVALID;
                 return false;
             }
             if (FromAccountState.Balance - Fee < Fixed8.Zero)
             {
-                TxResult = ErrorCodes.E_TX_NOT_ENOUGH_BALANCE;
+                TxResult = MINERAL_ERROR_CODES.TX_NOT_ENOUGH_BALANCE;
                 return false;
             }
             return true;

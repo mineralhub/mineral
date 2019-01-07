@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Mineral.Utils;
+using System;
 using System.Collections.Generic;
 
 namespace Mineral.Core.DPos
@@ -67,13 +68,13 @@ namespace Mineral.Core.DPos
             return TurnTable.RemainUpdate(height);
         }
 
-        public override void Update(Blockchain chain)
+        public override void Update(BlockChain chain)
         {
             int currentHeight = chain.CurrentBlockHeight;
             UpdateTurnTable(chain, chain.GetBlock(currentHeight - currentHeight % Config.Instance.RoundBlock));
         }
 
-        private void UpdateTurnTable(Blockchain chain, Block block)
+        private void UpdateTurnTable(BlockChain chain, Block block)
         {
             // calculate turn table
             List<DelegateState> delegates = chain.GetDelegateStateAll();

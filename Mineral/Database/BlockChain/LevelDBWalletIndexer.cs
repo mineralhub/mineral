@@ -5,8 +5,11 @@ using System.Reflection;
 using System.Security.Cryptography;
 using System.Threading;
 using Mineral.Core;
+using Mineral.Core.Transactions;
+using Mineral.Database.LevelDB;
+using Mineral.Utils;
 
-namespace Mineral.Database.LevelDB
+namespace Mineral.Database.BlockChain
 {
     public class LevelDBWalletIndexer : WalletIndexer
     {
@@ -190,7 +193,7 @@ namespace Mineral.Database.LevelDB
                         break;
                     case SignTransaction signTx:
                         {
-                            OtherSignTransaction osignTx = Blockchain.Instance.Storage.GetTransaction(signTx.SignTxHash).Data as OtherSignTransaction;
+                            OtherSignTransaction osignTx = Core.BlockChain.Instance.GetTransaction(signTx.SignTxHash).Data as OtherSignTransaction;
                             if (accounts.Contains(osignTx.From) && !changed.Contains(osignTx.From))
                                 changed.Add(osignTx.From);
                             foreach (UInt160 to in osignTx.To.Keys)
@@ -235,13 +238,13 @@ namespace Mineral.Database.LevelDB
                         continue;
                     }
                     int height = _accountGroup.Keys.Min();
-                    if (Blockchain.Instance.CurrentBlockHeight <= height)
+                    if (Core.BlockChain.Instance.CurrentBlockHeight <= height)
                     {
                         sleep = true;
                         continue;
                     }
 
-                    Block block = Blockchain.Instance.GetBlock(height);
+                    Block block = Core.BlockChain.Instance.GetBlock(height);
                     if (block == null)
                     {
                         sleep = true;

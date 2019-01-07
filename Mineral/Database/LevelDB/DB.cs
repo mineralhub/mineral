@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Mineral.Database.BlockChain;
+using System;
 using System.Runtime.CompilerServices;
 
 [assembly: InternalsVisibleTo("Mineral.UnitTests")]
