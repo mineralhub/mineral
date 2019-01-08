@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Concurrent;
 using System.IO;
+using System.IO.Compression;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -28,7 +29,7 @@ namespace Mineral
 
     public static class Logger
     {
-        static public bool WriteConsole = false;
+        static public bool WriteConsole = true;
         static public LogLevel WriteLogLevel = LogLevel.INFO;
         static private ConcurrentQueue<TypedLog> _queue = new ConcurrentQueue<TypedLog>();
 
@@ -76,20 +77,56 @@ namespace Mineral
             Log(log, LogLevel.TRACE);
         }
 
+        private const string logFile = "./MineralHub.log";
+        private const long logSize = 300 * 1024*1024; // 300MB
         static void Process()
         {
-            using (StreamWriter strm = File.AppendText("./output-log"))
+            DateTime logDate = DateTime.Now;
+            StreamWriter strm = File.AppendText(logFile);
+            strm.AutoFlush = true;
+
+            while (true)
             {
-                while (true)
+                if (_queue.TryDequeue(out TypedLog log))
                 {
-                    if (_queue.TryDequeue(out TypedLog log))
+                    if ((logDate.Date.ToTimestamp() != DateTime.Now.Date.ToTimestamp()) || (strm.BaseStream.Length + log.message.Length * 2 + 28 >= logSize))
                     {
-                        strm.WriteLine(log);
+                        strm.BaseStream.Flush();
+                        strm.Close();
+                        string logFileName = string.Format("./MineralHub-{0}.log", logDate.ToString("s").Substring(0, 10));
+                        for (int i = 1; i <= 4096; i++)
+                        {
+                            string logWriteName = logFileName + "." + i;
+                            if (File.Exists(logWriteName)) continue;
+                            if (File.Exists(logWriteName + ".gz")) continue;
+                            File.Move(logFile, logWriteName);
+                            Task.Run(() =>
+                            {
+                                string orgName = logWriteName.Substring(0);
+                                string gzName = orgName + ".gz";
+
+                                Stream inps = File.OpenRead(orgName);
+                                Stream outs = File.OpenWrite(gzName);
+                                using (GZipStream gzip = new GZipStream(outs, CompressionMode.Compress))
+                                {
+                                    inps.CopyTo(gzip);
+                                }
+                                outs.Close();
+                                inps.Close();
+                                if (File.Exists(gzName) && File.OpenRead(gzName).Length > 0)
+                                    File.Delete(orgName);
+                            });
+                            break;
+                        }
+                        logDate = DateTime.Now;
+                        strm = File.AppendText(logFile);
+                        strm.AutoFlush = true;
                     }
-                    else
-                    {
-                        Thread.Sleep(1000);
-                    }
+                    strm.WriteLine(log);
+                }
+                else
+                {
+                    Thread.Sleep(1000);
                 }
             }
         }
