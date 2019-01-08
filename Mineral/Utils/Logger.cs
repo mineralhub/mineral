@@ -78,7 +78,7 @@ namespace Mineral
         }
 
         private const string logFile = "./MineralHub.log";
-        private const long logSize = 16 * 1024; // 300 * 1024*1024; // 300MB
+        private const long logSize = 300 * 1024*1024; // 300MB
         static void Process()
         {
             DateTime logDate = DateTime.Now;
