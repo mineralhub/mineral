@@ -51,6 +51,7 @@ namespace Mineral.Core
 
         private uint storeHeaderCount = 0;
         private bool disposed = false;
+        private Thread _persistThread;
         #endregion
 
 
@@ -334,7 +335,12 @@ namespace Mineral.Core
                 this.proof.Update(this);
             }
 
-            Task.Run(() => PersistBlocksLoop());
+            _persistThread = new Thread(PersistBlocksLoop)
+            {
+                IsBackground = true,
+                Name = "Mineral.BlockChain.PersistBlocksLoop"
+            };
+            _persistThread.Start();
         }
 
         public ERROR_BLOCK AddBlock(Block block)
