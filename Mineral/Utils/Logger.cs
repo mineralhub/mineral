@@ -32,13 +32,12 @@ namespace Mineral
         static public bool WriteConsole = true;
         static public LogLevel WriteLogLevel = LogLevel.INFO;
         static private ConcurrentQueue<TypedLog> _queue = new ConcurrentQueue<TypedLog>();
+        static private Thread _thread;
 
         static Logger()
         {
-            Task.Run(() =>
-            {
-                Process();
-            });
+            _thread = new Thread(Process);
+            _thread.Start();
         }
 
         static public void Log(string log, LogLevel logLevel = LogLevel.INFO)
@@ -46,9 +45,9 @@ namespace Mineral
             TypedLog logdata = new TypedLog() { timeStamp = DateTime.Now, logType = logLevel, message = log };
             if (logdata.logType <= WriteLogLevel)
             {
-                _queue.Enqueue(logdata);
                 if (WriteConsole)
                     Console.WriteLine(logdata);
+                _queue.Enqueue(logdata);
             }
         }
 
@@ -126,7 +125,7 @@ namespace Mineral
                 }
                 else
                 {
-                    Thread.Sleep(1000);
+                    Thread.Sleep(50);
                 }
             }
         }

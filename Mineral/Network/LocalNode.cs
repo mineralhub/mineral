@@ -12,17 +12,17 @@ using System.Linq;
 using Mineral.Core;
 using Mineral.Network.Payload;
 using Mineral.Core.Transactions;
-using Microsoft.Extensions.Logging;
-using Mineral.Utils;
 
 namespace Mineral.Network
 {
     public class LocalNode : IDisposable
     {
         private int _listenedFlag;
-        private int _disposedFlag;
         private TcpListener _tcpListener;
         private IWebHost _wsHost;
+        private Thread _syncBlockThread;
+        private Thread _acceptPeersThread;
+        private Thread _connectToPeersThread;
 
         private CancellationTokenSource _cancelTokenSource = new CancellationTokenSource();
 
@@ -36,14 +36,14 @@ namespace Mineral.Network
 
         public void Dispose()
         {
-            if (Interlocked.Exchange(ref _disposedFlag, 1) == 0)
+            if (0 < _listenedFlag)
             {
-                if (0 < _listenedFlag)
-                {
-                    if (_tcpListener != null)
-                        _tcpListener.Stop();
-                }
+                if (_tcpListener != null)
+                    _tcpListener.Stop();
             }
+            _acceptPeersThread.Join();
+            _connectToPeersThread.Join();
+            _syncBlockThread.Join();
         }
 
         public void Listen()
@@ -67,7 +67,14 @@ namespace Mineral.Network
                             }
                         }
                         if (IsSyncing)
-                            Task.Run(() => SyncBlocks());
+                        {
+                            _syncBlockThread = new Thread(SyncBlocks)
+                            {
+                                IsBackground = true,
+                                Name = "Mineral.LocalNode.SyncBlocks"
+                            };
+                            _syncBlockThread.Start();
+                        }
 
                         if (0 < tcpPort)
                         {
@@ -76,8 +83,18 @@ namespace Mineral.Network
                             try
                             {
                                 _tcpListener.Start();
-                                Task.Run(() => AcceptPeersLoop());
-                                Task.Run(() => ConnectToPeersLoop());
+                                _acceptPeersThread = new Thread(AcceptPeersLoop)
+                                {
+                                    IsBackground = true,
+                                    Name = "Mineral.LocalNode.AcceptPeersLoop"
+                                };
+                                _acceptPeersThread.Start();
+                                _connectToPeersThread = new Thread(ConnectToPeersLoop)
+                                {
+                                    IsBackground = true,
+                                    Name = "Mineral.LocalNode.ConnectToPeersLoop"
+                                };
+                                _connectToPeersThread.Start();
                             }
                             catch (SocketException) { }
                         }
