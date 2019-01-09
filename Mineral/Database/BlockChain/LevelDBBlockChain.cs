@@ -14,7 +14,6 @@ namespace Mineral.Database.BlockChain
 {
     internal class LevelDBBlockChain : BaseLevelDB, IDisposable
     {
-        private DB db = null;
         private Storage storage = null;
 
         public LevelDBBlockChain(string path)
