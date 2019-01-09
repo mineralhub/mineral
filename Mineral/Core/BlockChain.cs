@@ -282,13 +282,11 @@ namespace Mineral.Core
         {
             Version version;
             Slice value;    
-            ReadOptions options = new ReadOptions { FillCache = false };
 
             this.genesisBlock = genesisBlock;
             this.manager = new LevelDBBlockChain(path);
             if (this.manager.TryGetVersion(out version))
             {
-                int blockHeight = 0;
                 UInt256 blockHash = UInt256.Zero;
                 IEnumerable<UInt256> headerHashs;
 

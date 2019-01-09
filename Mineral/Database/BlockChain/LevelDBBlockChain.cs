@@ -12,20 +12,15 @@ using System.Text;
 [assembly: InternalsVisibleTo("Mineral.UnitTests")]
 namespace Mineral.Database.BlockChain
 {
-    internal class LevelDBBlockChain
+    internal class LevelDBBlockChain : BaseLevelDB, IDisposable
     {
         private DB db = null;
         private Storage storage = null;
 
         public LevelDBBlockChain(string path)
+            : base(path)
         {
-            this.db = DB.Open(path, new Options { CreateIfMissing = true });
             NewStorage();
-        }
-
-        public void Dispose()
-        {
-            this.db.Dispose();
         }
 
         #region Properties
@@ -111,17 +106,6 @@ namespace Mineral.Database.BlockChain
 
 
         #region TryGet
-        public bool TryGetVersion(out Version version)
-        {
-            Slice value;
-            bool result = this.db.TryGet(ReadOptions.Default, SliceBuilder.Begin(DataEntryPrefix.SYS_Version), out value);
-            if (result)
-                Version.TryParse(value.ToString(), out version);
-            else
-                version = null;
-            return result;
-        }
-
         public bool TryGetCurrentHeader(out UInt256 headerHash, out int headerHeight)
         {
             Slice value;
@@ -251,15 +235,6 @@ namespace Mineral.Database.BlockChain
 
 
         #region Get
-        public Version GetVersion()
-        {
-            Slice value;
-            Version version;
-            value = this.db.Get(ReadOptions.Default, SliceBuilder.Begin(DataEntryPrefix.SYS_Version));
-            Version.TryParse(value.ToString(), out version);
-            return version;
-        }
-
         public UInt256 GetCurrentHeaderHash()
         {
             Slice value = this.db.Get(new ReadOptions { FillCache = false }, SliceBuilder.Begin(DataEntryPrefix.SYS_CurrentHeader));
@@ -366,11 +341,6 @@ namespace Mineral.Database.BlockChain
 
 
         #region Put
-        public void PutVersion(Version version)
-        {
-            this.db.Put(WriteOptions.Default, SliceBuilder.Begin(DataEntryPrefix.SYS_Version), version.ToString());
-        }
-
         public void PutCurrentHeader(BlockHeader header)
         {
             this.db.Put(WriteOptions.Default, SliceBuilder.Begin(DataEntryPrefix.SYS_CurrentHeader), SliceBuilder.Begin().Add(header.Hash).Add(header.Height));
