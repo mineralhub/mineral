@@ -28,29 +28,29 @@ namespace Mineral.Core
 
 
         #region Fields
-        private static BlockChain instance = null;
-        private Proof proof = null;
-        private Block genesisBlock = null;
+        private static BlockChain _instance = null;
+        private Proof _proof = null;
+        private Block _genesisBlock = null;
 
-        private AutoResetEvent newBlockEvent = new AutoResetEvent(false);
+        private AutoResetEvent _newBlockEvent = new AutoResetEvent(false);
         public event EventHandler<Block> PersistCompleted;
         public object PersistLock { get; } = new object();
         public object PoolLock { get; } = new object();
 
-        private int currentBlockHeight = 0;
-        private UInt256 currentBlockHash = UInt256.Zero;
-        private int currentHeaderHeight = 0;
-        private UInt256 currentHeaderHash = UInt256.Zero;
+        private int _currentBlockHeight = 0;
+        private UInt256 _currentBlockHash = UInt256.Zero;
+        private int _currentHeaderHeight = 0;
+        private UInt256 _currentHeaderHash = UInt256.Zero;
 
-        private CacheChain cacheChain = new CacheChain();
-        private Dictionary<UInt256, Block> waitPersistBlocks = new Dictionary<UInt256, Block>();
-        private Dictionary<UInt256, BlockHeader> cacheHeaders = new Dictionary<UInt256, BlockHeader>();
+        private CacheChain _cacheChain = new CacheChain();
+        private Dictionary<UInt256, Block> _waitPersistBlocks = new Dictionary<UInt256, Block>();
+        private Dictionary<UInt256, BlockHeader> _cacheHeaders = new Dictionary<UInt256, BlockHeader>();
 
-        protected Dictionary<UInt256, Transaction> rxPool = new Dictionary<UInt256, Transaction>();
-        protected Dictionary<UInt256, Transaction> txPool = new Dictionary<UInt256, Transaction>();
+        protected Dictionary<UInt256, Transaction> _rxPool = new Dictionary<UInt256, Transaction>();
+        protected Dictionary<UInt256, Transaction> _txPool = new Dictionary<UInt256, Transaction>();
 
-        private uint storeHeaderCount = 0;
-        private bool disposed = false;
+        private uint _storeHeaderCount = 0;
+        private bool _disposed = false;
         private Thread _persistThread;
         #endregion
 
@@ -60,41 +60,41 @@ namespace Mineral.Core
         {
             get
             {
-                if (instance == null)
+                if (_instance == null)
                 {
-                    instance = new BlockChain();
-                    instance.proof = new DPos.DPos();
+                    _instance = new BlockChain();
+                    _instance._proof = new DPos.DPos();
                 }
-                return instance;
+                return _instance;
             }
         }
 
-        public Proof Proof { get { return this.proof; } }
+        public Proof Proof { get { return _proof; } }
 
-        public int CurrentBlockHeight { get { return this.currentBlockHeight; } }
-        public UInt256 CurrentBlockHash { get { return this.currentBlockHash; } }
-        public int CurrentHeaderHeight { get { return this.currentHeaderHeight; } }
-        public UInt256 CurrentHeaderHash { get { return this.currentHeaderHash; } }
-        public Block GenesisBlock { get { return this.genesisBlock; } }
+        public int CurrentBlockHeight { get { return _currentBlockHeight; } }
+        public UInt256 CurrentBlockHash { get { return _currentBlockHash; } }
+        public int CurrentHeaderHeight { get { return _currentHeaderHeight; } }
+        public UInt256 CurrentHeaderHash { get { return _currentHeaderHash; } }
+        public Block GenesisBlock { get { return _genesisBlock; } }
         #endregion
 
 
         #region Event Method
         private void PersistBlocksLoop()
         {
-            while (!this.disposed)
+            while (!_disposed)
             {
-                this.newBlockEvent.WaitOne();
+                _newBlockEvent.WaitOne();
 
-                while (!this.disposed)
+                while (!_disposed)
                 {
-                    if (!this.cacheChain.HeaderIndices.TryGetValue(this.currentBlockHeight + 1, out UInt256 hash))
+                    if (!_cacheChain.HeaderIndices.TryGetValue(_currentBlockHeight + 1, out UInt256 hash))
                         break;
 
                     Block block;
-                    lock (this.waitPersistBlocks)
+                    lock (_waitPersistBlocks)
                     {
-                        if (!this.waitPersistBlocks.TryGetValue(hash, out block))
+                        if (!_waitPersistBlocks.TryGetValue(hash, out block))
                             break;
                     }
 
@@ -105,13 +105,13 @@ namespace Mineral.Core
                     lock (PersistLock)
                     {
                         Persist(block);
-                        if (0 >= this.proof.RemainUpdate(block.Height))
-                            this.proof.Update(this);
+                        if (0 >= _proof.RemainUpdate(block.Height))
+                            _proof.Update(this);
                         OnPersistCompleted(block);
                     }
-                    lock (this.waitPersistBlocks)
+                    lock (_waitPersistBlocks)
                     {
-                        this.waitPersistBlocks.Remove(hash);
+                        _waitPersistBlocks.Remove(hash);
                     }
                 }
             }
@@ -124,25 +124,25 @@ namespace Mineral.Core
         {
             WriteBatch batch = new WriteBatch();
 
-            this.cacheChain.AddHeaderIndex(header.Height, header.Hash);
-            while (this.storeHeaderCount <= header.Height - 2000)
+            _cacheChain.AddHeaderIndex(header.Height, header.Hash);
+            while (_storeHeaderCount <= header.Height - 2000)
             {
                 using (MemoryStream ms = new MemoryStream())
                 using (BinaryWriter bw = new BinaryWriter(ms))
                 {
-                    bw.WriteSerializableArray(this.cacheChain.HeaderIndices.Values.Skip((int)this.storeHeaderCount).Take(2000));
+                    bw.WriteSerializableArray(_cacheChain.HeaderIndices.Values.Skip((int)_storeHeaderCount).Take(2000));
                     bw.Flush();
-                    this.manager.PutHeaderHashList(batch, (int)this.storeHeaderCount, ms.ToArray());
+                    _manager.PutHeaderHashList(batch, (int)_storeHeaderCount, ms.ToArray());
                 }
-                this.storeHeaderCount += 2000;
+                _storeHeaderCount += 2000;
             }
 
-            this.manager.PutBlock(batch, header, 0L);
-            this.manager.PutCurrentHeader(batch, header);
-            this.manager.BatchWrite(WriteOptions.Default, batch);
+            _manager.PutBlock(batch, header, 0L);
+            _manager.PutCurrentHeader(batch, header);
+            _manager.BatchWrite(WriteOptions.Default, batch);
 
-            this.currentHeaderHeight = header.Height;
-            this.currentHeaderHash = header.Hash;
+            _currentHeaderHeight = header.Height;
+            _currentHeaderHash = header.Hash;
         }
 
         private void Persist(Block block)
@@ -150,25 +150,25 @@ namespace Mineral.Core
             WriteBatch batch = new WriteBatch();
 
             long fee = block.Transactions.Sum(p => p.Fee).Value;
-            this.manager.PutBlock(batch, block, fee);
+            _manager.PutBlock(batch, block, fee);
 
             foreach (Transaction tx in block.Transactions)
             {
-                this.manager.PutTransaction(batch, block, tx);
-                if (block != GenesisBlock && !tx.VerifyBlockchain(this.manager.Storage))
+                _manager.PutTransaction(batch, block, tx);
+                if (block != GenesisBlock && !tx.VerifyBlockchain(_manager.Storage))
                 {
                     if (Fixed8.Zero < tx.Fee)
-                        this.manager.Storage.GetAccountState(tx.From).AddBalance(-tx.Fee);
+                        _manager.Storage.GetAccountState(tx.From).AddBalance(-tx.Fee);
 
                     byte[] eCodeBytes = BitConverter.GetBytes((Int64)tx.Data.TxResult).Take(8).ToArray();
-                    this.manager.PutTransactionResult(batch, tx);
+                    _manager.PutTransactionResult(batch, tx);
 #if DEBUG
                     Logger.Debug("verified == false transaction. " + tx.ToJson());
 #endif
                     continue;
                 }
 
-                AccountState from = this.manager.Storage.GetAccountState(tx.From);
+                AccountState from = _manager.Storage.GetAccountState(tx.From);
                 if (Fixed8.Zero < tx.Fee)
                     from.AddBalance(-tx.Fee);
 
@@ -179,39 +179,39 @@ namespace Mineral.Core
                             Fixed8 totalAmount = transTx.To.Sum(p => p.Value);
                             from.AddBalance(-totalAmount);
                             foreach (var i in transTx.To)
-                                this.manager.Storage.GetAccountState(i.Key).AddBalance(i.Value);
+                                _manager.Storage.GetAccountState(i.Key).AddBalance(i.Value);
                         }
                         break;
                     case VoteTransaction voteTx:
                         {
                             from.LastVoteTxID = tx.Hash;
-                            this.manager.Storage.Downvote(from.Votes);
-                            this.manager.Storage.Vote(voteTx);
+                            _manager.Storage.Downvote(from.Votes);
+                            _manager.Storage.Vote(voteTx);
                             from.SetVote(voteTx.Votes);
                         }
                         break;
                     case RegisterDelegateTransaction registerDelegateTx:
                         {
-                            this.manager.Storage.AddDelegate(registerDelegateTx.From, registerDelegateTx.Name);
+                            _manager.Storage.AddDelegate(registerDelegateTx.From, registerDelegateTx.Name);
                         }
                         break;
                     case OtherSignTransaction osignTx:
                         {
                             Fixed8 totalAmount = osignTx.To.Sum(p => p.Value);
                             from.AddBalance(-totalAmount);
-                            this.manager.Storage.GetBlockTriggers(osignTx.ExpirationBlockHeight).TransactionHashes.Add(osignTx.Owner.Hash);
-                            this.manager.Storage.AddOtherSignTxs(osignTx.Owner.Hash, osignTx.Others);
+                            _manager.Storage.GetBlockTriggers(osignTx.ExpirationBlockHeight).TransactionHashes.Add(osignTx.Owner.Hash);
+                            _manager.Storage.AddOtherSignTxs(osignTx.Owner.Hash, osignTx.Others);
                         }
                         break;
                     case SignTransaction signTx:
                         {
-                            OtherSignTransactionState osignState = this.manager.Storage.GetOtherSignTxs(signTx.SignTxHash);
+                            OtherSignTransactionState osignState = _manager.Storage.GetOtherSignTxs(signTx.SignTxHash);
                             if (osignState != null && osignState.Sign(signTx.Owner.Signature) && osignState.RemainSign.Count == 0)
                             {
-                                OtherSignTransaction osignTx = this.manager.Storage.GetTransaction(osignState.TxHash).Data as OtherSignTransaction;
+                                OtherSignTransaction osignTx = _manager.Storage.GetTransaction(osignState.TxHash).Data as OtherSignTransaction;
                                 foreach (var i in osignTx.To)
-                                    this.manager.Storage.GetAccountState(i.Key).AddBalance(i.Value);
-                                BlockTriggerState state = this.manager.Storage.GetBlockTriggers(signTx.Reference.ExpirationBlockHeight);
+                                    _manager.Storage.GetAccountState(i.Key).AddBalance(i.Value);
+                                BlockTriggerState state = _manager.Storage.GetBlockTriggers(signTx.Reference.ExpirationBlockHeight);
                                 state.TransactionHashes.Remove(signTx.SignTxHash);
                             }
                         }
@@ -241,17 +241,17 @@ namespace Mineral.Core
                 }
             }
 
-            BlockTriggerState blockTrigger = this.manager.Storage.TryBlockTriggers(block.Height);
+            BlockTriggerState blockTrigger = _manager.Storage.TryBlockTriggers(block.Height);
             if (blockTrigger != null)
             {
                 foreach (UInt256 txhash in blockTrigger.TransactionHashes)
                 {
-                    Transaction tx = this.manager.Storage.GetTransaction(txhash);
+                    Transaction tx = _manager.Storage.GetTransaction(txhash);
                     switch (tx.Data)
                     {
                         case OtherSignTransaction osignTx:
                             {
-                                this.manager.Storage.GetAccountState(osignTx.From).AddBalance(osignTx.To.Sum(p => p.Value));
+                                _manager.Storage.GetAccountState(osignTx.From).AddBalance(osignTx.To.Sum(p => p.Value));
                             }
                             break;
                     }
@@ -260,18 +260,18 @@ namespace Mineral.Core
 
             if (0 < block.Height)
             {
-                AccountState producer = this.manager.Storage.GetAccountState(WalletAccount.ToAddressHash(block.Header.Signature.Pubkey));
+                AccountState producer = _manager.Storage.GetAccountState(WalletAccount.ToAddressHash(block.Header.Signature.Pubkey));
                 producer.AddBalance(Config.Instance.BlockReward);
             }
 
-            this.manager.Storage.commit(batch, block.Height);
-            this.manager.PutCurrentBlock(block);
-            this.manager.BatchWrite(WriteOptions.Default, batch);
+            _manager.Storage.commit(batch, block.Height);
+            _manager.PutCurrentBlock(block);
+            _manager.BatchWrite(WriteOptions.Default, batch);
 
-            this.currentBlockHeight = block.Header.Height;
-            this.currentBlockHash = block.Header.Hash;
+            _currentBlockHeight = block.Header.Height;
+            _currentBlockHash = block.Header.Hash;
 
-            this.cacheChain.AddBlock(block);
+            _cacheChain.AddBlock(block);
 
             Logger.Debug("persist block : " + block.Height);
         }
@@ -284,55 +284,55 @@ namespace Mineral.Core
             Version version;
             Slice value;    
 
-            this.genesisBlock = genesisBlock;
-            this.manager = new LevelDBBlockChain(path);
-            if (this.manager.TryGetVersion(out version))
+            _genesisBlock = genesisBlock;
+            _manager = new LevelDBBlockChain(path);
+            if (_manager.TryGetVersion(out version))
             {
                 UInt256 blockHash = UInt256.Zero;
                 IEnumerable<UInt256> headerHashs;
 
-                if (this.manager.TryGetCurrentBlock(out this.currentBlockHash, out this.currentBlockHeight))
+                if (_manager.TryGetCurrentBlock(out _currentBlockHash, out _currentBlockHeight))
                 {
-                    headerHashs = this.manager.GetHeaderHashList();
+                    headerHashs = _manager.GetHeaderHashList();
 
                     int height = 0;
                     foreach (UInt256 headerHash in headerHashs)
                     {
-                        this.cacheChain.AddHeaderIndex(height++, headerHash);
-                        ++this.storeHeaderCount;
+                        _cacheChain.AddHeaderIndex(height++, headerHash);
+                        ++_storeHeaderCount;
                     }
 
-                    if (!this.manager.TryGetCurrentHeader(out this.currentHeaderHash, out this.currentHeaderHeight))
+                    if (!_manager.TryGetCurrentHeader(out _currentHeaderHash, out _currentHeaderHeight))
                     {
-                        this.currentHeaderHash = this.currentBlockHash;
-                        this.currentHeaderHeight = this.currentBlockHeight;
+                        _currentHeaderHash = _currentBlockHash;
+                        _currentHeaderHeight = _currentBlockHeight;
                     }
 
-                    if (this.storeHeaderCount == 0)
+                    if (_storeHeaderCount == 0)
                     {
-                        foreach (BlockHeader blockHeader in this.manager.GetBlockHeaderList())
-                            this.cacheChain.AddHeaderIndex(blockHeader.Height, blockHeader.Hash);
+                        foreach (BlockHeader blockHeader in _manager.GetBlockHeaderList())
+                            _cacheChain.AddHeaderIndex(blockHeader.Height, blockHeader.Hash);
                     }
-                    else if (this.storeHeaderCount <= this.currentHeaderHeight)
+                    else if (_storeHeaderCount <= _currentHeaderHeight)
                     {
-                        for (UInt256 hash = this.currentHeaderHash; hash != this.cacheChain.HeaderIndices[(int)this.storeHeaderCount - 1];)
+                        for (UInt256 hash = _currentHeaderHash; hash != _cacheChain.HeaderIndices[(int)_storeHeaderCount - 1];)
                         {
-                            BlockHeader header = this.manager.GetBlockHeader(hash);
-                            this.cacheChain.AddHeaderIndex(header.Height, header.Hash);
+                            BlockHeader header = _manager.GetBlockHeader(hash);
+                            _cacheChain.AddHeaderIndex(header.Height, header.Hash);
                             hash = header.PrevHash;
                         }
                     }
-                    this.proof.SetTurnTable(this.manager.GetCurrentTurnTable());
+                    _proof.SetTurnTable(_manager.GetCurrentTurnTable());
                 }
             }
             else
             {
-                this.cacheChain.AddHeaderIndex(genesisBlock.Height, genesisBlock.Hash);
-                this.currentBlockHash = genesisBlock.Hash;
-                this.currentHeaderHash = genesisBlock.Hash;
+                _cacheChain.AddHeaderIndex(genesisBlock.Height, genesisBlock.Hash);
+                _currentBlockHash = genesisBlock.Hash;
+                _currentHeaderHash = genesisBlock.Hash;
                 Persist(genesisBlock);
-                this.manager.PutVersion(Assembly.GetExecutingAssembly().GetName().Version);
-                this.proof.Update(this);
+                _manager.PutVersion(Assembly.GetExecutingAssembly().GetName().Version);
+                _proof.Update(this);
             }
 
             _persistThread = new Thread(PersistBlocksLoop)
@@ -345,33 +345,33 @@ namespace Mineral.Core
 
         public ERROR_BLOCK AddBlock(Block block)
         {
-            lock (this.waitPersistBlocks)
+            lock (_waitPersistBlocks)
             {
-                if (!this.waitPersistBlocks.ContainsKey(block.Hash))
-                    this.waitPersistBlocks.Add(block.Hash, block);
+                if (!_waitPersistBlocks.ContainsKey(block.Hash))
+                    _waitPersistBlocks.Add(block.Hash, block);
             }
 
             lock (PoolLock)
             {
                 foreach (var tx in block.Transactions)
                 {
-                    if (this.rxPool.ContainsKey(tx.Hash))
+                    if (_rxPool.ContainsKey(tx.Hash))
                         continue;
-                    if (this.txPool.ContainsKey(tx.Hash))
+                    if (_txPool.ContainsKey(tx.Hash))
                         continue;
-                    this.txPool.Add(tx.Hash, tx);
+                    _txPool.Add(tx.Hash, tx);
                 }
             }
 
-            int height = this.cacheChain.HeaderHeight;
+            int height = _cacheChain.HeaderHeight;
             if (height + 1 == block.Height)
             {
                 if (!block.Verify())
                     return ERROR_BLOCK.ERROR;
                 WriteBatch batch = new WriteBatch();
                 AddHeader(block.Header);
-                this.cacheChain.AddBlock(block);
-                this.newBlockEvent.Set();
+                _cacheChain.AddBlock(block);
+                _newBlockEvent.Set();
             }
             else
                 return ERROR_BLOCK.ERROR_HEIGHT;
@@ -384,18 +384,18 @@ namespace Mineral.Core
             if (block.Height != CurrentBlockHeight + 1)
                 return false;
 
-            int height = this.cacheChain.HeaderHeight;
+            int height = _cacheChain.HeaderHeight;
             if (height + 1 == block.Height)
             {
                 AddHeader(block.Header);
                 lock (PersistLock)
                 {
                     Persist(block);
-                    if (0 >= this.proof.RemainUpdate(block.Height))
-                        this.proof.Update(this);
+                    if (0 >= _proof.RemainUpdate(block.Height))
+                        _proof.Update(this);
                     OnPersistCompleted(block);
                 }
-                this.cacheChain.AddBlock(block);
+                _cacheChain.AddBlock(block);
                 return true;
             }
             return false;
@@ -404,7 +404,7 @@ namespace Mineral.Core
         // TODO : clean
         public bool VerityBlock(Block block)
         {
-            Storage snapshot = this.manager.SnapShot;
+            Storage snapshot = _manager.SnapShot;
             List<Transaction> errList = new List<Transaction>();
 
             foreach (Transaction tx in block.Transactions)
@@ -414,7 +414,7 @@ namespace Mineral.Core
                     errList.Add(tx);
                     lock (PoolLock)
                     {
-                        this.txPool.Remove(tx.Hash);
+                        _txPool.Remove(tx.Hash);
                     }
                     continue;
                 }
@@ -520,7 +520,7 @@ namespace Mineral.Core
             WriteBatch batch = new WriteBatch();
             TurnTableState state = new TurnTableState();
             state.SetTurnTable(addrs, height);
-            this.manager.PutTurnTable(state);
+            _manager.PutTurnTable(state);
         }
 
         public void OnPersistCompleted(Block block)
@@ -529,14 +529,14 @@ namespace Mineral.Core
             PersistCompleted?.Invoke(this, block);
         }
 
-        public void SetCacheBlockCapacity(int capacity) { cacheChain.SetCapacity(capacity); }
+        public void SetCacheBlockCapacity(int capacity) { _cacheChain.SetCapacity(capacity); }
 
         public void Dispose()
         {
-            this.disposed = true;
-            this.newBlockEvent.Set();
-            this.newBlockEvent.Dispose();
-            this.manager.Dispose();
+            _disposed = true;
+            _newBlockEvent.Set();
+            _newBlockEvent.Dispose();
+            _manager.Dispose();
         }
         #endregion
 

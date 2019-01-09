@@ -16,17 +16,17 @@ namespace Mineral.UnitTests.Database
     [TestClass]
     public class UT_BlockChainLevelDB
     {
-        LevelDBBlockChain chainDb = null;
-        WriteOptions write_option = WriteOptions.Default;
+        private LevelDBBlockChain _chainDb = null;
+        private WriteOptions _write_option = WriteOptions.Default;
 
-        WalletAccount account = new WalletAccount(Encoding.Default.GetBytes("0"));
-        Block block = null;
+        private WalletAccount _account = new WalletAccount(Encoding.Default.GetBytes("0"));
+        private Block _block = null;
 
 
         [TestInitialize]
         public void TestSetup()
         {
-            this.chainDb = new LevelDBBlockChain("./output-database");
+            _chainDb = new LevelDBBlockChain("./output-database");
 
             BlockHeader header = new BlockHeader
             {
@@ -36,14 +36,14 @@ namespace Mineral.UnitTests.Database
                 Timestamp = 0,
                 Height = 10
             };
-            header.Sign(this.account.Key);
-            this.block = new Block(header, new List<Transaction>());
+            header.Sign(_account.Key);
+            _block = new Block(header, new List<Transaction>());
         }
 
         [TestCleanup]
         public void TestClean()
         {
-            this.chainDb.Dispose();
+            _chainDb.Dispose();
         }
 
         [TestMethod]
@@ -56,11 +56,11 @@ namespace Mineral.UnitTests.Database
                 UInt256 blockHash = new UInt256();
                 WriteBatch batch = new WriteBatch();
 
-                this.chainDb.PutCurrentHeader(batch, block.Header);
-                this.chainDb.BatchWrite(this.write_option, batch);
+                _chainDb.PutCurrentHeader(batch, _block.Header);
+                _chainDb.BatchWrite(_write_option, batch);
 
-                if (this.chainDb.TryGetCurrentHeader(out blockHash, out blockHeight))
-                    result = (this.block.Header.Hash.Equals(blockHash) && this.block.Height.Equals(blockHeight));
+                if (_chainDb.TryGetCurrentHeader(out blockHash, out blockHeight))
+                    result = (_block.Header.Hash.Equals(blockHash) && _block.Height.Equals(blockHeight));
             }
             catch
             {
@@ -79,11 +79,11 @@ namespace Mineral.UnitTests.Database
                 UInt256 blockHash = new UInt256();
                 WriteBatch batch = new WriteBatch();
 
-                this.chainDb.PutCurrentBlock(batch, block);
-                this.chainDb.BatchWrite(this.write_option, batch);
+                _chainDb.PutCurrentBlock(batch, _block);
+                _chainDb.BatchWrite(_write_option, batch);
 
-                if (this.chainDb.TryGetCurrentBlock(out blockHash, out blockHeight))
-                    result = (block.Header.Hash.Equals(blockHash) && block.Height.Equals(blockHeight));
+                if (_chainDb.TryGetCurrentBlock(out blockHash, out blockHeight))
+                    result = (_block.Header.Hash.Equals(blockHash) && _block.Height.Equals(blockHeight));
             }
             catch
             {
@@ -101,12 +101,12 @@ namespace Mineral.UnitTests.Database
                 UInt256 blockHash = new UInt256();
                 WriteBatch batch = new WriteBatch();
 
-                this.chainDb.PutBlock(batch, block, 0L);
-                this.chainDb.BatchWrite(this.write_option, batch);
+                _chainDb.PutBlock(batch, _block, 0L);
+                _chainDb.BatchWrite(_write_option, batch);
 
                 Block value = null;
-                if (this.chainDb.TryGetBlock(this.block.Hash, out value))
-                    result = block.Header.Hash.Equals(value.Hash);
+                if (_chainDb.TryGetBlock(_block.Hash, out value))
+                    result = _block.Header.Hash.Equals(value.Hash);
             }
             catch
             {
@@ -124,12 +124,12 @@ namespace Mineral.UnitTests.Database
                 UInt256 blockHash = new UInt256();
                 WriteBatch batch = new WriteBatch();
 
-                this.chainDb.PutBlock(batch, block.Header, 0L);
-                this.chainDb.BatchWrite(this.write_option, batch);
+                _chainDb.PutBlock(batch, _block.Header, 0L);
+                _chainDb.BatchWrite(_write_option, batch);
 
                 BlockHeader value = null;
-                if (this.chainDb.TryGetBlockHeader(this.block.Hash, out value))
-                    result = block.Header.Hash.Equals(value.Hash);
+                if (_chainDb.TryGetBlockHeader(_block.Hash, out value))
+                    result = _block.Header.Hash.Equals(value.Hash);
             }
             catch
             {
@@ -147,23 +147,23 @@ namespace Mineral.UnitTests.Database
                 WalletAccount toAddress = new WalletAccount(Encoding.Default.GetBytes("1"));
                 TransferTransaction transfer = new TransferTransaction()
                 {
-                    From = this.account.AddressHash,
+                    From = _account.AddressHash,
                     To = new Dictionary<UInt160, Fixed8> { { toAddress.AddressHash, Fixed8.One } }
                 };
 
                 Transaction tx = new Transaction(TransactionType.Transfer, DateTime.UtcNow.ToTimestamp(), transfer);
-                tx.Sign(this.account);
+                tx.Sign(_account);
 
-                block.Transactions.Add(tx);
+                _block.Transactions.Add(tx);
 
                 UInt256 blockHash = new UInt256();
                 WriteBatch batch = new WriteBatch();
 
-                this.chainDb.PutTransaction(batch, block, tx);
-                this.chainDb.BatchWrite(this.write_option, batch);
+                _chainDb.PutTransaction(batch, _block, tx);
+                _chainDb.BatchWrite(_write_option, batch);
 
                 Transaction value = null;
-                if (this.chainDb.TryGetTransaction(tx.Hash, out value))
+                if (_chainDb.TryGetTransaction(tx.Hash, out value))
                     result = tx.Hash.Equals(value.Hash);
             }
             catch
@@ -182,24 +182,24 @@ namespace Mineral.UnitTests.Database
                 WalletAccount toAddress = new WalletAccount(Encoding.Default.GetBytes("1"));
                 TransferTransaction transfer = new TransferTransaction()
                 {
-                    From = this.account.AddressHash,
+                    From = _account.AddressHash,
                     To = new Dictionary<UInt160, Fixed8> { { toAddress.AddressHash, Fixed8.One } }
                 };
 
                 Transaction tx = new Transaction(TransactionType.Transfer, DateTime.UtcNow.ToTimestamp(), transfer);
-                tx.Sign(this.account);
+                tx.Sign(_account);
                 tx.Verify();
 
-                block.Transactions.Add(tx);
+                _block.Transactions.Add(tx);
 
                 UInt256 blockHash = new UInt256();
                 WriteBatch batch = new WriteBatch();
 
-                this.chainDb.PutTransactionResult(batch, tx);
-                this.chainDb.BatchWrite(this.write_option, batch);
+                _chainDb.PutTransactionResult(batch, tx);
+                _chainDb.BatchWrite(_write_option, batch);
 
                 MINERAL_ERROR_CODES code;
-                if (this.chainDb.TryGetTransactionResult(tx.Hash, out code))
+                if (_chainDb.TryGetTransactionResult(tx.Hash, out code))
                     result = tx.Data.TxResult.Equals(code);
             }
             catch
@@ -219,14 +219,14 @@ namespace Mineral.UnitTests.Database
                 TurnTableState state = new TurnTableState();
                 List<UInt160> address = new List<UInt160>();
 
-                address.Add(account.AddressHash);
-                state.SetTurnTable(address, this.block.Height);
+                address.Add(_account.AddressHash);
+                state.SetTurnTable(address, _block.Height);
 
-                this.chainDb.PutTurnTable(batch, state);
-                this.chainDb.BatchWrite(this.write_option, batch);
+                _chainDb.PutTurnTable(batch, state);
+                _chainDb.BatchWrite(_write_option, batch);
 
                 TurnTableState resState;
-                if (this.chainDb.TryGetCurrentTurnTable(out resState))
+                if (_chainDb.TryGetCurrentTurnTable(out resState))
                 {
                     result = state.turnTableHeight.Equals(resState.turnTableHeight);
                 }
@@ -248,14 +248,14 @@ namespace Mineral.UnitTests.Database
                 TurnTableState state = new TurnTableState();
                 List<UInt160> address = new List<UInt160>();
 
-                address.Add(account.AddressHash);
-                state.SetTurnTable(address, this.block.Height);
+                address.Add(_account.AddressHash);
+                state.SetTurnTable(address, _block.Height);
 
-                this.chainDb.PutTurnTable(batch, state);
-                this.chainDb.BatchWrite(this.write_option, batch);
+                _chainDb.PutTurnTable(batch, state);
+                _chainDb.BatchWrite(_write_option, batch);
 
                 TurnTableState resState;
-                if (this.chainDb.TryGetTurnTable(state.turnTableHeight, out resState))
+                if (_chainDb.TryGetTurnTable(state.turnTableHeight, out resState))
                 {
                     result = state.turnTableHeight.Equals(resState.turnTableHeight);
                 }
@@ -274,9 +274,9 @@ namespace Mineral.UnitTests.Database
             try
             {
                 Version version = new Version("1.0");
-                this.chainDb.PutVersion(version);
+                _chainDb.PutVersion(version);
 
-                result = this.chainDb.GetVersion().Equals(version);
+                result = _chainDb.GetVersion().Equals(version);
             }
             catch
             {
@@ -291,8 +291,8 @@ namespace Mineral.UnitTests.Database
             bool result = false;
             try
             {
-                this.chainDb.PutCurrentHeader(this.block.Header);
-                result = this.chainDb.GetCurrentHeaderHash().Equals(this.block.Header.Hash);
+                _chainDb.PutCurrentHeader(_block.Header);
+                result = _chainDb.GetCurrentHeaderHash().Equals(_block.Header.Hash);
             }
             catch
             {
@@ -307,8 +307,8 @@ namespace Mineral.UnitTests.Database
             bool result = false;
             try
             {
-                this.chainDb.PutCurrentHeader(this.block.Header);
-                result = this.chainDb.GetCurrentHeaderHeight().Equals(this.block.Header.Height);
+                _chainDb.PutCurrentHeader(_block.Header);
+                result = _chainDb.GetCurrentHeaderHeight().Equals(_block.Header.Height);
             }
             catch
             {
@@ -323,8 +323,8 @@ namespace Mineral.UnitTests.Database
             bool result = false;
             try
             {
-                this.chainDb.PutCurrentBlock(this.block);
-                result = this.chainDb.GetCurrentBlockHash().Equals(this.block.Hash);
+                _chainDb.PutCurrentBlock(_block);
+                result = _chainDb.GetCurrentBlockHash().Equals(_block.Hash);
             }
             catch
             {
@@ -339,8 +339,8 @@ namespace Mineral.UnitTests.Database
             bool result = false;
             try
             {
-                this.chainDb.PutCurrentBlock(this.block);
-                result = this.chainDb.GetCurrentBlockHeight().Equals(this.block.Height);
+                _chainDb.PutCurrentBlock(_block);
+                result = _chainDb.GetCurrentBlockHeight().Equals(_block.Height);
             }
             catch
             {
@@ -355,8 +355,8 @@ namespace Mineral.UnitTests.Database
             bool result = false;
             try
             {
-                this.chainDb.PutBlock(this.block);
-                result = this.chainDb.GetBlockHeader(this.block.Header.Hash).Hash.Equals(this.block.Header.Hash);
+                _chainDb.PutBlock(_block);
+                result = _chainDb.GetBlockHeader(_block.Header.Hash).Hash.Equals(_block.Header.Hash);
             }
             catch
             {
@@ -371,8 +371,8 @@ namespace Mineral.UnitTests.Database
             bool result = false;
             try
             {
-                this.chainDb.PutBlock(this.block);
-                result = this.chainDb.GetBlock(this.block.Hash).Hash.Equals(this.block.Hash);
+                _chainDb.PutBlock(_block);
+                result = _chainDb.GetBlock(_block.Hash).Hash.Equals(_block.Hash);
             }
             catch
             {
@@ -398,12 +398,12 @@ namespace Mineral.UnitTests.Database
                         Timestamp = 0,
                         Height = i,
                     };
-                    header.Sign(this.account.Key);
-                    this.block = new Block(header, new List<Transaction>());
-                    hashList.Add(block.Hash);
+                    header.Sign(_account.Key);
+                    _block = new Block(header, new List<Transaction>());
+                    hashList.Add(_block.Hash);
                 }
-                this.chainDb.PutHeaderHashList(1, hashList);
-                result = new List<UInt256>(this.chainDb.GetHeaderHashList()).Count.Equals(hashList.Count);
+                _chainDb.PutHeaderHashList(1, hashList);
+                result = new List<UInt256>(_chainDb.GetHeaderHashList()).Count.Equals(hashList.Count);
             }
             catch
             {
@@ -418,8 +418,8 @@ namespace Mineral.UnitTests.Database
             bool result = false;
             try
             {
-                this.chainDb.PutBlock(block);
-                result = new List<BlockHeader>(this.chainDb.GetBlockHeaderList()).Count > 0;
+                _chainDb.PutBlock(_block);
+                result = new List<BlockHeader>(_chainDb.GetBlockHeaderList()).Count > 0;
             }
             catch
             {
@@ -434,8 +434,8 @@ namespace Mineral.UnitTests.Database
             bool result = false;
             try
             {
-                this.chainDb.PutBlock(block);
-                result = new List<UInt256>(this.chainDb.GetBlockHeaderHashList()).Count > 0;
+                _chainDb.PutBlock(_block);
+                result = new List<UInt256>(_chainDb.GetBlockHeaderHashList()).Count > 0;
             }
             catch
             {
@@ -453,11 +453,11 @@ namespace Mineral.UnitTests.Database
                 TurnTableState state = new TurnTableState();
                 List<UInt160> address = new List<UInt160>();
 
-                address.Add(account.AddressHash);
-                state.SetTurnTable(address, this.block.Height);
+                address.Add(_account.AddressHash);
+                state.SetTurnTable(address, _block.Height);
 
-                this.chainDb.PutTurnTable(state);
-                TurnTableState res = this.chainDb.GetCurrentTurnTable();
+                _chainDb.PutTurnTable(state);
+                TurnTableState res = _chainDb.GetCurrentTurnTable();
                 result = state.turnTableHeight.Equals(res.turnTableHeight);
             }
             catch
@@ -476,11 +476,11 @@ namespace Mineral.UnitTests.Database
                 TurnTableState state = new TurnTableState();
                 List<UInt160> address = new List<UInt160>();
 
-                address.Add(account.AddressHash);
-                state.SetTurnTable(address, this.block.Height);
+                address.Add(_account.AddressHash);
+                state.SetTurnTable(address, _block.Height);
 
-                this.chainDb.PutTurnTable(state);
-                TurnTableState res = this.chainDb.GetTurnTable(this.block.Height);
+                _chainDb.PutTurnTable(state);
+                TurnTableState res = _chainDb.GetTurnTable(_block.Height);
                 result = state.turnTableHeight.Equals(res.turnTableHeight);
             }
             catch
@@ -499,11 +499,11 @@ namespace Mineral.UnitTests.Database
                 TurnTableState state = new TurnTableState();
                 List<UInt160> address = new List<UInt160>();
 
-                address.Add(account.AddressHash);
-                state.SetTurnTable(address, this.block.Height);
+                address.Add(_account.AddressHash);
+                state.SetTurnTable(address, _block.Height);
 
-                this.chainDb.PutTurnTable(state);
-                result = new List<int>(this.chainDb.GetTurnTableHeightList(this.block.Height)).Count > 0;
+                _chainDb.PutTurnTable(state);
+                result = new List<int>(_chainDb.GetTurnTableHeightList(_block.Height)).Count > 0;
             }
             catch
             {
@@ -520,13 +520,13 @@ namespace Mineral.UnitTests.Database
             {
                 WriteBatch batch = new WriteBatch();
                 byte[] name = Encoding.Default.GetBytes("delegate");
-                UInt160 addressHash = account.AddressHash;
+                UInt160 addressHash = _account.AddressHash;
                 DelegateState state = new DelegateState(addressHash, name);
 
                 batch.Put(SliceBuilder.Begin(DataEntryPrefix.ST_Delegate).Add(addressHash), SliceBuilder.Begin().Add(state));
-                this.chainDb.BatchWrite(write_option, batch);
+                _chainDb.BatchWrite(_write_option, batch);
 
-                List<DelegateState> delegates = new List<DelegateState>(this.chainDb.GetDelegateStateAll());
+                List<DelegateState> delegates = new List<DelegateState>(_chainDb.GetDelegateStateAll());
                 result = delegates.Find(x => x.Name.SequenceEqual(name) && x.AddressHash == addressHash) != null;
             }
             catch

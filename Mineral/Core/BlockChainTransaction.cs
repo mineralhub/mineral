@@ -16,13 +16,13 @@ namespace Mineral.Core
 
             lock (PoolLock)
             {
-                if (this.rxPool.ContainsKey(tx.Hash))
+                if (_rxPool.ContainsKey(tx.Hash))
                     return false;
-                if (this.txPool.ContainsKey(tx.Hash))
+                if (_txPool.ContainsKey(tx.Hash))
                     return false;
-                if (this.manager.Storage.GetTransaction(tx.Hash) != null)
+                if (_manager.Storage.GetTransaction(tx.Hash) != null)
                     return false;
-                this.rxPool.Add(tx.Hash, tx);
+                _rxPool.Add(tx.Hash, tx);
                 return true;
             }
         }
@@ -40,14 +40,14 @@ namespace Mineral.Core
             {
                 foreach (Transaction tx in txs)
                 {
-                    if (this.txPool.ContainsKey(tx.Hash))
+                    if (_txPool.ContainsKey(tx.Hash))
                     {
-                        this.txPool.Remove(tx.Hash);
+                        _txPool.Remove(tx.Hash);
                         nRemove++;
                     }
-                    if (this.rxPool.ContainsKey(tx.Hash))
+                    if (_rxPool.ContainsKey(tx.Hash))
                     {
-                        this.rxPool.Remove(tx.Hash);
+                        _rxPool.Remove(tx.Hash);
                         nRemove++;
                     }
                 }
@@ -61,18 +61,18 @@ namespace Mineral.Core
                 txs = new List<Transaction>();
             lock (PoolLock)
             {
-                foreach (Transaction tx in this.rxPool.Values)
+                foreach (Transaction tx in _rxPool.Values)
                 {
                     txs.Add(tx);
-                    this.txPool.Add(tx.Hash, tx);
+                    _txPool.Add(tx.Hash, tx);
                     if (txs.Count >= Config.Instance.MaxTransactions)
                     {
-                        foreach (Transaction rx in this.txPool.Values)
-                            this.rxPool.Remove(rx.Hash);
+                        foreach (Transaction rx in _txPool.Values)
+                            _rxPool.Remove(rx.Hash);
                         return;
                     }
                 }
-                this.rxPool.Clear();
+                _rxPool.Clear();
             }
         }
 
@@ -80,9 +80,9 @@ namespace Mineral.Core
         {
             if (txs.Count == 0)
                 return;
-            lock (this.waitPersistBlocks)
+            lock (_waitPersistBlocks)
             {
-                foreach (Block block in this.waitPersistBlocks.Values)
+                foreach (Block block in _waitPersistBlocks.Values)
                 {
                     int counter = txs.Count;
                     while (counter > 0)
@@ -101,9 +101,9 @@ namespace Mineral.Core
         {
             lock (PoolLock)
             {
-                if (this.rxPool.ContainsKey(hash))
+                if (_rxPool.ContainsKey(hash))
                     return true;
-                if (this.txPool.ContainsKey(hash))
+                if (_txPool.ContainsKey(hash))
                     return true;
                 return false;
             }

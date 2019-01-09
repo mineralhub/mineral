@@ -11,24 +11,24 @@ namespace Mineral.UnitTests.Database
     [TestClass]
     public class UT_LevelDB
     {
-        private DB db = null;
-        private byte prefix = 0x02;
-        private byte[] key = Encoding.Default.GetBytes("mineral");
-        private byte[] value = Encoding.Default.GetBytes("LevelDB Test");
-        private WriteOptions write_option = WriteOptions.Default;
-        private ReadOptions read_option = ReadOptions.Default;
+        private DB _db = null;
+        private byte _prefix = 0x02;
+        private byte[] _key = Encoding.Default.GetBytes("mineral");
+        private byte[] _value = Encoding.Default.GetBytes("LevelDB Test");
+        private WriteOptions _write_option = WriteOptions.Default;
+        private ReadOptions _read_option = ReadOptions.Default;
 
         [TestInitialize]
         public void TestSetup()
         {
-            this.db = DB.Open("./output-database", new Options { CreateIfMissing = true });
-            this.db.Put(write_option, SliceBuilder.Begin(this.prefix).Add(this.key), this.value);
+            _db = DB.Open("./output-database", new Options { CreateIfMissing = true });
+            _db.Put(_write_option, SliceBuilder.Begin(_prefix).Add(_key), _value);
         }
 
         [TestCleanup]
         public void TestClean()
         {
-            this.db.Dispose();
+            _db.Dispose();
         }
 
         [TestMethod]
@@ -37,7 +37,7 @@ namespace Mineral.UnitTests.Database
             bool result = false;
             try
             {
-                this.db.Put(write_option, SliceBuilder.Begin(this.prefix).Add(this.key), this.value);
+                _db.Put(_write_option, SliceBuilder.Begin(_prefix).Add(_key), _value);
                 result = true;
             }
             catch
@@ -54,9 +54,9 @@ namespace Mineral.UnitTests.Database
             try
             {
                 Slice slice;
-                if (this.db.TryGet(read_option, SliceBuilder.Begin(this.prefix).Add(this.key), out slice))
+                if (_db.TryGet(_read_option, SliceBuilder.Begin(_prefix).Add(_key), out slice))
                 {
-                    result = this.value.SequenceEqual(slice.ToArray());
+                    result = _value.SequenceEqual(slice.ToArray());
                 }
             }
             catch
@@ -72,8 +72,8 @@ namespace Mineral.UnitTests.Database
             bool result = false;
             try
             {
-                Slice slice = this.db.Get(read_option, SliceBuilder.Begin(this.prefix).Add(this.key));
-                result = this.value.SequenceEqual(slice.ToArray());
+                Slice slice = _db.Get(_read_option, SliceBuilder.Begin(_prefix).Add(_key));
+                result = _value.SequenceEqual(slice.ToArray());
             }
             catch
             {
@@ -88,7 +88,7 @@ namespace Mineral.UnitTests.Database
             bool result = false;
             try
             {
-                this.db.Delete(this.write_option, SliceBuilder.Begin(prefix).Add(this.key));
+                _db.Delete(_write_option, SliceBuilder.Begin(_prefix).Add(_key));
                 result = true;
             }
             catch
@@ -101,7 +101,7 @@ namespace Mineral.UnitTests.Database
         [TestMethod]
         public void Find()
         {
-            IEnumerable<byte[]> result = this.db.Find<byte[]>(this.read_option, SliceBuilder.Begin(prefix).Add(this.key), (k, v) =>
+            IEnumerable<byte[]> result = _db.Find<byte[]>(_read_option, SliceBuilder.Begin(_prefix).Add(_key), (k, v) =>
             {
                 return v.ToArray();
             }).ToArray();
@@ -115,8 +115,8 @@ namespace Mineral.UnitTests.Database
             try
             {
                 WriteBatch batch = new WriteBatch();
-                batch.Put(SliceBuilder.Begin(this.prefix).Add(this.key), this.value);
-                this.db.Write(this.write_option, batch);
+                batch.Put(SliceBuilder.Begin(_prefix).Add(_key), _value);
+                _db.Write(_write_option, batch);
                 result = true;
             }
             catch

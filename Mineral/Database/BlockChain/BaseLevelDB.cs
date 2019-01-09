@@ -7,23 +7,23 @@ namespace Mineral.Database.BlockChain
 {
     internal class BaseLevelDB : IDisposable
     {
-        protected DB db = null;
+        protected DB _db = null;
 
         public BaseLevelDB(string path)
         {
-            this.db = DB.Open(path, new Options { CreateIfMissing = true });
+            _db = DB.Open(path, new Options { CreateIfMissing = true });
         }
 
         public void Dispose()
         {
-            this.db.Dispose();
+            _db.Dispose();
         }
 
         #region TryGet
         public virtual bool TryGetVersion(out Version version)
         {
             Slice value;
-            bool result = this.db.TryGet(ReadOptions.Default, SliceBuilder.Begin(DataEntryPrefix.SYS_Version), out value);
+            bool result = _db.TryGet(ReadOptions.Default, SliceBuilder.Begin(DataEntryPrefix.SYS_Version), out value);
             if (result)
                 Version.TryParse(value.ToString(), out version);
             else
@@ -38,7 +38,7 @@ namespace Mineral.Database.BlockChain
         {
             Slice value;
             Version version;
-            value = this.db.Get(ReadOptions.Default, SliceBuilder.Begin(DataEntryPrefix.SYS_Version));
+            value = _db.Get(ReadOptions.Default, SliceBuilder.Begin(DataEntryPrefix.SYS_Version));
             Version.TryParse(value.ToString(), out version);
             return version;
         }
@@ -48,7 +48,7 @@ namespace Mineral.Database.BlockChain
         #region Put
         public virtual void PutVersion(Version version)
         {
-            this.db.Put(WriteOptions.Default, SliceBuilder.Begin(DataEntryPrefix.SYS_Version), version.ToString());
+            _db.Put(WriteOptions.Default, SliceBuilder.Begin(DataEntryPrefix.SYS_Version), version.ToString());
         }
         #endregion
     }
