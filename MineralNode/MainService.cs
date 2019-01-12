@@ -200,12 +200,12 @@ namespace MineralNode
 
                     int numCreate = BlockChain.Instance.Proof.GetCreateBlockCount(
                         _account.AddressHash,
-                        BlockChain.Instance.CurrentBlockHeight);
+                        BlockChain.Instance.CurrentHeaderHeight);
 
                     if (numCreate < 1)
                         break;
 
-                    CreateAndAddBlocks(numCreate, true);
+                    CreateAndAddBlocks(numCreate, false);
                 } while (false);
                 Thread.Sleep(100);
             }
