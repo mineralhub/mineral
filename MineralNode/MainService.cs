@@ -16,7 +16,6 @@ using System.IO;
 using Newtonsoft.Json.Linq;
 using Newtonsoft.Json;
 using Mineral.Utils;
-using Mineral.Database.LevelDB;
 using Mineral.Database.BlockChain;
 using Mineral.Core.Transactions;
 

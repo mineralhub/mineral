@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
+using Mineral.Network.Payload;
 
 namespace Mineral.Network
 {
@@ -82,10 +83,36 @@ namespace Mineral.Network
             bool has = false;
             lock (_list)
             {
-                has = _list.Where(p => p != node && p.ListenerEndPoint != null).Any(
-                    p => p.ListenerEndPoint == node.ListenerEndPoint && p.Version?.NodeID == node.Version?.NodeID);
+                has = _list.Any(p => p.Equals(node));
             }
             return has;
+        }
+
+        public bool TryAdd(RemoteNode node)
+        {
+            bool retval = false;
+            lock (_list)
+            {
+                if (!_list.Any(p => p.Equals(node)))
+                {
+                    _list.Add(node);
+                    retval = true;
+                }
+            }
+            return retval;
+        }
+    }
+
+    public class NodeInfo : IEquatable<NodeInfo>
+    {
+        public IPEndPoint EndPoint;
+        public VersionPayload Version;
+
+        public bool Equals(NodeInfo other)
+        {
+            Logger.Debug("#######");
+            return EndPoint == other.EndPoint && EndPoint.Port == other.EndPoint.Port
+                && Version.NodeID == other.Version.NodeID;
         }
     }
 

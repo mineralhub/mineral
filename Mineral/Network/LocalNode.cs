@@ -263,13 +263,6 @@ namespace Mineral.Network
 
         private void OnConnected(RemoteNode node)
         {
-            if (NetworkManager.Instance.ConnectedPeers.HasPeer(node))
-            {
-                node.Disconnect(DisconnectType.MultiConnection, "Has Peer");
-                return;
-            }
-            NetworkManager.Instance.ConnectedPeers.Add(node);
-
             node.DisconnectedCallback += OnDisconnected;
             node.PeersReceivedCallback += OnPeersReceived;
             node.OnConnected();
@@ -280,7 +273,7 @@ namespace Mineral.Network
             node.DisconnectedCallback -= OnDisconnected;
             node.PeersReceivedCallback -= OnPeersReceived;
 
-            if (node.ListenerEndPoint != null)
+            if (node.EndPoint != null)
             {
                 /*
                 if (type == DisconnectType.InvalidBlock)
@@ -304,7 +297,7 @@ namespace Mineral.Network
             HashSet<IPEndPoint> bad = NetworkManager.Instance.BadPeers.Clone();
             wait.UnionWith(endPoints);
             wait.ExceptWith(bad);
-            wait.ExceptWith(connected.Select(p => p.ListenerEndPoint));
+            wait.ExceptWith(connected.Select(p => p.EndPoint));
             NetworkManager.Instance.WaitPeers.Add(wait);
         }
 
