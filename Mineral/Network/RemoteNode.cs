@@ -11,7 +11,7 @@ using Mineral.Utils;
 
 namespace Mineral.Network
 {
-    public abstract class RemoteNode : IDisposable
+    public abstract class RemoteNode : IDisposable, IEquatable<RemoteNode>
     {
         struct PingPong 
         {
@@ -63,6 +63,16 @@ namespace Mineral.Network
         public RemoteNode(IPEndPoint remoteEndPoint = null)
         {
             Info.EndPoint = remoteEndPoint;
+        }
+
+        public bool Equals(RemoteNode other)
+        {
+            return Info.Equals(other.Info);
+        }
+
+        public override int GetHashCode()
+        {
+            return Info.GetHashCode();
         }
 
         internal virtual void OnConnected()
@@ -360,7 +370,7 @@ namespace Mineral.Network
             }
 
             Info.EndPoint = new IPEndPoint(EndPoint.Address, Version.Port);
-            if (!NetworkManager.Instance.ConnectedPeers.TryAdd(this))
+            if (!NetworkManager.Instance.ConnectedPeers.Add(this))
             {
                 Disconnect(DisconnectType.MultiConnection, "HasPeer");
                 return;

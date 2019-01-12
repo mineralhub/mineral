@@ -64,7 +64,13 @@ namespace Mineral.Network
     {
         protected HashSet<T> _list = new HashSet<T>();
 
-        public virtual void Add(T v) { lock (_list) _list.Add(v); }
+        public virtual bool Add(T v) 
+        {
+            bool retval = false;
+            lock (_list) 
+                retval = _list.Add(v);
+            return retval;
+        }
         public virtual void Add(HashSet<T> v) { lock (_list) _list.UnionWith(v); }
         public void Remove(T v) { lock (_list) _list.Remove(v); }
         public HashSet<T> Clone() 
@@ -87,20 +93,6 @@ namespace Mineral.Network
             }
             return has;
         }
-
-        public bool TryAdd(RemoteNode node)
-        {
-            bool retval = false;
-            lock (_list)
-            {
-                if (!_list.Any(p => p.Equals(node)))
-                {
-                    _list.Add(node);
-                    retval = true;
-                }
-            }
-            return retval;
-        }
     }
 
     public class NodeInfo : IEquatable<NodeInfo>
@@ -110,9 +102,13 @@ namespace Mineral.Network
 
         public bool Equals(NodeInfo other)
         {
-            Logger.Debug("#######");
             return EndPoint == other.EndPoint && EndPoint.Port == other.EndPoint.Port
                 && Version.NodeID == other.Version.NodeID;
+        }
+
+        public override int GetHashCode()
+        {
+            return EndPoint.GetHashCode() + Version.GetHashCode();
         }
     }
 
