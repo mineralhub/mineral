@@ -11,7 +11,7 @@ namespace Mineral.Network.RPC.Command
 
             //LocalNode node = obj as LocalNode;
             foreach (RemoteNode remote in NetworkManager.Instance.ConnectedPeers.Clone())
-                nodes.Add(string.Format("{0}:{1}", remote.RemoteEndPoint.Address, remote.RemoteEndPoint.Port));
+                nodes.Add(string.Format("{0}:{1}", remote.EndPoint.Address, remote.EndPoint.Port));
 
             json["nodes"] = nodes;
             return json;

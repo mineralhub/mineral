@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
+using Mineral.Network.Payload;
 
 namespace Mineral.Network
 {
@@ -71,7 +72,13 @@ namespace Mineral.Network
     {
         protected HashSet<T> _list = new HashSet<T>();
 
-        public virtual void Add(T v) { lock (_list) _list.Add(v); }
+        public virtual bool Add(T v) 
+        {
+            bool retval = false;
+            lock (_list) 
+                retval = _list.Add(v);
+            return retval;
+        }
         public virtual void Add(HashSet<T> v) { lock (_list) _list.UnionWith(v); }
         public void Remove(T v) { lock (_list) _list.Remove(v); }
         public HashSet<T> Clone() 
@@ -90,10 +97,26 @@ namespace Mineral.Network
             bool has = false;
             lock (_list)
             {
-                has = _list.Where(p => p != node && p.ListenerEndPoint != null).Any(
-                    p => p.ListenerEndPoint == node.ListenerEndPoint && p.Version?.NodeID == node.Version?.NodeID);
+                has = _list.Any(p => p.Equals(node));
             }
             return has;
+        }
+    }
+
+    public class NodeInfo : IEquatable<NodeInfo>
+    {
+        public IPEndPoint EndPoint;
+        public VersionPayload Version;
+
+        public bool Equals(NodeInfo other)
+        {
+            return EndPoint == other.EndPoint && EndPoint.Port == other.EndPoint.Port
+                && Version.NodeID == other.Version.NodeID;
+        }
+
+        public override int GetHashCode()
+        {
+            return EndPoint.GetHashCode() + Version.GetHashCode();
         }
     }
 

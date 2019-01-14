@@ -16,7 +16,6 @@ using System.IO;
 using Newtonsoft.Json.Linq;
 using Newtonsoft.Json;
 using Mineral.Utils;
-using Mineral.Database.LevelDB;
 using Mineral.Database.BlockChain;
 using Mineral.Core.Transactions;
 
@@ -31,15 +30,15 @@ namespace MineralNode
         private LocalNode _node;
         private RpcServer _rpcServer;
         private DPos _dpos;
-        private Options option;
+        private Options _options;
 
         public bool InitOption(string[] args)
         {
-            option = new Options(args);
+            _options = new Options(args);
 
-            if (option.IsHelp || !option.IsValid)
+            if (_options.IsHelp || !_options.IsValid)
             {
-                option.ShowHelpMessage();
+                _options.ShowHelpMessage();
                 return false;
             }
             return true;
@@ -48,7 +47,7 @@ namespace MineralNode
         public bool InitConfig()
         {
             Logger.Info("---------- MainService Initialize Start ----------");
-            string path = option.Default.ConfigDir ?? "./config.json";
+            string path = _options.Default.ConfigDir ?? "./config.json";
             return Config.Instance.Initialize(path);
         }
 
@@ -56,15 +55,15 @@ namespace MineralNode
         {
             string path;
             byte[] privatekey = null;
-            if (!string.IsNullOrEmpty(option.Wallet.KeyStoreDir))
+            if (!string.IsNullOrEmpty(_options.Wallet.KeyStoreDir))
             {
-                if (string.IsNullOrEmpty(option.Wallet.KeyStorePassword))
+                if (string.IsNullOrEmpty(_options.Wallet.KeyStorePassword))
                 {
                     Logger.Warning("Keystore password is empty.");
                     return false;
                 }
 
-                path = option.Wallet.KeyStoreDir.Contains(".keystore") ? option.Wallet.KeyStoreDir : option.Wallet.KeyStoreDir + ".keystore";
+                path = _options.Wallet.KeyStoreDir.Contains(".keystore") ? _options.Wallet.KeyStoreDir : _options.Wallet.KeyStoreDir + ".keystore";
                 if (!File.Exists(path))
                 {
                     Logger.Warning(string.Format("Not found keystore file : [0]", path));
@@ -80,15 +79,15 @@ namespace MineralNode
                 KeyStore keystore = new KeyStore();
                 keystore = JsonConvert.DeserializeObject<KeyStore>(json.ToString());
 
-                if (!KeyStoreService.DecryptKeyStore(option.Wallet.KeyStorePassword, keystore, out privatekey))
+                if (!KeyStoreService.DecryptKeyStore(_options.Wallet.KeyStorePassword, keystore, out privatekey))
                 {
                     Logger.Warning("Fail to decrypt keystore file.");
                     return false;
                 }
             }
-            else if (!string.IsNullOrEmpty(option.Wallet.PrivateKey))
+            else if (!string.IsNullOrEmpty(_options.Wallet.PrivateKey))
             {
-                privatekey = option.Wallet.PrivateKey.HexToBytes();
+                privatekey = _options.Wallet.PrivateKey.HexToBytes();
             }
             else
             {
@@ -200,12 +199,12 @@ namespace MineralNode
 
                     int numCreate = BlockChain.Instance.Proof.GetCreateBlockCount(
                         _account.AddressHash,
-                        BlockChain.Instance.CurrentBlockHeight);
+                        BlockChain.Instance.CurrentHeaderHeight);
 
                     if (numCreate < 1)
                         break;
 
-                    CreateAndAddBlocks(numCreate, true);
+                    CreateAndAddBlocks(numCreate, false);
                 } while (false);
                 Thread.Sleep(100);
             }

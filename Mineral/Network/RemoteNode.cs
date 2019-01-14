@@ -11,7 +11,7 @@ using Mineral.Utils;
 
 namespace Mineral.Network
 {
-    public abstract class RemoteNode : IDisposable
+    public abstract class RemoteNode : IDisposable, IEquatable<RemoteNode>
     {
         struct PingPong 
         {
@@ -52,16 +52,27 @@ namespace Mineral.Network
         public int Height { get { return Interlocked.CompareExchange(ref _height, 0, 0); } }
 
         public bool IsConnected => _connected == 1 ? true : false;
-        public VersionPayload Version { get; private set; }
-        public IPEndPoint RemoteEndPoint { get; protected set; }
-        public IPEndPoint ListenerEndPoint { get; protected set; }
+
+        public NodeInfo Info { get; protected set; } = new NodeInfo();
+        public VersionPayload Version => Info.Version;
+        public IPEndPoint EndPoint => Info.EndPoint;
 
         PingPong _pingpong = new PingPong();
         public long Latency => _pingpong.LatencyMs;
 
         public RemoteNode(IPEndPoint remoteEndPoint = null)
         {
-            RemoteEndPoint = remoteEndPoint;
+            Info.EndPoint = remoteEndPoint;
+        }
+
+        public bool Equals(RemoteNode other)
+        {
+            return Info.Equals(other.Info);
+        }
+
+        public override int GetHashCode()
+        {
+            return Info.GetHashCode();
         }
 
         internal virtual void OnConnected()
@@ -69,7 +80,7 @@ namespace Mineral.Network
             if (Interlocked.Exchange(ref _connected, 1) == 0)
             {
 #if DEBUG
-                Logger.Debug("OnConnected. RemoteEndPoint : " + RemoteEndPoint);
+                Logger.Debug("OnConnected. RemoteEndPoint : " + EndPoint);
 #endif
                 NetworkProcessAsyncLoop();
             }
@@ -84,7 +95,7 @@ namespace Mineral.Network
             if (Interlocked.Exchange(ref _connected, 0) == 1)
             {
 #if DEBUG
-                Logger.Debug("OnDisconnected. RemoteEndPoint : " + RemoteEndPoint + "\nType : " + type.ToString() + "\nLog : " + log);
+                Logger.Debug("OnDisconnected. RemoteEndPoint : " + EndPoint + "\nType : " + type.ToString() + "\nLog : " + log);
 #endif
                 DisconnectedCallback.Invoke(this, type);
             }
@@ -140,8 +151,8 @@ namespace Mineral.Network
         private void ReceivedRequestAddrs()
         {
             HashSet<RemoteNode> connectedPeers = NetworkManager.Instance.ConnectedPeers.Clone();
-            IEnumerable<RemoteNode> hostPeers = connectedPeers.Where(p => p.ListenerEndPoint != null && p.Version != null);
-            List<AddressInfo> addrs = hostPeers.Select(p => AddressInfo.Create(p.ListenerEndPoint, p.Version.Version, p.Version.Timestamp)).ToList();
+            IEnumerable<RemoteNode> hostPeers = connectedPeers.Where(p => p.EndPoint != null && p.Version != null);
+            List<AddressInfo> addrs = hostPeers.Select(p => AddressInfo.Create(p.EndPoint, p.Version.Version, p.Version.Timestamp)).ToList();
             EnqueueMessage(Message.CommandName.ResponseAddrs, AddrPayload.Create(addrs));
         }
 
@@ -224,7 +235,7 @@ namespace Mineral.Network
         private void OnMessageReceived(Message message)
         {
 #if DEBUG
-            Logger.Debug(message.Command.ToString());
+            Logger.Debug("Received : " + message.Command.ToString());
 #endif
             switch (message.Command)
             {
@@ -348,7 +359,7 @@ namespace Mineral.Network
             }
             try
             {
-                Version = message.Payload.Serializable<VersionPayload>();
+                Info.Version = message.Payload.Serializable<VersionPayload>();
             }
             catch (EndOfStreamException)
             {
@@ -361,27 +372,15 @@ namespace Mineral.Network
                 return;
             }
 
-            if (ListenerEndPoint != null)
-            {
-                if (ListenerEndPoint.Port != Version.Port)
-                {
-                    Disconnect(DisconnectType.InvalidData, "ListenerEndPoint.Port != Version.Port");
-                    return;
-                }
-            }
-            else if (0 < Version.Port)
-            {
-                ListenerEndPoint = new IPEndPoint(RemoteEndPoint.Address, Version.Port);
-            }
-
-            if (NetworkManager.Instance.ConnectedPeers.HasPeer(this))
+            Info.EndPoint = new IPEndPoint(EndPoint.Address, Version.Port);
+            if (!NetworkManager.Instance.ConnectedPeers.Add(this))
             {
                 Disconnect(DisconnectType.MultiConnection, "HasPeer");
                 return;
             }
 
 #if DEBUG
-            Logger.Debug("Version : " + ListenerEndPoint + ", " + Version.NodeID);
+            Logger.Debug("Version : " + EndPoint + ", " + Version.NodeID);
 #endif
             if (!await SendMessageAsync(Message.Create(Message.CommandName.Verack, VerackPayload.Create(NetworkManager.Instance.NodeID))))
                 return;

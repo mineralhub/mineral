@@ -18,21 +18,21 @@ namespace Mineral
 
     internal class TypedLog
     {
-        public DateTime timeStamp;
-        public LogLevel logType;
-        public string message;
+        public DateTime TimeStamp;
+        public LogLevel LogType;
+        public string Message;
         public override string ToString()
         {
-            return String.Format("{0} [{1}] {2}", timeStamp.ToString("s"), logType, message);
+            return String.Format("{0} [{1}] {2}", TimeStamp.ToString("s"), LogType, Message);
         }
     }
 
     public static class Logger
     {
-        static public bool WriteConsole = true;
-        static public LogLevel WriteLogLevel = LogLevel.INFO;
-        static private ConcurrentQueue<TypedLog> _queue = new ConcurrentQueue<TypedLog>();
-        static private Thread _thread;
+        public static bool WriteConsole { get; set; } = true;
+        public static LogLevel WriteLogLevel { get; set; } = LogLevel.INFO;
+        private static ConcurrentQueue<TypedLog> _queue = new ConcurrentQueue<TypedLog>();
+        private static Thread _thread;
 
         static Logger()
         {
@@ -40,55 +40,56 @@ namespace Mineral
             _thread.Start();
         }
 
-        static public void Log(string log, LogLevel logLevel = LogLevel.INFO)
+        public static void Log(string log, LogLevel logLevel = LogLevel.INFO)
         {
-            TypedLog logdata = new TypedLog() { timeStamp = DateTime.Now, logType = logLevel, message = log };
-            if (logdata.logType <= WriteLogLevel)
+            TypedLog logdata = new TypedLog() { TimeStamp = DateTime.Now, LogType = logLevel, Message = log };
+            if (logdata.LogType <= WriteLogLevel)
             {
+                _queue.Enqueue(logdata);
                 if (WriteConsole)
                     Console.WriteLine(logdata);
-                _queue.Enqueue(logdata);
             }
         }
 
-        static public void Info(string log)
+        public static void Info(string log)
         {
             Log(log, LogLevel.INFO);
         }
 
-        static public void Warning(string log)
+        public static void Warning(string log)
         {
             Log(log, LogLevel.WARNING);
         }
 
-        static public void Error(string log)
+        public static void Error(string log)
         {
             Log(log, LogLevel.ERROR);
         }
 
-        static public void Debug(string log)
+        public static void Debug(string log)
         {
             Log(log, LogLevel.DEBUG);
         }
 
-        static public void Trace(string log)
+        public static void Trace(string log)
         {
             Log(log, LogLevel.TRACE);
         }
 
-        private const string logFile = "./MineralHub.log";
-        private const long logSize = 300 * 1024*1024; // 300MB
+        private const string _logFile = "./MineralHub.log";
+        private const long _logSize = 300 * 1024 * 1024; // 300MB
+
         static void Process()
         {
             DateTime logDate = DateTime.Now;
-            StreamWriter strm = File.AppendText(logFile);
+            StreamWriter strm = File.AppendText(_logFile);
             strm.AutoFlush = true;
 
             while (true)
             {
                 if (_queue.TryDequeue(out TypedLog log))
                 {
-                    if ((logDate.Date.ToTimestamp() != DateTime.Now.Date.ToTimestamp()) || (strm.BaseStream.Length + log.message.Length * 2 + 28 >= logSize))
+                    if ((logDate.Date.ToTimestamp() != DateTime.Now.Date.ToTimestamp()) || (strm.BaseStream.Length + log.Message.Length * 2 + 28 >= _logSize))
                     {
                         strm.BaseStream.Flush();
                         strm.Close();
@@ -98,7 +99,7 @@ namespace Mineral
                             string logWriteName = logFileName + "." + i;
                             if (File.Exists(logWriteName)) continue;
                             if (File.Exists(logWriteName + ".gz")) continue;
-                            File.Move(logFile, logWriteName);
+                            File.Move(_logFile, logWriteName);
                             Task.Run(() =>
                             {
                                 string orgName = logWriteName.Substring(0);
@@ -112,20 +113,22 @@ namespace Mineral
                                 }
                                 outs.Close();
                                 inps.Close();
-                                if (File.Exists(gzName) && File.OpenRead(gzName).Length > 0)
+                                FileStream stm = null;
+                                if (File.Exists(gzName) && (stm = File.OpenRead(gzName)).Length > 0)
                                     File.Delete(orgName);
+                                if (stm != null) stm.Close();
                             });
                             break;
                         }
                         logDate = DateTime.Now;
-                        strm = File.AppendText(logFile);
+                        strm = File.AppendText(_logFile);
                         strm.AutoFlush = true;
                     }
                     strm.WriteLine(log);
                 }
                 else
                 {
-                    Thread.Sleep(50);
+                    Thread.Sleep(1000);
                 }
             }
         }

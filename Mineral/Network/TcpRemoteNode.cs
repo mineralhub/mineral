@@ -18,7 +18,7 @@ namespace Mineral.Network
             if (listenerEndPoint.Address.IsIPv4MappedToIPv6)
                 addrf = AddressFamily.InterNetwork;
             _socket = new Socket(addrf, SocketType.Stream, ProtocolType.Tcp);
-            ListenerEndPoint = listenerEndPoint;
+            Info.EndPoint = listenerEndPoint;
         }
 
         // accept peer
@@ -40,10 +40,10 @@ namespace Mineral.Network
 
         internal override void OnConnected()
         {
-            if (RemoteEndPoint == null)
+            if (EndPoint == null)
             {
                 IPEndPoint ep = (IPEndPoint)_socket.RemoteEndPoint;
-                RemoteEndPoint = new IPEndPoint(ep.Address.MapToIPv6(), ep.Port);
+                Info.EndPoint = new IPEndPoint(ep.Address.MapToIPv6(), ep.Port);
             }
             _stream = new NetworkStream(_socket);
             base.OnConnected();
@@ -51,13 +51,13 @@ namespace Mineral.Network
 
         public async Task<bool> ConnectAsync()
         {
-            IPAddress addr = ListenerEndPoint.Address;
+            IPAddress addr = EndPoint.Address;
             if (addr.IsIPv4MappedToIPv6)
                 addr = addr.MapToIPv4();
 
             try
             {
-                await _socket.ConnectAsync(addr, ListenerEndPoint.Port);
+                await _socket.ConnectAsync(addr, EndPoint.Port);
             }
             catch (SocketException)
             {

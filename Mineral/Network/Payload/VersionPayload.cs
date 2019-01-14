@@ -16,7 +16,7 @@ namespace Mineral.Network.Payload
 
         public int Size => sizeof(int) + sizeof(int) + sizeof(ushort) + sizeof(uint) + sizeof(int) + sizeof(bool) + 16/*Guid bytes*/;
 
-        public static VersionPayload Create(int port, Guid _guid)
+        public static VersionPayload Create(int port, Guid guid)
         {
             return new VersionPayload
             {
@@ -26,7 +26,7 @@ namespace Mineral.Network.Payload
                 Nonce = Config.Instance.Nonce,
                 Height = Core.BlockChain.Instance.CurrentBlockHeight,
                 Relay = true,
-                NodeID = _guid
+                NodeID = guid
             };
         }
 
@@ -57,6 +57,11 @@ namespace Mineral.Network.Payload
             writer.Write(Height);
             writer.Write(Relay);
             writer.Write(NodeID.ToByteArray());
+        }
+
+        public override int GetHashCode()
+        {
+            return NodeID.GetHashCode();
         }
     }
 
