@@ -16,19 +16,18 @@ using System.Threading.Tasks;
 
 namespace Mineral.Core
 {
+    #region Definition
+    public enum ERROR_BLOCK
+    {
+        NO_ERROR = 0,
+        ERROR = 1,
+        ERROR_HEIGHT = 2,
+        ERROR_HASH = 3,
+    };
+    #endregion
+
     public partial class BlockChain : IDisposable
     {
-        #region Definition
-        public enum ERROR_BLOCK
-        {
-            NO_ERROR = 0,
-            ERROR = 1,
-            ERROR_HEIGHT = 2,
-            ERROR_HASH = 3,
-        };
-        #endregion
-
-
         #region Fields
         private static BlockChain _instance = null;
         private Proof _proof = null;
@@ -43,7 +42,6 @@ namespace Mineral.Core
         private UInt256 _currentBlockHash = UInt256.Zero;
 
         private CacheChain _cacheChain = new CacheChain();
-        private ConcurrentDictionary<int, Block> _persistBlocks = new ConcurrentDictionary<int, Block>();
 
         protected Dictionary<UInt256, Transaction> _rxPool = new Dictionary<UInt256, Transaction>();
         protected Dictionary<UInt256, Transaction> _txPool = new Dictionary<UInt256, Transaction>();
@@ -69,6 +67,8 @@ namespace Mineral.Core
 
         public Proof Proof { get { return _proof; } }
 
+        public int CurrentHeaderHeight { get { return _cacheChain.HeaderHeight; } }
+        public UInt256 CurrentHeaderHash { get { return _cacheChain.HeaderHash; } }
         public int CurrentBlockHeight { get { return _currentBlockHeight; } }
         public UInt256 CurrentBlockHash { get { return _currentBlockHash; } }
         public Block GenesisBlock { get { return _genesisBlock; } }
@@ -78,25 +78,30 @@ namespace Mineral.Core
         #region Event Method
         private void PersistBlocksLoop()
         {
-            Block oblock = null;
-            Block block = null;
             LinkedList<Block> blocks = new LinkedList<Block>();
 
             while (!_disposed)
             {
-                while (_persistBlocks.Count > 0)
+                int height = CurrentBlockHeight + 1;
+                for (Block block = _cacheChain.GetBlock(height); block != null; height++)
                 {
-                    _persistBlocks.TryRemove(_persistBlocks.First().Key, out oblock);
-                    blocks.AddLast(oblock);
+                    blocks.AddLast(block);
+                    block = _cacheChain.GetBlock(height);
+                }
+
+                if (blocks.Count == 0)
+                {
+                    Thread.Sleep(30);
+                    continue;
                 }
 
                 while (blocks.Count > 0)
                 {
-                    block = blocks.First();
+                    Block block = blocks.First();
                     blocks.RemoveFirst();
 
-                    if (_cacheChain.HeaderHeight + 1 != block.Height) continue;
-                    if (!block.Verify()) continue;
+                    if (!block.Verify()) 
+                        continue;
 
                     lock (PoolLock)
                     {
@@ -110,7 +115,8 @@ namespace Mineral.Core
                         }
                     }
 
-                    if (block.Header.PrevHash != _currentBlockHash) break;
+                    if (block.Header.PrevHash != _currentBlockHash) 
+                        break;
 
                     lock (PersistLock)
                     {
@@ -129,7 +135,6 @@ namespace Mineral.Core
         private void Persist(Block block)
         {
             WriteBatch batch = new WriteBatch();
-            _cacheChain.AddHeaderIndex(block.Header.Height, block.Header.Hash);
             while (_storeHeaderCount <= block.Header.Height - 2000)
             {
                 using (MemoryStream ms = new MemoryStream())
@@ -264,7 +269,6 @@ namespace Mineral.Core
 
             _currentBlockHeight = block.Header.Height;
             _currentBlockHash = block.Header.Hash;
-            _cacheChain.AddBlock(block);
 
             Logger.Debug("persist block : " + block.Height);
         }
@@ -331,33 +335,32 @@ namespace Mineral.Core
 
         public ERROR_BLOCK AddBlock(Block block)
         {
-            if (_cacheChain.HeaderIndices.ContainsKey(block.Height)) return ERROR_BLOCK.ERROR_HEIGHT;
+            if (!_cacheChain.AddHeaderIndex(block.Height, block.Hash))
+                return ERROR_BLOCK.ERROR_HEIGHT;
 
-            if (!_persistBlocks.ContainsKey(block.Height))
-                _persistBlocks.TryAdd(block.Height, block);
-
-            return ERROR_BLOCK.NO_ERROR;
+            var err = _cacheChain.AddBlock(block);
+            if (err != ERROR_BLOCK.NO_ERROR)
+                return err;
+            return err;
         }
 
-        public bool AddBlockDirectly(Block block)
+        public ERROR_BLOCK AddBlockDirectly(Block block)
         {
-            if (block.Height != CurrentBlockHeight + 1)
-                return false;
+            if (!_cacheChain.AddHeaderIndex(block.Height, block.Hash))
+                return ERROR_BLOCK.ERROR_HEIGHT;
 
-            int height = _cacheChain.HeaderHeight;
-            if (height + 1 == block.Height)
+            var err = _cacheChain.AddBlock(block);
+            if (err != ERROR_BLOCK.NO_ERROR)
+                return err;
+
+            lock (PersistLock)
             {
-                lock (PersistLock)
-                {
-                    Persist(block);
-                    if (0 >= _proof.RemainUpdate(block.Height))
-                        _proof.Update(this);
-                    OnPersistCompleted(block);
-                }
-                _cacheChain.AddBlock(block);
-                return true;
+                Persist(block);
+                if (0 >= _proof.RemainUpdate(block.Height))
+                    _proof.Update(this);
+                OnPersistCompleted(block);
             }
-            return false;
+            return err;
         }
 
         // TODO : clean

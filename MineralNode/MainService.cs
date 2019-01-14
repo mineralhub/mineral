@@ -205,8 +205,8 @@ namespace MineralNode
                         break;
 
                     CreateAndAddBlocks(numCreate, false);
-                } while (false);
-                Thread.Sleep(100);
+                } while (true);
+
             }
         }
 
@@ -214,8 +214,8 @@ namespace MineralNode
         private void CreateAndAddBlocks(int cnt, bool directly)
         {
             List<Block> blocks = new List<Block>();
-            int height = BlockChain.Instance.CurrentBlockHeight;
-            UInt256 prevhash = BlockChain.Instance.CurrentBlockHash;
+            int height = BlockChain.Instance.CurrentHeaderHeight;
+            UInt256 prevhash = BlockChain.Instance.CurrentHeaderHash;
 
             for (int i = 0; i < cnt; ++i)
             {

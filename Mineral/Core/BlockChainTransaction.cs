@@ -78,6 +78,7 @@ namespace Mineral.Core
 
         public void NormalizeTransactions(ref List<Transaction> txs)
         {
+            /*
             if (txs.Count == 0)
                 return;
             foreach (Block block in _persistBlocks.Values)
@@ -92,6 +93,7 @@ namespace Mineral.Core
                         txs.Add(tx);
                 }
             }
+            */
         }
 
         public bool HasTransactionPool(UInt256 hash)

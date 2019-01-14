@@ -1,7 +1,5 @@
 ﻿using Mineral.Utils;
 using System.Collections.Concurrent;
-using System.Collections.Generic;
-using System.Linq;
 
 namespace Mineral.Core
 {
@@ -12,19 +10,28 @@ namespace Mineral.Core
         private int _capacity = 40960;
 
         public int HeaderHeight => HeaderIndices.Count - 1;
+        public UInt256 HeaderHash
+        {
+            get
+            {
+                if (HeaderIndices.TryGetValue(HeaderHeight, out UInt256 hash))
+                    return hash;
+                return null;
+            }
+        }
 
         public void SetCapacity(int capacity) { _capacity = capacity; }
-        public bool AddBlock(Block block)
+        public ERROR_BLOCK AddBlock(Block block)
         {
             if (!HeaderIndices.TryGetValue(block.Height, out UInt256 hash))
-                return false;
+                return ERROR_BLOCK.ERROR_HEIGHT;
             if (hash != block.Hash)
-                return false;
+                return ERROR_BLOCK.ERROR_HASH;
             if (!HashBlocks.TryAdd(block.Hash, block))
-                return false;
+                return ERROR_BLOCK.ERROR_HASH;
             if (_capacity < HashBlocks.Count)
                 HashBlocks.TryRemove(HeaderIndices[HeaderIndices.Count - _capacity - 1], out _);
-            return true;
+            return ERROR_BLOCK.NO_ERROR;
         }
 
         public Block GetBlock(int height)
