@@ -188,16 +188,19 @@ namespace Mineral.Network
                     continue;
 
                 int syncHeight = BlockChain.Instance.Proof.CalcBlockHeight(DateTime.UtcNow.ToTimestamp());
-                int localHeight = BlockChain.Instance.CurrentBlockHeight;
-                if (localHeight < syncHeight - 1
+                int headerHeight = BlockChain.Instance.CurrentHeaderHeight;
+                if (headerHeight < syncHeight - 1
                     && IsSyncing)
                 {
+                    int blockHeight = BlockChain.Instance.CurrentBlockHeight;
+                    if (BlocksPayload.MaxCount <= headerHeight - blockHeight)
+                        continue;
+
                     IEnumerable<RemoteNode> orderby = peers
                             .Where(p => 0 < p.Latency)
                             .OrderBy(p => p.Latency);
                     if (orderby.Any())
                     {
-                        int headerHeight = BlockChain.Instance.CurrentBlockHeight;
                         foreach (RemoteNode node in orderby)
                         {
                             if (headerHeight < node.Height)

@@ -21,6 +21,7 @@ namespace Mineral.Core
         }
 
         public void SetCapacity(int capacity) { _capacity = capacity; }
+        public int GetCapacity() { return _capacity; }
         public ERROR_BLOCK AddBlock(Block block)
         {
             if (!HeaderIndices.TryGetValue(block.Height, out UInt256 hash))

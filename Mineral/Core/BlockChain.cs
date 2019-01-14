@@ -492,6 +492,7 @@ namespace Mineral.Core
         }
 
         public void SetCacheBlockCapacity(int capacity) { _cacheChain.SetCapacity(capacity); }
+        public int GetCacheBlockCapacity() { return _cacheChain.GetCapacity(); }
 
         public void Dispose()
         {

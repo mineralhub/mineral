@@ -196,8 +196,13 @@ namespace Mineral.Network
 
         private void ReceivedResponseBlocks(BlocksPayload payload)
         {
+            int capacity = BlockChain.Instance.GetCacheBlockCapacity();
             foreach (Block block in payload.Blocks)
             {
+                int cacheLength = BlockChain.Instance.CurrentHeaderHeight - BlockChain.Instance.CurrentBlockHeight;
+                if (capacity <= cacheLength)
+                    break;
+
                 ERROR_BLOCK err = BlockChain.Instance.AddBlock(block);
                 if (err != ERROR_BLOCK.NO_ERROR &&
                     err != ERROR_BLOCK.ERROR_HEIGHT)
