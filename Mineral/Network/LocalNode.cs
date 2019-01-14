@@ -18,6 +18,7 @@ namespace Mineral.Network
     public class LocalNode : IDisposable
     {
         private int _listenedFlag;
+        private bool _isSyncing = true;
         private TcpListener _tcpListener;
         private IWebHost _wsHost;
         private Thread _syncBlockThread;
@@ -26,7 +27,7 @@ namespace Mineral.Network
 
         private CancellationTokenSource _cancelTokenSource = new CancellationTokenSource();
 
-        public bool IsSyncing { get; private set; } = true;
+        public bool IsSyncing { get { return _isSyncing; } private set { _isSyncing = value; NetworkManager.Instance.SyncBlockManager.SetSyncState(value); } }
         public bool IsServiceEnable { get { return !_cancelTokenSource.IsCancellationRequested; } }
 
         public LocalNode()
@@ -196,7 +197,7 @@ namespace Mineral.Network
                             .OrderBy(p => p.Latency);
                     if (orderby.Any())
                     {
-                        int headerHeight = BlockChain.Instance.CurrentHeaderHeight;
+                        int headerHeight = BlockChain.Instance.CurrentBlockHeight;
                         foreach (RemoteNode node in orderby)
                         {
                             if (headerHeight < node.Height)

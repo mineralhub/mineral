@@ -17,6 +17,14 @@ namespace Mineral.Network
         private object _syncBlockLock = new object();
         private SyncBlockState _syncBlockState;
         private Guid _syncRequestNodeId;
+        private bool _isSyncing = true;
+
+        public bool IsSyncing { get { return _isSyncing; } }
+
+        public void SetSyncState(bool isSync)
+        {
+            _isSyncing = isSync;
+        }
 
         public void SetSyncRequest(Guid guid)
         {

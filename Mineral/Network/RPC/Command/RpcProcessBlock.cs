@@ -77,7 +77,6 @@ namespace Mineral.Network.RPC.Command
         {
             JObject json = new JObject();
             json["blockheight"] = BlockChain.Instance.CurrentBlockHeight;
-            json["headerheight"] = BlockChain.Instance.CurrentHeaderHeight;
             return json;
         }
 

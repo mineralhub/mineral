@@ -80,19 +80,16 @@ namespace Mineral.Core
         {
             if (txs.Count == 0)
                 return;
-            lock (_waitPersistBlocks)
+            foreach (Block block in _persistBlocks.Values)
             {
-                foreach (Block block in _waitPersistBlocks.Values)
+                int counter = txs.Count;
+                while (counter > 0)
                 {
-                    int counter = txs.Count;
-                    while (counter > 0)
-                    {
-                        counter--;
-                        Transaction tx = txs.ElementAt(0);
-                        txs.RemoveAt(0);
-                        if (block.Transactions.Find((p) => { return p.Hash == tx.Hash; }) == null)
-                            txs.Add(tx);
-                    }
+                    counter--;
+                    Transaction tx = txs.ElementAt(0);
+                    txs.RemoveAt(0);
+                    if (block.Transactions.Find((p) => { return p.Hash == tx.Hash; }) == null)
+                        txs.Add(tx);
                 }
             }
         }

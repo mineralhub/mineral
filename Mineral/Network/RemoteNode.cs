@@ -201,14 +201,17 @@ namespace Mineral.Network
 
         private void ReceivedBroadcastBlocks(BroadcastBlockPayload payload)
         {
-            foreach (Block block in payload.Blocks)
+            if (!NetworkManager.Instance.SyncBlockManager.IsSyncing)
             {
-                BlockChain.ERROR_BLOCK err = BlockChain.Instance.AddBlock(block);
-                if (err != BlockChain.ERROR_BLOCK.NO_ERROR &&
-                    err != BlockChain.ERROR_BLOCK.ERROR_HEIGHT)
+                foreach (Block block in payload.Blocks)
                 {
-                    Disconnect(DisconnectType.InvalidBlock, "Failed AddBroadcastBlocks.");
-                    break;
+                    BlockChain.ERROR_BLOCK err = BlockChain.Instance.AddBlock(block);
+                    if (err != BlockChain.ERROR_BLOCK.NO_ERROR &&
+                        err != BlockChain.ERROR_BLOCK.ERROR_HEIGHT)
+                    {
+                        Disconnect(DisconnectType.InvalidBlock, "Failed AddBroadcastBlocks.");
+                        break;
+                    }
                 }
             }
         }

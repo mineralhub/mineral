@@ -4,6 +4,8 @@ using Mineral.Database.LevelDB;
 using Mineral.Utils;
 using Mineral.Wallets;
 using System;
+using System.Collections;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -39,21 +41,17 @@ namespace Mineral.Core
 
         private int _currentBlockHeight = 0;
         private UInt256 _currentBlockHash = UInt256.Zero;
-        private int _currentHeaderHeight = 0;
-        private UInt256 _currentHeaderHash = UInt256.Zero;
 
         private CacheChain _cacheChain = new CacheChain();
-        private Dictionary<UInt256, Block> _waitPersistBlocks = new Dictionary<UInt256, Block>();
-        private Dictionary<UInt256, BlockHeader> _cacheHeaders = new Dictionary<UInt256, BlockHeader>();
+        private ConcurrentDictionary<int, Block> _persistBlocks = new ConcurrentDictionary<int, Block>();
 
         protected Dictionary<UInt256, Transaction> _rxPool = new Dictionary<UInt256, Transaction>();
         protected Dictionary<UInt256, Transaction> _txPool = new Dictionary<UInt256, Transaction>();
 
         private uint _storeHeaderCount = 0;
         private bool _disposed = false;
-        private Thread _persistThread;
+        private Thread _threadPersist;
         #endregion
-
 
         #region Properties
         public static BlockChain Instance
@@ -73,8 +71,6 @@ namespace Mineral.Core
 
         public int CurrentBlockHeight { get { return _currentBlockHeight; } }
         public UInt256 CurrentBlockHash { get { return _currentBlockHash; } }
-        public int CurrentHeaderHeight { get { return _currentHeaderHeight; } }
-        public UInt256 CurrentHeaderHash { get { return _currentHeaderHash; } }
         public Block GenesisBlock { get { return _genesisBlock; } }
         #endregion
 
@@ -82,25 +78,39 @@ namespace Mineral.Core
         #region Event Method
         private void PersistBlocksLoop()
         {
+            Block oblock = null;
+            Block block = null;
+            LinkedList<Block> blocks = new LinkedList<Block>();
+
             while (!_disposed)
             {
-                _newBlockEvent.WaitOne();
-
-                while (!_disposed)
+                while (_persistBlocks.Count > 0)
                 {
-                    if (!_cacheChain.HeaderIndices.TryGetValue(_currentBlockHeight + 1, out UInt256 hash))
-                        break;
+                    _persistBlocks.TryRemove(_persistBlocks.First().Key, out oblock);
+                    blocks.AddLast(oblock);
+                }
 
-                    Block block;
-                    lock (_waitPersistBlocks)
+                while (blocks.Count > 0)
+                {
+                    block = blocks.First();
+                    blocks.RemoveFirst();
+
+                    if (_cacheChain.HeaderHeight + 1 != block.Height) continue;
+                    if (!block.Verify()) continue;
+
+                    lock (PoolLock)
                     {
-                        if (!_waitPersistBlocks.TryGetValue(hash, out block))
-                            break;
+                        foreach (var tx in block.Transactions)
+                        {
+                            if (_rxPool.ContainsKey(tx.Hash))
+                                continue;
+                            if (_txPool.ContainsKey(tx.Hash))
+                                continue;
+                            _txPool.Add(tx.Hash, tx);
+                        }
                     }
 
-                    // Compare block's previous hash is CurrentBlockHash
-                    if (block.Header.PrevHash != CurrentBlockHash)
-                        break;
+                    if (block.Header.PrevHash != _currentBlockHash) break;
 
                     lock (PersistLock)
                     {
@@ -109,10 +119,6 @@ namespace Mineral.Core
                             _proof.Update(this);
                         OnPersistCompleted(block);
                     }
-                    lock (_waitPersistBlocks)
-                    {
-                        _waitPersistBlocks.Remove(hash);
-                    }
                 }
             }
         }
@@ -120,12 +126,11 @@ namespace Mineral.Core
 
 
         #region Internal Method
-        private void AddHeader(BlockHeader header)
+        private void Persist(Block block)
         {
             WriteBatch batch = new WriteBatch();
-
-            _cacheChain.AddHeaderIndex(header.Height, header.Hash);
-            while (_storeHeaderCount <= header.Height - 2000)
+            _cacheChain.AddHeaderIndex(block.Header.Height, block.Header.Hash);
+            while (_storeHeaderCount <= block.Header.Height - 2000)
             {
                 using (MemoryStream ms = new MemoryStream())
                 using (BinaryWriter bw = new BinaryWriter(ms))
@@ -137,25 +142,13 @@ namespace Mineral.Core
                 _storeHeaderCount += 2000;
             }
 
-            _manager.PutBlock(batch, header, 0L);
-            _manager.PutCurrentHeader(batch, header);
-            _manager.BatchWrite(WriteOptions.Default, batch);
-
-            _currentHeaderHeight = header.Height;
-            _currentHeaderHash = header.Hash;
-        }
-
-        private void Persist(Block block)
-        {
-            WriteBatch batch = new WriteBatch();
-
             long fee = block.Transactions.Sum(p => p.Fee).Value;
             _manager.PutBlock(batch, block, fee);
 
             foreach (Transaction tx in block.Transactions)
             {
                 _manager.PutTransaction(batch, block, tx);
-                if (block != GenesisBlock && !tx.VerifyBlockchain(_manager.Storage))
+                if (_genesisBlock != block && !tx.VerifyBlockchain(_manager.Storage))
                 {
                     if (Fixed8.Zero < tx.Fee)
                         _manager.Storage.GetAccountState(tx.From).AddBalance(-tx.Fee);
@@ -265,12 +258,12 @@ namespace Mineral.Core
             }
 
             _manager.Storage.commit(batch, block.Height);
-            _manager.PutCurrentBlock(block);
+            _manager.PutCurrentHeader(batch, block.Header);
+            _manager.PutCurrentBlock(batch, block);
             _manager.BatchWrite(WriteOptions.Default, batch);
 
             _currentBlockHeight = block.Header.Height;
             _currentBlockHash = block.Header.Hash;
-
             _cacheChain.AddBlock(block);
 
             Logger.Debug("persist block : " + block.Height);
@@ -281,11 +274,10 @@ namespace Mineral.Core
         #region External Method
         public void Initialize(string path, Block genesisBlock)
         {
-            Version version;
-            Slice value;    
-
             _genesisBlock = genesisBlock;
             _manager = new LevelDBBlockChain(path);
+
+            Version version;
             if (_manager.TryGetVersion(out version))
             {
                 UInt256 blockHash = UInt256.Zero;
@@ -302,20 +294,14 @@ namespace Mineral.Core
                         ++_storeHeaderCount;
                     }
 
-                    if (!_manager.TryGetCurrentHeader(out _currentHeaderHash, out _currentHeaderHeight))
-                    {
-                        _currentHeaderHash = _currentBlockHash;
-                        _currentHeaderHeight = _currentBlockHeight;
-                    }
-
                     if (_storeHeaderCount == 0)
                     {
                         foreach (BlockHeader blockHeader in _manager.GetBlockHeaderList())
                             _cacheChain.AddHeaderIndex(blockHeader.Height, blockHeader.Hash);
                     }
-                    else if (_storeHeaderCount <= _currentHeaderHeight)
+                    else if (_storeHeaderCount <= _currentBlockHeight)
                     {
-                        for (UInt256 hash = _currentHeaderHash; hash != _cacheChain.HeaderIndices[(int)_storeHeaderCount - 1];)
+                        for (UInt256 hash = _currentBlockHash; hash != _cacheChain.HeaderIndices[(int)_storeHeaderCount - 1];)
                         {
                             BlockHeader header = _manager.GetBlockHeader(hash);
                             _cacheChain.AddHeaderIndex(header.Height, header.Hash);
@@ -329,52 +315,26 @@ namespace Mineral.Core
             {
                 _cacheChain.AddHeaderIndex(genesisBlock.Height, genesisBlock.Hash);
                 _currentBlockHash = genesisBlock.Hash;
-                _currentHeaderHash = genesisBlock.Hash;
+                _currentBlockHash = genesisBlock.Hash;
                 Persist(genesisBlock);
                 _manager.PutVersion(Assembly.GetExecutingAssembly().GetName().Version);
                 _proof.Update(this);
             }
 
-            _persistThread = new Thread(PersistBlocksLoop)
+            _threadPersist = new Thread(PersistBlocksLoop)
             {
                 IsBackground = true,
                 Name = "Mineral.BlockChain.PersistBlocksLoop"
             };
-            _persistThread.Start();
+            _threadPersist.Start();
         }
 
         public ERROR_BLOCK AddBlock(Block block)
         {
-            lock (_waitPersistBlocks)
-            {
-                if (!_waitPersistBlocks.ContainsKey(block.Hash))
-                    _waitPersistBlocks.Add(block.Hash, block);
-            }
+            if (_cacheChain.HeaderIndices.ContainsKey(block.Height)) return ERROR_BLOCK.ERROR_HEIGHT;
 
-            lock (PoolLock)
-            {
-                foreach (var tx in block.Transactions)
-                {
-                    if (_rxPool.ContainsKey(tx.Hash))
-                        continue;
-                    if (_txPool.ContainsKey(tx.Hash))
-                        continue;
-                    _txPool.Add(tx.Hash, tx);
-                }
-            }
-
-            int height = _cacheChain.HeaderHeight;
-            if (height + 1 == block.Height)
-            {
-                if (!block.Verify())
-                    return ERROR_BLOCK.ERROR;
-                WriteBatch batch = new WriteBatch();
-                AddHeader(block.Header);
-                _cacheChain.AddBlock(block);
-                _newBlockEvent.Set();
-            }
-            else
-                return ERROR_BLOCK.ERROR_HEIGHT;
+            if (!_persistBlocks.ContainsKey(block.Height))
+                _persistBlocks.TryAdd(block.Height, block);
 
             return ERROR_BLOCK.NO_ERROR;
         }
@@ -387,7 +347,6 @@ namespace Mineral.Core
             int height = _cacheChain.HeaderHeight;
             if (height + 1 == block.Height)
             {
-                AddHeader(block.Header);
                 lock (PersistLock)
                 {
                     Persist(block);
