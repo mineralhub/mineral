@@ -7,7 +7,6 @@ namespace Mineral.Network.Payload
 {
 	internal class BlocksPayload : ISerializable
 	{
-		public const int MaxCount = 2000;
 		public List<Block> Blocks;
 		public int Size => Blocks.GetSize();
 		public static BlocksPayload Create(List<Block> blocks)
@@ -20,7 +19,7 @@ namespace Mineral.Network.Payload
 
 		public void Deserialize(BinaryReader reader)
 		{
-			Blocks = reader.ReadSerializableArray<Block>(MaxCount);
+			Blocks = reader.ReadSerializableArray<Block>(Config.Instance.Block.PayloadCapacity);
 		}
 
 		public void Serialize(BinaryWriter writer)
@@ -31,7 +30,6 @@ namespace Mineral.Network.Payload
 
 	public class BroadcastBlockPayload : ISerializable
 	{
-		public const int MaxCount = 2000;
 		public List<Block> Blocks;
 		public int Size => Blocks.GetSize();
 		public static BroadcastBlockPayload Create(List<Block> blocks)
@@ -44,7 +42,7 @@ namespace Mineral.Network.Payload
 
 		public void Deserialize(BinaryReader reader)
 		{
-			Blocks = reader.ReadSerializableArray<Block>(MaxCount);
+			Blocks = reader.ReadSerializableArray<Block>(Config.Instance.Block.PayloadCapacity);
 		}
 
 		public void Serialize(BinaryWriter writer)
@@ -55,7 +53,6 @@ namespace Mineral.Network.Payload
 
     public class TransactionsPayload : ISerializable
     {
-        public const int MaxCount = 2000;
         public List<Transaction> Transactions;
         public int Size => Transactions.GetSize();
         public static TransactionsPayload Create(List<Transaction> transactions)
@@ -76,7 +73,7 @@ namespace Mineral.Network.Payload
 
         public void Deserialize(BinaryReader reader)
         {
-            Transactions = reader.ReadSerializableArray<Transaction>(1);
+            Transactions = reader.ReadSerializableArray<Transaction>(Config.Instance.Transaction.PayloadCapacity);
         }
 
         public void Serialize(BinaryWriter writer)

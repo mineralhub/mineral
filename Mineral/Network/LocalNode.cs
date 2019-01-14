@@ -32,7 +32,7 @@ namespace Mineral.Network
 
         public LocalNode()
         {
-            IsSyncing = Config.Instance.Block.syncCheck;
+            IsSyncing = Config.Instance.Block.SyncCheck;
         }
 
         public void Dispose()
@@ -193,7 +193,7 @@ namespace Mineral.Network
                     && IsSyncing)
                 {
                     int blockHeight = BlockChain.Instance.CurrentBlockHeight;
-                    if (BlocksPayload.MaxCount <= headerHeight - blockHeight)
+                    if (Config.Instance.Block.PayloadCapacity <= headerHeight - blockHeight)
                         continue;
 
                     IEnumerable<RemoteNode> orderby = peers
@@ -205,8 +205,11 @@ namespace Mineral.Network
                         {
                             if (headerHeight < node.Height)
                             {
+                                var start = headerHeight + 1;
+                                var end = start + Config.Instance.Block.PayloadCapacity;
+                                var payload = GetBlocksFromHeightPayload.Create(start, end);
                                 syncBlockManager.SetSyncRequest(node.Version.NodeID);
-                                node.EnqueueMessage(Message.CommandName.RequestBlocksFromHeight, GetBlocksFromHeightPayload.Create(headerHeight + 1));
+                                node.EnqueueMessage(Message.CommandName.RequestBlocksFromHeight, payload);
                                 break;
                             }
                         }

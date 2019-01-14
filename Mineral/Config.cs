@@ -37,8 +37,17 @@ namespace Mineral
         public int NextBlockTimeSec { get; set; }
         [JsonProperty("cache_capacity")]
         public int CacheCapacity { get; set; }
-        [JsonProperty("syncCheck")]
-        public bool syncCheck { get; set; } = true;
+        [JsonProperty("payload_capacity")]
+        public int PayloadCapacity { get; set; }
+        [JsonProperty("sync_check")]
+        public bool SyncCheck { get; set; } = true;
+    }
+
+    [ConfigClass]
+    public class TransactionConfig
+    {
+        [JsonProperty("payload_capacity")]
+        public int PayloadCapacity { get; set; }
     }
 
     [ConfigClass]
@@ -81,7 +90,9 @@ namespace Mineral
         public NetworkConfig Network { get; set; }
         [JsonProperty("block")]
         public BlockConfig Block { get; set; }
-        [JsonProperty("genesisBlock")]
+        [JsonProperty("transaction")]
+        public TransactionConfig Transaction { get; set; }
+        [JsonProperty("genesis_block")]
         public GenesisBlockConfig GenesisBlock { get; set; }
 
         [JsonProperty("block_version")]

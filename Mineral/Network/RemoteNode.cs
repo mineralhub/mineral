@@ -174,6 +174,7 @@ namespace Mineral.Network
 
         private void ReceivedRequestBlocks(GetBlocksPayload payload)
         {
+            int capacity = Config.Instance.Block.PayloadCapacity;
             List<Block> blocks = new List<Block>();
             UInt256 hash = payload.HashStart;
             do
@@ -184,13 +185,15 @@ namespace Mineral.Network
                 blocks.Add(block);
                 hash = block.Hash;
             }
-            while (hash != null && hash != payload.HashStop && blocks.Count < BlocksPayload.MaxCount);
+            while (hash != null && hash != payload.HashStop && blocks.Count < capacity);
             EnqueueMessage(Message.CommandName.ResponseBlocks, BlocksPayload.Create(blocks));
         }
 
         private void ReceivedRequestBlocksFromHeight(GetBlocksFromHeightPayload payload)
         {
-            List<Block> blocks = BlockChain.Instance.GetBlocks(payload.Start, payload.End == 0 ? payload.Start + BlocksPayload.MaxCount : payload.End);
+            int capacity = Config.Instance.Block.PayloadCapacity;
+            int end = capacity < payload.End - payload.Start ? payload.Start + capacity : payload.End;
+            List<Block> blocks = BlockChain.Instance.GetBlocks(payload.Start, end);
             EnqueueMessage(Message.CommandName.ResponseBlocks, BlocksPayload.Create(blocks));
         }
 

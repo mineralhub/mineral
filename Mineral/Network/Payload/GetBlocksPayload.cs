@@ -40,7 +40,7 @@ namespace Mineral.Network.Payload
 
         public int Size => sizeof(int) + sizeof(int);
 
-        public static GetBlocksFromHeightPayload Create(int start, int end = 0)
+        public static GetBlocksFromHeightPayload Create(int start, int end)
         {
             return new GetBlocksFromHeightPayload
             {
