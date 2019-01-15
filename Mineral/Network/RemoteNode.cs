@@ -43,7 +43,7 @@ namespace Mineral.Network
         private static readonly TimeSpan HalfHour = TimeSpan.FromMinutes(30);
 
         public event Action<RemoteNode, DisconnectType> DisconnectedCallback;
-        public event Action<RemoteNode, IPEndPoint[]> PeersReceivedCallback;
+        public event Action<RemoteNode, List<NodeInfo>> PeersReceivedCallback;
 
         private Queue<Message> _messageQueueHigh = new Queue<Message>();
         private Queue<Message> _messageQueueLow = new Queue<Message>();
@@ -142,18 +142,17 @@ namespace Mineral.Network
 
         private void ReceivedAddrs(AddrPayload payload)
         {
-            var peers = payload.AddressList.Select(p => p.EndPoint).Where(
-                p => p.Port != Config.Instance.Network.TcpPort || !Config.Instance.LocalAddresses.Contains(p.Address)).ToArray();
-            if (0 < peers.Length)
-                PeersReceivedCallback.Invoke(this, peers);
+            var local = NetworkManager.Instance.LocalInfos;
+            var peers = NetworkManager.Instance.ConnectedPeers;
+            var result = payload.NodeList.Where(p => !local.Contains(p) && !peers.ContainsKey(p)).ToList();
+            if (0 < result.Count)
+                PeersReceivedCallback.Invoke(this, result);
         }
 
         private void ReceivedRequestAddrs()
         {
-            HashSet<RemoteNode> connectedPeers = NetworkManager.Instance.ConnectedPeers.Clone();
-            IEnumerable<RemoteNode> hostPeers = connectedPeers.Where(p => p.EndPoint != null && p.Version != null);
-            List<AddressInfo> addrs = hostPeers.Select(p => AddressInfo.Create(p.EndPoint, p.Version.Version, p.Version.Timestamp)).ToList();
-            EnqueueMessage(Message.CommandName.ResponseAddrs, AddrPayload.Create(addrs));
+            var infos = NetworkManager.Instance.ConnectedPeers.Keys.ToList();
+            EnqueueMessage(Message.CommandName.ResponseAddrs, AddrPayload.Create(infos));
         }
 
         private void ReceivedRequestHeaders(GetBlocksPayload payload)
@@ -381,7 +380,7 @@ namespace Mineral.Network
             }
 
             Info.EndPoint = new IPEndPoint(EndPoint.Address, Version.Port);
-            if (!NetworkManager.Instance.ConnectedPeers.Add(this))
+            if (!NetworkManager.Instance.ConnectedPeers.TryAdd(Info, this))
             {
                 Disconnect(DisconnectType.MultiConnection, "HasPeer");
                 return;

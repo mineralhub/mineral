@@ -10,7 +10,7 @@ namespace Mineral.Network.RPC.Command
             JArray nodes = new JArray();
 
             //LocalNode node = obj as LocalNode;
-            foreach (RemoteNode remote in NetworkManager.Instance.ConnectedPeers.Clone())
+            foreach (RemoteNode remote in NetworkManager.Instance.ConnectedPeers.Values)
                 nodes.Add(string.Format("{0}:{1}", remote.EndPoint.Address, remote.EndPoint.Port));
 
             json["nodes"] = nodes;

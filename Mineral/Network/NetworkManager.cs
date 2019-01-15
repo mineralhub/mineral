@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Net;
 using System.Threading;
@@ -83,10 +84,12 @@ namespace Mineral.Network
         }
     }
 
-    public class NodeInfo : IEquatable<NodeInfo>
+    public class NodeInfo : IEquatable<NodeInfo>, ISerializable
     {
         public IPEndPoint EndPoint;
         public VersionPayload Version;
+
+        public int Size => 16 + sizeof(ushort) + Version.Size;
 
         public bool Equals(NodeInfo other)
         {
@@ -98,6 +101,21 @@ namespace Mineral.Network
         {
             return EndPoint.GetHashCode() + Version.GetHashCode();
         }
+
+        public void Deserialize(BinaryReader reader)
+        {
+            IPAddress addr = new IPAddress(reader.ReadBytes(16));
+            ushort port = reader.ReadBytes(2).ToArray().ToUInt16(0);
+            EndPoint = new IPEndPoint(addr, port);
+            Version = reader.ReadSerializable<VersionPayload>();
+        }
+
+        public void Serialize(BinaryWriter writer)
+        {
+            writer.Write(EndPoint.Address.GetAddressBytes());
+            writer.Write(BitConverter.GetBytes((ushort)EndPoint.Port).ToArray());
+            writer.WriteSerializable(Version);
+        }
     }
 
 
@@ -106,10 +124,23 @@ namespace Mineral.Network
         static private NetworkManager _instance = new NetworkManager();
         static public NetworkManager Instance => _instance;
 
-        public ConnectedPeerList ConnectedPeers { get; } = new ConnectedPeerList();
-        public SafePeerList<IPEndPoint> WaitPeers { get; } = new SafePeerList<IPEndPoint>();
-        public SafePeerList<IPEndPoint> BadPeers { get; } = new SafePeerList<IPEndPoint>();
+        public ConcurrentDictionary<NodeInfo, RemoteNode> ConnectedPeers { get; } = new ConcurrentDictionary<NodeInfo, RemoteNode>();
+        public ConcurrentDictionary<IPEndPoint, int> WaitPeers { get; } = new ConcurrentDictionary<IPEndPoint, int>();
+        public ConcurrentDictionary<IPEndPoint, int> BadPeers { get; } = new ConcurrentDictionary<IPEndPoint, int>();
         public SyncBlockManager SyncBlockManager { get; } = new SyncBlockManager();
         public Guid NodeID { get; } = Guid.NewGuid();
+        public List<NodeInfo> LocalInfos { get; } = new List<NodeInfo>();
+
+        public NetworkManager()
+        {
+            NodeInfo info = new NodeInfo();
+            info.Version = new VersionPayload();
+            ushort tcpPort = Config.Instance.Network.TcpPort;
+            foreach (var addr in Config.Instance.LocalAddresses)
+            {
+                info.EndPoint = new IPEndPoint(addr, tcpPort);
+                LocalInfos.Add(info);
+            }
+        }
     }
 }
