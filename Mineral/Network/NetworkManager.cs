@@ -49,41 +49,6 @@ namespace Mineral.Network
         }
     }
 
-    public class SafePeerList<T>
-    {
-        protected HashSet<T> _list = new HashSet<T>();
-
-        public virtual bool Add(T v) 
-        {
-            bool retval = false;
-            lock (_list) 
-                retval = _list.Add(v);
-            return retval;
-        }
-        public virtual void Add(HashSet<T> v) { lock (_list) _list.UnionWith(v); }
-        public void Remove(T v) { lock (_list) _list.Remove(v); }
-        public HashSet<T> Clone() 
-        {
-            HashSet<T> retval;
-            lock (_list)
-                retval = new HashSet<T>(_list);
-            return retval;
-        }
-    }
-
-    public class ConnectedPeerList : SafePeerList<RemoteNode>
-    {
-        public bool HasPeer(RemoteNode node)
-        {
-            bool has = false;
-            lock (_list)
-            {
-                has = _list.Any(p => p.Equals(node));
-            }
-            return has;
-        }
-    }
-
     public class NodeInfo : IEquatable<NodeInfo>, ISerializable
     {
         public IPEndPoint EndPoint;
