@@ -214,8 +214,7 @@ namespace Mineral.Network
                     break;
                 }
             }
-            if (!NetworkManager.Instance.SyncBlockManager.SetSyncResponse(Version.NodeID))
-                return;
+            NetworkManager.Instance.SyncBlockManager.RemoveInfo(Info);
         }
 
         private void ReceivedBroadcastBlocks(BroadcastBlockPayload payload)
@@ -243,7 +242,7 @@ namespace Mineral.Network
         private void OnMessageReceived(Message message)
         {
 #if DEBUG
-            Logger.Debug("Received : " + message.Command.ToString());
+            Logger.Debug("[Recv] : " + message.Command.ToString());
 #endif
             switch (message.Command)
             {
@@ -326,6 +325,7 @@ namespace Mineral.Network
                 }
                 else
                 {
+                    Logger.Debug("[Send] : " + message.Command.ToString());
                     await SendMessageAsync(message);
                 }
             }

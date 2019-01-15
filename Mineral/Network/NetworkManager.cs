@@ -1,70 +1,50 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
+using System.Threading;
 using Mineral.Network.Payload;
 
 namespace Mineral.Network
 {
-    public enum SyncBlockState : short
-    {
-        None,
-        Request,
-        Response
-    }
-
     public class SyncBlockManager
     {
-        private object _syncBlockLock = new object();
-        private SyncBlockState _syncBlockState;
-        private Guid _syncRequestNodeId;
-        private bool _isSyncing = true;
-
-        public bool IsSyncing { get { return _isSyncing; } }
-
-        public void SetSyncState(bool isSync)
+        private ConcurrentDictionary<NodeInfo, bool> _syncStates = new ConcurrentDictionary<NodeInfo, bool>();
+        private int _isSyncing;
+        public bool IsSyncing
         {
-            _isSyncing = isSync;
-        }
-
-        public void SetSyncRequest(Guid guid)
-        {
-            lock (_syncBlockLock)
+            get
             {
-                _syncBlockState = SyncBlockState.Request;
-                _syncRequestNodeId = guid;
+                return (Interlocked.CompareExchange(ref _isSyncing, 1, 1) == 1);
+            }
+            set
+            {
+                if (value)
+                    Interlocked.CompareExchange(ref _isSyncing, 1, 0);
+                else
+                    Interlocked.CompareExchange(ref _isSyncing, 0, 1);
             }
         }
 
-        public SyncBlockState GetSyncBlockState()
+        public SyncBlockManager()
         {
-            SyncBlockState retval;
-            lock (_syncBlockLock)
-                retval = _syncBlockState;
-            return retval;
+            IsSyncing = Config.Instance.Block.SyncCheck;
         }
 
-        public bool SetSyncResponse(Guid guid)
+        public bool SyncRequest(NodeInfo info)
         {
-            lock (_syncBlockLock)
-            {
-                if (_syncRequestNodeId == guid)
-                {
-                    _syncRequestNodeId = Guid.Empty;
-                    _syncBlockState = SyncBlockState.Response;
-                    return true;
-                }
-            }
-            return false;
+             return _syncStates.TryAdd(info, true);
         }
 
-        public void SetSyncCancel()
+        public bool ContainsInfo(NodeInfo info)
         {
-            lock (_syncBlockLock)
-            {
-                _syncRequestNodeId = Guid.Empty;
-                _syncBlockState = SyncBlockState.Response;
-            }
+            return _syncStates.ContainsKey(info);
+        }
+
+        public void RemoveInfo(NodeInfo info)
+        {
+            _syncStates.TryRemove(info, out _);
         }
     }
 
