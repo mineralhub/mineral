@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Net;
 using System.Threading.Tasks;
 using FluentAssertions;
@@ -35,7 +36,7 @@ namespace Mineral.UnitTests.Network
     public class UT_Node
     {
         [TestMethod]
-        public void ContainsRemoteNode()
+        public void ContainsNodeInfo()
         {
             Guid guid = Guid.NewGuid();
 
@@ -44,10 +45,9 @@ namespace Mineral.UnitTests.Network
             n1.Info.Version = VersionPayload.Create(456, guid);
 
             UnitTestNode n2 = new UnitTestNode();
-            n2.SetInfo(n1.Info);
-
-            NetworkManager.Instance.ConnectedPeers.Add(n1).Should().BeTrue();
-            NetworkManager.Instance.ConnectedPeers.Add(n2).Should().BeFalse();
+            ConcurrentDictionary<NodeInfo, RemoteNode> peers = new ConcurrentDictionary<NodeInfo, RemoteNode>();
+            peers.TryAdd(n1.Info, n1).Should().BeTrue();
+            peers.TryAdd(n1.Info, n2).Should().BeFalse();
         }
     }
 }
