@@ -19,7 +19,7 @@ namespace Mineral.Network
 
             public long LatencyMs { get; private set; }
             public bool Waiting { get; private set; }
-            public int LastPongTime { get; private set; }
+            public uint LastPongTime { get; private set; }
 
             public void Ping()
             {
@@ -48,8 +48,10 @@ namespace Mineral.Network
         private Queue<Message> _messageQueueHigh = new Queue<Message>();
         private Queue<Message> _messageQueueLow = new Queue<Message>();
         protected int _connected;
-        private int _height;
-        public int Height { get { return Interlocked.CompareExchange(ref _height, 0, 0); } }
+        private uint _height;
+        public uint Height { get { return Helper.InterlockedCompareExchange(ref _height, 0, 0); } }
+
+
 
         public bool IsConnected => _connected == 1 ? true : false;
 
@@ -174,7 +176,7 @@ namespace Mineral.Network
 
         private void ReceivedRequestBlocks(GetBlocksPayload payload)
         {
-            int capacity = Config.Instance.Block.PayloadCapacity;
+            uint capacity = Config.Instance.Block.PayloadCapacity;
             List<Block> blocks = new List<Block>();
             UInt256 hash = payload.HashStart;
             do
@@ -191,18 +193,18 @@ namespace Mineral.Network
 
         private void ReceivedRequestBlocksFromHeight(GetBlocksFromHeightPayload payload)
         {
-            int capacity = Config.Instance.Block.PayloadCapacity;
-            int end = capacity < payload.End - payload.Start ? payload.Start + capacity : payload.End;
+            uint capacity = Config.Instance.Block.PayloadCapacity;
+            uint end = capacity < payload.End - payload.Start ? payload.Start + capacity : payload.End;
             List<Block> blocks = BlockChain.Instance.GetBlocks(payload.Start, end);
             EnqueueMessage(Message.CommandName.ResponseBlocks, BlocksPayload.Create(blocks));
         }
 
         private void ReceivedResponseBlocks(BlocksPayload payload)
         {
-            int capacity = BlockChain.Instance.GetCacheBlockCapacity();
+            uint capacity = BlockChain.Instance.GetCacheBlockCapacity();
             foreach (Block block in payload.Blocks)
             {
-                int cacheLength = BlockChain.Instance.CurrentHeaderHeight - BlockChain.Instance.CurrentBlockHeight;
+                uint cacheLength = BlockChain.Instance.CurrentHeaderHeight - BlockChain.Instance.CurrentBlockHeight;
                 if (capacity <= cacheLength)
                     break;
 
@@ -260,7 +262,7 @@ namespace Mineral.Network
                 case Message.CommandName.Pong:
                     {
                         PongPayload pong = message.Payload.Serializable<PongPayload>();
-                        Interlocked.Exchange(ref _height, pong.Height);
+                        Helper.InterlockedExchange(ref _height, pong.Height);
                         _pingpong.Pong(pong);
                     }
                     break;

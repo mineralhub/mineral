@@ -20,7 +20,7 @@ namespace Mineral.Core
         }
 
         #region Block Header
-        public BlockHeader GetHeader(int height)
+        public BlockHeader GetHeader(uint height)
         {
             Block block = _cacheChain.GetBlock(height);
             if (block != null)
@@ -65,7 +65,7 @@ namespace Mineral.Core
 
 
         #region Block
-        public Block GetBlock(int height)
+        public Block GetBlock(uint height)
         {
             Block block = _cacheChain.GetBlock(height);
             if (block != null)
@@ -88,7 +88,7 @@ namespace Mineral.Core
             return block;
         }
 
-        public UInt256 GetBlockHash(int height)
+        public UInt256 GetBlockHash(uint height)
         {
             _cacheChain.HeaderIndices.TryGetValue(height, out UInt256 hash);
             return hash;
@@ -103,9 +103,9 @@ namespace Mineral.Core
             return GetBlock(block.Height + 1);
         }
 
-        public List<Block> GetBlocks(int start, int end)
+        public List<Block> GetBlocks(uint start, uint end)
         {
-            var hashes = _cacheChain.HeaderIndices.Values.Skip(start).Take(end - start);
+            var hashes = _cacheChain.HeaderIndices.Values.Skip((int)start).Take((int)(end - start));
             List<Block> blocks = new List<Block>();
             foreach (var hash in hashes)
             {
@@ -136,12 +136,12 @@ namespace Mineral.Core
 
 
         #region Turn table
-        public TurnTableState GetTurnTable(int height)
+        public TurnTableState GetTurnTable(uint height)
         {
-            List<int> heights = _manager.GetTurnTableHeightList(height).ToList();
+            List<uint> heights = _manager.GetTurnTableHeightList(height).ToList();
 
             heights.Sort((a, b) => { return a > b ? (-1) : (a < b ? 1 : 0); });
-            return _manager.GetTurnTable((int)(heights.Count > 0 ? heights.First() : 0));
+            return _manager.GetTurnTable(heights.Count > 0 ? heights.First() : 0);
         }
         #endregion
 

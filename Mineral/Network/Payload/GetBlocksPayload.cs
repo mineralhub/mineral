@@ -35,12 +35,12 @@ namespace Mineral.Network.Payload
 
     internal class GetBlocksFromHeightPayload : ISerializable
     {
-        public int Start { get; private set; }
-        public int End { get; private set; }
+        public uint Start { get; private set; }
+        public uint End { get; private set; }
 
-        public int Size => sizeof(int) + sizeof(int);
+        public int Size => sizeof(uint) + sizeof(uint);
 
-        public static GetBlocksFromHeightPayload Create(int start, int end)
+        public static GetBlocksFromHeightPayload Create(uint start, uint end)
         {
             return new GetBlocksFromHeightPayload
             {
@@ -51,8 +51,8 @@ namespace Mineral.Network.Payload
 
         public void Deserialize(BinaryReader reader)
         {
-            Start = reader.ReadInt32();
-            End = reader.ReadInt32();
+            Start = reader.ReadUInt32();
+            End = reader.ReadUInt32();
 
         }
 

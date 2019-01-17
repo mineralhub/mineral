@@ -82,9 +82,9 @@ namespace Mineral
             return sb.ToString();
         }
 
-        public static int ToTimestamp(this DateTime time)
+        public static uint ToTimestamp(this DateTime time)
         {
-            return (int)(time.ToUniversalTime() - unixEpoch).TotalSeconds;
+            return (uint)(time.ToUniversalTime() - unixEpoch).TotalSeconds;
         }
 
         public static byte[] HexToBytes(this string value)
@@ -390,6 +390,22 @@ namespace Mineral
                 }
             }
             return new Fixed8(sum);
+        }
+
+        public unsafe static uint InterlockedExchange(ref uint location, uint value)
+        {
+            fixed (uint* ptr = &location)
+            {
+                return (uint)System.Threading.Interlocked.Exchange(ref *(int*)ptr, (int)value);
+            }
+        }
+
+        public unsafe static uint InterlockedCompareExchange(ref uint location, uint value, uint comparand)
+        {
+            fixed (uint* ptr = &location)
+            {
+                return (uint)System.Threading.Interlocked.CompareExchange(ref *(int*)ptr, (int)value, (int)comparand);
+            }
         }
     }
 }

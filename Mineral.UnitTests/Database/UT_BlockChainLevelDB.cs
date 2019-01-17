@@ -52,7 +52,7 @@ namespace Mineral.UnitTests.Database
             bool result = false;
             try
             {
-                int blockHeight = 0;
+                uint blockHeight = 0;
                 UInt256 blockHash = new UInt256();
                 WriteBatch batch = new WriteBatch();
 
@@ -75,7 +75,7 @@ namespace Mineral.UnitTests.Database
             bool result = false;
             try
             {
-                int blockHeight = 0;
+                uint blockHeight = 0;
                 UInt256 blockHash = new UInt256();
                 WriteBatch batch = new WriteBatch();
 
@@ -396,7 +396,7 @@ namespace Mineral.UnitTests.Database
                         MerkleRoot = UInt256.Zero,
                         Version = 0,
                         Timestamp = 0,
-                        Height = i,
+                        Height = (uint)i,
                     };
                     header.Sign(_account.Key);
                     _block = new Block(header, new List<Transaction>());
@@ -503,7 +503,7 @@ namespace Mineral.UnitTests.Database
                 state.SetTurnTable(address, _block.Height);
 
                 _chainDb.PutTurnTable(state);
-                result = new List<int>(_chainDb.GetTurnTableHeightList(_block.Height)).Count > 0;
+                result = new List<uint>(_chainDb.GetTurnTableHeightList(_block.Height)).Count > 0;
             }
             catch
             {

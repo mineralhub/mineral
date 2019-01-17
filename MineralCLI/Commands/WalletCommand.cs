@@ -327,6 +327,7 @@ namespace MineralCLI.Commands
                 From = Program.Wallet.AddressHash,
                 To = new Dictionary<UInt160, Fixed8> { { to_address, value } }
             };
+            trans.CalcFee();
 
             Transaction tx = new Transaction(TransactionType.Transfer, DateTime.UtcNow.ToTimestamp(), trans);
             tx.Sign(Program.Wallet);

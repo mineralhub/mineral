@@ -24,7 +24,7 @@ namespace MineralNode
     public class MainService
     {
         private short BlockVersion => Config.Instance.BlockVersion;
-        private int GenesisBlockTimestamp => Config.Instance.GenesisBlock.Timestamp;
+        private uint GenesisBlockTimestamp => Config.Instance.GenesisBlock.Timestamp;
         private WalletAccount _account;
         private Block _genesisBlock;
         private LocalNode _node;
@@ -197,7 +197,7 @@ namespace MineralNode
                     if (_node.IsSyncing)
                         break;
 
-                    int numCreate = BlockChain.Instance.Proof.GetCreateBlockCount(
+                    uint numCreate = BlockChain.Instance.Proof.GetCreateBlockCount(
                         _account.AddressHash,
                         BlockChain.Instance.CurrentHeaderHeight);
 
@@ -211,13 +211,13 @@ namespace MineralNode
         }
 
         // TODO : clean & move
-        private void CreateAndAddBlocks(int cnt, bool directly)
+        private void CreateAndAddBlocks(uint cnt, bool directly)
         {
             List<Block> blocks = new List<Block>();
-            int height = BlockChain.Instance.CurrentHeaderHeight;
+            uint height = BlockChain.Instance.CurrentHeaderHeight;
             UInt256 prevhash = BlockChain.Instance.CurrentHeaderHash;
 
-            for (int i = 0; i < cnt; ++i)
+            for (uint i = 0; i < cnt; ++i)
             {
                 List<Transaction> txs = new List<Transaction>();
                 BlockChain.Instance.LoadTransactionPool(ref txs);
@@ -251,7 +251,7 @@ namespace MineralNode
                 _node.BroadCast(Message.CommandName.BroadcastBlocks, BroadcastBlockPayload.Create(blocks));
         }
 
-        private Block CreateBlock(int height, UInt256 prevhash, List<Transaction> txs = null)
+        private Block CreateBlock(uint height, UInt256 prevhash, List<Transaction> txs = null)
         {
             if (txs == null)
                 txs = new List<Transaction>();

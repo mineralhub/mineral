@@ -6,29 +6,29 @@ namespace Mineral.Database.CacheStorage
 {
     internal class BlockTriggerCacheStorage
     {
-        DbCache<SerializableInt32, BlockTriggerState> _cache;
+        DbCache<SerializableUInt32, BlockTriggerState> _cache;
 
         public BlockTriggerCacheStorage(DB db)
         {
-            _cache = new DbCache<SerializableInt32, BlockTriggerState>(db, DataEntryPrefix.ST_BlockTrigger);
+            _cache = new DbCache<SerializableUInt32, BlockTriggerState>(db, DataEntryPrefix.ST_BlockTrigger);
         }
 
-        public BlockTriggerState GetAndChange(int height)
+        public BlockTriggerState GetAndChange(uint height)
         {
-            return GetAndChange(new SerializableInt32(height));
+            return GetAndChange(new SerializableUInt32(height));
         }
 
-        public BlockTriggerState GetAndChange(SerializableInt32 height)
+        public BlockTriggerState GetAndChange(SerializableUInt32 height)
         {
             return _cache.GetAndChange(height, () => new BlockTriggerState());
         }
 
-        public BlockTriggerState TryGet(int height)
+        public BlockTriggerState TryGet(uint height)
         {
-            return _cache.TryGet(new SerializableInt32(height));
+            return _cache.TryGet(new SerializableUInt32(height));
         }
 
-        public void Clean(int height)
+        public void Clean(uint height)
         {
             _cache.DeleteWhere((k, v) => k <= height);
         }

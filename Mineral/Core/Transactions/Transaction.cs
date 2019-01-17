@@ -12,7 +12,7 @@ namespace Mineral.Core.Transactions
     {
         public short Version;
         public TransactionType Type;
-        public int Timestamp;
+        public uint Timestamp;
         public TransactionBase Data;
         public MakerSignature Signature;
 
@@ -20,7 +20,7 @@ namespace Mineral.Core.Transactions
         public Fixed8 Fee => Data.Fee;
         public MINERAL_ERROR_CODES TxResult = MINERAL_ERROR_CODES.NO_ERROR;
 
-        public virtual int Size => sizeof(short) + sizeof(TransactionType) + sizeof(int) + Data.Size + Signature.Size;
+        public virtual int Size => sizeof(short) + sizeof(TransactionType) + sizeof(uint) + Data.Size + Signature.Size;
         private UInt256 _hash = null;
         public UInt256 Hash
         {
@@ -32,7 +32,7 @@ namespace Mineral.Core.Transactions
             }
         }
 
-        public Transaction(TransactionType type, int timestamp)
+        public Transaction(TransactionType type, uint timestamp)
         {
             Version = Config.Instance.TransactionVersion;
             Type = type;
@@ -40,7 +40,7 @@ namespace Mineral.Core.Transactions
             MallocTrasnactionData();
         }
 
-        public Transaction(TransactionType type, int timestamp, TransactionBase txData)
+        public Transaction(TransactionType type, uint timestamp, TransactionBase txData)
         {
             Version = Config.Instance.TransactionVersion;
             Type = type;
@@ -109,7 +109,7 @@ namespace Mineral.Core.Transactions
         {
             Version = reader.ReadInt16();
             Type = (TransactionType)reader.ReadInt16();
-            Timestamp = reader.ReadInt32();
+            Timestamp = reader.ReadUInt32();
             MallocTrasnactionData();
             Data.Deserialize(reader);
         }

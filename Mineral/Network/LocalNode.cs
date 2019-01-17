@@ -187,12 +187,12 @@ namespace Mineral.Network
                 if (peers.Count == 0)
                     continue;
 
-                int syncHeight = BlockChain.Instance.Proof.CalcBlockHeight(DateTime.UtcNow.ToTimestamp());
-                int headerHeight = BlockChain.Instance.CurrentHeaderHeight;
+                uint syncHeight = BlockChain.Instance.Proof.CalcBlockHeight(DateTime.UtcNow.ToTimestamp());
+                uint headerHeight = BlockChain.Instance.CurrentHeaderHeight;
                 if (headerHeight < syncHeight - 1
                     && IsSyncing)
                 {
-                    int blockHeight = BlockChain.Instance.CurrentBlockHeight;
+                    uint blockHeight = BlockChain.Instance.CurrentBlockHeight;
                     if (Config.Instance.Block.PayloadCapacity <= headerHeight - blockHeight)
                         continue;
 

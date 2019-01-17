@@ -7,14 +7,14 @@ namespace Mineral.Network.Payload
     public class VersionPayload : ISerializable
     {
         public int Version;
-        public int Timestamp;
         public ushort Port;
+        public uint Timestamp;
         public uint Nonce;
-        public int Height;
+        public uint Height;
         public bool Relay;
         public Guid NodeID;
 
-        public int Size => sizeof(int) + sizeof(int) + sizeof(ushort) + sizeof(uint) + sizeof(int) + sizeof(bool) + 16/*Guid bytes*/;
+        public int Size => sizeof(int) + sizeof(ushort) + sizeof(uint) + sizeof(uint) + sizeof(uint) + sizeof(bool) + 16/*Guid bytes*/;
 
         public static VersionPayload Create(int port, Guid guid)
         {
@@ -35,10 +35,10 @@ namespace Mineral.Network.Payload
             try
             {
                 Version = reader.ReadInt32();
-                Timestamp = reader.ReadInt32();
+                Timestamp = reader.ReadUInt32();
                 Port = reader.ReadUInt16();
                 Nonce = reader.ReadUInt32();
-                Height = reader.ReadInt32();
+                Height = reader.ReadUInt32();
                 Relay = reader.ReadBoolean();
                 NodeID = new Guid(reader.ReadBytes(16));
             }
@@ -100,12 +100,12 @@ namespace Mineral.Network.Payload
     {
         public long Ping;
         public long Pong;
-        public int Height;
+        public uint Height;
 
-        public int Size => sizeof(long) + sizeof(long) + sizeof(int);
+        public int Size => sizeof(long) + sizeof(long) + sizeof(uint);
         public long LatencyMs => Pong - Ping;
 
-        public static PongPayload Create(long pingtime, int height)
+        public static PongPayload Create(long pingtime, uint height)
         {
             return new PongPayload
             {
@@ -121,7 +121,7 @@ namespace Mineral.Network.Payload
             {
                 Ping = reader.ReadInt64();
                 Pong = reader.ReadInt64();
-                Height = reader.ReadInt32();
+                Height = reader.ReadUInt32();
             }
             catch (Exception e)
             {

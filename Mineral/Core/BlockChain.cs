@@ -38,7 +38,7 @@ namespace Mineral.Core
         public object PersistLock { get; } = new object();
         public object PoolLock { get; } = new object();
 
-        private int _currentBlockHeight = 0;
+        private uint _currentBlockHeight = 0;
         private UInt256 _currentBlockHash = UInt256.Zero;
 
         private CacheChain _cacheChain = new CacheChain();
@@ -67,9 +67,9 @@ namespace Mineral.Core
 
         public Proof Proof { get { return _proof; } }
 
-        public int CurrentHeaderHeight { get { return _cacheChain.HeaderHeight; } }
+        public uint CurrentHeaderHeight { get { return _cacheChain.HeaderHeight; } }
         public UInt256 CurrentHeaderHash { get { return _cacheChain.HeaderHash; } }
-        public int CurrentBlockHeight { get { return _currentBlockHeight; } }
+        public uint CurrentBlockHeight { get { return _currentBlockHeight; } }
         public UInt256 CurrentBlockHash { get { return _currentBlockHash; } }
         public Block GenesisBlock { get { return _genesisBlock; } }
         #endregion
@@ -82,7 +82,7 @@ namespace Mineral.Core
 
             while (!_disposed)
             {
-                int height = CurrentBlockHeight + 1;
+                uint height = CurrentBlockHeight + 1;
                 for (Block block = _cacheChain.GetBlock(height); block != null; height++)
                 {
                     blocks.AddLast(block);
@@ -135,7 +135,7 @@ namespace Mineral.Core
         private void Persist(Block block)
         {
             WriteBatch batch = new WriteBatch();
-            while (_storeHeaderCount <= block.Header.Height - 2000)
+            while (2000 <= block.Header.Height - _storeHeaderCount)
             {
                 using (MemoryStream ms = new MemoryStream())
                 using (BinaryWriter bw = new BinaryWriter(ms))
@@ -291,7 +291,7 @@ namespace Mineral.Core
                 {
                     headerHashs = _manager.GetHeaderHashList();
 
-                    int height = 0;
+                    uint height = 0;
                     foreach (UInt256 headerHash in headerHashs)
                     {
                         _cacheChain.AddHeaderIndex(height++, headerHash);
@@ -305,7 +305,7 @@ namespace Mineral.Core
                     }
                     else if (_storeHeaderCount <= _currentBlockHeight)
                     {
-                        for (UInt256 hash = _currentBlockHash; hash != _cacheChain.HeaderIndices[(int)_storeHeaderCount - 1];)
+                        for (UInt256 hash = _currentBlockHash; hash != _cacheChain.HeaderIndices[_storeHeaderCount - 1];)
                         {
                             BlockHeader header = _manager.GetBlockHeader(hash);
                             _cacheChain.AddHeaderIndex(header.Height, header.Hash);
@@ -477,7 +477,7 @@ namespace Mineral.Core
             return false;
         }
 
-        public void PersistTurnTable(List<UInt160> addrs, int height)
+        public void PersistTurnTable(List<UInt160> addrs, uint height)
         {
             WriteBatch batch = new WriteBatch();
             TurnTableState state = new TurnTableState();
@@ -491,8 +491,8 @@ namespace Mineral.Core
             PersistCompleted?.Invoke(this, block);
         }
 
-        public void SetCacheBlockCapacity(int capacity) { _cacheChain.SetCapacity(capacity); }
-        public int GetCacheBlockCapacity() { return _cacheChain.GetCapacity(); }
+        public void SetCacheBlockCapacity(uint capacity) { _cacheChain.SetCapacity(capacity); }
+        public uint GetCacheBlockCapacity() { return _cacheChain.GetCapacity(); }
 
         public void Dispose()
         {

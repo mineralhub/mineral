@@ -54,7 +54,7 @@ namespace Mineral.Network.RPC.Command
         {
             JObject json = new JObject();
             json["TurnTable"] = new JArray();
-            TurnTableState table = BlockChain.Instance.GetTurnTable(parameters[0].Value<int>());
+            TurnTableState table = BlockChain.Instance.GetTurnTable(parameters[0].Value<uint>());
             foreach (UInt160 hash in table.addrs)
             {
                 DelegateState state = BlockChain.Instance.GetDelegateState(hash);

@@ -14,7 +14,7 @@ namespace Mineral.Network.RPC.Command
         {
             Block block = null;
             if (parameters[0].Type == JTokenType.Integer)
-                block = BlockChain.Instance.GetBlock(parameters[0].Value<int>());
+                block = BlockChain.Instance.GetBlock(parameters[0].Value<uint>());
             else
                 block = BlockChain.Instance.GetBlock(UInt256.FromHexString(parameters[0].Value<string>()));
             BlockHeader nextHeader = BlockChain.Instance.GetNextHeader(block.Hash);
@@ -31,9 +31,9 @@ namespace Mineral.Network.RPC.Command
             JArray jarr = new JArray();
             Block prevBlock = null, currBlock = null;
 
-            int start = parameters[0].Value<int>();
-            int end = parameters[1].Value<int>();
-            for (int i = start; i < end; ++i) 
+            uint start = parameters[0].Value<uint>();
+            uint end = parameters[1].Value<uint>();
+            for (uint i = start; i < end; ++i) 
             {
                 prevBlock = currBlock;
                 currBlock = BlockChain.Instance.GetBlock(i);
@@ -63,8 +63,8 @@ namespace Mineral.Network.RPC.Command
         public static JObject OnGetBlockHash(object obj, JArray parameters)
         {
             JObject json = new JObject();
-            int height = -1;
-            if (int.TryParse(parameters[0].ToString(), out height))
+            uint height = 0;
+            if (uint.TryParse(parameters[0].ToString(), out height))
             {
                 Block block = BlockChain.Instance.GetBlock(height);
                 json["hash"] = block.Hash.ToString();

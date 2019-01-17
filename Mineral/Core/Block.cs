@@ -16,7 +16,7 @@ namespace Mineral.Core
         public List<Transaction> Transactions { get; private set; }
         public int Size => Header.Size + Transactions.GetSize();
         public UInt256 Hash => Header.GetHash();
-        public int Height => Header.Height;
+        public uint Height => Header.Height;
 
         public Block()
         {

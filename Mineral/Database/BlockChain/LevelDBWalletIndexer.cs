@@ -14,7 +14,7 @@ namespace Mineral.Database.BlockChain
     public class LevelDBWalletIndexer : WalletIndexer
     {
         // height, group(addressHash)
-        private Dictionary<int, HashSet<UInt160>> _accountGroup = new Dictionary<int, HashSet<UInt160>>();
+        private Dictionary<uint, HashSet<UInt160>> _accountGroup = new Dictionary<uint, HashSet<UInt160>>();
 
         private DB _db;
         private Thread _threadProcessBlock;
@@ -29,7 +29,7 @@ namespace Mineral.Database.BlockChain
             {
                 foreach (var group in _db.Find(options, SliceBuilder.Begin(WIDataEntryPrefix.IX_Group), (k, v) => new
                 {
-                    Height = k.ToInt32(1),
+                    Height = k.ToUInt32(1),
                     Id = v.ToArray()
                 }))
                 {
@@ -73,7 +73,7 @@ namespace Mineral.Database.BlockChain
         {
             lock (SyncRoot)
             {
-                int height = 0;
+                uint height = 0;
                 HashSet<UInt160> index;
                 bool existGroup = _accountGroup.ContainsKey(height);
                 index = existGroup == true ? _accountGroup[height] : new HashSet<UInt160>();
@@ -116,7 +116,7 @@ namespace Mineral.Database.BlockChain
                     if (!_accountTracked.ContainsKey(account))
                         continue;
                     // remove account group
-                    foreach (int height in _accountGroup.Keys.ToArray())
+                    foreach (uint height in _accountGroup.Keys.ToArray())
                     {
                         var index = _accountGroup[height];
                         if (index.Remove(account))
@@ -237,7 +237,7 @@ namespace Mineral.Database.BlockChain
                         sleep = true;
                         continue;
                     }
-                    int height = _accountGroup.Keys.Min();
+                    uint height = (uint)_accountGroup.Keys.Min();
                     if (Core.BlockChain.Instance.CurrentBlockHeight <= height)
                     {
                         sleep = true;

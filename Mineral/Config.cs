@@ -34,11 +34,11 @@ namespace Mineral
     public class BlockConfig
     {
         [JsonProperty("next_block_time_sec")]
-        public int NextBlockTimeSec { get; set; }
+        public uint NextBlockTimeSec { get; set; }
         [JsonProperty("cache_capacity")]
-        public int CacheCapacity { get; set; }
+        public uint CacheCapacity { get; set; }
         [JsonProperty("payload_capacity")]
-        public int PayloadCapacity { get; set; }
+        public uint PayloadCapacity { get; set; }
         [JsonProperty("sync_check")]
         public bool SyncCheck { get; set; } = true;
     }
@@ -47,7 +47,7 @@ namespace Mineral
     public class TransactionConfig
     {
         [JsonProperty("payload_capacity")]
-        public int PayloadCapacity { get; set; }
+        public uint PayloadCapacity { get; set; }
     }
 
     [ConfigClass]
@@ -79,7 +79,7 @@ namespace Mineral
         [JsonProperty("delegate")]
         public List<DelegateConfig> Delegates { get; set; }
         [JsonProperty("timestamp")]
-        public int Timestamp { get; set; }
+        public uint Timestamp { get; set; }
     }
 
     public class Config
@@ -103,18 +103,18 @@ namespace Mineral
         [JsonProperty("state_version")]
         public byte StateVersion { get; set; }
 
-        public int TTLMinute;
-        public int TTLHour;
-        public int TTLDay;
-        public int LockTTL;
-        public int VoteTTL;
+        public uint TTLMinute;
+        public uint TTLHour;
+        public uint TTLDay;
+        public uint LockTTL;
+        public uint VoteTTL;
 
         public readonly int ProtocolVersion = 0;
         public readonly int ConnectPeerMax = 10;
         public readonly int WaitPeerMax = 20;
         public readonly uint MagicNumber = 16;
         public readonly int MaxDelegate = 5;
-        public readonly int RoundBlock = 100;
+        public readonly uint RoundBlock = 100;
         public readonly int DelegateNameMaxLength = 20;
         public readonly int OtherSignMaxLength = 10;
         public readonly int OtherSignToMaxLength = 10;

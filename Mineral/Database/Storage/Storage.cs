@@ -45,7 +45,7 @@ namespace Mineral.Database.LevelDB
             blockTriggers = new BlockTriggerCacheStorage(_db);
         }
 
-        internal void commit(WriteBatch batch, int height)
+        internal void commit(WriteBatch batch, uint height)
         {
             accounts.Clean();
             accounts.Commit(batch);
@@ -53,7 +53,6 @@ namespace Mineral.Database.LevelDB
             otherSignTxs.Commit(batch);
             blockTriggers.Clean(height);
             blockTriggers.Commit(batch);
-
         }
 
         public AccountState GetAccountState(UInt160 hash)
@@ -91,12 +90,12 @@ namespace Mineral.Database.LevelDB
             return otherSignTxs.GetAndChange(hash);
         }
 
-        public BlockTriggerState GetBlockTriggers(int height)
+        public BlockTriggerState GetBlockTriggers(uint height)
         {
             return blockTriggers.GetAndChange(height);
         }
 
-        public BlockTriggerState TryBlockTriggers(int height)
+        public BlockTriggerState TryBlockTriggers(uint height)
         {
             return blockTriggers.TryGet(height);
         }
@@ -106,23 +105,23 @@ namespace Mineral.Database.LevelDB
             return GetTransaction(hash, out _);
         }
 
-        public Transaction GetTransaction(UInt256 hash, out int height)
+        public Transaction GetTransaction(UInt256 hash, out uint height)
         {
             return GetTransaction(ReadOptions.Default, hash, out height);
         }
 
-        private Transaction GetTransaction(ReadOptions options, UInt256 hash, out int height)
+        private Transaction GetTransaction(ReadOptions options, UInt256 hash, out uint height)
         {
             Slice value;
             if (_db.TryGet(options, SliceBuilder.Begin(DataEntryPrefix.DATA_Transaction).Add(hash), out value))
             {
                 byte[] data = value.ToArray();
-                height = data.ToInt32(0);
+                height = data.ToUInt32(0);
                 return Transaction.DeserializeFrom(data, sizeof(uint));
             }
             else
             {
-                height = -1;
+                height = uint.MaxValue;
                 return null;
             }
         }

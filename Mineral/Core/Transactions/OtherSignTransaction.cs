@@ -10,16 +10,16 @@ namespace Mineral.Core.Transactions
     {
         public Dictionary<UInt160, Fixed8> To;
         public HashSet<string> Others;
-        public int ExpirationBlockHeight;
+        public uint ExpirationBlockHeight;
 
-        public override int Size => base.Size + To.GetSize() + Others.GetSize() + sizeof(int);
+        public override int Size => base.Size + To.GetSize() + Others.GetSize() + sizeof(uint);
 
         public override void Deserialize(BinaryReader reader)
         {
             base.Deserialize(reader);
             To = reader.ReadSerializableDictionary<UInt160, Fixed8>(Config.Instance.OtherSignToMaxLength);
             Others = reader.ReadStringHashSet();
-            ExpirationBlockHeight = reader.ReadInt32();
+            ExpirationBlockHeight = reader.ReadUInt32();
         }
 
         public override void Serialize(BinaryWriter writer)

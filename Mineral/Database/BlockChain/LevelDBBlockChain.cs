@@ -105,14 +105,14 @@ namespace Mineral.Database.BlockChain
 
 
         #region TryGet
-        public bool TryGetCurrentHeader(out UInt256 headerHash, out int headerHeight)
+        public bool TryGetCurrentHeader(out UInt256 headerHash, out uint headerHeight)
         {
             Slice value;
             bool result = _db.TryGet(new ReadOptions { FillCache = false }, SliceBuilder.Begin(DataEntryPrefix.SYS_CurrentHeader), out value);
             if (result)
             {
                 headerHash = new UInt256(value.ToArray().Take(32).ToArray());
-                headerHeight = value.ToArray().ToInt32(32);
+                headerHeight = value.ToArray().ToUInt32(32);
             }
             else
             {
@@ -123,14 +123,14 @@ namespace Mineral.Database.BlockChain
             return result;
         }
 
-        public bool TryGetCurrentBlock(out UInt256 blockHash, out int blockHeight)
+        public bool TryGetCurrentBlock(out UInt256 blockHash, out uint blockHeight)
         {
             Slice value;
             bool result = _db.TryGet(new ReadOptions { FillCache = false }, SliceBuilder.Begin(DataEntryPrefix.SYS_CurrentBlock), out value);
             if (result)
             {
                 blockHash = new UInt256(value.ToArray().Take(32).ToArray());
-                blockHeight = value.ToArray().ToInt32(32);
+                blockHeight = value.ToArray().ToUInt32(32);
             }
             else
             {
@@ -170,7 +170,7 @@ namespace Mineral.Database.BlockChain
             Slice value;
             bool result = _db.TryGet(new ReadOptions { FillCache = false }, SliceBuilder.Begin(DataEntryPrefix.DATA_Transaction).Add(txHash), out value);
             if (result)
-                tx = Transaction.DeserializeFrom(value.ToArray().Skip(sizeof(int)).ToArray());
+                tx = Transaction.DeserializeFrom(value.ToArray().Skip(sizeof(uint)).ToArray());
             else
                 tx = null;
 
@@ -210,7 +210,7 @@ namespace Mineral.Database.BlockChain
             return result;
         }
 
-        public bool TryGetTurnTable(int height, out TurnTableState state)
+        public bool TryGetTurnTable(uint height, out TurnTableState state)
         {
             state = new TurnTableState();
             Slice value;
@@ -240,10 +240,10 @@ namespace Mineral.Database.BlockChain
             return new UInt256(value.ToArray().Take(32).ToArray());
         }
 
-        public int GetCurrentHeaderHeight()
+        public uint GetCurrentHeaderHeight()
         {
             Slice value = _db.Get(new ReadOptions { FillCache = false }, SliceBuilder.Begin(DataEntryPrefix.SYS_CurrentHeader));
-            return value.ToArray().ToInt32(32);
+            return value.ToArray().ToUInt32(32);
         }
 
         public UInt256 GetCurrentBlockHash()
@@ -252,10 +252,10 @@ namespace Mineral.Database.BlockChain
             return new UInt256(value.ToArray().Take(32).ToArray());
         }
 
-        public int GetCurrentBlockHeight()
+        public uint GetCurrentBlockHeight()
         {
             Slice value = _db.Get(new ReadOptions { FillCache = false }, SliceBuilder.Begin(DataEntryPrefix.SYS_CurrentBlock));
-            return value.ToArray().ToInt32(32);
+            return value.ToArray().ToUInt32(32);
         }
 
         public BlockHeader GetBlockHeader(UInt256 blockHash)
@@ -310,7 +310,7 @@ namespace Mineral.Database.BlockChain
             return table;
         }
 
-        public TurnTableState GetTurnTable(int height)
+        public TurnTableState GetTurnTable(uint height)
         {
             TurnTableState table = new TurnTableState();
 
@@ -324,11 +324,11 @@ namespace Mineral.Database.BlockChain
             return table;
         }
 
-        public IEnumerable<int> GetTurnTableHeightList(int height)
+        public IEnumerable<uint> GetTurnTableHeightList(uint height)
         {
             return _db.Find(ReadOptions.Default, SliceBuilder.Begin(DataEntryPrefix.ST_TurnTable), (k, v) =>
             {
-                return k.ToArray().ToInt32(1);
+                return k.ToArray().ToUInt32(1);
             }).Where(p => p <= height).ToArray();
         }
 

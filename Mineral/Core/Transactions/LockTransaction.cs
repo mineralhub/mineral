@@ -26,7 +26,7 @@ namespace Mineral.Core.Transactions
 
             if (FromAccountState.LastLockTxID != UInt256.Zero)
             {
-                int TxHeight = 0;
+                uint TxHeight = 0;
                 if (BlockChain.Instance.HasTransactionPool(FromAccountState.LastLockTxID))
                 {
                     TxHeight = BlockChain.Instance.CurrentBlockHeight;
@@ -35,7 +35,8 @@ namespace Mineral.Core.Transactions
                 {
                     storage.GetTransaction(FromAccountState.LastLockTxID, out TxHeight);
                 }
-                if (BlockChain.Instance.CurrentBlockHeight - TxHeight < Config.Instance.LockTTL)
+                if (TxHeight == uint.MaxValue
+                    || BlockChain.Instance.CurrentBlockHeight - TxHeight < Config.Instance.LockTTL)
                 {
                     TxResult = MINERAL_ERROR_CODES.TX_LOCK_TTL_NOT_ARRIVED;
                     return false;
@@ -81,7 +82,7 @@ namespace Mineral.Core.Transactions
 
             if (FromAccountState.LastLockTxID != UInt256.Zero)
             {
-                int TxHeight = 0;
+                uint TxHeight = 0;
                 if (BlockChain.Instance.HasTransactionPool(FromAccountState.LastLockTxID))
                 {
                     TxHeight = BlockChain.Instance.CurrentBlockHeight;
@@ -90,7 +91,8 @@ namespace Mineral.Core.Transactions
                 {
                     storage.GetTransaction(FromAccountState.LastLockTxID, out TxHeight);
                 }
-                if (BlockChain.Instance.CurrentBlockHeight - TxHeight < Config.Instance.LockTTL)
+                if (TxHeight == uint.MaxValue
+                    || BlockChain.Instance.CurrentBlockHeight - TxHeight < Config.Instance.LockTTL)
                 {
                     TxResult = MINERAL_ERROR_CODES.TX_LOCK_TTL_NOT_ARRIVED;
                     return false;

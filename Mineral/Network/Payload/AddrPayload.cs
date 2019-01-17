@@ -10,11 +10,11 @@ namespace Mineral.Network.Payload
     {
         public IPEndPoint EndPoint;
         public int Version;
-        public int Timestamp;
+        public uint Timestamp;
 
-        public int Size => sizeof(int) + sizeof(int) + 16 + sizeof(ushort);
+        public int Size => sizeof(int) + sizeof(uint) + 16 + sizeof(ushort);
 
-        public static AddressInfo Create(IPEndPoint ep, int version, int timestamp)
+        public static AddressInfo Create(IPEndPoint ep, int version, uint timestamp)
         {
             return new AddressInfo
             {
@@ -32,7 +32,7 @@ namespace Mineral.Network.Payload
                 ushort port = reader.ReadBytes(2).Reverse().ToArray().ToUInt16(0);
                 EndPoint = new IPEndPoint(address, port);
                 Version = reader.ReadInt32();
-                Timestamp = reader.ReadInt32();
+                Timestamp = reader.ReadUInt32();
             }
             catch (Exception e)
             {
