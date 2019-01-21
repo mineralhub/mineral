@@ -428,14 +428,14 @@ namespace Mineral.Core
                         {
                             for (int i = 0; i < signTx.TxHashes.Count; ++i)
                             {
-                                OtherSignTransactionState state = _manager.Storage.GetOtherSignTxs(signTx.TxHashes[i]);
+                                OtherSignTransactionState state = _dbManager.Storage.GetOtherSignTxs(signTx.TxHashes[i]);
                                 state.Sign(signTx.Owner.Signature);
                                 if (state.RemainSign.Count == 0)
                                 {
-                                    var osign = _manager.Storage.GetTransaction(state.TxHash).Data as OtherSignTransaction;
+                                    var osign = _dbManager.Storage.GetTransaction(state.TxHash).Data as OtherSignTransaction;
                                     foreach (var to in osign.To)
-                                        _manager.Storage.GetAccountState(to.Key).AddBalance(to.Value);
-                                    var trigger = _manager.Storage.GetBlockTriggers(signTx.Reference[i].ExpirationBlockHeight);
+                                        _dbManager.Storage.GetAccountState(to.Key).AddBalance(to.Value);
+                                    var trigger = _dbManager.Storage.GetBlockTriggers(signTx.Reference[i].ExpirationBlockHeight);
                                     trigger.TransactionHashes.Remove(signTx.TxHashes[i]);
                                 }
                             }
