@@ -193,13 +193,16 @@ namespace Mineral.Database.BlockChain
                         break;
                     case SignTransaction signTx:
                         {
-                            OtherSignTransaction osignTx = Core.BlockChain.Instance.GetTransaction(signTx.SignTxHash).Data as OtherSignTransaction;
-                            if (accounts.Contains(osignTx.From) && !changed.Contains(osignTx.From))
-                                changed.Add(osignTx.From);
-                            foreach (UInt160 to in osignTx.To.Keys)
+                            foreach (var hash in signTx.TxHashes)
                             {
-                                if (accounts.Contains(to) && !changed.Contains(to))
-                                    changed.Add(to);
+                                var osign = Core.BlockChain.Instance.GetTransaction(hash).Data as OtherSignTransaction;
+                                if (accounts.Contains(osign.From) && !changed.Contains(osign.From))
+                                    changed.Add(osign.From);
+                                foreach (UInt160 to in osign.To.Keys)
+                                {
+                                    if (accounts.Contains(to) && !changed.Contains(to))
+                                        changed.Add(to);
+                                }
                             }
                         }
                         break;

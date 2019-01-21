@@ -2,37 +2,43 @@
 using Newtonsoft.Json.Linq;
 using Mineral.Database.LevelDB;
 using Mineral.Utils;
+using System.Collections.Generic;
 
 namespace Mineral.Core.Transactions
 {
     public class SignTransaction : TransactionBase
     {
-        public UInt256 SignTxHash;
+        public List<UInt256> TxHashes;
 
-        private OtherSignTransaction _reference;
-        public OtherSignTransaction Reference 
+        private List<OtherSignTransaction> _reference;
+        public List<OtherSignTransaction> Reference 
         {
             get 
             {
                 if (_reference == null)
-                    _reference = BlockChain.Instance.GetTransaction(SignTxHash).Data as OtherSignTransaction;
+                {
+                    _reference = new List<OtherSignTransaction>();
+                    foreach (var hash in TxHashes)
+                        _reference.Add(BlockChain.Instance.GetTransaction(hash).Data as OtherSignTransaction);
+                }
+
 
                 return _reference;
             }
         }
 
-        public override int Size => base.Size + SignTxHash.Size;
+        public override int Size => base.Size + TxHashes.GetSize();
 
         public override void Deserialize(BinaryReader reader)
         {
             base.Deserialize(reader);
-            SignTxHash = reader.ReadSerializable<UInt256>();
+            TxHashes = reader.ReadSerializableArray<UInt256>();
         }
 
         public override void Serialize(BinaryWriter writer)
         {
             base.Serialize(writer);
-            writer.WriteSerializable(SignTxHash);
+            writer.WriteSerializableArray(TxHashes);
         }
 
         public override bool Verify()
@@ -45,21 +51,26 @@ namespace Mineral.Core.Transactions
             if (!base.VerifyBlockchain(storage))
                 return false;
 
-            Transaction tx = BlockChain.Instance.GetTransaction(SignTxHash);
-            if (tx == null || tx.Type != TransactionType.OtherSign)
-                return false;
+            foreach (var hash in TxHashes)
+            {
+                Transaction tx = BlockChain.Instance.GetTransaction(hash);
+                if (tx == null || tx.Type != TransactionType.OtherSign)
+                    return false;
 
-            OtherSignTransaction osignTx = tx.Data as OtherSignTransaction;
-            if (osignTx.Others.Contains(Wallets.WalletAccount.ToAddress(Owner.Signature.Pubkey)))
-                return true;
-
-            return false;
+                if (!(tx.Data is OtherSignTransaction data) || !data.Others.Contains(Wallets.WalletAccount.ToAddress(Owner.Signature.Pubkey)))
+                    return false;
+            }
+            return true;
         }
 
         public override JObject ToJson()
         {
             JObject json = base.ToJson();
-            json["signtxhash"] = SignTxHash.ToString();
+            JArray hashes = new JArray();
+            foreach (var hash in TxHashes)
+                hashes.Add(JToken.FromObject(hash.ToString()));
+            json["hashes"] = hashes;
+
             return json;
         }
     }

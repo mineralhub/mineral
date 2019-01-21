@@ -286,6 +286,14 @@ namespace Mineral.Database.BlockChain
             return headerHashes;
         }
 
+        public IEnumerable<BlockHeader> GetBlockHeaders(uint start, uint end)
+        {
+            return _db.Find(new ReadOptions { FillCache = false }, SliceBuilder.Begin(DataEntryPrefix.DATA_Block), (k, v) =>
+                                    BlockHeader.FromArray(v.ToArray(), sizeof(long)))
+                                    .Where(x => x.Height >= start && x.Height <= end)
+                                    .OrderBy(p => p.Height).ToArray();
+        }
+
         public IEnumerable<BlockHeader> GetBlockHeaderList()
         {
             return _db.Find(new ReadOptions { FillCache = false }, SliceBuilder.Begin(DataEntryPrefix.DATA_Block), (k, v) =>

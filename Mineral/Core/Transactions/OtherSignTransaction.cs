@@ -72,15 +72,15 @@ namespace Mineral.Core.Transactions
             JArray to = new JArray();
             foreach (var v in To)
             {
-                var j = new JObject();
-                j["addr"] = v.Key.ToString();
-                j["amount"] = v.Value.ToString();
+                var j = new JObject
+                {
+                    ["addr"] = v.Key.ToString(),
+                    ["amount"] = v.Value.ToString()
+                };
                 to.Add(j);
             }
             json["to"] = to;
-            json["others"] = new JObject();
-            foreach (string other in Others)
-                json["others"].AddAfterSelf(other);
+            json["others"] = JToken.FromObject(Others);
             json["expirationblockheight"] = ExpirationBlockHeight;
             return json;
         }

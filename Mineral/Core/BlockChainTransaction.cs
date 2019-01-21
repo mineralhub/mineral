@@ -20,7 +20,7 @@ namespace Mineral.Core
                     return false;
                 if (_txPool.ContainsKey(tx.Hash))
                     return false;
-                if (_manager.Storage.GetTransaction(tx.Hash) != null)
+                if (_dbManager.Storage.GetTransaction(tx.Hash) != null)
                     return false;
                 _rxPool.Add(tx.Hash, tx);
                 return true;
