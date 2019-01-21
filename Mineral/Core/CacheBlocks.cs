@@ -1,56 +1,73 @@
 ﻿using Mineral.Utils;
 using System.Collections.Concurrent;
+using System.Collections.Generic;
 
 namespace Mineral.Core
 {
     public class CacheChain
     {
-        public ConcurrentDictionary<uint, UInt256> HeaderIndices { get; } = new ConcurrentDictionary<uint, UInt256>();
-        public ConcurrentDictionary<UInt256, Block> HashBlocks { get; } = new ConcurrentDictionary<UInt256, Block>();
-        private uint _capacity = 40960;
+        private ConcurrentDictionary<uint, UInt256> _headerIndices = new ConcurrentDictionary<uint, UInt256>();
+        private ConcurrentDictionary<UInt256, Block> _hashBlocks = new ConcurrentDictionary<UInt256, Block>();
+        public int HeaderCount => _headerIndices.Count;
+        public int BlockCount => _hashBlocks.Count;
 
-        public uint HeaderHeight => (uint)(HeaderIndices.Count - 1);
+        public uint Capacity { get; set; }
+        public uint HeaderHeight => (uint)(_headerIndices.Count - 1);
         public UInt256 HeaderHash
         {
             get
             {
-                if (HeaderIndices.TryGetValue(HeaderHeight, out UInt256 hash))
+                if (_headerIndices.TryGetValue(HeaderHeight, out UInt256 hash))
                     return hash;
                 return null;
             }
         }
 
-        public void SetCapacity(uint capacity) { _capacity = capacity; }
-        public uint GetCapacity() { return _capacity; }
+        public bool AddHeaderHash(uint height, UInt256 hash)
+        {
+            if (HeaderHeight + 1 != height) return false;
+            return _headerIndices.TryAdd(height, hash);
+        }
+
         public ERROR_BLOCK AddBlock(Block block)
         {
-            if (!HeaderIndices.TryGetValue(block.Height, out UInt256 hash))
+            if (!_headerIndices.TryGetValue(block.Height, out UInt256 hash))
                 return ERROR_BLOCK.ERROR_HEIGHT;
             if (hash != block.Hash)
                 return ERROR_BLOCK.ERROR_HASH;
-            if (!HashBlocks.TryAdd(block.Hash, block))
+            if (!_hashBlocks.TryAdd(block.Hash, block))
                 return ERROR_BLOCK.ERROR_HASH;
-            if (_capacity < HashBlocks.Count)
-                HashBlocks.TryRemove(HeaderIndices[(uint)HeaderIndices.Count -_capacity - 1], out _);
+            if (Capacity < _hashBlocks.Count)
+                _hashBlocks.TryRemove(_headerIndices[(uint)_headerIndices.Count - Capacity - 1], out _);
             return ERROR_BLOCK.NO_ERROR;
         }
 
         public Block GetBlock(uint height)
         {
-            if (!HeaderIndices.TryGetValue(height, out UInt256 hash))
+            if (!_headerIndices.TryGetValue(height, out UInt256 hash))
                 return null;
             return GetBlock(hash);
         }
 
         public Block GetBlock(UInt256 hash)
         {
-            HashBlocks.TryGetValue(hash, out Block block);
+            _hashBlocks.TryGetValue(hash, out Block block);
             return block;
         }
 
-        public bool AddHeaderIndex(uint height, UInt256 hash)
+        public UInt256 GetBlockHash(uint height)
         {
-            return HeaderIndices.TryAdd(height, hash);
+            _headerIndices.TryGetValue(height, out UInt256 hash);
+            return hash;
+        }
+
+        public IEnumerable<UInt256> GetBlcokHashs(uint start, uint end)
+        {
+            for (uint i = start; i < end; i++)
+            {
+                if (_headerIndices.TryGetValue(i, out UInt256 hash))
+                    yield return hash;
+            }
         }
     }
 }

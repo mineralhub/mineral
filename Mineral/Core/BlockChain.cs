@@ -33,10 +33,9 @@ namespace Mineral.Core
         private Proof _proof = null;
         private Block _genesisBlock = null;
 
-        private AutoResetEvent _newBlockEvent = new AutoResetEvent(false);
         public event EventHandler<Block> PersistCompleted;
-        public object PersistLock { get; } = new object();
         public object PoolLock { get; } = new object();
+        public object PersistLock { get; } = new object();
 
         private uint _currentBlockHeight = 0;
         private UInt256 _currentBlockHash = UInt256.Zero;
@@ -72,6 +71,7 @@ namespace Mineral.Core
         public uint CurrentBlockHeight { get { return _currentBlockHeight; } }
         public UInt256 CurrentBlockHash { get { return _currentBlockHash; } }
         public Block GenesisBlock { get { return _genesisBlock; } }
+        public uint CacheBlockCapacity { get { return _cacheChain.Capacity; } set { _cacheChain.Capacity = value; } }
         #endregion
 
 
@@ -140,33 +140,33 @@ namespace Mineral.Core
                 using (MemoryStream ms = new MemoryStream())
                 using (BinaryWriter bw = new BinaryWriter(ms))
                 {
-                    bw.WriteSerializableArray(_cacheChain.HeaderIndices.Values.Skip((int)_storeHeaderCount).Take(2000));
+                    bw.WriteSerializableArray(_cacheChain.GetBlcokHashs(_storeHeaderCount, 2000));
                     bw.Flush();
-                    _manager.PutHeaderHashList(batch, (int)_storeHeaderCount, ms.ToArray());
+                    _dbManager.PutHeaderHashList(batch, (int)_storeHeaderCount, ms.ToArray());
                 }
                 _storeHeaderCount += 2000;
             }
 
             long fee = block.Transactions.Sum(p => p.Fee).Value;
-            _manager.PutBlock(batch, block, fee);
+            _dbManager.PutBlock(batch, block, fee);
 
             foreach (Transaction tx in block.Transactions)
             {
-                _manager.PutTransaction(batch, block, tx);
-                if (_genesisBlock != block && !tx.VerifyBlockchain(_manager.Storage))
+                _dbManager.PutTransaction(batch, block, tx);
+                if (_genesisBlock != block && !tx.VerifyBlockchain(_dbManager.Storage))
                 {
                     if (Fixed8.Zero < tx.Fee)
-                        _manager.Storage.GetAccountState(tx.From).AddBalance(-tx.Fee);
+                        _dbManager.Storage.GetAccountState(tx.From).AddBalance(-tx.Fee);
 
                     byte[] eCodeBytes = BitConverter.GetBytes((Int64)tx.Data.TxResult).Take(8).ToArray();
-                    _manager.PutTransactionResult(batch, tx);
+                    _dbManager.PutTransactionResult(batch, tx);
 #if DEBUG
                     Logger.Debug("verified == false transaction. " + tx.ToJson());
 #endif
                     continue;
                 }
 
-                AccountState from = _manager.Storage.GetAccountState(tx.From);
+                AccountState from = _dbManager.Storage.GetAccountState(tx.From);
                 if (Fixed8.Zero < tx.Fee)
                     from.AddBalance(-tx.Fee);
 
@@ -177,39 +177,39 @@ namespace Mineral.Core
                             Fixed8 totalAmount = transTx.To.Sum(p => p.Value);
                             from.AddBalance(-totalAmount);
                             foreach (var i in transTx.To)
-                                _manager.Storage.GetAccountState(i.Key).AddBalance(i.Value);
+                                _dbManager.Storage.GetAccountState(i.Key).AddBalance(i.Value);
                         }
                         break;
                     case VoteTransaction voteTx:
                         {
                             from.LastVoteTxID = tx.Hash;
-                            _manager.Storage.Downvote(from.Votes);
-                            _manager.Storage.Vote(voteTx);
+                            _dbManager.Storage.Downvote(from.Votes);
+                            _dbManager.Storage.Vote(voteTx);
                             from.SetVote(voteTx.Votes);
                         }
                         break;
                     case RegisterDelegateTransaction registerDelegateTx:
                         {
-                            _manager.Storage.AddDelegate(registerDelegateTx.From, registerDelegateTx.Name);
+                            _dbManager.Storage.AddDelegate(registerDelegateTx.From, registerDelegateTx.Name);
                         }
                         break;
                     case OtherSignTransaction osignTx:
                         {
                             Fixed8 totalAmount = osignTx.To.Sum(p => p.Value);
                             from.AddBalance(-totalAmount);
-                            _manager.Storage.GetBlockTriggers(osignTx.ExpirationBlockHeight).TransactionHashes.Add(osignTx.Owner.Hash);
-                            _manager.Storage.AddOtherSignTxs(osignTx.Owner.Hash, osignTx.Others);
+                            _dbManager.Storage.GetBlockTriggers(osignTx.ExpirationBlockHeight).TransactionHashes.Add(osignTx.Owner.Hash);
+                            _dbManager.Storage.AddOtherSignTxs(osignTx.Owner.Hash, osignTx.Others);
                         }
                         break;
                     case SignTransaction signTx:
                         {
-                            OtherSignTransactionState osignState = _manager.Storage.GetOtherSignTxs(signTx.SignTxHash);
+                            OtherSignTransactionState osignState = _dbManager.Storage.GetOtherSignTxs(signTx.SignTxHash);
                             if (osignState != null && osignState.Sign(signTx.Owner.Signature) && osignState.RemainSign.Count == 0)
                             {
-                                OtherSignTransaction osignTx = _manager.Storage.GetTransaction(osignState.TxHash).Data as OtherSignTransaction;
+                                OtherSignTransaction osignTx = _dbManager.Storage.GetTransaction(osignState.TxHash).Data as OtherSignTransaction;
                                 foreach (var i in osignTx.To)
-                                    _manager.Storage.GetAccountState(i.Key).AddBalance(i.Value);
-                                BlockTriggerState state = _manager.Storage.GetBlockTriggers(signTx.Reference.ExpirationBlockHeight);
+                                    _dbManager.Storage.GetAccountState(i.Key).AddBalance(i.Value);
+                                BlockTriggerState state = _dbManager.Storage.GetBlockTriggers(signTx.Reference.ExpirationBlockHeight);
                                 state.TransactionHashes.Remove(signTx.SignTxHash);
                             }
                         }
@@ -239,17 +239,17 @@ namespace Mineral.Core
                 }
             }
 
-            BlockTriggerState blockTrigger = _manager.Storage.TryBlockTriggers(block.Height);
+            BlockTriggerState blockTrigger = _dbManager.Storage.TryBlockTriggers(block.Height);
             if (blockTrigger != null)
             {
                 foreach (UInt256 txhash in blockTrigger.TransactionHashes)
                 {
-                    Transaction tx = _manager.Storage.GetTransaction(txhash);
+                    Transaction tx = _dbManager.Storage.GetTransaction(txhash);
                     switch (tx.Data)
                     {
                         case OtherSignTransaction osignTx:
                             {
-                                _manager.Storage.GetAccountState(osignTx.From).AddBalance(osignTx.To.Sum(p => p.Value));
+                                _dbManager.Storage.GetAccountState(osignTx.From).AddBalance(osignTx.To.Sum(p => p.Value));
                             }
                             break;
                     }
@@ -258,14 +258,14 @@ namespace Mineral.Core
 
             if (0 < block.Height)
             {
-                AccountState producer = _manager.Storage.GetAccountState(WalletAccount.ToAddressHash(block.Header.Signature.Pubkey));
+                AccountState producer = _dbManager.Storage.GetAccountState(WalletAccount.ToAddressHash(block.Header.Signature.Pubkey));
                 producer.AddBalance(Config.Instance.BlockReward);
             }
 
-            _manager.Storage.commit(batch, block.Height);
-            _manager.PutCurrentHeader(batch, block.Header);
-            _manager.PutCurrentBlock(batch, block);
-            _manager.BatchWrite(WriteOptions.Default, batch);
+            _dbManager.Storage.commit(batch, block.Height);
+            _dbManager.PutCurrentHeader(batch, block.Header);
+            _dbManager.PutCurrentBlock(batch, block);
+            _dbManager.BatchWrite(WriteOptions.Default, batch);
 
             _currentBlockHeight = block.Header.Height;
             _currentBlockHash = block.Header.Hash;
@@ -279,49 +279,53 @@ namespace Mineral.Core
         public void Initialize(string path, Block genesisBlock)
         {
             _genesisBlock = genesisBlock;
-            _manager = new LevelDBBlockChain(path);
+            _dbManager = new LevelDBBlockChain(path);
 
             Version version;
-            if (_manager.TryGetVersion(out version))
+            if (_dbManager.TryGetVersion(out version))
             {
                 UInt256 blockHash = UInt256.Zero;
                 IEnumerable<UInt256> headerHashs;
 
-                if (_manager.TryGetCurrentBlock(out _currentBlockHash, out _currentBlockHeight))
+                if (_dbManager.TryGetCurrentBlock(out _currentBlockHash, out _currentBlockHeight))
                 {
-                    headerHashs = _manager.GetHeaderHashList();
+                    headerHashs = _dbManager.GetHeaderHashList();
 
-                    uint height = 0;
                     foreach (UInt256 headerHash in headerHashs)
                     {
-                        _cacheChain.AddHeaderIndex(height++, headerHash);
-                        ++_storeHeaderCount;
+                        _cacheChain.AddHeaderHash(_storeHeaderCount++, headerHash);
                     }
 
                     if (_storeHeaderCount == 0)
                     {
-                        foreach (BlockHeader blockHeader in _manager.GetBlockHeaderList())
-                            _cacheChain.AddHeaderIndex(blockHeader.Height, blockHeader.Hash);
+                        foreach (BlockHeader blockHeader in _dbManager.GetBlockHeaderList())
+                            _cacheChain.AddHeaderHash(blockHeader.Height, blockHeader.Hash);
                     }
                     else if (_storeHeaderCount <= _currentBlockHeight)
                     {
-                        for (UInt256 hash = _currentBlockHash; hash != _cacheChain.HeaderIndices[_storeHeaderCount - 1];)
+                        foreach (BlockHeader header in _dbManager.GetBlockHeaders(_cacheChain.HeaderHeight + 1, _currentBlockHeight))
                         {
-                            BlockHeader header = _manager.GetBlockHeader(hash);
-                            _cacheChain.AddHeaderIndex(header.Height, header.Hash);
-                            hash = header.PrevHash;
+                            _cacheChain.AddHeaderHash(header.Height, header.Hash);
                         }
+
+                        //while (hash != _cacheChain.GetBlockHash(_storeHeaderCount - 1))
+                        //{
+                            
+                        //    _cacheChain.AddHeaderHash(header.Height, header.Hash);
+                        //    hash = header.PrevHash;
+                        //    Console.WriteLine(header.Height);
+                        //    i++;
+                        //}
                     }
-                    _proof.SetTurnTable(_manager.GetCurrentTurnTable());
+                    _proof.SetTurnTable(_dbManager.GetCurrentTurnTable());
                 }
             }
             else
             {
-                _cacheChain.AddHeaderIndex(genesisBlock.Height, genesisBlock.Hash);
-                _currentBlockHash = genesisBlock.Hash;
+                _cacheChain.AddHeaderHash(genesisBlock.Height, genesisBlock.Hash);
                 _currentBlockHash = genesisBlock.Hash;
                 Persist(genesisBlock);
-                _manager.PutVersion(Assembly.GetExecutingAssembly().GetName().Version);
+                _dbManager.PutVersion(Assembly.GetExecutingAssembly().GetName().Version);
                 _proof.Update(this);
             }
 
@@ -335,7 +339,7 @@ namespace Mineral.Core
 
         public ERROR_BLOCK AddBlock(Block block)
         {
-            if (!_cacheChain.AddHeaderIndex(block.Height, block.Hash))
+            if (!_cacheChain.AddHeaderHash(block.Height, block.Hash))
                 return ERROR_BLOCK.ERROR_HEIGHT;
 
             var err = _cacheChain.AddBlock(block);
@@ -346,7 +350,7 @@ namespace Mineral.Core
 
         public ERROR_BLOCK AddBlockDirectly(Block block)
         {
-            if (!_cacheChain.AddHeaderIndex(block.Height, block.Hash))
+            if (!_cacheChain.AddHeaderHash(block.Height, block.Hash))
                 return ERROR_BLOCK.ERROR_HEIGHT;
 
             var err = _cacheChain.AddBlock(block);
@@ -366,7 +370,7 @@ namespace Mineral.Core
         // TODO : clean
         public bool VerityBlock(Block block)
         {
-            Storage snapshot = _manager.SnapShot;
+            Storage snapshot = _dbManager.SnapShot;
             List<Transaction> errList = new List<Transaction>();
 
             foreach (Transaction tx in block.Transactions)
@@ -482,7 +486,7 @@ namespace Mineral.Core
             WriteBatch batch = new WriteBatch();
             TurnTableState state = new TurnTableState();
             state.SetTurnTable(addrs, height);
-            _manager.PutTurnTable(state);
+            _dbManager.PutTurnTable(state);
         }
 
         public void OnPersistCompleted(Block block)
@@ -491,15 +495,10 @@ namespace Mineral.Core
             PersistCompleted?.Invoke(this, block);
         }
 
-        public void SetCacheBlockCapacity(uint capacity) { _cacheChain.SetCapacity(capacity); }
-        public uint GetCacheBlockCapacity() { return _cacheChain.GetCapacity(); }
-
         public void Dispose()
         {
             _disposed = true;
-            _newBlockEvent.Set();
-            _newBlockEvent.Dispose();
-            _manager.Dispose();
+            _dbManager.Dispose();
         }
         #endregion
 

@@ -1,14 +1,8 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 
-public enum TrackState : byte
-{
-    None,
-    Added,
-    Changed,
-    Deleted
-}
 
 namespace Mineral.Database.LevelDB
 {
@@ -23,10 +17,18 @@ namespace Mineral.Database.LevelDB
             public TrackState State;
         }
 
-        protected Dictionary<TKey, Trackable> _cache = new Dictionary<TKey, Trackable>();
+        public enum TrackState : byte
+        {
+            None,
+            Added,
+            Changed,
+            Deleted
+        }
+
         protected DB _db = null;
+        protected byte _prefix = 0x00;
         protected ReadOptions _opt = ReadOptions.Default;
-        protected byte _prefix = 0;
+        protected ConcurrentDictionary<TKey, Trackable> _cache = new ConcurrentDictionary<TKey, Trackable>();
 
         public DbCache(DB db, byte prefix, ReadOptions opt = null)
         {
@@ -40,10 +42,10 @@ namespace Mineral.Database.LevelDB
         {
             foreach (Trackable trackable in GetChanged())
             {
-                if (trackable.State != TrackState.Deleted)
-                    batch.Put(_prefix, trackable.Key, trackable.Item);
-                else
+                if (trackable.State == TrackState.Deleted)
                     batch.Delete(_prefix, trackable.Key);
+                else
+                    batch.Put(_prefix, trackable.Key, trackable.Item);
             }
         }
 
@@ -72,7 +74,7 @@ namespace Mineral.Database.LevelDB
             {
                 Key = key,
                 Item = value,
-                State = trackable == null ? TrackState.Added : TrackState.Changed
+                State = (trackable == null) ? TrackState.Added : TrackState.Changed
             };
         }
 
@@ -81,7 +83,7 @@ namespace Mineral.Database.LevelDB
             if (_cache.TryGetValue(key, out Trackable trackable))
             {
                 if (trackable.State == TrackState.Added)
-                    _cache.Remove(key);
+                    _cache.TryRemove(key, out _);
                 else
                     trackable.State = TrackState.Deleted;
             }
@@ -90,7 +92,7 @@ namespace Mineral.Database.LevelDB
                 TValue item = TryGetInternal(key);
                 if (item == null)
                     return;
-                _cache.Add(key, new Trackable
+                _cache.TryAdd(key, new Trackable
                 {
                     Key = key,
                     Item = item,
@@ -109,16 +111,16 @@ namespace Mineral.Database.LevelDB
                 else
                     trackable.State = TrackState.Deleted;
             }
-            dels.Select(p => _cache.Remove(p));
+            dels.Select(p => _cache.TryRemove(p, out _));
         }
 
         public IEnumerable<KeyValuePair<TKey, TValue>> Find(byte[] keyPrefix = null)
         {
-            foreach (var pair in FindInternal(keyPrefix == null ? new byte[0] : keyPrefix))
+            foreach (var pair in FindInternal(keyPrefix ?? new byte[0]))
             {
                 if (!_cache.ContainsKey(pair.Key))
                 {
-                    _cache.Add(pair.Key, new Trackable
+                    _cache.TryAdd(pair.Key, new Trackable
                     {
                         Key = pair.Key,
                         Item = pair.Value,
@@ -174,7 +176,7 @@ namespace Mineral.Database.LevelDB
                 {
                     trackable.State = TrackState.Changed;
                 }
-                _cache.Add(key, trackable);
+                _cache.TryAdd(key, trackable);
             }
             return trackable.Item;
         }
@@ -205,7 +207,7 @@ namespace Mineral.Database.LevelDB
                 {
                     trackable.State = TrackState.None;
                 }
-                _cache.Add(key, trackable);
+                _cache.TryAdd(key, trackable);
             }
             return trackable.Item;
         }
@@ -219,7 +221,7 @@ namespace Mineral.Database.LevelDB
             if (value == null)
                 return null;
 
-            _cache.Add(key, new Trackable
+            _cache.TryAdd(key, new Trackable
             {
                 Key = key,
                 Item = value,
@@ -230,11 +232,8 @@ namespace Mineral.Database.LevelDB
 
         public bool ContainsKey(TKey key)
         {
-            if (_cache.ContainsKey(key))
-                return true;
-
-            TValue value = TryGetInternal(key);
-            return value != null;
+            if (_cache.ContainsKey(key)) return true;
+            return TryGetInternal(key) != null;
         }
     }
 }

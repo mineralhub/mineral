@@ -11,12 +11,12 @@ namespace Mineral.Core
 {
     public partial class BlockChain
     {
-        private LevelDBBlockChain _manager = null;
+        private LevelDBBlockChain _dbManager = null;
 
         public Storage NewStorage()
         {
-            _manager.NewStorage();
-            return _manager.Storage;
+            _dbManager.NewStorage();
+            return _dbManager.Storage;
         }
 
         #region Block Header
@@ -31,7 +31,7 @@ namespace Mineral.Core
                 return null;
 
             BlockHeader header = null;
-            _manager.TryGetBlockHeader(hash, out header);
+            _dbManager.TryGetBlockHeader(hash, out header);
 
             return header;
         }
@@ -43,7 +43,7 @@ namespace Mineral.Core
                 return block.Header;
 
             BlockHeader header = null;
-            _manager.TryGetBlockHeader(hash, out header);
+            _dbManager.TryGetBlockHeader(hash, out header);
 
             return header;
         }
@@ -84,13 +84,13 @@ namespace Mineral.Core
             if (block != null)
                 return block;
 
-            block = _manager.GetBlock(hash);
+            block = _dbManager.GetBlock(hash);
             return block;
         }
 
         public UInt256 GetBlockHash(uint height)
         {
-            _cacheChain.HeaderIndices.TryGetValue(height, out UInt256 hash);
+            UInt256 hash = _cacheChain.GetBlockHash(height);
             return hash;
         }
 
@@ -105,7 +105,7 @@ namespace Mineral.Core
 
         public List<Block> GetBlocks(uint start, uint end)
         {
-            var hashes = _cacheChain.HeaderIndices.Values.Skip((int)start).Take((int)(end - start));
+            var hashes = _cacheChain.GetBlcokHashs(start, end);
             List<Block> blocks = new List<Block>();
             foreach (var hash in hashes)
             {
@@ -122,7 +122,7 @@ namespace Mineral.Core
         #region Transaction
         public Transaction GetTransaction(UInt256 hash)
         {
-            return _manager.Storage.GetTransaction(hash);
+            return _dbManager.Storage.GetTransaction(hash);
         }
         #endregion
 
@@ -130,7 +130,7 @@ namespace Mineral.Core
         #region Account
         public AccountState GetAccountState(UInt160 hash)
         {
-            return _manager.Storage.GetAccountState(hash);
+            return _dbManager.Storage.GetAccountState(hash);
         }
         #endregion
 
@@ -138,10 +138,10 @@ namespace Mineral.Core
         #region Turn table
         public TurnTableState GetTurnTable(uint height)
         {
-            List<uint> heights = _manager.GetTurnTableHeightList(height).ToList();
+            List<uint> heights = _dbManager.GetTurnTableHeightList(height).ToList();
 
             heights.Sort((a, b) => { return a > b ? (-1) : (a < b ? 1 : 0); });
-            return _manager.GetTurnTable(heights.Count > 0 ? heights.First() : 0);
+            return _dbManager.GetTurnTable(heights.Count > 0 ? heights.First() : 0);
         }
         #endregion
 
@@ -149,12 +149,12 @@ namespace Mineral.Core
         #region Delegate
         public DelegateState GetDelegateState(UInt160 hash)
         {
-            return _manager.Storage.GetDelegateState(hash);
+            return _dbManager.Storage.GetDelegateState(hash);
         }
 
         public List<DelegateState> GetDelegateStateAll()
         {
-            return _manager.GetDelegateStateAll().ToList();
+            return _dbManager.GetDelegateStateAll().ToList();
         }
         #endregion
     }

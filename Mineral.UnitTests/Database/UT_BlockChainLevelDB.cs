@@ -34,7 +34,7 @@ namespace Mineral.UnitTests.Database
                 MerkleRoot = UInt256.Zero,
                 Version = 0,
                 Timestamp = 0,
-                Height = 10
+                Height = 0
             };
             header.Sign(_account.Key);
             _block = new Block(header, new List<Transaction>());
@@ -411,6 +411,23 @@ namespace Mineral.UnitTests.Database
             }
             result.Should().BeTrue();
         }
+
+        [TestMethod]
+        public void PutGetBlockHeaders()
+        {
+            bool result = false;
+            try
+            {
+                _chainDb.PutBlock(_block);
+                result = new List<BlockHeader>(_chainDb.GetBlockHeaders(0, 1)).Count > 0;
+            }
+            catch
+            {
+                result = false;
+            }
+            result.Should().BeTrue();
+        }
+
 
         [TestMethod]
         public void PutGetBlockHeaderList()
