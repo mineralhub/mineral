@@ -269,6 +269,7 @@ namespace MineralNode
             return new Block(blockHeader, txs);
         }
 
+
         private void PersistCompleted(object sender, Block block)
         {
         }

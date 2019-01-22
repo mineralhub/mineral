@@ -84,7 +84,7 @@ namespace Mineral.Core
             if (block != null)
                 return block;
 
-            block = _dbManager.GetBlock(hash);
+            _dbManager.TryGetBlock(hash, out block);
             return block;
         }
 

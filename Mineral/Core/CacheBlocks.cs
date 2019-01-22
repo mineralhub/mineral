@@ -6,8 +6,8 @@ namespace Mineral.Core
 {
     public class CacheChain
     {
-        private ConcurrentDictionary<uint, UInt256> _headerIndices = new ConcurrentDictionary<uint, UInt256>();
-        private ConcurrentDictionary<UInt256, Block> _hashBlocks = new ConcurrentDictionary<UInt256, Block>();
+        private ConcurrentDictionary<uint, UInt256> _headerIndices = null;
+        private ConcurrentDictionary<UInt256, Block> _hashBlocks = null;
         public int HeaderCount => _headerIndices.Count;
         public int BlockCount => _hashBlocks.Count;
 
@@ -21,6 +21,13 @@ namespace Mineral.Core
                     return hash;
                 return null;
             }
+        }
+
+        private CacheChain() { }
+        public CacheChain(uint header_capacity)
+        {
+            _headerIndices = new ConcurrentDictionary<uint, UInt256>(System.Environment.ProcessorCount * 2, (int)header_capacity);
+            _hashBlocks = new ConcurrentDictionary<UInt256, Block>();
         }
 
         public bool AddHeaderHash(uint height, UInt256 hash)

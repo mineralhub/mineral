@@ -1,4 +1,5 @@
 ﻿using Mineral.Core.Transactions;
+using Mineral.Cryptography;
 using Mineral.Database.BlockChain;
 using Mineral.Database.LevelDB;
 using Mineral.Utils;
@@ -16,7 +17,6 @@ using System.Threading.Tasks;
 
 namespace Mineral.Core
 {
-    #region Definition
     public enum ERROR_BLOCK
     {
         NO_ERROR = 0,
@@ -24,31 +24,28 @@ namespace Mineral.Core
         ERROR_HEIGHT = 2,
         ERROR_HASH = 3,
     };
-    #endregion
 
     public partial class BlockChain : IDisposable
     {
         #region Fields
-        private static BlockChain _instance = null;
         private Proof _proof = null;
         private Block _genesisBlock = null;
+        private static BlockChain _instance = null;
+        private CacheChain _cacheChain = null;
 
-        public event EventHandler<Block> PersistCompleted;
+        private bool _disposed = false;
+        private Thread _threadPersist = null;
         public object PoolLock { get; } = new object();
         public object PersistLock { get; } = new object();
-
+        public event EventHandler<Block> PersistCompleted;
+        private uint _storeHeaderCount = 0;
         private uint _currentBlockHeight = 0;
         private UInt256 _currentBlockHash = UInt256.Zero;
-
-        private CacheChain _cacheChain = new CacheChain();
-
+        private const int _defaultCacheCapacity = 200000;
         protected Dictionary<UInt256, Transaction> _rxPool = new Dictionary<UInt256, Transaction>();
         protected Dictionary<UInt256, Transaction> _txPool = new Dictionary<UInt256, Transaction>();
-
-        private uint _storeHeaderCount = 0;
-        private bool _disposed = false;
-        private Thread _threadPersist;
         #endregion
+
 
         #region Properties
         public static BlockChain Instance
@@ -65,12 +62,11 @@ namespace Mineral.Core
         }
 
         public Proof Proof { get { return _proof; } }
-
+        public Block GenesisBlock { get { return _genesisBlock; } }
         public uint CurrentHeaderHeight { get { return _cacheChain.HeaderHeight; } }
         public UInt256 CurrentHeaderHash { get { return _cacheChain.HeaderHash; } }
         public uint CurrentBlockHeight { get { return _currentBlockHeight; } }
         public UInt256 CurrentBlockHash { get { return _currentBlockHash; } }
-        public Block GenesisBlock { get { return _genesisBlock; } }
         public uint CacheBlockCapacity { get { return _cacheChain.Capacity; } set { _cacheChain.Capacity = value; } }
         #endregion
 
@@ -289,8 +285,8 @@ namespace Mineral.Core
 
                 if (_dbManager.TryGetCurrentBlock(out _currentBlockHash, out _currentBlockHeight))
                 {
+                    _cacheChain = new CacheChain((uint)(_currentBlockHeight * 1.1F));
                     headerHashs = _dbManager.GetHeaderHashList();
-
                     foreach (UInt256 headerHash in headerHashs)
                     {
                         _cacheChain.AddHeaderHash(_storeHeaderCount++, headerHash);
@@ -303,25 +299,18 @@ namespace Mineral.Core
                     }
                     else if (_storeHeaderCount <= _currentBlockHeight)
                     {
+                        UInt256 hash = _currentBlockHash;
                         foreach (BlockHeader header in _dbManager.GetBlockHeaders(_cacheChain.HeaderHeight + 1, _currentBlockHeight))
                         {
                             _cacheChain.AddHeaderHash(header.Height, header.Hash);
                         }
-
-                        //while (hash != _cacheChain.GetBlockHash(_storeHeaderCount - 1))
-                        //{
-                            
-                        //    _cacheChain.AddHeaderHash(header.Height, header.Hash);
-                        //    hash = header.PrevHash;
-                        //    Console.WriteLine(header.Height);
-                        //    i++;
-                        //}
                     }
                     _proof.SetTurnTable(_dbManager.GetCurrentTurnTable());
                 }
             }
             else
             {
+                _cacheChain = new CacheChain(_defaultCacheCapacity);
                 _cacheChain.AddHeaderHash(genesisBlock.Height, genesisBlock.Hash);
                 _currentBlockHash = genesisBlock.Hash;
                 Persist(genesisBlock);
