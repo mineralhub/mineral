@@ -199,14 +199,18 @@ namespace Mineral.Core
                         break;
                     case SignTransaction signTx:
                         {
-                            OtherSignTransactionState osignState = _dbManager.Storage.GetOtherSignTxs(signTx.SignTxHash);
-                            if (osignState != null && osignState.Sign(signTx.Owner.Signature) && osignState.RemainSign.Count == 0)
+                            for (int i = 0; i < signTx.TxHashes.Count; ++i)
                             {
-                                OtherSignTransaction osignTx = _dbManager.Storage.GetTransaction(osignState.TxHash).Data as OtherSignTransaction;
-                                foreach (var i in osignTx.To)
-                                    _dbManager.Storage.GetAccountState(i.Key).AddBalance(i.Value);
-                                BlockTriggerState state = _dbManager.Storage.GetBlockTriggers(signTx.Reference.ExpirationBlockHeight);
-                                state.TransactionHashes.Remove(signTx.SignTxHash);
+                                OtherSignTransactionState state = _dbManager.Storage.GetOtherSignTxs(signTx.TxHashes[i]);
+                                state.Sign(signTx.Owner.Signature);
+                                if (state.RemainSign.Count == 0)
+                                {
+                                    var osign = _dbManager.Storage.GetTransaction(state.TxHash).Data as OtherSignTransaction;
+                                    foreach (var to in osign.To)
+                                        _dbManager.Storage.GetAccountState(to.Key).AddBalance(to.Value);
+                                    var trigger = _dbManager.Storage.GetBlockTriggers(signTx.Reference[i].ExpirationBlockHeight);
+                                    trigger.TransactionHashes.Remove(signTx.TxHashes[i]);
+                                }
                             }
                         }
                         break;
@@ -411,14 +415,18 @@ namespace Mineral.Core
                         break;
                     case SignTransaction signTx:
                         {
-                            OtherSignTransactionState osignState = snapshot.GetOtherSignTxs(signTx.SignTxHash);
-                            if (osignState != null && osignState.Sign(signTx.Owner.Signature) && osignState.RemainSign.Count == 0)
+                            for (int i = 0; i < signTx.TxHashes.Count; ++i)
                             {
-                                OtherSignTransaction osignTx = snapshot.GetTransaction(osignState.TxHash).Data as OtherSignTransaction;
-                                foreach (var i in osignTx.To)
-                                    snapshot.GetAccountState(i.Key).AddBalance(i.Value);
-                                BlockTriggerState state = snapshot.GetBlockTriggers(signTx.Reference.ExpirationBlockHeight);
-                                state.TransactionHashes.Remove(signTx.SignTxHash);
+                                OtherSignTransactionState state = _dbManager.Storage.GetOtherSignTxs(signTx.TxHashes[i]);
+                                state.Sign(signTx.Owner.Signature);
+                                if (state.RemainSign.Count == 0)
+                                {
+                                    var osign = _dbManager.Storage.GetTransaction(state.TxHash).Data as OtherSignTransaction;
+                                    foreach (var to in osign.To)
+                                        _dbManager.Storage.GetAccountState(to.Key).AddBalance(to.Value);
+                                    var trigger = _dbManager.Storage.GetBlockTriggers(signTx.Reference[i].ExpirationBlockHeight);
+                                    trigger.TransactionHashes.Remove(signTx.TxHashes[i]);
+                                }
                             }
                         }
                         break;

@@ -61,7 +61,7 @@ namespace Mineral.UnitTests.BlcokChain
             _sign = new SignTransaction
             {
                 From = _from.AddressHash,
-                SignTxHash = new UInt256()
+                TxHashes = new List<UInt256>() { UInt256.Zero }
             };
             _sign.CalcFee();
 
@@ -146,7 +146,7 @@ namespace Mineral.UnitTests.BlcokChain
             {
                 _sign.Serialize(bw);
                 ms.Flush();
-                ms.ToArray().Length.Should().Be(txbase + 32); // 60
+                ms.ToArray().Length.Should().Be(txbase + _sign.TxHashes.GetSize()); // dynamic
             }
 
             using (MemoryStream ms = new MemoryStream())
@@ -165,6 +165,17 @@ namespace Mineral.UnitTests.BlcokChain
                 ms.Flush();
                 ms.ToArray().Length.Should().Be(8 + transferTxSize);
             }
+        }
+
+        [TestMethod]
+        public void ToJson()
+        {
+            _transfer.ToJson().Should().NotBeNull();
+            _supply.ToJson().Should().NotBeNull();
+            _vote.ToJson().Should().NotBeNull();
+            _otherSign.ToJson().Should().NotBeNull();
+            _sign.ToJson().Should().NotBeNull();
+            _register.ToJson().Should().NotBeNull();
         }
     }
 }
