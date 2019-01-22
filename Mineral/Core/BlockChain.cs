@@ -136,7 +136,7 @@ namespace Mineral.Core
                 using (MemoryStream ms = new MemoryStream())
                 using (BinaryWriter bw = new BinaryWriter(ms))
                 {
-                    bw.WriteSerializableArray(_cacheChain.GetBlcokHashs(_storeHeaderCount, 2000));
+                    bw.WriteSerializableArray(_cacheChain.GetBlcokHashs(_storeHeaderCount, _storeHeaderCount + 2000));
                     bw.Flush();
                     _dbManager.PutHeaderHashList(batch, (int)_storeHeaderCount, ms.ToArray());
                 }
