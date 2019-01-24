@@ -1,12 +1,15 @@
-# Mineral Hub : Easy access, fast blockchain business maker
+# Mineral Hub : Link to Blockchain, Sync to Future
 
-Mineral Hub is the infrastructure providing platform to build a Blockchain based services fast and easy for companies willing to join the Blockchain field. 
+Mineral Hub is the infrastructure platform allows to build a Blockchain services fast and easy for companies willing to join the Blockchain field.
+
 
 Mineral Hub supports following developments : 
 * DPoS(Delegated Proof-of-Stake) consensus protocol (fast process speed) is based
-* Anybody can easily build their own Blockchain system in short time.
-* Build own Private or Public Blockchain depending on service application
-* Independent network structure that secures the speed and safety 
+* Users can get to decide the number of Node to run
+* Setting can be modified to Private, Public, and Consortium Blockchain as application differs
+* Disperse the risk and the speed through the Independent Mainnet composition connected with Sidechain 
+* Building up the independent Blockchain as user's will 
+* Based on C# Language makes easy for developers to utilize
 * Blockchain usage expansion through technical assistance and certification
 
 
