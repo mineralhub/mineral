@@ -15,6 +15,7 @@ Mineral Hub supports following developments :
 
 Projects
 ------
+* [Homepage](https://github.com/mineralhub/mineral-homepage)
 * [Explorer Frontend](https://github.com/mineral-project/mineral-frontend)
 * [Explorer Backend](https://github.com/mineral-project/mineral-explorer)
 
