@@ -164,17 +164,17 @@ namespace Mineral.Core.Transactions
             return true;
         }
 
-        public bool VerifyBlockchain(Storage storage = null)
+        public bool VerifyBlockChain(Storage storage = null)
         {
             if (storage == null)
                 storage = BlockChain.Instance.NewStorage();
 
-            if (storage.GetTransaction(Hash) != null)
+            if (storage.Transaction.Get(Hash) != null)
             {
                 TxResult = MINERAL_ERROR_CODES.SYS_EXIST_TRANSACTION;
                 return false;
             }
-            if (!Data.VerifyBlockchain(storage))
+            if (!Data.VerifyBlockChain(storage))
             {
                 TxResult = Data.TxResult;
                 return false;

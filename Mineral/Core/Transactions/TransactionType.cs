@@ -1,4 +1,4 @@
-﻿namespace Mineral
+﻿namespace Mineral.Core.Transactions
 {
     public enum TransactionType : short
     {

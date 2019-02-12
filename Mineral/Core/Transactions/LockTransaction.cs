@@ -3,6 +3,7 @@ using System.IO;
 using Newtonsoft.Json.Linq;
 using Mineral.Database.LevelDB;
 using Mineral.Utils;
+using Mineral.Core.State;
 
 namespace Mineral.Core.Transactions
 {
@@ -13,9 +14,9 @@ namespace Mineral.Core.Transactions
             return base.Verify();
         }
 
-        public override bool VerifyBlockchain(Storage storage)
+        public override bool VerifyBlockChain(Storage storage)
         {
-            if (!base.VerifyBlockchain(storage))
+            if (!base.VerifyBlockChain(storage))
                 return false;
 
             if (FromAccountState.LockBalance == Fixed8.Zero)
@@ -26,14 +27,15 @@ namespace Mineral.Core.Transactions
 
             if (FromAccountState.LastLockTxID != UInt256.Zero)
             {
-                uint TxHeight = 0;
+                uint TxHeight = uint.MaxValue;
                 if (BlockChain.Instance.HasTransactionPool(FromAccountState.LastLockTxID))
                 {
                     TxHeight = BlockChain.Instance.CurrentBlockHeight;
                 }
                 else
                 {
-                    storage.GetTransaction(FromAccountState.LastLockTxID, out TxHeight);
+                    TransactionState txState = storage.Transaction.Get(FromAccountState.LastLockTxID);
+                    TxHeight = (txState == null) ? uint.MaxValue : txState.Height;
                 }
                 if (TxHeight == uint.MaxValue
                     || BlockChain.Instance.CurrentBlockHeight - TxHeight < Config.Instance.LockTTL)
@@ -42,7 +44,6 @@ namespace Mineral.Core.Transactions
                     return false;
                 }
             }
-
             return true;
         }
     }
@@ -69,9 +70,9 @@ namespace Mineral.Core.Transactions
             return base.Verify();
         }
 
-        public override bool VerifyBlockchain(Storage storage)
+        public override bool VerifyBlockChain(Storage storage)
         {
-            if (!base.VerifyBlockchain(storage))
+            if (!base.VerifyBlockChain(storage))
                 return false;
 
             if (LockValue < Fixed8.Zero)
@@ -82,14 +83,16 @@ namespace Mineral.Core.Transactions
 
             if (FromAccountState.LastLockTxID != UInt256.Zero)
             {
-                uint TxHeight = 0;
+                uint TxHeight = uint.MaxValue;
                 if (BlockChain.Instance.HasTransactionPool(FromAccountState.LastLockTxID))
                 {
                     TxHeight = BlockChain.Instance.CurrentBlockHeight;
                 }
                 else
                 {
-                    storage.GetTransaction(FromAccountState.LastLockTxID, out TxHeight);
+                    TransactionState txState = storage.Transaction.Get(FromAccountState.LastLockTxID);
+                    TxHeight = (txState == null) ? uint.MaxValue : txState.Height;
+
                 }
                 if (TxHeight == uint.MaxValue
                     || BlockChain.Instance.CurrentBlockHeight - TxHeight < Config.Instance.LockTTL)

@@ -4,11 +4,11 @@ using Mineral.Utils;
 
 namespace Mineral.Database.CacheStorage
 {
-    internal class BlockTriggerCacheStorage
+    internal class BlockTriggerCache
     {
         DbCache<SerializableUInt32, BlockTriggerState> _cache;
 
-        public BlockTriggerCacheStorage(DB db)
+        public BlockTriggerCache(DB db)
         {
             _cache = new DbCache<SerializableUInt32, BlockTriggerState>(db, DataEntryPrefix.ST_BlockTrigger);
         }
@@ -23,7 +23,7 @@ namespace Mineral.Database.CacheStorage
             return _cache.GetAndChange(height, () => new BlockTriggerState());
         }
 
-        public BlockTriggerState TryGet(uint height)
+        public BlockTriggerState Get(uint height)
         {
             return _cache.TryGet(new SerializableUInt32(height));
         }

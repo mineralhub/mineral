@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 using Mineral.Core;
+using Mineral.Core.State;
 using Mineral.Core.Transactions;
 using Mineral.Database.CacheStorage;
 using Mineral.Database.LevelDB;
@@ -13,10 +14,22 @@ namespace Mineral.Database.LevelDB
     {
         private DB _db = null;
         private ReadOptions _opt = ReadOptions.Default;
-        private AccountCacheStorage accounts = null;
-        private DelegateCacheStorage delegates = null;
-        private OtherSignCacheStorage otherSignTxs = null;
-        private BlockTriggerCacheStorage blockTriggers = null;
+
+        private BlockCache _block = null;
+        private TransactionCache _transaction = null;
+        private TransactionResultCache _transactionResult = null;
+        private AccountCache _accounts = null;
+        private DelegateCache _delegates = null;
+        private OtherSignCache _otherSignTxs = null;
+        private BlockTriggerCache _blockTriggers = null;
+
+        internal BlockCache Block { get { return _block; } }
+        internal TransactionCache Transaction { get { return _transaction; } }
+        internal TransactionResultCache TransactionResult { get { return _transactionResult; } }
+        internal AccountCache Account { get { return _accounts; } }
+        internal DelegateCache Delegate { get { return _delegates; } }
+        internal OtherSignCache OtherSign { get { return _otherSignTxs; } }
+        internal BlockTriggerCache BlockTrigger { get { return _blockTriggers; } }
 
         internal static Storage NewStorage(DB _db, ReadOptions opt = null)
         {
@@ -28,10 +41,12 @@ namespace Mineral.Database.LevelDB
 
         public void Dispose()
         {
-            accounts = null;
-            delegates = null;
-            otherSignTxs = null;
-            blockTriggers = null;
+            _block = null;
+            _transaction = null;
+            _accounts = null;
+            _delegates = null;
+            _otherSignTxs = null;
+            _blockTriggers = null;
             _opt = null;
             _db = null;
         }
@@ -39,96 +54,24 @@ namespace Mineral.Database.LevelDB
         private Storage(DB db)
         {
             _db = db;
-            accounts = new AccountCacheStorage(_db);
-            delegates = new DelegateCacheStorage(_db);
-            otherSignTxs = new OtherSignCacheStorage(_db);
-            blockTriggers = new BlockTriggerCacheStorage(_db);
+            _block = new BlockCache(_db);
+            _transaction = new TransactionCache(_db);
+            _accounts = new AccountCache(_db);
+            _delegates = new DelegateCache(_db);
+            _otherSignTxs = new OtherSignCache(_db);
+            _blockTriggers = new BlockTriggerCache(_db);
         }
 
-        internal void commit(WriteBatch batch, uint height)
+        internal void Commit(WriteBatch batch, uint height)
         {
-            accounts.Clean();
-            accounts.Commit(batch);
-            delegates.Commit(batch);
-            otherSignTxs.Commit(batch);
-            blockTriggers.Clean(height);
-            blockTriggers.Commit(batch);
-        }
-
-        public AccountState GetAccountState(UInt160 hash)
-        {
-            return accounts.GetAndChange(hash);
-        }
-
-        public DelegateState GetDelegateState(UInt160 hash)
-        {
-            return delegates.TryGet(hash);
-        }
-
-        public void AddDelegate(UInt160 key, byte[] name)
-        {
-            delegates.Add(key, name);
-        }
-
-        public void Vote(VoteTransaction tx)
-        {
-            delegates.Vote(tx);
-        }
-
-        public void Downvote(Dictionary<UInt160, Fixed8> Votes)
-        {
-            delegates.Downvote(Votes);
-        }
-
-        public void AddOtherSignTxs(UInt256 hash, HashSet<string> others)
-        {
-            otherSignTxs.Add(hash, others);
-        }
-
-        public OtherSignTransactionState GetOtherSignTxs(UInt256 hash)
-        {
-            return otherSignTxs.GetAndChange(hash);
-        }
-
-        public BlockTriggerState GetBlockTriggers(uint height)
-        {
-            return blockTriggers.GetAndChange(height);
-        }
-
-        public BlockTriggerState TryBlockTriggers(uint height)
-        {
-            return blockTriggers.TryGet(height);
-        }
-
-        public Transaction GetTransaction(UInt256 hash)
-        {
-            return GetTransaction(hash, out _);
-        }
-
-        public Transaction GetTransaction(UInt256 hash, out uint height)
-        {
-            return GetTransaction(ReadOptions.Default, hash, out height);
-        }
-
-        private Transaction GetTransaction(ReadOptions options, UInt256 hash, out uint height)
-        {
-            Slice value;
-            if (_db.TryGet(options, SliceBuilder.Begin(DataEntryPrefix.DATA_Transaction).Add(hash), out value))
-            {
-                byte[] data = value.ToArray();
-                height = data.ToUInt32(0);
-                return Transaction.DeserializeFrom(data, sizeof(uint));
-            }
-            else
-            {
-                height = uint.MaxValue;
-                return null;
-            }
-        }
-
-        public List<DelegateState> GetCadidateDelgates()
-        {
-            return Core.BlockChain.Instance.GetDelegateStateAll();
+            _block.Commit(batch);
+            _transaction.Commit(batch);
+            _accounts.Clean();
+            _accounts.Commit(batch);
+            _delegates.Commit(batch);
+            _otherSignTxs.Commit(batch);
+            _blockTriggers.Clean(height);
+            _blockTriggers.Commit(batch);
         }
     }
 }

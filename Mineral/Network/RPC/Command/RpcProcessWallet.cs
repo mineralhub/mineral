@@ -6,6 +6,7 @@ using Mineral.Core;
 using Mineral.Cryptography;
 using Mineral.Wallets;
 using Mineral.Utils;
+using Mineral.Core.State;
 
 namespace Mineral.Network.RPC.Command
 {

@@ -1,14 +1,15 @@
 ﻿using Mineral.Core;
+using Mineral.Core.State;
 using Mineral.Database.LevelDB;
 using Mineral.Utils;
 
 namespace Mineral.Database.CacheStorage
 {
-    internal class AccountCacheStorage
+    internal class AccountCache
     {
         DbCache<UInt160, AccountState> _cache;
 
-        public AccountCacheStorage(DB db)
+        public AccountCache(DB db)
         {
             _cache = new DbCache<UInt160, AccountState>(db, DataEntryPrefix.ST_Account);
         }

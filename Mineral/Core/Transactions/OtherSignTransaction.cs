@@ -52,9 +52,9 @@ namespace Mineral.Core.Transactions
             return true;
         }
 
-        public override bool VerifyBlockchain(Storage storage)
+        public override bool VerifyBlockChain(Storage storage)
         {
-            if (!base.VerifyBlockchain(storage))
+            if (!base.VerifyBlockChain(storage))
                 return false;
 
             if (ExpirationBlockHeight < BlockChain.Instance.CurrentBlockHeight)

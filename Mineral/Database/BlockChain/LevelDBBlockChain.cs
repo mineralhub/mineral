@@ -1,4 +1,5 @@
 ﻿using Mineral.Core;
+using Mineral.Core.State;
 using Mineral.Core.Transactions;
 using Mineral.Database.LevelDB;
 using Mineral.Utils;
@@ -70,7 +71,8 @@ namespace Mineral.Database.BlockChain
 
         public void PutTransaction(WriteBatch batch, Block block, Transaction tx)
         {
-            batch.Put(SliceBuilder.Begin(DataEntryPrefix.DATA_Transaction).Add(tx.Hash), SliceBuilder.Begin().Add(block.Header.Height).Add(tx.ToArray()));
+            TransactionState txState = new TransactionState(block.Header.Height, tx);
+            batch.Put(SliceBuilder.Begin(DataEntryPrefix.DATA_Transaction).Add(tx.Hash), SliceBuilder.Begin().Add(block.Header.Height).Add(txState.ToArray()));
         }
 
         public void PutTransactionResult(WriteBatch batch, Transaction tx)
@@ -158,7 +160,7 @@ namespace Mineral.Database.BlockChain
             Slice value;
             bool result = _db.TryGet(new ReadOptions { FillCache = false }, SliceBuilder.Begin(DataEntryPrefix.DATA_Block).Add(blockHash), out value);
             if (result)
-                block = Block.FromTrimmedData(value.ToArray(), sizeof(long), p => Storage.GetTransaction(p));
+                block = Block.FromTrimmedData(value.ToArray(), sizeof(long), p => Storage.Transaction.Get(p)?.Transaction);
             else
                 block = null;
 
@@ -265,7 +267,7 @@ namespace Mineral.Database.BlockChain
 
         public Block GetBlock(UInt256 blockHash)
         {
-            return Block.FromTrimmedData(_db.Get(new ReadOptions { FillCache = false }, SliceBuilder.Begin(DataEntryPrefix.DATA_Block).Add(blockHash)).ToArray(), sizeof(long), p => Storage.GetTransaction(p));
+            return Block.FromTrimmedData(_db.Get(new ReadOptions { FillCache = false }, SliceBuilder.Begin(DataEntryPrefix.DATA_Block).Add(blockHash)).ToArray(), sizeof(long), p => Storage.Transaction.Get(p)?.Transaction);
         }
 
         public IEnumerable<UInt256> GetHeaderHashList()

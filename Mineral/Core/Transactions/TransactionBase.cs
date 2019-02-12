@@ -2,6 +2,7 @@
 using Newtonsoft.Json.Linq;
 using Mineral.Database.LevelDB;
 using Mineral.Utils;
+using Mineral.Core.State;
 
 namespace Mineral.Core.Transactions
 {
@@ -26,7 +27,7 @@ namespace Mineral.Core.Transactions
             get
             {
                 if (_fromAccountState == null)
-                    _fromAccountState = _storage.GetAccountState(From);
+                    _fromAccountState = _storage.Account.GetAndChange(From);
 
                 return _fromAccountState;
             }
@@ -53,7 +54,7 @@ namespace Mineral.Core.Transactions
             return true;
         }
 
-        public virtual bool VerifyBlockchain(Storage storage)
+        public virtual bool VerifyBlockChain(Storage storage)
         {
             UsingStorage(storage);
             if (FromAccountState == null)

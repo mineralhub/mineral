@@ -1,4 +1,5 @@
-﻿using Mineral.Core.Transactions;
+﻿using Mineral.Core.State;
+using Mineral.Core.Transactions;
 using Mineral.Database.BlockChain;
 using Mineral.Database.LevelDB;
 using Mineral.Utils;
@@ -120,9 +121,9 @@ namespace Mineral.Core
 
 
         #region Transaction
-        public Transaction GetTransaction(UInt256 hash)
+        public TransactionState GetTransaction(UInt256 hash)
         {
-            return _dbManager.Storage.GetTransaction(hash);
+            return _dbManager.Storage.Transaction.Get(hash);
         }
         #endregion
 
@@ -130,7 +131,7 @@ namespace Mineral.Core
         #region Account
         public AccountState GetAccountState(UInt160 hash)
         {
-            return _dbManager.Storage.GetAccountState(hash);
+            return _dbManager.Storage.Account.GetAndChange(hash);
         }
         #endregion
 
@@ -149,7 +150,7 @@ namespace Mineral.Core
         #region Delegate
         public DelegateState GetDelegateState(UInt160 hash)
         {
-            return _dbManager.Storage.GetDelegateState(hash);
+            return _dbManager.Storage.Delegate.Get(hash);
         }
 
         public List<DelegateState> GetDelegateStateAll()

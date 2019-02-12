@@ -35,12 +35,12 @@ namespace Mineral.Core.Transactions
             return true;
         }
 
-        public override bool VerifyBlockchain(Storage storage)
+        public override bool VerifyBlockChain(Storage storage)
         {
             if (0 < BlockChain.Instance.CurrentBlockHeight)
                 return false;
 
-            return base.VerifyBlockchain(storage);
+            return base.VerifyBlockChain(storage);
         }
 
         public override JObject ToJson()

@@ -5,11 +5,11 @@ using Mineral.Utils;
 
 namespace Mineral.Database.CacheStorage
 {
-    internal class DelegateCacheStorage
+    internal class DelegateCache
     {
         DbCache<UInt160, DelegateState> _cache;
 
-        public DelegateCacheStorage(DB db)
+        public DelegateCache(DB db)
         {
             _cache = new DbCache<UInt160, DelegateState>(db, DataEntryPrefix.ST_Delegate);
         }
@@ -35,7 +35,7 @@ namespace Mineral.Database.CacheStorage
             }
         }
 
-        public DelegateState TryGet(UInt160 key)
+        public DelegateState Get(UInt160 key)
         {
             return _cache.TryGet(key);
         }

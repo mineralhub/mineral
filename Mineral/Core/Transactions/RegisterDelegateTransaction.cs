@@ -48,12 +48,12 @@ namespace Mineral.Core.Transactions
             return true;
         }
 
-        public override bool VerifyBlockchain(Storage storage)
+        public override bool VerifyBlockChain(Storage storage)
         {
-            if (!base.VerifyBlockchain(storage))
+            if (!base.VerifyBlockChain(storage))
                 return false;
 
-            if (storage.GetDelegateState(From) != null)
+            if (storage.Delegate.Get(From) != null)
             {
                 TxResult = MINERAL_ERROR_CODES.TX_DELEGATE_ALREADY_REGISTER;
                 return false;

@@ -5,6 +5,7 @@ using System.Reflection;
 using System.Security.Cryptography;
 using System.Threading;
 using Mineral.Core;
+using Mineral.Core.State;
 using Mineral.Core.Transactions;
 using Mineral.Database.LevelDB;
 using Mineral.Utils;
@@ -195,13 +196,17 @@ namespace Mineral.Database.BlockChain
                         {
                             foreach (var hash in signTx.TxHashes)
                             {
-                                var osign = Core.BlockChain.Instance.GetTransaction(hash).Data as OtherSignTransaction;
-                                if (accounts.Contains(osign.From) && !changed.Contains(osign.From))
-                                    changed.Add(osign.From);
-                                foreach (UInt160 to in osign.To.Keys)
+                                TransactionState txState = Core.BlockChain.Instance.GetTransaction(hash);
+                                if (txState != null)
                                 {
-                                    if (accounts.Contains(to) && !changed.Contains(to))
-                                        changed.Add(to);
+                                    var osign = txState.Transaction.Data as OtherSignTransaction;
+                                    if (accounts.Contains(osign.From) && !changed.Contains(osign.From))
+                                        changed.Add(osign.From);
+                                    foreach (UInt160 to in osign.To.Keys)
+                                    {
+                                        if (accounts.Contains(to) && !changed.Contains(to))
+                                            changed.Add(to);
+                                    }
                                 }
                             }
                         }

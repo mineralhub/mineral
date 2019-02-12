@@ -1,4 +1,5 @@
-﻿using Mineral.Core.Transactions;
+﻿using Mineral.Core.State;
+using Mineral.Core.Transactions;
 using Mineral.Cryptography;
 using Mineral.Database.BlockChain;
 using Mineral.Database.LevelDB;
@@ -130,39 +131,28 @@ namespace Mineral.Core
         #region Internal Method
         private void Persist(Block block)
         {
-            WriteBatch batch = new WriteBatch();
-            while (2000 <= block.Header.Height - _storeHeaderCount)
-            {
-                using (MemoryStream ms = new MemoryStream())
-                using (BinaryWriter bw = new BinaryWriter(ms))
-                {
-                    bw.WriteSerializableArray(_cacheChain.GetBlcokHashs(_storeHeaderCount, _storeHeaderCount + 2000));
-                    bw.Flush();
-                    _dbManager.PutHeaderHashList(batch, (int)_storeHeaderCount, ms.ToArray());
-                }
-                _storeHeaderCount += 2000;
-            }
+            AddHeader(block.Header);
 
-            long fee = block.Transactions.Sum(p => p.Fee).Value;
-            _dbManager.PutBlock(batch, block, fee);
+            Fixed8 fee = block.Transactions.Sum(p => p.Fee);
+            _dbManager.Storage.Block.Add(block.Header.Hash, block, fee);
 
             foreach (Transaction tx in block.Transactions)
             {
-                _dbManager.PutTransaction(batch, block, tx);
-                if (_genesisBlock != block && !tx.VerifyBlockchain(_dbManager.Storage))
+                _dbManager.Storage.Transaction.Add(tx.Hash, block.Header.Height, tx);
+                if (_genesisBlock != block && !tx.VerifyBlockChain(_dbManager.Storage))
                 {
                     if (Fixed8.Zero < tx.Fee)
-                        _dbManager.Storage.GetAccountState(tx.From).AddBalance(-tx.Fee);
-
-                    byte[] eCodeBytes = BitConverter.GetBytes((Int64)tx.Data.TxResult).Take(8).ToArray();
-                    _dbManager.PutTransactionResult(batch, tx);
+                    {
+                        _dbManager.Storage.Account.GetAndChange(tx.From).AddBalance(-tx.Fee);
+                    }
+                    _dbManager.Storage.TransactionResult.Add(tx.Hash, tx.TxResult);
 #if DEBUG
                     Logger.Debug("verified == false transaction. " + tx.ToJson());
 #endif
                     continue;
                 }
 
-                AccountState from = _dbManager.Storage.GetAccountState(tx.From);
+                AccountState from = _dbManager.Storage.Account.GetAndChange(tx.From);
                 if (Fixed8.Zero < tx.Fee)
                     from.AddBalance(-tx.Fee);
 
@@ -173,43 +163,47 @@ namespace Mineral.Core
                             Fixed8 totalAmount = transTx.To.Sum(p => p.Value);
                             from.AddBalance(-totalAmount);
                             foreach (var i in transTx.To)
-                                _dbManager.Storage.GetAccountState(i.Key).AddBalance(i.Value);
+                                _dbManager.Storage.Account.GetAndChange(i.Key).AddBalance(i.Value);
                         }
                         break;
                     case VoteTransaction voteTx:
                         {
                             from.LastVoteTxID = tx.Hash;
-                            _dbManager.Storage.Downvote(from.Votes);
-                            _dbManager.Storage.Vote(voteTx);
+                            _dbManager.Storage.Delegate.Downvote(from.Votes);
+                            _dbManager.Storage.Delegate.Vote(voteTx);
                             from.SetVote(voteTx.Votes);
                         }
                         break;
                     case RegisterDelegateTransaction registerDelegateTx:
                         {
-                            _dbManager.Storage.AddDelegate(registerDelegateTx.From, registerDelegateTx.Name);
+                            _dbManager.Storage.Delegate.Add(registerDelegateTx.From, registerDelegateTx.Name);
                         }
                         break;
                     case OtherSignTransaction osignTx:
                         {
                             Fixed8 totalAmount = osignTx.To.Sum(p => p.Value);
                             from.AddBalance(-totalAmount);
-                            _dbManager.Storage.GetBlockTriggers(osignTx.ExpirationBlockHeight).TransactionHashes.Add(osignTx.Owner.Hash);
-                            _dbManager.Storage.AddOtherSignTxs(osignTx.Owner.Hash, osignTx.Others);
+                            _dbManager.Storage.BlockTrigger.GetAndChange(osignTx.ExpirationBlockHeight).TransactionHashes.Add(osignTx.Owner.Hash);
+                            _dbManager.Storage.OtherSign.Add(osignTx.Owner.Hash, osignTx.Others);
                         }
                         break;
                     case SignTransaction signTx:
                         {
                             for (int i = 0; i < signTx.TxHashes.Count; ++i)
                             {
-                                OtherSignTransactionState state = _dbManager.Storage.GetOtherSignTxs(signTx.TxHashes[i]);
+                                OtherSignTransactionState state = _dbManager.Storage.OtherSign.GetAndChange(signTx.TxHashes[i]);
                                 state.Sign(signTx.Owner.Signature);
                                 if (state.RemainSign.Count == 0)
                                 {
-                                    var osign = _dbManager.Storage.GetTransaction(state.TxHash).Data as OtherSignTransaction;
-                                    foreach (var to in osign.To)
-                                        _dbManager.Storage.GetAccountState(to.Key).AddBalance(to.Value);
-                                    var trigger = _dbManager.Storage.GetBlockTriggers(signTx.Reference[i].ExpirationBlockHeight);
-                                    trigger.TransactionHashes.Remove(signTx.TxHashes[i]);
+                                    TransactionState txState = _dbManager.Storage.Transaction.Get(state.TxHash);
+                                    if (txState != null)
+                                    {
+                                        var osign = txState.Transaction.Data as OtherSignTransaction;
+                                        foreach (var to in osign.To)
+                                            _dbManager.Storage.Account.GetAndChange(to.Key).AddBalance(to.Value);
+                                        var trigger = _dbManager.Storage.BlockTrigger.GetAndChange(signTx.Reference[i].ExpirationBlockHeight);
+                                        trigger.TransactionHashes.Remove(signTx.TxHashes[i]);
+                                    }
                                 }
                             }
                         }
@@ -239,17 +233,17 @@ namespace Mineral.Core
                 }
             }
 
-            BlockTriggerState blockTrigger = _dbManager.Storage.TryBlockTriggers(block.Height);
+            BlockTriggerState blockTrigger = _dbManager.Storage.BlockTrigger.Get(block.Height);
             if (blockTrigger != null)
             {
                 foreach (UInt256 txhash in blockTrigger.TransactionHashes)
                 {
-                    Transaction tx = _dbManager.Storage.GetTransaction(txhash);
-                    switch (tx.Data)
+                    TransactionState txState = _dbManager.Storage.Transaction.Get(txhash);
+                    switch (txState.Transaction.Data)
                     {
                         case OtherSignTransaction osignTx:
                             {
-                                _dbManager.Storage.GetAccountState(osignTx.From).AddBalance(osignTx.To.Sum(p => p.Value));
+                                _dbManager.Storage.Account.GetAndChange(osignTx.From).AddBalance(osignTx.To.Sum(p => p.Value));
                             }
                             break;
                     }
@@ -258,14 +252,15 @@ namespace Mineral.Core
 
             if (0 < block.Height)
             {
-                AccountState producer = _dbManager.Storage.GetAccountState(WalletAccount.ToAddressHash(block.Header.Signature.Pubkey));
+                AccountState producer = _dbManager.Storage.Account.GetAndChange(WalletAccount.ToAddressHash(block.Header.Signature.Pubkey));
                 producer.AddBalance(Config.Instance.BlockReward);
             }
 
-            _dbManager.Storage.commit(batch, block.Height);
+            // TODO : 여기부터 수정 batch
+            WriteBatch batch = new WriteBatch();
+            _dbManager.Storage.Commit(batch, block.Height);
             _dbManager.PutCurrentHeader(batch, block.Header);
             _dbManager.PutCurrentBlock(batch, block);
-            _dbManager.BatchWrite(WriteOptions.Default, batch);
 
             _currentBlockHeight = block.Header.Height;
             _currentBlockHash = block.Header.Hash;
@@ -330,6 +325,29 @@ namespace Mineral.Core
             _threadPersist.Start();
         }
 
+        public void AddHeader(BlockHeader header)
+        {
+            WriteBatch batch = new WriteBatch();
+            uint oStoreHeaderCount = _storeHeaderCount;
+
+            while (2000 <= header.Height - _storeHeaderCount)
+            {
+                using (MemoryStream ms = new MemoryStream())
+                using (BinaryWriter bw = new BinaryWriter(ms))
+                {
+                    bw.WriteSerializableArray(_cacheChain.GetBlcokHashs(_storeHeaderCount, _storeHeaderCount + 2000));
+                    bw.Flush();
+                    _dbManager.PutHeaderHashList(batch, (int)_storeHeaderCount, ms.ToArray());
+                }
+                _storeHeaderCount += 2000;
+            }
+
+            if (_storeHeaderCount > oStoreHeaderCount)
+            {
+                _dbManager.BatchWrite(WriteOptions.Default, batch);
+            }
+        }
+
         public ERROR_BLOCK AddBlock(Block block)
         {
             if (!_cacheChain.AddHeaderHash(block.Height, block.Hash))
@@ -368,7 +386,7 @@ namespace Mineral.Core
 
             foreach (Transaction tx in block.Transactions)
             {
-                if (block != GenesisBlock && (!tx.Verify() || !tx.VerifyBlockchain(snapshot)))
+                if (block != GenesisBlock && (!tx.Verify() || !tx.VerifyBlockChain(snapshot)))
                 {
                     errList.Add(tx);
                     lock (PoolLock)
@@ -378,7 +396,7 @@ namespace Mineral.Core
                     continue;
                 }
 
-                AccountState from = snapshot.GetAccountState(tx.From);
+                AccountState from = snapshot.Account.GetAndChange(tx.From);
                 if (Fixed8.Zero < tx.Fee)
                     from.AddBalance(-tx.Fee);
 
@@ -389,43 +407,47 @@ namespace Mineral.Core
                             Fixed8 totalAmount = transTx.To.Sum(p => p.Value);
                             from.AddBalance(-totalAmount);
                             foreach (var i in transTx.To)
-                                snapshot.GetAccountState(i.Key).AddBalance(i.Value);
+                                snapshot.Account.GetAndChange(i.Key).AddBalance(i.Value);
                         }
                         break;
                     case VoteTransaction voteTx:
                         {
                             from.LastVoteTxID = tx.Hash;
-                            snapshot.Downvote(from.Votes);
-                            snapshot.Vote(voteTx);
+                            snapshot.Delegate.Downvote(from.Votes);
+                            snapshot.Delegate.Vote(voteTx);
                             from.SetVote(voteTx.Votes);
                         }
                         break;
                     case RegisterDelegateTransaction registerDelegateTx:
                         {
-                            snapshot.AddDelegate(registerDelegateTx.From, registerDelegateTx.Name);
+                            snapshot.Delegate.Add(registerDelegateTx.From, registerDelegateTx.Name);
                         }
                         break;
                     case OtherSignTransaction osignTx:
                         {
                             Fixed8 totalAmount = osignTx.To.Sum(p => p.Value);
                             from.AddBalance(-totalAmount);
-                            snapshot.GetBlockTriggers(osignTx.ExpirationBlockHeight).TransactionHashes.Add(osignTx.Owner.Hash);
-                            snapshot.AddOtherSignTxs(osignTx.Owner.Hash, osignTx.Others);
+                            snapshot.BlockTrigger.GetAndChange(osignTx.ExpirationBlockHeight).TransactionHashes.Add(osignTx.Owner.Hash);
+                            snapshot.OtherSign.Add(osignTx.Owner.Hash, osignTx.Others);
                         }
                         break;
                     case SignTransaction signTx:
                         {
                             for (int i = 0; i < signTx.TxHashes.Count; ++i)
                             {
-                                OtherSignTransactionState state = _dbManager.Storage.GetOtherSignTxs(signTx.TxHashes[i]);
+                                OtherSignTransactionState state = _dbManager.Storage.OtherSign.GetAndChange(signTx.TxHashes[i]);
                                 state.Sign(signTx.Owner.Signature);
                                 if (state.RemainSign.Count == 0)
                                 {
-                                    var osign = _dbManager.Storage.GetTransaction(state.TxHash).Data as OtherSignTransaction;
-                                    foreach (var to in osign.To)
-                                        _dbManager.Storage.GetAccountState(to.Key).AddBalance(to.Value);
-                                    var trigger = _dbManager.Storage.GetBlockTriggers(signTx.Reference[i].ExpirationBlockHeight);
-                                    trigger.TransactionHashes.Remove(signTx.TxHashes[i]);
+                                    TransactionState txState = _dbManager.Storage.Transaction.Get(state.TxHash);
+                                    if (txState != null)
+                                    {
+                                        var osign = txState.Transaction.Data as OtherSignTransaction;
+                                        foreach (var to in osign.To)
+                                            _dbManager.Storage.Account.GetAndChange(to.Key).AddBalance(to.Value);
+                                        var trigger = _dbManager.Storage.BlockTrigger.GetAndChange(signTx.Reference[i].ExpirationBlockHeight);
+                                        trigger.TransactionHashes.Remove(signTx.TxHashes[i]);
+                                    }
                                 }
                             }
                         }
@@ -453,17 +475,17 @@ namespace Mineral.Core
                 }
             }
 
-            BlockTriggerState blockTrigger = snapshot.TryBlockTriggers(block.Height);
+            BlockTriggerState blockTrigger = snapshot.BlockTrigger.Get(block.Height);
             if (blockTrigger != null)
             {
                 foreach (UInt256 txhash in blockTrigger.TransactionHashes)
                 {
-                    Transaction tx = snapshot.GetTransaction(txhash);
-                    switch (tx.Data)
+                    TransactionState txState = snapshot.Transaction.Get(txhash);
+                    switch (txState.Transaction.Data)
                     {
                         case OtherSignTransaction osignTx:
                             {
-                                snapshot.GetAccountState(osignTx.From).AddBalance(osignTx.To.Sum(p => p.Value));
+                                snapshot.Account.GetAndChange(osignTx.From).AddBalance(osignTx.To.Sum(p => p.Value));
                             }
                             break;
                     }

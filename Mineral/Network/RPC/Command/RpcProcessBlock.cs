@@ -5,6 +5,7 @@ using Newtonsoft.Json.Linq;
 using Mineral.Core;
 using Mineral.Core.Transactions;
 using Mineral.Utils;
+using Mineral.Core.State;
 
 namespace Mineral.Network.RPC.Command
 {
@@ -89,8 +90,8 @@ namespace Mineral.Network.RPC.Command
 
         public static JObject OnGetTransaction(object obj, JArray parameters)
         {
-            Transaction tx = BlockChain.Instance.GetTransaction(UInt256.FromHexString(parameters[0].Value<string>()));
-            return tx.ToJson();
+            TransactionState txState = BlockChain.Instance.GetTransaction(UInt256.FromHexString(parameters[0].Value<string>()));
+            return txState.ToJson();
         }
     }
 }

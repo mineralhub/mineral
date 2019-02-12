@@ -5,11 +5,11 @@ using System.Collections.Generic;
 
 namespace Mineral.Database.CacheStorage
 {
-    internal class OtherSignCacheStorage
+    internal class OtherSignCache
     {
         DbCache<UInt256, OtherSignTransactionState> _cache;
 
-        public OtherSignCacheStorage(DB db)
+        public OtherSignCache(DB db)
         {
             _cache = new DbCache<UInt256, OtherSignTransactionState>(db, DataEntryPrefix.ST_OtherSign);
         }

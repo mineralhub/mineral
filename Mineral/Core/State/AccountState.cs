@@ -3,7 +3,7 @@ using System.IO;
 using System.Collections.Generic;
 using Mineral.Utils;
 
-namespace Mineral.Core
+namespace Mineral.Core.State
 {
     public class AccountState : StateBase
     {

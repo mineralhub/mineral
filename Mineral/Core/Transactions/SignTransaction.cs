@@ -3,6 +3,7 @@ using Newtonsoft.Json.Linq;
 using Mineral.Database.LevelDB;
 using Mineral.Utils;
 using System.Collections.Generic;
+using Mineral.Core.State;
 
 namespace Mineral.Core.Transactions
 {
@@ -19,10 +20,12 @@ namespace Mineral.Core.Transactions
                 {
                     _reference = new List<OtherSignTransaction>();
                     foreach (var hash in TxHashes)
-                        _reference.Add(BlockChain.Instance.GetTransaction(hash).Data as OtherSignTransaction);
+                    {
+                        TransactionState txState = BlockChain.Instance.GetTransaction(hash);
+                        if (txState != null)
+                            _reference.Add(txState.Transaction.Data as OtherSignTransaction);
+                    }
                 }
-
-
                 return _reference;
             }
         }
@@ -46,18 +49,18 @@ namespace Mineral.Core.Transactions
             return base.Verify();
         }
 
-        public override bool VerifyBlockchain(Storage storage)
+        public override bool VerifyBlockChain(Storage storage)
         {
-            if (!base.VerifyBlockchain(storage))
+            if (!base.VerifyBlockChain(storage))
                 return false;
 
             foreach (var hash in TxHashes)
             {
-                Transaction tx = BlockChain.Instance.GetTransaction(hash);
-                if (tx == null || tx.Type != TransactionType.OtherSign)
+                TransactionState txState = BlockChain.Instance.GetTransaction(hash);
+                if (txState == null || txState.Transaction.Type != TransactionType.OtherSign)
                     return false;
 
-                if (!(tx.Data is OtherSignTransaction data) || !data.Others.Contains(Wallets.WalletAccount.ToAddress(Owner.Signature.Pubkey)))
+                if (!(txState.Transaction.Data is OtherSignTransaction data) || !data.Others.Contains(Wallets.WalletAccount.ToAddress(Owner.Signature.Pubkey)))
                     return false;
             }
             return true;

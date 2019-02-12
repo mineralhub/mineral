@@ -17,7 +17,7 @@ namespace Mineral.Network.RPC.Command
             Transaction tx = Transaction.DeserializeFrom(transaction);
             if (tx != null)
             {
-                if (tx.Verify() && tx.VerifyBlockchain())
+                if (tx.Verify() && tx.VerifyBlockChain())
                 {
                     node.AddTransaction(tx);
                     json["transaction"] = tx.ToJson();

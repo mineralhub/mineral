@@ -3,6 +3,7 @@ using System.IO;
 using Newtonsoft.Json.Linq;
 using Mineral.Database.LevelDB;
 using Mineral.Utils;
+using Mineral.Core.State;
 
 namespace Mineral.Core.Transactions
 {
@@ -42,12 +43,12 @@ namespace Mineral.Core.Transactions
             return true;
         }
 
-        public override bool VerifyBlockchain(Storage storage)
+        public override bool VerifyBlockChain(Storage storage)
         {
-            if (!base.VerifyBlockchain(storage))
+            if (!base.VerifyBlockChain(storage))
                 return false;
 
-            uint TxHeight = 0;
+            uint TxHeight = uint.MaxValue;
 
             if (FromAccountState.LastVoteTxID != UInt256.Zero)
             {
@@ -57,8 +58,10 @@ namespace Mineral.Core.Transactions
                 }
                 else
                 {
-                    storage.GetTransaction(FromAccountState.LastVoteTxID, out TxHeight);
+                    TransactionState txState = storage.Transaction.Get(FromAccountState.LastVoteTxID);
+                    TxHeight = (txState == null) ? uint.MaxValue : txState.Height;
                 }
+
                 if (TxHeight == uint.MaxValue
                     || BlockChain.Instance.CurrentBlockHeight - TxHeight < Config.Instance.VoteTTL)
                 {
@@ -69,7 +72,7 @@ namespace Mineral.Core.Transactions
 
             foreach(var vote in Votes)
             {
-                if (storage.GetDelegateState(vote.Key) == null)
+                if (storage.Delegate.Get(vote.Key) == null)
                 {
                     TxResult = MINERAL_ERROR_CODES.TX_DELEGATE_NOT_REGISTERED;
                     return false;
