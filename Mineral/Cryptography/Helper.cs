@@ -8,6 +8,7 @@ using Org.BouncyCastle.Crypto;
 using Org.BouncyCastle.Security;
 using Org.BouncyCastle.Crypto.Parameters;
 using Mineral.Core;
+using Mineral.Utils;
 
 namespace Mineral.Cryptography
 {

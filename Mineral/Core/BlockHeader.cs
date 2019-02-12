@@ -2,6 +2,7 @@
 using Mineral.Cryptography;
 using Newtonsoft.Json.Linq;
 using System.Text;
+using Mineral.Utils;
 
 namespace Mineral.Core
 {
@@ -10,8 +11,8 @@ namespace Mineral.Core
         public UInt256 PrevHash = null;
         public UInt256 MerkleRoot = null;
         public int Version = 0;
-        public int Timestamp = 0;
-        public int Height = 0;
+        public uint Timestamp = 0;
+        public uint Height = 0;
         public MakerSignature Signature = null;
 
         protected UInt256 _hash = null;
@@ -24,7 +25,7 @@ namespace Mineral.Core
                 return _hash;
             }
         }
-        public int Size => PrevHash.Size + MerkleRoot.Size + sizeof(int) + sizeof(int) + sizeof(int) + Signature.Size;
+        public int Size => PrevHash.Size + MerkleRoot.Size + sizeof(int) + sizeof(uint) + sizeof(uint) + Signature.Size;
 
         public BlockHeader()
         {
@@ -57,8 +58,8 @@ namespace Mineral.Core
             PrevHash = reader.ReadSerializable<UInt256>();
             MerkleRoot = reader.ReadSerializable<UInt256>();
             Version = reader.ReadInt32();
-            Timestamp = reader.ReadInt32();
-            Height = reader.ReadInt32();
+            Timestamp = reader.ReadUInt32();
+            Height = reader.ReadUInt32();
         }
 
         public void SerializeUnsigned(BinaryWriter writer)
@@ -96,9 +97,9 @@ namespace Mineral.Core
         {
             if (!VerifySignature())
                 return false;
-            if (Hash == Blockchain.Instance.GenesisBlock.Hash)
+            if (Hash == BlockChain.Instance.GenesisBlock.Hash)
                 return false;
-            if (Blockchain.Instance.ContainsBlock(Hash))
+            if (BlockChain.Instance.ContainsBlock(Hash))
                 return false;
             return true;
         }

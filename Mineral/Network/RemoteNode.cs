@@ -7,34 +7,74 @@ using System.Linq;
 using Mineral.Core;
 using Mineral.Network.Payload;
 using System.IO;
+using Mineral.Utils;
 
 namespace Mineral.Network
 {
-    public abstract class RemoteNode : IDisposable
+    public abstract class RemoteNode : IDisposable, IEquatable<RemoteNode>
     {
-        protected LocalNode _localNode;
+        struct PingPong 
+        {
+            public static readonly int LoopTimeSecond = 10;
+
+            public long LatencyMs { get; private set; }
+            public bool Waiting { get; private set; }
+            public uint LastPongTime { get; private set; }
+
+            public void Ping()
+            {
+                Waiting = true;
+            }
+
+            public void Pong(PongPayload payload)
+            {
+                LatencyMs = payload.LatencyMs;
+                Waiting = false;
+                LastPongTime = DateTime.UtcNow.ToTimestamp();
+            }
+
+            public bool IsCheckTime => 
+                Waiting == false 
+                && LastPongTime + LoopTimeSecond <= DateTime.UtcNow.ToTimestamp();
+        }
 
         private static readonly TimeSpan HalfMinute = TimeSpan.FromSeconds(30);
         private static readonly TimeSpan OneMinute = TimeSpan.FromMinutes(1);
         private static readonly TimeSpan HalfHour = TimeSpan.FromMinutes(30);
 
-        public event Action<RemoteNode, bool> DisconnectedCallback;
-        public event Action<RemoteNode, IPEndPoint[]> PeersReceivedCallback;
+        public event Action<RemoteNode, DisconnectType> DisconnectedCallback;
+        public event Action<RemoteNode, List<NodeInfo>> PeersReceivedCallback;
 
         private Queue<Message> _messageQueueHigh = new Queue<Message>();
         private Queue<Message> _messageQueueLow = new Queue<Message>();
-        public long pingOutTime = 0;
-        public long pingTime = 86400000;
-        public bool IsConnected => _connected == 1 ? true : false;
         protected int _connected;
-        public VersionPayload Version { get; private set; }
-        public IPEndPoint RemoteEndPoint { get; protected set; }
-        public IPEndPoint ListenerEndPoint { get; protected set; }
+        private uint _height;
+        public uint Height { get { return Helper.InterlockedCompareExchange(ref _height, 0, 0); } }
 
-        public RemoteNode(LocalNode node, IPEndPoint remoteEndPoint = null)
+
+
+        public bool IsConnected => _connected == 1 ? true : false;
+
+        public NodeInfo Info { get; protected set; } = new NodeInfo();
+        public VersionPayload Version => Info.Version;
+        public IPEndPoint EndPoint => Info.EndPoint;
+
+        PingPong _pingpong = new PingPong();
+        public long Latency => _pingpong.LatencyMs;
+
+        public RemoteNode(IPEndPoint remoteEndPoint = null)
         {
-            _localNode = node;
-            RemoteEndPoint = remoteEndPoint;
+            Info.EndPoint = remoteEndPoint;
+        }
+
+        public bool Equals(RemoteNode other)
+        {
+            return Info.Equals(other.Info);
+        }
+
+        public override int GetHashCode()
+        {
+            return Info.GetHashCode();
         }
 
         internal virtual void OnConnected()
@@ -42,42 +82,30 @@ namespace Mineral.Network
             if (Interlocked.Exchange(ref _connected, 1) == 0)
             {
 #if DEBUG
-                Logger.Log("OnConnected. RemoteEndPoint : " + RemoteEndPoint);
+                Logger.Debug("OnConnected. RemoteEndPoint : " + EndPoint);
 #endif
                 NetworkProcessAsyncLoop();
             }
             else
             {
-                Disconnect(false, false);
+                Disconnect(DisconnectType.Exception, "Failed Interlocked.Exchange.");
             }
         }
 
-        public virtual void Disconnect(bool error, bool removeNode = true)
+        public virtual void Disconnect(DisconnectType type, string log)
         {
             if (Interlocked.Exchange(ref _connected, 0) == 1)
             {
 #if DEBUG
-                Logger.Log("OnDisconnected. RemoteEndPoint : " + RemoteEndPoint);
+                Logger.Debug("OnDisconnected. RemoteEndPoint : " + EndPoint + "\nType : " + type.ToString() + "\nLog : " + log);
 #endif
-                if (Version != null)
-                {
-                    if (removeNode)
-                    {
-                        lock (_localNode.NodeSet)
-                            _localNode.NodeSet.Remove(Version.NodeID);
-                    }
-                    else
-                    {
-                        Logger.Log("Block node: " + Version.NodeID);
-                    }
-                }
-                DisconnectedCallback?.Invoke(this, error);
+                DisconnectedCallback.Invoke(this, type);
             }
         }
 
-        public virtual void Dispose()
+        public virtual void Dispose() 
         {
-            Disconnect(false);
+            Disconnect(DisconnectType.None, "Dispose");
         }
 
         public void EnqueueMessage(Message.CommandName command, ISerializable payload = null)
@@ -116,34 +144,26 @@ namespace Mineral.Network
 
         private void ReceivedAddrs(AddrPayload payload)
         {
-            var em = payload.AddressList.Select(p => p.EndPoint).Where(
-                p => p.Port != Config.Instance.Network.TcpPort || !Config.Instance.LocalAddresses.Contains(p.Address));
-            IPEndPoint[] peers = (em.Count() > 0) ? em.ToArray() : new IPEndPoint[0];
-            if (0 < peers.Length)
-                PeersReceivedCallback?.Invoke(this, peers);
+            var local = NetworkManager.Instance.LocalInfos;
+            var peers = NetworkManager.Instance.ConnectedPeers;
+            var result = payload.NodeList.Where(p => !local.Contains(p) && !peers.ContainsKey(p)).ToList();
+            if (0 < result.Count)
+                PeersReceivedCallback.Invoke(this, result);
         }
 
         private void ReceivedRequestAddrs()
         {
-            if (!_localNode.IsServiceEnable)
-                return;
-
-            List<RemoteNode> connectedPeers = _localNode.CloneConnectedPeers();
-            IEnumerable<RemoteNode> hostPeers = connectedPeers.Where(p => p.ListenerEndPoint != null && p.Version != null);
-            List<AddressInfo> addrs = hostPeers.Select(p => AddressInfo.Create(p.ListenerEndPoint, p.Version.Version, p.Version.Timestamp)).ToList();
-            EnqueueMessage(Message.CommandName.ResponseAddrs, AddrPayload.Create(addrs));
+            var infos = NetworkManager.Instance.ConnectedPeers.Keys.ToList();
+            EnqueueMessage(Message.CommandName.ResponseAddrs, AddrPayload.Create(infos));
         }
 
         private void ReceivedRequestHeaders(GetBlocksPayload payload)
         {
-            if (!_localNode.IsServiceEnable)
-                return;
-
             List<BlockHeader> headers = new List<BlockHeader>();
             UInt256 hash = payload.HashStart;
             do
             {
-                BlockHeader header = Blockchain.Instance.GetNextHeader(hash);
+                BlockHeader header = BlockChain.Instance.GetNextHeader(hash);
                 if (header == null)
                     break;
                 headers.Add(header);
@@ -155,72 +175,92 @@ namespace Mineral.Network
 
         private void ReceivedRequestBlocks(GetBlocksPayload payload)
         {
-            if (!_localNode.IsServiceEnable)
-                return;
-
+            uint capacity = Config.Instance.Block.PayloadCapacity;
             List<Block> blocks = new List<Block>();
             UInt256 hash = payload.HashStart;
             do
             {
-                Block block = Blockchain.Instance.GetNextBlock(hash);
+                Block block = BlockChain.Instance.GetNextBlock(hash);
                 if (block == null)
                     break;
                 blocks.Add(block);
                 hash = block.Hash;
             }
-            while (hash != null && hash != payload.HashStop && blocks.Count < BlocksPayload.MaxCount);
+            while (hash != null && hash != payload.HashStop && blocks.Count < capacity);
+            EnqueueMessage(Message.CommandName.ResponseBlocks, BlocksPayload.Create(blocks));
+        }
+
+        private void ReceivedRequestBlocksFromHeight(GetBlocksFromHeightPayload payload)
+        {
+            uint capacity = Config.Instance.Block.PayloadCapacity;
+            uint end = capacity < payload.End - payload.Start ? payload.Start + capacity : payload.End;
+            List<Block> blocks = BlockChain.Instance.GetBlocks(payload.Start, end);
             EnqueueMessage(Message.CommandName.ResponseBlocks, BlocksPayload.Create(blocks));
         }
 
         private void ReceivedResponseBlocks(BlocksPayload payload)
         {
-            if (!_localNode.IsServiceEnable)
-                return;
+            foreach (Block block in payload.Blocks)
+            {
+                uint cacheLength = BlockChain.Instance.CurrentHeaderHeight - BlockChain.Instance.CurrentBlockHeight;
+                if (BlockChain.Instance.CacheBlockCapacity <= cacheLength)
+                    break;
 
-            if (!_localNode.AddResponseBlocks(payload.Blocks, this))
-                Disconnect(true, false);
+                ERROR_BLOCK err = BlockChain.Instance.AddBlock(block);
+                if (err != ERROR_BLOCK.NO_ERROR &&
+                    err != ERROR_BLOCK.ERROR_HEIGHT)
+                {
+                    Disconnect(DisconnectType.InvalidBlock, "Failed AddResponseBlocks.");
+                    break;
+                }
+            }
+            NetworkManager.Instance.SyncBlockManager.RemoveInfo(Info);
         }
 
         private void ReceivedBroadcastBlocks(BroadcastBlockPayload payload)
         {
-            if (!_localNode.IsServiceEnable)
-                return;
-
-            if (!_localNode.AddBroadcastBlocks(payload.Blocks, this))
-                Disconnect(true, false);
+            if (!NetworkManager.Instance.SyncBlockManager.IsSyncing)
+            {
+                foreach (Block block in payload.Blocks)
+                {
+                    ERROR_BLOCK err = BlockChain.Instance.AddBlock(block);
+                    if (err != ERROR_BLOCK.NO_ERROR &&
+                        err != ERROR_BLOCK.ERROR_HEIGHT)
+                    {
+                        Disconnect(DisconnectType.InvalidBlock, "Failed AddBroadcastBlocks.");
+                        break;
+                    }
+                }
+            }
         }
 
         private void ReceivedBroadcastTransactions(TransactionsPayload payload)
         {
-            if (!_localNode.IsServiceEnable)
-                return;
-
-            if (!_localNode.AddBroadcastTransactions(payload.Transactions, this))
-                Disconnect(true, false);
+            BlockChain.Instance.AddTransactionPool(payload.Transactions);
         }
 
         private void OnMessageReceived(Message message)
         {
 #if DEBUG
-            Logger.Log(message.Command.ToString());
+            Logger.Debug("[Recv] : " + message.Command.ToString());
 #endif
             switch (message.Command)
             {
                 case Message.CommandName.Version:
                 case Message.CommandName.Verack:
-                    Disconnect(true);
+                    Disconnect(DisconnectType.InvalidMessageFlow, "OnMessageReceived " + message.Command);
                     break;
 
                 case Message.CommandName.Ping:
-                    EnqueueMessage(Message.CommandName.Pong, PingPayload.Create());
+                    PingPayload ping = message.Payload.Serializable<PingPayload>();
+                    EnqueueMessage(Message.CommandName.Pong, PongPayload.Create(ping.Timestamp, BlockChain.Instance.CurrentBlockHeight));
                     break;
 
                 case Message.CommandName.Pong:
                     {
-                        pingTime = DateTime.Now.ToTimestamp() - pingOutTime;
-                        PingPayload pong = message.Payload.Serializable<PingPayload>();
-                        Version.Timestamp = pong.Timestamp;
-                        Version.Height = pong.Height;
+                        PongPayload pong = message.Payload.Serializable<PongPayload>();
+                        Helper.InterlockedExchange(ref _height, pong.Height);
+                        _pingpong.Pong(pong);
                     }
                     break;
 
@@ -235,6 +275,9 @@ namespace Mineral.Network
                     break;
                 case Message.CommandName.RequestBlocks:
                     ReceivedRequestBlocks(message.Payload.Serializable<GetBlocksPayload>());
+                    break;
+                case Message.CommandName.RequestBlocksFromHeight:
+                    ReceivedRequestBlocksFromHeight(message.Payload.Serializable<GetBlocksFromHeightPayload>());
                     break;
                 case Message.CommandName.ResponseHeaders:
                     break;
@@ -282,8 +325,25 @@ namespace Mineral.Network
                 }
                 else
                 {
+                    Logger.Debug("[Send] : " + message.Command.ToString());
                     await SendMessageAsync(message);
                 }
+            }
+        }
+
+        private async void PingPongAsyncLoop()
+        {
+#if !NET47
+            await Task.Yield();
+#endif
+            while (IsConnected)
+            {
+                if (_pingpong.IsCheckTime) 
+                {
+                    _pingpong.Ping();
+                    EnqueueMessage(Message.CommandName.Ping, PingPayload.Create());
+                }
+                Thread.Sleep(100);
             }
         }
 
@@ -293,7 +353,7 @@ namespace Mineral.Network
             await Task.Yield();
 #endif
             ushort port = 0 < Config.Instance.Network.TcpPort ? Config.Instance.Network.TcpPort : Config.Instance.Network.WsPort;
-            if (!await SendMessageAsync(Message.Create(Message.CommandName.Version, VersionPayload.Create(port, _localNode.NodeID))))
+            if (!await SendMessageAsync(Message.Create(Message.CommandName.Version, VersionPayload.Create(port, NetworkManager.Instance.NodeID))))
                 return;
 
             Message message = await ReceiveMessageAsync(TimeSpan.FromMinutes(5));
@@ -302,55 +362,35 @@ namespace Mineral.Network
 
             if (message.Command != Message.CommandName.Version)
             {
-                Disconnect(true);
+                Disconnect(DisconnectType.InvalidMessageFlow, "message.Command != Message.CommandName.Version");
                 return;
             }
             try
             {
-                Version = message.Payload.Serializable<VersionPayload>();
+                Info.Version = message.Payload.Serializable<VersionPayload>();
             }
             catch (EndOfStreamException)
             {
-                Disconnect(false);
+                Disconnect(DisconnectType.Exception, "VersionPayload EndOfStreamException");
                 return;
             }
             catch (FormatException)
             {
-                Disconnect(true);
+                Disconnect(DisconnectType.Exception, "VersionPayload FormatException");
                 return;
             }
 
-            // 이미 있는 노드이거나 블럭된 노드이면 Disconnect
-            if (_localNode.HasNode(this, true))
+            Info.EndPoint = new IPEndPoint(EndPoint.Address, Version.Port);
+            if (!NetworkManager.Instance.ConnectedPeers.TryAdd(Info, this))
             {
-                await SendMessageAsync(Message.Create(Message.CommandName.Verack, VerackPayload.Create(_localNode.NodeID)));
-                Disconnect(false, false);
-                return;
-            }
-
-            if (ListenerEndPoint != null)
-            {
-                if (ListenerEndPoint.Port != Version.Port)
-                {
-                    Disconnect(true, false);
-                    return;
-                }
-            }
-            else if (0 < Version.Port)
-            {
-                ListenerEndPoint = new IPEndPoint(RemoteEndPoint.Address, Version.Port);
-            }
-
-            if (_localNode.HasPeer(this))
-            {
-                Disconnect(false, false);
+                Disconnect(DisconnectType.MultiConnection, "HasPeer");
                 return;
             }
 
 #if DEBUG
-            Logger.Log("Version : " + ListenerEndPoint + ", " + Version.NodeID);
+            Logger.Debug("Version : " + EndPoint + ", " + Version.NodeID);
 #endif
-            if (!await SendMessageAsync(Message.Create(Message.CommandName.Verack, VerackPayload.Create(_localNode.NodeID))))
+            if (!await SendMessageAsync(Message.Create(Message.CommandName.Verack, VerackPayload.Create(NetworkManager.Instance.NodeID))))
                 return;
 
             message = await ReceiveMessageAsync(HalfMinute);
@@ -359,19 +399,14 @@ namespace Mineral.Network
 
             if (message.Command != Message.CommandName.Verack)
             {
-                Disconnect(true);
+                Disconnect(DisconnectType.InvalidMessageFlow, "message.Command != Message.CommandName.Verack");
                 return;
             }
 
             VerackPayload verack = message.Payload.Serializable<VerackPayload>();
 
             NetworkSendProcessAsyncLoop();
-
-            lock (_localNode._scLock)
-            {
-                if (Blockchain.Instance.CurrentBlockHeight >= Version.Height + 1)
-                    _localNode.isSyncing = false;
-            }
+            PingPongAsyncLoop();
 
             while (IsConnected)
             {
@@ -386,22 +421,17 @@ namespace Mineral.Network
                 }
                 catch (EndOfStreamException e)
                 {
-                    Logger.Log(e.Message);
-                    Disconnect(false);
+
+                    Logger.Error(e.Message + "\n" + e.StackTrace);
+                    Disconnect(DisconnectType.Exception, message.Command + ". EndOfStreamException");
                     break;
                 }
                 catch (FormatException)
                 {
-                    Disconnect(true);
+                    Disconnect(DisconnectType.Exception, message.Command + ". FormatException");
                     break;
                 }
             }
-        }
-
-        public void SendPing()
-        {
-            pingOutTime = DateTime.Now.ToTimestamp();
-            EnqueueMessage(Message.CommandName.Ping);
         }
     }
 }

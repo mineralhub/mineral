@@ -15,30 +15,30 @@ using Mineral.Wallets.KeyStore;
 using System.IO;
 using Newtonsoft.Json.Linq;
 using Newtonsoft.Json;
-using System.Reflection;
-using MineralNode.CommandLine;
-using MineralNode.CommandLine.Attributes;
+using Mineral.Utils;
+using Mineral.Database.BlockChain;
+using Mineral.Core.Transactions;
 
 namespace MineralNode
 {
     public class MainService
     {
         private short BlockVersion => Config.Instance.BlockVersion;
-        private int GenesisBlockTimestamp => Config.Instance.GenesisBlock.Timestamp;
+        private uint GenesisBlockTimestamp => Config.Instance.GenesisBlock.Timestamp;
         private WalletAccount _account;
         private Block _genesisBlock;
         private LocalNode _node;
         private RpcServer _rpcServer;
         private DPos _dpos;
-        private Options option;
+        private Options _options;
 
         public bool InitOption(string[] args)
         {
-            option = new Options(args);
+            _options = new Options(args);
 
-            if (option.IsHelp || !option.IsValid)
+            if (_options.IsHelp || !_options.IsValid)
             {
-                option.ShowHelpMessage();
+                _options.ShowHelpMessage();
                 return false;
             }
             return true;
@@ -46,8 +46,8 @@ namespace MineralNode
 
         public bool InitConfig()
         {
-            Logger.Log("---------- MainService Initialize Start ----------");
-            string path = option.Default.ConfigDir ?? "./config.json";
+            Logger.Info("---------- MainService Initialize Start ----------");
+            string path = _options.Default.ConfigDir ?? "./config.json";
             return Config.Instance.Initialize(path);
         }
 
@@ -55,18 +55,18 @@ namespace MineralNode
         {
             string path;
             byte[] privatekey = null;
-            if (!string.IsNullOrEmpty(option.Wallet.KeyStoreDir))
+            if (!string.IsNullOrEmpty(_options.Wallet.KeyStoreDir))
             {
-                if (string.IsNullOrEmpty(option.Wallet.KeyStorePassword))
+                if (string.IsNullOrEmpty(_options.Wallet.KeyStorePassword))
                 {
-                    Logger.Log("Keystore password is empty.");
+                    Logger.Warning("Keystore password is empty.");
                     return false;
                 }
 
-                path = option.Wallet.KeyStoreDir.Contains(".keystore") ? option.Wallet.KeyStoreDir : option.Wallet.KeyStoreDir + ".keystore";
+                path = _options.Wallet.KeyStoreDir.Contains(".keystore") ? _options.Wallet.KeyStoreDir : _options.Wallet.KeyStoreDir + ".keystore";
                 if (!File.Exists(path))
                 {
-                    Logger.Log(string.Format("Not found keystore file : [0]", path));
+                    Logger.Warning(string.Format("Not found keystore file : [0]", path));
                     return false;
                 }
 
@@ -79,15 +79,15 @@ namespace MineralNode
                 KeyStore keystore = new KeyStore();
                 keystore = JsonConvert.DeserializeObject<KeyStore>(json.ToString());
 
-                if (!KeyStoreService.DecryptKeyStore(option.Wallet.KeyStorePassword, keystore, out privatekey))
+                if (!KeyStoreService.DecryptKeyStore(_options.Wallet.KeyStorePassword, keystore, out privatekey))
                 {
-                    Logger.Log("Fail to decrypt keystore file.");
+                    Logger.Warning("Fail to decrypt keystore file.");
                     return false;
                 }
             }
-            else if (!string.IsNullOrEmpty(option.Wallet.PrivateKey))
+            else if (!string.IsNullOrEmpty(_options.Wallet.PrivateKey))
             {
-                privatekey = option.Wallet.PrivateKey.HexToBytes();
+                privatekey = _options.Wallet.PrivateKey.HexToBytes();
             }
             else
             {
@@ -118,7 +118,7 @@ namespace MineralNode
                 var txs = new List<Transaction>();
                 foreach (var reward in supplyTxs)
                 {
-                    var tx = new Transaction(eTransactionType.SupplyTransaction,
+                    var tx = new Transaction(TransactionType.Supply,
                                     GenesisBlockTimestamp - 1,
                                     reward)
                     {
@@ -135,7 +135,7 @@ namespace MineralNode
                             Name = Encoding.UTF8.GetBytes(p.Name),
                             From = p.Address
                         };
-                        var tx = new Transaction(eTransactionType.RegisterDelegateTransaction,
+                        var tx = new Transaction(TransactionType.RegisterDelegate,
                                                  GenesisBlockTimestamp - 1,
                                                  register)
                         {
@@ -157,17 +157,16 @@ namespace MineralNode
                 _genesisBlock = new Block(blockHeader, txs);
             }
 
-            Logger.Log("genesis block. hash : " + _genesisBlock.Hash);
-            Blockchain.SetInstance(new Mineral.Database.LevelDB.LevelDBBlockchain("./output-database", _genesisBlock));
-            Blockchain.Instance.SetProof(new DPos());
-            Blockchain.Instance.SetCacheBlockCapacity(Config.Instance.Block.CacheCapacity);
-            Blockchain.Instance.PersistCompleted += PersistCompleted;
-            Blockchain.Instance.Run();
+            Logger.Debug("genesis block. hash : " + _genesisBlock.Hash);
 
-            var genesisBlockTx = Blockchain.Instance.Storage.GetTransaction(_genesisBlock.Transactions[0].Hash);
-            Logger.Log("genesis block tx. hash : " + genesisBlockTx.Hash);
+            BlockChain.Instance.Initialize("./output-database", _genesisBlock);
+            BlockChain.Instance.CacheBlockCapacity = Config.Instance.Block.CacheCapacity;
+            BlockChain.Instance.PersistCompleted += PersistCompleted;
 
-            WalletIndexer.SetInstance(new Mineral.Database.LevelDB.LevelDBWalletIndexer("./output-wallet-index"));
+            var genesisBlockTx = BlockChain.Instance.GetTransaction(_genesisBlock.Transactions[0].Hash);
+            Logger.Debug("genesis block tx. hash : " + genesisBlockTx.Transaction.Hash);
+
+            WalletIndexer.SetInstance(new LevelDBWalletIndexer("./output-wallet-index"));
 
             return true;
         }
@@ -175,7 +174,6 @@ namespace MineralNode
         public bool Initialize(string[] args)
         {
             bool result = true;
-            Logger.WriteConsole = true;
 
             if (result) result = InitOption(args);
             if (result) result = InitConfig();
@@ -196,62 +194,56 @@ namespace MineralNode
                     if (!_account.IsDelegate())
                         break;
 
-                    if (_node.isSyncing)
+                    if (_node.IsSyncing)
                         break;
 
-                    int numCreate = Blockchain.Instance.Proof.GetCreateBlockCount(
+                    uint numCreate = BlockChain.Instance.Proof.GetCreateBlockCount(
                         _account.AddressHash,
-                        Blockchain.Instance.CurrentBlockHeight);
+                        BlockChain.Instance.CurrentHeaderHeight);
 
                     if (numCreate < 1)
                         break;
 
-                    CreateAndAddBlocks(numCreate, true);
-                } while (false);
-                Thread.Sleep(100);
+                    CreateAndAddBlocks(numCreate);
+                } while (true);
+
             }
         }
 
-        private void CreateAndAddBlocks(int cnt, bool directly)
+        // TODO : clean & move
+        private void CreateAndAddBlocks(uint cnt)
         {
             List<Block> blocks = new List<Block>();
-            int height = Blockchain.Instance.CurrentHeaderHeight;
-            UInt256 prevhash = Blockchain.Instance.CurrentHeaderHash;
+            uint height = BlockChain.Instance.CurrentHeaderHeight;
+            UInt256 prevhash = BlockChain.Instance.CurrentHeaderHash;
 
-            for (int i = 0; i < cnt; ++i)
+            for (uint i = 0; i < cnt; ++i)
             {
                 List<Transaction> txs = new List<Transaction>();
-                Blockchain.Instance.LoadTransactionPool(ref txs);
-                Blockchain.Instance.NormalizeTransactions(ref txs);
+                BlockChain.Instance.LoadTransactionPool(ref txs);
+                BlockChain.Instance.NormalizeTransactions(ref txs);
                 Block block = CreateBlock(height + i, prevhash, txs);
-
-                if (!Blockchain.Instance.VerityBlock(block))
+                
+                // TODO : else 처리
+                if (!BlockChain.Instance.VerityBlock(block))
                 {
-                    Logger.Log("Block [" + block.Height + ":" + block.Hash + "] has unconfirmed transactions.");
-                    if (!Blockchain.Instance.VerityBlock(block))
+                    Logger.Warning("Block [" + block.Height + ":" + block.Hash + "] has unconfirmed transactions.");
+                    if (!BlockChain.Instance.VerityBlock(block))
                     {
-                        Logger.Log("Block [" + block.Height + ":" + block.Hash + "] has not verified.");
+                        Logger.Warning("Block [" + block.Height + ":" + block.Hash + "] has not verified.");
                     }
                 }
 
                 prevhash = block.Hash;
 
-                if (directly)
-                {
-                    Blockchain.Instance.AddBlockDirectly(block);
-                }
-                else
-                {
-                    Blockchain.Instance.AddBlock(block);
-                }
+                BlockChain.Instance.AddBlock(block);
                 blocks.Add(block);
             }
 
-            if (directly)
-                _node.BroadCast(Message.CommandName.BroadcastBlocks, BroadcastBlockPayload.Create(blocks));
+            _node.BroadCast(Message.CommandName.BroadcastBlocks, BroadcastBlockPayload.Create(blocks));
         }
 
-        private Block CreateBlock(int height, UInt256 prevhash, List<Transaction> txs = null)
+        private Block CreateBlock(uint height, UInt256 prevhash, List<Transaction> txs = null)
         {
             if (txs == null)
                 txs = new List<Transaction>();
@@ -269,33 +261,9 @@ namespace MineralNode
             return new Block(blockHeader, txs);
         }
 
-        private Transaction CreateTransferTransaction(UInt160 target, Fixed8 value)
-        {
-            var trans = new TransferTransaction
-            {
-                From = _account.AddressHash,
-                To = new Dictionary<UInt160, Fixed8> { { target, value } }
-            };
-            var tx = new Transaction(eTransactionType.TransferTransaction, DateTime.UtcNow.ToTimestamp(), trans);
-            tx.Sign(_account);
-            return tx;
-        }
 
         private void PersistCompleted(object sender, Block block)
         {
-        }
-
-        private bool ValidBlock()
-        {
-            BlockHeader heightHeader = Blockchain.Instance.GetHeader(0);
-            BlockHeader hashHeader = Blockchain.Instance.GetHeader(heightHeader.Hash);
-            if (heightHeader == null || hashHeader == null)
-                return false;
-            Block heightBlock = Blockchain.Instance.GetBlock(0);
-            Block hashBlock = Blockchain.Instance.GetBlock(heightBlock.Hash);
-            if (heightBlock == null || hashBlock == null)
-                return false;
-            return true;
         }
 
         private void StartLocalNode()

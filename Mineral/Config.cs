@@ -5,6 +5,9 @@ using System.Net;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using Mineral.Converter;
+using System.Net.NetworkInformation;
+using System.Linq;
+using Mineral.Utils;
 
 namespace Mineral
 {
@@ -31,11 +34,20 @@ namespace Mineral
     public class BlockConfig
     {
         [JsonProperty("next_block_time_sec")]
-        public int NextBlockTimeSec { get; set; }
+        public uint NextBlockTimeSec { get; set; }
         [JsonProperty("cache_capacity")]
-        public int CacheCapacity { get; set; }
-        [JsonProperty("syncCheck")]
-        public bool syncCheck { get; set; }
+        public uint CacheCapacity { get; set; }
+        [JsonProperty("payload_capacity")]
+        public uint PayloadCapacity { get; set; }
+        [JsonProperty("sync_check")]
+        public bool SyncCheck { get; set; } = true;
+    }
+
+    [ConfigClass]
+    public class TransactionConfig
+    {
+        [JsonProperty("payload_capacity")]
+        public uint PayloadCapacity { get; set; }
     }
 
     [ConfigClass]
@@ -67,7 +79,7 @@ namespace Mineral
         [JsonProperty("delegate")]
         public List<DelegateConfig> Delegates { get; set; }
         [JsonProperty("timestamp")]
-        public int Timestamp { get; set; }
+        public uint Timestamp { get; set; }
     }
 
     public class Config
@@ -78,7 +90,9 @@ namespace Mineral
         public NetworkConfig Network { get; set; }
         [JsonProperty("block")]
         public BlockConfig Block { get; set; }
-        [JsonProperty("genesisBlock")]
+        [JsonProperty("transaction")]
+        public TransactionConfig Transaction { get; set; }
+        [JsonProperty("genesis_block")]
         public GenesisBlockConfig GenesisBlock { get; set; }
 
         [JsonProperty("block_version")]
@@ -89,18 +103,18 @@ namespace Mineral
         [JsonProperty("state_version")]
         public byte StateVersion { get; set; }
 
-        public int TTLMinute;
-        public int TTLHour;
-        public int TTLDay;
-        public int LockTTL;
-        public int VoteTTL;
+        public uint TTLMinute;
+        public uint TTLHour;
+        public uint TTLDay;
+        public uint LockTTL;
+        public uint VoteTTL;
 
         public readonly int ProtocolVersion = 0;
         public readonly int ConnectPeerMax = 10;
         public readonly int WaitPeerMax = 20;
         public readonly uint MagicNumber = 16;
         public readonly int MaxDelegate = 5;
-        public readonly int RoundBlock = 100;
+        public readonly uint RoundBlock = 100;
         public readonly int DelegateNameMaxLength = 20;
         public readonly int OtherSignMaxLength = 10;
         public readonly int OtherSignToMaxLength = 10;
@@ -117,6 +131,13 @@ namespace Mineral
         public Fixed8 VoteFee = Fixed8.One;
         [JsonConverter(typeof(JsonFixed8Converter))]
         public Fixed8 BlockReward = Fixed8.One * 250;
+
+        [JsonProperty("log-level")]
+        [JsonConverter(typeof(JsonLogLevelConverter))]
+        public LogLevel WriteLogLevel = LogLevel.INFO;
+
+        [JsonProperty("log-console")]
+        public bool WriteLogConsole = false;
 
         public uint Nonce = (uint)(new Random().Next());
 
@@ -143,6 +164,7 @@ namespace Mineral
                         instance.LockTTL = instance.TTLDay;
                         instance.VoteTTL = instance.TTLDay;
                         instance.LocalAddresses = new HashSet<IPAddress>();
+                        instance.LocalAddresses.UnionWith(NetworkInterface.GetAllNetworkInterfaces().SelectMany(p => p.GetIPProperties().UnicastAddresses).Select(p => p.Address.MapToIPv6()));
                         foreach (string addr in instance.Network.SeedList)
                         {
                             IPAddress iaddr;
@@ -157,6 +179,9 @@ namespace Mineral
             {
                 Console.WriteLine(e.Message);
             }
+            Logger.WriteConsole = Instance.WriteLogConsole;
+            Logger.WriteLogLevel = Instance.WriteLogLevel;
+
             return result;
         }
 
@@ -171,7 +196,6 @@ namespace Mineral
         }
 
         /*
-        LocalAddresses.UnionWith(NetworkInterface.GetAllNetworkInterfaces().SelectMany(p => p.GetIPProperties().UnicastAddresses).Select(p => p.Address.MapToIPv6()));
         if (Mineral.Network.UPNP.Discovery() && Mineral.Network.UPNP.Enable)
         {
             LocalAddresses.Add(Mineral.Network.UPNP.GetExternalIP());

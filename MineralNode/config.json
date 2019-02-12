@@ -2,6 +2,8 @@
 	"block_version": 1,
 	"address_version": 0,
 	"state_version": 0,
+	"log-level": "DEBUG",
+	"log-console": true,
 	"network": {
 		"listen_address": "0.0.0.0",
 		"tcp_port": 11255,
@@ -11,10 +13,14 @@
 	},
 	"block": {
 		"next_block_time_sec": 5,
-        "cache_capacity": 1024,
-		"syncCheck": true
+		"cache_capacity": 4096,
+    "payload_capacity": 2000,
+		"sync_check": true
 	},
-	"genesisBlock": {
+  "transaction": {
+    "payload_capacity": 2000
+  },
+	"genesis_block": {
 		"account": [
 			{
 				"address": "12AKRNHpFhDSBDD9rSn74VAzZSL3774PxQ",
@@ -37,36 +43,36 @@
 				"balance": "500000"
 			}
 		],
-		"delegate": [
-			{
-				"name": "one",
-				"address": "12AKRNHpFhDSBDD9rSn74VAzZSL3774PxQ"
-			},
-			{
-				"name": "two",
-				"address": "19mqdnsraLrBSHTupx9HcnmJrCryM5Jpjy"
-			},
-			{
-				"name": "three",
-				"address": "1889nUYazT9MhsqE4fxutq1dpyspHZEiaM"
-			},
-			{
-				"name": "four",
-				"address": "1CvKHaVAKsGGftTFZBdJRcxozxeQo7rXUk"
-			},
-			{
-				"name": "five",
-				"address": "12iMNgciNRutMSeu18iaByKYBPnk88Hcm1"
-			},
-			{
-				"name": "six",
-				"address": "1D8kDhZypRVGjuhTT6YWKBgVpJMip2n8ew"
-			},
-			{
-				"name": "seven",
-				"address": "1NP16nFctRtWeBq9PM4azdKudKtacW8h25"
-			}
-		],
+        "delegate": [
+          {
+            "name": "one",
+            "address": "12AKRNHpFhDSBDD9rSn74VAzZSL3774PxQ"
+          },
+          {
+            "name": "two",
+            "address": "19mqdnsraLrBSHTupx9HcnmJrCryM5Jpjy"
+          },
+          {
+            "name": "three",
+            "address": "1889nUYazT9MhsqE4fxutq1dpyspHZEiaM"
+          },
+          {
+            "name": "four",
+            "address": "1CvKHaVAKsGGftTFZBdJRcxozxeQo7rXUk"
+          },
+          {
+            "name": "five",
+            "address": "12iMNgciNRutMSeu18iaByKYBPnk88Hcm1"
+          },
+          {
+            "name": "six",
+            "address": "1D8kDhZypRVGjuhTT6YWKBgVpJMip2n8ew"
+          },
+          {
+            "name": "seven",
+            "address": "1NP16nFctRtWeBq9PM4azdKudKtacW8h25"
+          }
+        ],
 		"timestamp": 1532051710
 	}
 }

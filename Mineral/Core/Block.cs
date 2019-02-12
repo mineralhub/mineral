@@ -5,6 +5,8 @@ using System.Linq;
 using Newtonsoft.Json.Linq;
 using Mineral.Cryptography;
 using System.Text;
+using Mineral.Utils;
+using Mineral.Core.Transactions;
 
 namespace Mineral.Core
 {
@@ -14,7 +16,7 @@ namespace Mineral.Core
         public List<Transaction> Transactions { get; private set; }
         public int Size => Header.Size + Transactions.GetSize();
         public UInt256 Hash => Header.GetHash();
-        public int Height => Header.Height;
+        public uint Height => Header.Height;
 
         public Block()
         {
@@ -95,8 +97,8 @@ namespace Mineral.Core
                 return false;
             if (Header.MerkleRoot != new MerkleTree(Transactions.Select(p => p.Hash).ToArray()).RootHash)
                 return false;
-            BlockHeader prev = Blockchain.Instance.GetHeader(Header.PrevHash);
-            if (prev == null)
+            BlockHeader prev = BlockChain.Instance.GetHeader(Header.PrevHash);
+            if (prev == null) 
                 return false;
             if (prev.Height + 1 != Height)
                 return false;

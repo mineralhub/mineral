@@ -1,4 +1,5 @@
-﻿using Newtonsoft.Json;
+﻿using Mineral.Utils;
+using Newtonsoft.Json;
 using System;
 using System.Text;
 
@@ -63,7 +64,7 @@ namespace Mineral.Converter
     {
         public override bool CanConvert(Type objectType)
         {
-            return typeof(UInt160).Equals(objectType);
+            return typeof(Fixed8).Equals(objectType);
         }
 
         public override object ReadJson(JsonReader reader, Type objectType, object existingValue, JsonSerializer serializer)
@@ -74,6 +75,26 @@ namespace Mineral.Converter
         public override void WriteJson(JsonWriter writer, object value, JsonSerializer serializer)
         {
             writer.WriteValue(((Fixed8)value).Value);
+        }
+    }
+
+    public class JsonLogLevelConverter : JsonConverter
+    {
+        public override bool CanConvert(Type objectType)
+        {
+            return typeof(LogLevel).Equals(objectType);
+        }
+
+        public override object ReadJson(JsonReader reader, Type objectType, object existingValue, JsonSerializer serializer)
+        {
+            if (Enum.TryParse<LogLevel>(reader.Value.ToString(), true, out LogLevel logLevel))
+                return logLevel;
+            return LogLevel.INFO;
+        }
+
+        public override void WriteJson(JsonWriter writer, object value, JsonSerializer serializer)
+        {
+            writer.WriteValue(((LogLevel)value).ToString());
         }
     }
 }

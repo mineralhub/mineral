@@ -1,5 +1,4 @@
 ﻿using System;
-using System.IO;
 using System.Net;
 using System.Net.Sockets;
 using System.Threading;
@@ -13,39 +12,38 @@ namespace Mineral.Network
         private NetworkStream _stream;
 
         // connect peer
-        public TcpRemoteNode(LocalNode node, IPEndPoint listenerEndPoint)
-            : base(node)
+        public TcpRemoteNode(IPEndPoint listenerEndPoint)
         {
             AddressFamily addrf = listenerEndPoint.AddressFamily;
             if (listenerEndPoint.Address.IsIPv4MappedToIPv6)
                 addrf = AddressFamily.InterNetwork;
             _socket = new Socket(addrf, SocketType.Stream, ProtocolType.Tcp);
-            ListenerEndPoint = listenerEndPoint;
+            Info.EndPoint = listenerEndPoint;
         }
 
         // accept peer
-        public TcpRemoteNode(LocalNode node, Socket socket)
-            : base(node, new IPEndPoint(((IPEndPoint)socket.RemoteEndPoint).Address.MapToIPv6(), ((IPEndPoint)socket.RemoteEndPoint).Port))
+        public TcpRemoteNode(Socket socket)
+            : base(new IPEndPoint(((IPEndPoint)socket.RemoteEndPoint).Address.MapToIPv6(), ((IPEndPoint)socket.RemoteEndPoint).Port))
         {
             _socket = socket;
         }
 
-        public override void Disconnect(bool error, bool removeNode = false)
+        public override void Disconnect(DisconnectType type, string log)
         {
             if (_socket != null)
                 _socket.Dispose();
             if (_stream != null)
                 _stream.Dispose();
 
-            base.Disconnect(error, removeNode);
+            base.Disconnect(type, log);
         }
 
         internal override void OnConnected()
         {
-            if (RemoteEndPoint == null)
+            if (EndPoint == null)
             {
                 IPEndPoint ep = (IPEndPoint)_socket.RemoteEndPoint;
-                RemoteEndPoint = new IPEndPoint(ep.Address.MapToIPv6(), ep.Port);
+                Info.EndPoint = new IPEndPoint(ep.Address.MapToIPv6(), ep.Port);
             }
             _stream = new NetworkStream(_socket);
             base.OnConnected();
@@ -53,17 +51,17 @@ namespace Mineral.Network
 
         public async Task<bool> ConnectAsync()
         {
-            IPAddress addr = ListenerEndPoint.Address;
+            IPAddress addr = EndPoint.Address;
             if (addr.IsIPv4MappedToIPv6)
                 addr = addr.MapToIPv4();
 
             try
             {
-                await _socket.ConnectAsync(addr, ListenerEndPoint.Port);
+                await _socket.ConnectAsync(addr, EndPoint.Port);
             }
             catch (SocketException)
             {
-                Disconnect(false);
+                Disconnect(DisconnectType.Exception, "SocketException.");
                 return false;
             }
             return true;
@@ -72,20 +70,14 @@ namespace Mineral.Network
         protected override async Task<Message> ReceiveMessageAsync(TimeSpan timeout)
         {
             CancellationTokenSource source = new CancellationTokenSource(timeout);
-            source.Token.Register(() => Disconnect(false));
+            source.Token.Register(() => Disconnect(DisconnectType.Exception, "Failed Token Register."));
             try
             {
                 return await Message.DeserializeFromAsync(_stream, source.Token);
             }
-            catch (ArgumentException) { }
-            catch (ObjectDisposedException) { }
-            catch (OperationCanceledException)
+            catch (Exception e)
             {
-                Disconnect(false, true);
-            }
-            catch (Exception ex) when (ex is FormatException || ex is IOException)
-            {
-                Disconnect(false);
+                Disconnect(DisconnectType.Exception, e.GetType().ToString());
             }
             finally
             {
@@ -101,20 +93,15 @@ namespace Mineral.Network
 
             byte[] buf = message.ToArray();
             CancellationTokenSource source = new CancellationTokenSource(TimeSpan.FromSeconds(5));
-            source.Token.Register(() => Disconnect(false, true));
+            source.Token.Register(() => Disconnect(DisconnectType.Exception, "Failed Token Register."));
             try
             {
                 await _stream.WriteAsync(buf, 0, buf.Length, source.Token);
                 return true;
             }
-            catch (ObjectDisposedException) { }
-            catch(OperationCanceledException)
+            catch (Exception e)
             {
-                Disconnect(false, true);
-            }
-            catch (Exception ex) when (ex is IOException)
-            {
-                Disconnect(false);
+                Disconnect(DisconnectType.Exception, e.GetType().ToString());
             }
             finally
             {

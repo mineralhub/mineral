@@ -1,5 +1,8 @@
-﻿using System;
+﻿using Mineral.Database.BlockChain;
+using System;
+using System.Runtime.CompilerServices;
 
+[assembly: InternalsVisibleTo("Mineral.UnitTests")]
 namespace Mineral.Database.LevelDB
 {
     internal class DB : IDisposable

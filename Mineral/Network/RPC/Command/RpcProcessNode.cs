@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Net;
-using System.Text;
-using Newtonsoft.Json.Linq;
+﻿using Newtonsoft.Json.Linq;
 
 namespace Mineral.Network.RPC.Command
 {
@@ -13,9 +9,9 @@ namespace Mineral.Network.RPC.Command
             JObject json = new JObject();
             JArray nodes = new JArray();
 
-            LocalNode node = obj as LocalNode;
-            foreach (RemoteNode remote in node.CloneConnectedPeers())
-                nodes.Add(string.Format("{0}:{1}", remote.RemoteEndPoint.Address, remote.RemoteEndPoint.Port));
+            //LocalNode node = obj as LocalNode;
+            foreach (RemoteNode remote in NetworkManager.Instance.ConnectedPeers.Values)
+                nodes.Add(string.Format("{0}:{1}", remote.EndPoint.Address, remote.EndPoint.Port));
 
             json["nodes"] = nodes;
             return json;

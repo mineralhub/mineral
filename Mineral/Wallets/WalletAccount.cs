@@ -1,5 +1,7 @@
 ﻿using Mineral.Core;
+using Mineral.Core.State;
 using Mineral.Cryptography;
+using Mineral.Utils;
 using System;
 using System.Linq;
 
@@ -25,12 +27,12 @@ namespace Mineral.Wallets
 
         public bool IsDelegate()
         {
-            return Blockchain.Instance.GetDelegateStateAll().FindIndex(p => (p.AddressHash == AddressHash)) != -1;
+            return BlockChain.Instance.GetDelegateStateAll().FindIndex(p => (p.AddressHash == AddressHash)) != -1;
         }
 
         public int IsDelegateOrder()
         {
-            return Blockchain.Instance.GetDelegateStateAll().FindIndex(p => (p.AddressHash == AddressHash));
+            return BlockChain.Instance.GetDelegateStateAll().FindIndex(p => (p.AddressHash == AddressHash));
         }
 
         public static WalletAccount CreateAccount()
@@ -100,7 +102,7 @@ namespace Mineral.Wallets
 
         public static Fixed8 GetBalance(UInt160 addressHash)
         {
-            AccountState state = Blockchain.Instance.Storage.GetAccountState(addressHash);
+            AccountState state = BlockChain.Instance.GetAccountState(addressHash);
             if (state == null)
                 return Fixed8.Zero;
             return state.Balance;
@@ -113,7 +115,7 @@ namespace Mineral.Wallets
 
         public static Fixed8 GetLockBalance(UInt160 addressHash)
         {
-            AccountState state = Blockchain.Instance.Storage.GetAccountState(addressHash);
+            AccountState state = BlockChain.Instance.GetAccountState(addressHash);
             if (state == null)
                 return Fixed8.Zero;
             return state.LockBalance;
@@ -126,7 +128,7 @@ namespace Mineral.Wallets
 
         public static Fixed8 GetTotalBalance(UInt160 addressHash)
         {
-            AccountState state = Blockchain.Instance.Storage.GetAccountState(addressHash);
+            AccountState state = BlockChain.Instance.GetAccountState(addressHash);
             if (state == null)
                 return Fixed8.Zero;
             return state.TotalBalance;

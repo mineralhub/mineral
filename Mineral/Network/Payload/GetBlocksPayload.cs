@@ -1,4 +1,5 @@
-﻿using System.IO;
+﻿using Mineral.Utils;
+using System.IO;
 
 namespace Mineral.Network.Payload
 {
@@ -29,6 +30,36 @@ namespace Mineral.Network.Payload
         {
             writer.WriteSerializable(HashStart);
             writer.WriteSerializable(HashStop);
+        }
+    }
+
+    internal class GetBlocksFromHeightPayload : ISerializable
+    {
+        public uint Start { get; private set; }
+        public uint End { get; private set; }
+
+        public int Size => sizeof(uint) + sizeof(uint);
+
+        public static GetBlocksFromHeightPayload Create(uint start, uint end)
+        {
+            return new GetBlocksFromHeightPayload
+            {
+                Start = start,
+                End = end
+            };
+        }
+
+        public void Deserialize(BinaryReader reader)
+        {
+            Start = reader.ReadUInt32();
+            End = reader.ReadUInt32();
+
+        }
+
+        public void Serialize(BinaryWriter writer)
+        {
+            writer.Write(Start);
+            writer.Write(End);
         }
     }
 }

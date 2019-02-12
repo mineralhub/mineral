@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Mineral.Utils;
+using System;
 using System.Collections.Generic;
 
 namespace Mineral.Core.DPos
@@ -6,27 +7,27 @@ namespace Mineral.Core.DPos
     public class DelegateTurnTable
     {
         private List<UInt160> _table = new List<UInt160>();
-        public int UpdateHeight { get; private set; }
-        public int Count => _table.Count;
+        public uint UpdateHeight { get; private set; }
+        public uint Count => (uint)_table.Count;
 
         public void SetTable(List<UInt160> addressHashes)
         {
             _table = addressHashes;
         }
 
-        public void SetUpdateHeight(int height)
+        public void SetUpdateHeight(uint height)
         {
             UpdateHeight = height;
         }
 
-        public int RemainUpdate(int height)
+        public uint RemainUpdate(uint height)
         {
             return UpdateHeight + Config.Instance.RoundBlock - height;
         }
 
-        public UInt160 GetTurn(int height)
+        public UInt160 GetTurn(uint height)
         {
-            return _table[(height - UpdateHeight) % Count];
+            return _table[(int)((height - UpdateHeight) % Count)];
         }
     }
 
@@ -39,22 +40,22 @@ namespace Mineral.Core.DPos
             TurnTable = new DelegateTurnTable();
         }
 
-        public int CalcBlockTime(int height)
+        public uint CalcBlockTime(uint height)
         {
             return Config.Instance.GenesisBlock.Timestamp + height * Config.Instance.Block.NextBlockTimeSec;
         }
 
-        public override int CalcBlockHeight(int time)
+        public override uint CalcBlockHeight(uint time)
         {
             return (time - Config.Instance.GenesisBlock.Timestamp) / Config.Instance.Block.NextBlockTimeSec;
         }
 
-        public override int GetCreateBlockCount(UInt160 addr, int height)
+        public override uint GetCreateBlockCount(UInt160 addr, uint height)
         {
-            int targetHeight = CalcBlockHeight(DateTime.UtcNow.ToTimestamp());
+            uint targetHeight = CalcBlockHeight((uint)DateTime.UtcNow.ToTimestamp());
             if (TurnTable.GetTurn(targetHeight) == addr)
             {
-                int remain = TurnTable.RemainUpdate(height);
+                uint remain = TurnTable.RemainUpdate(height);
                 if (remain < targetHeight - height)
                     return remain;
                 return targetHeight - height;
@@ -62,18 +63,18 @@ namespace Mineral.Core.DPos
             return 0;
         }
 
-        public override int RemainUpdate(int height)
+        public override uint RemainUpdate(uint height)
         {
             return TurnTable.RemainUpdate(height);
         }
 
-        public override void Update(Blockchain chain)
+        public override void Update(BlockChain chain)
         {
-            int currentHeight = chain.CurrentBlockHeight;
+            uint currentHeight = chain.CurrentBlockHeight;
             UpdateTurnTable(chain, chain.GetBlock(currentHeight - currentHeight % Config.Instance.RoundBlock));
         }
 
-        private void UpdateTurnTable(Blockchain chain, Block block)
+        private void UpdateTurnTable(BlockChain chain, Block block)
         {
             // calculate turn table
             List<DelegateState> delegates = chain.GetDelegateStateAll();

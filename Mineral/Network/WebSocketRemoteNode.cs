@@ -1,9 +1,7 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.IO;
 using System.Net;
 using System.Net.WebSockets;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -13,17 +11,17 @@ namespace Mineral.Network
     {
         private WebSocket _socket;
 
-        public WebSocketRemoteNode(WebSocket ws, LocalNode node, IPEndPoint remoteEndPoint) : base(node, remoteEndPoint)
+        public WebSocketRemoteNode(WebSocket ws, IPEndPoint remoteEndPoint) : base(remoteEndPoint)
         {
             _socket = ws;
         }
 
-        public override void Disconnect(bool error, bool removeNode = false)
+        public override void Disconnect(DisconnectType type, string log)
         {
             if (_socket != null)
                 _socket.Dispose();
 
-            base.Disconnect(error, removeNode);
+            base.Disconnect(type, log);
         }
 
         internal override void OnConnected()
@@ -38,15 +36,9 @@ namespace Mineral.Network
                 {
                     return await Message.DeserializeFromAsync(_socket, source.Token);
                 }
-                catch (ArgumentException) { }
-                catch (ObjectDisposedException) { }
-                catch(OperationCanceledException)
+                catch (Exception e)
                 {
-                    Disconnect(false, true);
-                }
-                catch (Exception e) when (e is FormatException || e is IOException || e is WebSocketException)
-                {
-                    Disconnect(false);
+                    Disconnect(DisconnectType.Exception, e.GetType().ToString());
                 }
             }
             return null;
@@ -64,13 +56,9 @@ namespace Mineral.Network
                 await _socket.SendAsync(segment, WebSocketMessageType.Binary, true, source.Token);
                 return true;
             }
-            catch (ObjectDisposedException) { }
-            catch(OperationCanceledException) {
-                Disconnect(false, true);
-            }
-            catch (Exception ex) when (ex is WebSocketException)
+            catch (Exception e)
             {
-                Disconnect(false);
+                Disconnect(DisconnectType.Exception, e.GetType().ToString());
             }
             finally
             {

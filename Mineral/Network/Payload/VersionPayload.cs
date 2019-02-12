@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Mineral.Utils;
+using System;
 using System.IO;
 
 namespace Mineral.Network.Payload
@@ -6,16 +7,16 @@ namespace Mineral.Network.Payload
     public class VersionPayload : ISerializable
     {
         public int Version;
-        public int Timestamp;
         public ushort Port;
+        public uint Timestamp;
         public uint Nonce;
-        public int Height;
+        public uint Height;
         public bool Relay;
         public Guid NodeID;
 
-        public int Size => sizeof(int) + sizeof(int) + sizeof(ushort) + sizeof(uint) + sizeof(int) + sizeof(bool) + 16/*Guid bytes*/;
+        public int Size => sizeof(int) + sizeof(ushort) + sizeof(uint) + sizeof(uint) + sizeof(uint) + sizeof(bool) + 16/*Guid bytes*/;
 
-        public static VersionPayload Create(int port, Guid _guid)
+        public static VersionPayload Create(int port, Guid guid)
         {
             return new VersionPayload
             {
@@ -23,9 +24,9 @@ namespace Mineral.Network.Payload
                 Timestamp = DateTime.Now.ToTimestamp(),
                 Port = (ushort)port,
                 Nonce = Config.Instance.Nonce,
-                Height = Core.Blockchain.Instance.CurrentBlockHeight,
+                Height = Core.BlockChain.Instance.CurrentBlockHeight,
                 Relay = true,
-                NodeID = _guid
+                NodeID = guid
             };
         }
 
@@ -34,10 +35,10 @@ namespace Mineral.Network.Payload
             try
             {
                 Version = reader.ReadInt32();
-                Timestamp = reader.ReadInt32();
+                Timestamp = reader.ReadUInt32();
                 Port = reader.ReadUInt16();
                 Nonce = reader.ReadUInt32();
-                Height = reader.ReadInt32();
+                Height = reader.ReadUInt32();
                 Relay = reader.ReadBoolean();
                 NodeID = new Guid(reader.ReadBytes(16));
             }
@@ -57,21 +58,23 @@ namespace Mineral.Network.Payload
             writer.Write(Relay);
             writer.Write(NodeID.ToByteArray());
         }
+
+        public override int GetHashCode()
+        {
+            return NodeID.GetHashCode();
+        }
     }
 
     public class PingPayload : ISerializable
     {
-        public int Timestamp;
-        public int Height;
+        public long Timestamp;
+        public int Size => sizeof(long);
 
-        public int Size => sizeof(int) + sizeof(int);
-
-        public static VersionPayload Create()
+        public static PingPayload Create()
         {
-            return new VersionPayload
+            return new PingPayload
             {
-                Timestamp = DateTime.Now.ToTimestamp(),
-                Height = Core.Blockchain.Instance.CurrentBlockHeight,
+                Timestamp = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds(),
             };
         }
 
@@ -79,8 +82,7 @@ namespace Mineral.Network.Payload
         {
             try
             {
-                Timestamp = reader.ReadInt32();
-                Height = reader.ReadInt32();
+                Timestamp = reader.ReadInt64();
             }
             catch (Exception e)
             {
@@ -91,6 +93,47 @@ namespace Mineral.Network.Payload
         public void Serialize(BinaryWriter writer)
         {
             writer.Write(Timestamp);
+        }
+    }
+
+    public class PongPayload : ISerializable
+    {
+        public long Ping;
+        public long Pong;
+        public uint Height;
+
+        public int Size => sizeof(long) + sizeof(long) + sizeof(uint);
+        public long LatencyMs => Pong - Ping;
+
+        public static PongPayload Create(long pingtime, uint height)
+        {
+            return new PongPayload
+            {
+                Ping = pingtime,
+                Pong = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds(),
+                Height = height
+            };
+        }
+
+        public void Deserialize(BinaryReader reader)
+        {
+            try
+            {
+                Ping = reader.ReadInt64();
+                Pong = reader.ReadInt64();
+                Height = reader.ReadUInt32();
+            }
+            catch (Exception e)
+            {
+                Logger.Error("deserialize PongPayload Exception.");
+                throw e;
+            }
+        }
+
+        public void Serialize(BinaryWriter writer)
+        {
+            writer.Write(Ping);
+            writer.Write(Pong);
             writer.Write(Height);
         }
     }

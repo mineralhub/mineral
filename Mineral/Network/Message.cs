@@ -23,6 +23,7 @@ namespace Mineral.Network
 
             RequestHeaders = 1000,
             RequestBlocks = 1001,
+            RequestBlocksFromHeight = 1002,
 
             ResponseHeaders = 1100,
             ResponseBlocks = 1101,
