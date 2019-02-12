@@ -299,10 +299,17 @@ namespace Mineral.Core
                     else if (_storeHeaderCount <= _currentBlockHeight)
                     {
                         UInt256 hash = _currentBlockHash;
-                        foreach (BlockHeader header in _dbManager.GetBlockHeaders(_cacheChain.HeaderHeight + 1, _currentBlockHeight))
+                        Dictionary<uint, UInt256> headers = new Dictionary<uint, UInt256>();
+
+                        while (hash != _cacheChain.GetBlockHash((uint)_cacheChain.HeaderCount - 1))
                         {
-                            _cacheChain.AddHeaderHash(header.Height, header.Hash);
+                            BlockHeader header = _dbManager.GetBlockHeader(hash);
+                            headers.Add(header.Height, header.Hash);
+                            hash = header.PrevHash;
                         }
+
+                        foreach (var header in headers.OrderBy(x => x.Key))
+                            _cacheChain.AddHeaderHash(header.Key, header.Value);
                     }
                     _proof.SetTurnTable(_dbManager.GetCurrentTurnTable());
                 }

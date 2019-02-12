@@ -204,14 +204,14 @@ namespace MineralNode
                     if (numCreate < 1)
                         break;
 
-                    CreateAndAddBlocks(numCreate, false);
+                    CreateAndAddBlocks(numCreate);
                 } while (true);
 
             }
         }
 
         // TODO : clean & move
-        private void CreateAndAddBlocks(uint cnt, bool directly)
+        private void CreateAndAddBlocks(uint cnt)
         {
             List<Block> blocks = new List<Block>();
             uint height = BlockChain.Instance.CurrentHeaderHeight;
@@ -236,19 +236,11 @@ namespace MineralNode
 
                 prevhash = block.Hash;
 
-                if (directly)
-                {
-                    BlockChain.Instance.AddBlockDirectly(block);
-                }
-                else
-                {
-                    BlockChain.Instance.AddBlock(block);
-                }
+                BlockChain.Instance.AddBlock(block);
                 blocks.Add(block);
             }
 
-            if (directly)
-                _node.BroadCast(Message.CommandName.BroadcastBlocks, BroadcastBlockPayload.Create(blocks));
+            _node.BroadCast(Message.CommandName.BroadcastBlocks, BroadcastBlockPayload.Create(blocks));
         }
 
         private Block CreateBlock(uint height, UInt256 prevhash, List<Transaction> txs = null)
