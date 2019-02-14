@@ -54,7 +54,7 @@ namespace Mineral.Core.Transactions
             Version = Config.Instance.TransactionVersion;
         }
 
-        static public Transaction DeserializeFrom(byte[] value, int offset = 0)
+        public static Transaction DeserializeFrom(byte[] value, int offset = 0)
         {
             using (MemoryStream ms = new MemoryStream(value, offset, value.Length - offset, false))
             using (BinaryReader reader = new BinaryReader(ms, Encoding.UTF8))

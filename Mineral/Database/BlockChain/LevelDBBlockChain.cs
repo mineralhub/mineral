@@ -7,6 +7,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Text;
 
@@ -59,26 +60,22 @@ namespace Mineral.Database.BlockChain
             batch.Put(SliceBuilder.Begin(DataEntryPrefix.IX_HeaderHashList).Add(count), hash);
         }
 
-        public void PutBlock(WriteBatch batch, BlockHeader header, long fee)
-        {
-            batch.Put(SliceBuilder.Begin(DataEntryPrefix.DATA_Block).Add(header.Hash), SliceBuilder.Begin().Add(fee).Add(header.ToArray()));
-        }
-
         public void PutBlock(WriteBatch batch, Block block, long fee)
         {
-            batch.Put(SliceBuilder.Begin(DataEntryPrefix.DATA_Block).Add(block.Hash), SliceBuilder.Begin().Add(fee).Add(block.Trim()));
+            BlockState blockState = new BlockState(block, Fixed8.FromLongValue(fee));
+            batch.Put(SliceBuilder.Begin(DataEntryPrefix.DATA_Block).Add(block.Hash), SliceBuilder.Begin().Add(blockState.ToArray()));
         }
 
         public void PutTransaction(WriteBatch batch, Block block, Transaction tx)
         {
             TransactionState txState = new TransactionState(block.Header.Height, tx);
-            batch.Put(SliceBuilder.Begin(DataEntryPrefix.DATA_Transaction).Add(tx.Hash), SliceBuilder.Begin().Add(block.Header.Height).Add(txState.ToArray()));
+            batch.Put(SliceBuilder.Begin(DataEntryPrefix.DATA_Transaction).Add(tx.Hash), SliceBuilder.Begin().Add(txState.ToArray()));
         }
 
         public void PutTransactionResult(WriteBatch batch, Transaction tx)
         {
-            byte[] txRes = BitConverter.GetBytes((Int64)tx.Data.TxResult).Take(8).ToArray();
-            batch.Put(SliceBuilder.Begin(DataEntryPrefix.DATA_TxResult).Add(tx.Hash), SliceBuilder.Begin().Add(txRes));
+            TransactionResultState txResultState = new TransactionResultState(tx.Data.TxResult);
+            batch.Put(SliceBuilder.Begin(DataEntryPrefix.DATA_TxResult).Add(tx.Hash), SliceBuilder.Begin().Add(txResultState.ToArray()));
         }
 
         public void PutCurrentTurnTalbe(WriteBatch batch, byte[] data)
@@ -148,9 +145,14 @@ namespace Mineral.Database.BlockChain
             Slice value;
             bool result = _db.TryGet(new ReadOptions { FillCache = false }, SliceBuilder.Begin(DataEntryPrefix.DATA_Block).Add(headerHash), out value);
             if (result)
-                blockHeader = BlockHeader.FromArray(value.ToArray(), sizeof(long));
+            {
+                BlockState blockState = BlockState.DeserializeFrom(value.ToArray());
+                blockHeader = blockState.Header;
+            }
             else
+            {
                 blockHeader = null;
+            }
 
             return result;
         }
@@ -160,10 +162,14 @@ namespace Mineral.Database.BlockChain
             Slice value;
             bool result = _db.TryGet(new ReadOptions { FillCache = false }, SliceBuilder.Begin(DataEntryPrefix.DATA_Block).Add(blockHash), out value);
             if (result)
-                block = Block.FromTrimmedData(value.ToArray(), sizeof(long), p => Storage.Transaction.Get(p)?.Transaction);
+            {
+                BlockState blockState = BlockState.DeserializeFrom(value.ToArray());
+                block = blockState.GetBlock(p => Storage.Transaction.Get(p));
+            }
             else
+            {
                 block = null;
-
+            }
             return result;
         }
 
@@ -172,10 +178,14 @@ namespace Mineral.Database.BlockChain
             Slice value;
             bool result = _db.TryGet(new ReadOptions { FillCache = false }, SliceBuilder.Begin(DataEntryPrefix.DATA_Transaction).Add(txHash), out value);
             if (result)
-                tx = Transaction.DeserializeFrom(value.ToArray().Skip(sizeof(uint)).ToArray());
+            {
+                TransactionState txState = TransactionState.DeserializeFrom(value.ToArray());
+                tx = txState.Transaction;
+            }
             else
+            {
                 tx = null;
-
+            }
             return result;
         }
 
@@ -184,9 +194,14 @@ namespace Mineral.Database.BlockChain
             Slice value;
             bool result = _db.TryGet(new ReadOptions { FillCache = false }, SliceBuilder.Begin(DataEntryPrefix.DATA_TxResult).Add(txHash), out value);
             if (result)
-                code = (MINERAL_ERROR_CODES)value.ToInt64();
+            {
+                TransactionResultState txResultState = TransactionResultState.DeserializeFrom(value.ToArray());
+                code = txResultState.TxResult;
+            }
             else
+            {
                 code = MINERAL_ERROR_CODES.NO_ERROR;
+            }
 
             return result;
         }
@@ -262,12 +277,18 @@ namespace Mineral.Database.BlockChain
 
         public BlockHeader GetBlockHeader(UInt256 blockHash)
         {
-            return BlockHeader.FromArray(_db.Get(new ReadOptions { FillCache = false }, SliceBuilder.Begin(DataEntryPrefix.DATA_Block).Add(blockHash)).ToArray(), sizeof(long));
+            Slice value = _db.Get(new ReadOptions { FillCache = false }, SliceBuilder.Begin(DataEntryPrefix.DATA_Block).Add(blockHash));
+            BlockState blockState = BlockState.DeserializeFrom(value.ToArray());
+
+            return blockState.Header;
         }
 
         public Block GetBlock(UInt256 blockHash)
         {
-            return Block.FromTrimmedData(_db.Get(new ReadOptions { FillCache = false }, SliceBuilder.Begin(DataEntryPrefix.DATA_Block).Add(blockHash)).ToArray(), sizeof(long), p => Storage.Transaction.Get(p)?.Transaction);
+            Slice value = _db.Get(new ReadOptions { FillCache = false }, SliceBuilder.Begin(DataEntryPrefix.DATA_Block).Add(blockHash));
+            BlockState blockState = BlockState.DeserializeFrom(value.ToArray());
+
+            return blockState.GetBlock(p => Storage.Transaction.Get(p));
         }
 
         public IEnumerable<UInt256> GetHeaderHashList()
@@ -291,15 +312,21 @@ namespace Mineral.Database.BlockChain
         public IEnumerable<BlockHeader> GetBlockHeaders(uint start, uint end)
         {
             return _db.Find(new ReadOptions { FillCache = false }, SliceBuilder.Begin(DataEntryPrefix.DATA_Block), (k, v) =>
-                                    BlockHeader.FromArray(v.ToArray(), sizeof(long)))
-                                    .Where(x => x.Height >= start && x.Height <= end)
-                                    .OrderBy(p => p.Height).ToArray();
+                {
+                    BlockState blockState = BlockState.DeserializeFrom(v.ToArray());
+                    return blockState.Header;
+                })
+                .Where(x => x.Height >= start && x.Height <= end)
+                .OrderBy(p => p.Height).ToArray();
         }
 
         public IEnumerable<BlockHeader> GetBlockHeaderList()
         {
             return _db.Find(new ReadOptions { FillCache = false }, SliceBuilder.Begin(DataEntryPrefix.DATA_Block), (k, v) =>
-                                    BlockHeader.FromArray(v.ToArray(), sizeof(long))).OrderBy(p => p.Height).ToArray();
+                {
+                    BlockState blockState = BlockState.DeserializeFrom(v.ToArray());
+                    return blockState.Header;
+                });
         }
 
         public IEnumerable<UInt256> GetBlockHeaderHashList()
@@ -362,7 +389,8 @@ namespace Mineral.Database.BlockChain
 
         public void PutBlock(Block block)
         {
-            _db.Put(WriteOptions.Default, SliceBuilder.Begin(DataEntryPrefix.DATA_Block).Add(block.Hash), SliceBuilder.Begin().Add(0L).Add(block.ToArray()));
+            BlockState blockState = new BlockState(block);
+            _db.Put(WriteOptions.Default, SliceBuilder.Begin(DataEntryPrefix.DATA_Block).Add(block.Hash), SliceBuilder.Begin().Add(blockState.ToArray()));
         }
 
         public void PutHeaderHashList(int prefix_count, IEnumerable<UInt256> headerHashList)
