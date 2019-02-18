@@ -62,8 +62,9 @@ namespace Mineral.Database.LevelDB
             _blockTriggers = new BlockTriggerCache(_db);
         }
 
-        internal void Commit(WriteBatch batch, uint height)
+        internal void Commit(uint height)
         {
+            WriteBatch batch = new WriteBatch();
             _block.Commit(batch);
             _transaction.Commit(batch);
             _accounts.Clean();
@@ -72,6 +73,7 @@ namespace Mineral.Database.LevelDB
             _otherSignTxs.Commit(batch);
             _blockTriggers.Clean(height);
             _blockTriggers.Commit(batch);
+            _db.Write(WriteOptions.Default, batch);
         }
     }
 }

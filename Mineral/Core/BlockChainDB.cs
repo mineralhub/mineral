@@ -31,10 +31,8 @@ namespace Mineral.Core
             if (hash == null)
                 return null;
 
-            BlockHeader header = null;
-            _dbManager.TryGetBlockHeader(hash, out header);
-
-            return header;
+            BlockState blockState = _dbManager.Storage.Block.Get(hash);
+            return blockState != null ? blockState.Header : null;
         }
 
         public BlockHeader GetHeader(UInt256 hash)
@@ -43,10 +41,8 @@ namespace Mineral.Core
             if (block != null)
                 return block.Header;
 
-            BlockHeader header = null;
-            _dbManager.TryGetBlockHeader(hash, out header);
-
-            return header;
+            BlockState blockState = _dbManager.Storage.Block.Get(hash);
+            return blockState != null ? blockState.Header : null;
         }
 
         public BlockHeader GetNextHeader(UInt256 hash)
@@ -85,7 +81,7 @@ namespace Mineral.Core
             if (block != null)
                 return block;
 
-            _dbManager.TryGetBlock(hash, out block);
+            block = _dbManager.Storage.Block.Get(hash)?.GetBlock(p => _dbManager.Storage.Transaction.Get(p));
             return block;
         }
 

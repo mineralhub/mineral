@@ -8,6 +8,7 @@ using Mineral.Utils;
 using Mineral.Wallets;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text;
 
@@ -34,7 +35,7 @@ namespace Mineral.UnitTests.Database
                 MerkleRoot = UInt256.Zero,
                 Version = 0,
                 Timestamp = 0,
-                Height = 0
+                Height = 1
             };
             header.Sign(_account.Key);
             _block = new Block(header, new List<Transaction>());
@@ -44,6 +45,11 @@ namespace Mineral.UnitTests.Database
         public void TestClean()
         {
             _chainDb.Dispose();
+            _chainDb = null;
+
+            DirectoryInfo di = new DirectoryInfo("./output-database");
+            if (di.Exists)
+                di.Delete(true);
         }
 
         [TestMethod]
@@ -101,34 +107,11 @@ namespace Mineral.UnitTests.Database
                 UInt256 blockHash = new UInt256();
                 WriteBatch batch = new WriteBatch();
 
-                _chainDb.PutBlock(batch, _block, 0L);
+                _chainDb.PutBlock(batch, _block, 1L);
                 _chainDb.BatchWrite(_write_option, batch);
 
                 Block value = null;
                 if (_chainDb.TryGetBlock(_block.Hash, out value))
-                    result = _block.Header.Hash.Equals(value.Hash);
-            }
-            catch
-            {
-                result = false;
-            }
-            result.Should().BeTrue();
-        }
-
-        [TestMethod]
-        public void BatchBlockFromHeader()
-        {
-            bool result = false;
-            try
-            {
-                UInt256 blockHash = new UInt256();
-                WriteBatch batch = new WriteBatch();
-
-                _chainDb.PutBlock(batch, _block.Header, 0L);
-                _chainDb.BatchWrite(_write_option, batch);
-
-                BlockHeader value = null;
-                if (_chainDb.TryGetBlockHeader(_block.Hash, out value))
                     result = _block.Header.Hash.Equals(value.Hash);
             }
             catch
