@@ -9,6 +9,7 @@ using System.Text;
 using System.Numerics;
 using System.Globalization;
 using Mineral.Utils;
+using System.Reflection;
 
 namespace Mineral
 {
@@ -270,66 +271,111 @@ namespace Mineral
 
         public static HashSet<string> ReadStringHashSet(this BinaryReader reader, int maxCount = int.MaxValue)
         {
-            int count = reader.ReadInt32();
-            if (maxCount < count)
-                count = maxCount;
+            HashSet<string> list = null;
+            try
+            {
+                int count = reader.ReadInt32();
+                if (maxCount < count)
+                    count = maxCount;
 
-            HashSet<string> list = new HashSet<string>(count);
-            for (int i = 0; i < count; ++i)
-                list.Add(reader.ReadString());
+                list = new HashSet<string>(count);
+                for (int i = 0; i < count; ++i)
+                    list.Add(reader.ReadString());
+            }
+            catch (Exception e)
+            {
+                Logger.Warning("[Warning] " + MethodBase.GetCurrentMethod().Name + " : " + e.Message);
+                list = null;
+            }
             return list;
         }
 
         public static List<T> ReadSerializableArray<T>(this BinaryReader reader, int maxCount = int.MaxValue) where T : ISerializable, new()
         {
-            int count = reader.ReadInt32();
-            if (maxCount < count)
-                count = maxCount;
-
-            List<T> list = new List<T>(count);
-            for (int i = 0; i < count; ++i)
+            List<T> list = null;
+            try
             {
-                list.Add(new T());
-                list[i].Deserialize(reader);
+                int count = reader.ReadInt32();
+                if (maxCount < count)
+                    count = maxCount;
+
+                list = new List<T>(count);
+                for (int i = 0; i < count; ++i)
+                {
+                    list.Add(new T());
+                    list[i].Deserialize(reader);
+                }
+            }
+            catch (Exception e)
+            {
+                Logger.Warning("[Warning] " + MethodBase.GetCurrentMethod().Name + " : " + e.Message);
+                list = null;
             }
             return list;
         }
 
         public static Dictionary<TKey, TValue> ReadSerializableDictionary<TKey, TValue>(this BinaryReader reader, int maxCount = int.MaxValue) where TKey : ISerializable, new() where TValue : ISerializable, new()
         {
-            int count = reader.ReadInt32();
-            if (maxCount < count)
-                count = maxCount;
-
-            Dictionary<TKey, TValue> list = new Dictionary<TKey, TValue>(count);
-            for (int i = 0; i < count; ++i)
+            Dictionary<TKey, TValue> list = null;
+            try
             {
-                TKey k = new TKey();
-                TValue v = new TValue();
-                k.Deserialize(reader);
-                v.Deserialize(reader);
-                list.Add(k, v);
+                int count = reader.ReadInt32();
+                if (maxCount < count)
+                    count = maxCount;
+
+                list = new Dictionary<TKey, TValue>(count);
+                for (int i = 0; i < count; ++i)
+                {
+                    TKey k = new TKey();
+                    TValue v = new TValue();
+                    k.Deserialize(reader);
+                    v.Deserialize(reader);
+                    list.Add(k, v);
+                }
+            }
+            catch (Exception e)
+            {
+                Logger.Warning("[Warning] " + MethodBase.GetCurrentMethod().Name + " : " + e.Message);
+                list = null;
             }
             return list;
         }
 
         public static T ReadSerializable<T>(this BinaryReader reader) where T : ISerializable, new()
         {
-            T obj = new T();
-            obj.Deserialize(reader);
+            T obj = default(T);
+            try
+            {
+                obj = new T();
+                obj.Deserialize(reader);
+            }
+            catch (Exception e)
+            {
+                Logger.Warning("[Warning] " + MethodBase.GetCurrentMethod().Name + " : " + e.Message);
+                obj = default(T);
+            }
             return obj;
         }
 
         public static byte[] ReadByteArray(this BinaryReader reader)
         {
-            int count = reader.ReadInt32();
-            if (count == 0)
-                return null;
-
-            byte[] array = new byte[count];
-            for (int i = 0; i < array.Length; ++i)
+            byte[] array = null;
+            try
             {
-                array[i] = reader.ReadByte();
+                int count = reader.ReadInt32();
+                if (count == 0)
+                    return null;
+
+                array = new byte[count];
+                for (int i = 0; i < array.Length; ++i)
+                {
+                    array[i] = reader.ReadByte();
+                }
+            }
+            catch (Exception e)
+            {
+                Logger.Warning("[Warning] " + MethodBase.GetCurrentMethod().Name + " : " + e.Message);
+                array = null;
             }
             return array;
         }

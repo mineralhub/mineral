@@ -1,4 +1,5 @@
 ﻿using Mineral.Utils;
+using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -31,13 +32,31 @@ namespace Mineral.Core.State
         public override void Deserialize(BinaryReader reader)
         {
             base.Deserialize(reader);
-            TxResult = (MINERAL_ERROR_CODES)reader.ReadInt64();
+            _txResult = reader.ReadByteArray();
         }
 
         public override void Serialize(BinaryWriter writer)
         {
             base.Serialize(writer);
             writer.WriteByteArray(_txResult);
+        }
+
+        public static TransactionResultState DeserializeFrom(byte[] data, int offset = 0)
+        {
+            TransactionResultState txResultState = new TransactionResultState();
+            using (MemoryStream ms = new MemoryStream(data, offset, data.Length - offset, false))
+            using (BinaryReader reader = new BinaryReader(ms))
+            {
+                txResultState.Deserialize(reader);
+            }
+            return txResultState;
+        }
+
+        public JObject ToJson()
+        {
+            JObject json = new JObject();
+            json["result"] = TxResult.ToString();
+            return json;
         }
     }
 }

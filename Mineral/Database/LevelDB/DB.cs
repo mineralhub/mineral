@@ -39,7 +39,7 @@ namespace Mineral.Database.LevelDB
             {
                 NativeHelper.CheckError(error);
                 if (value == IntPtr.Zero)
-                    throw new LevelDBException("not found");
+                    throw new LevelDBException("Not found value");
                 return new Slice(value, length);
             }
             finally

@@ -256,11 +256,12 @@ namespace Mineral.Core
                 producer.AddBalance(Config.Instance.BlockReward);
             }
 
-            // TODO : 여기부터 수정 batch
+            _dbManager.Storage.Commit(block.Height);
+
             WriteBatch batch = new WriteBatch();
-            _dbManager.Storage.Commit(batch, block.Height);
             _dbManager.PutCurrentHeader(batch, block.Header);
             _dbManager.PutCurrentBlock(batch, block);
+            _dbManager.BatchWrite(WriteOptions.Default, batch);
 
             _currentBlockHeight = block.Header.Height;
             _currentBlockHash = block.Header.Hash;
@@ -303,9 +304,12 @@ namespace Mineral.Core
 
                         while (hash != _cacheChain.GetBlockHash((uint)_cacheChain.HeaderCount - 1))
                         {
-                            BlockHeader header = _dbManager.GetBlockHeader(hash);
-                            headers.Add(header.Height, header.Hash);
-                            hash = header.PrevHash;
+                            BlockState blockState = _dbManager.Storage.Block.Get(hash);
+                            if (blockState != null)
+                            {
+                                headers.Add(blockState.Header.Height, blockState.Header.Hash);
+                                hash = blockState.Header.PrevHash;
+                            }
                         }
 
                         foreach (var header in headers.OrderBy(x => x.Key))
