@@ -43,6 +43,7 @@ namespace Mineral.Database.LevelDB
         {
             _block = null;
             _transaction = null;
+            _transactionResult = null;
             _accounts = null;
             _delegates = null;
             _otherSignTxs = null;
@@ -56,6 +57,7 @@ namespace Mineral.Database.LevelDB
             _db = db;
             _block = new BlockCache(_db);
             _transaction = new TransactionCache(_db);
+            _transactionResult = new TransactionResultCache(_db);
             _accounts = new AccountCache(_db);
             _delegates = new DelegateCache(_db);
             _otherSignTxs = new OtherSignCache(_db);
@@ -67,6 +69,7 @@ namespace Mineral.Database.LevelDB
             WriteBatch batch = new WriteBatch();
             _block.Commit(batch);
             _transaction.Commit(batch);
+            _transactionResult.Commit(batch);
             _accounts.Clean();
             _accounts.Commit(batch);
             _delegates.Commit(batch);

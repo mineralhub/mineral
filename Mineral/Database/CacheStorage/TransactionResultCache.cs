@@ -12,8 +12,9 @@ namespace Mineral.Database.CacheStorage
     {
         private DbCache<UInt256, TransactionResultState> _cache;
 
-        public TransactionResultCache()
+        public TransactionResultCache(DB db)
         {
+            _cache = new DbCache<UInt256, TransactionResultState>(db, DataEntryPrefix.DATA_TransactionResult);
         }
 
         public void Add(UInt256 hash, MINERAL_ERROR_CODES txResult)
@@ -24,6 +25,11 @@ namespace Mineral.Database.CacheStorage
         public TransactionResultState TryGet(UInt256 hash)
         {
             return _cache.TryGet(hash);
+        }
+
+        public void Commit(WriteBatch batch)
+        {
+            _cache.Commit(batch);
         }
     }
 }
