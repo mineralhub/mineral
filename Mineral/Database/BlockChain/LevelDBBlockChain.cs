@@ -75,7 +75,7 @@ namespace Mineral.Database.BlockChain
         public void PutTransactionResult(WriteBatch batch, Transaction tx)
         {
             TransactionResultState txResultState = new TransactionResultState(tx.Data.TxResult);
-            batch.Put(SliceBuilder.Begin(DataEntryPrefix.DATA_TxResult).Add(tx.Hash), SliceBuilder.Begin().Add(txResultState.ToArray()));
+            batch.Put(SliceBuilder.Begin(DataEntryPrefix.DATA_TransactionResult).Add(tx.Hash), SliceBuilder.Begin().Add(txResultState.ToArray()));
         }
 
         public void PutCurrentTurnTalbe(WriteBatch batch, byte[] data)
@@ -192,7 +192,7 @@ namespace Mineral.Database.BlockChain
         public bool TryGetTransactionResult(UInt256 txHash, out MINERAL_ERROR_CODES code)
         {
             Slice value;
-            bool result = _db.TryGet(new ReadOptions { FillCache = false }, SliceBuilder.Begin(DataEntryPrefix.DATA_TxResult).Add(txHash), out value);
+            bool result = _db.TryGet(new ReadOptions { FillCache = false }, SliceBuilder.Begin(DataEntryPrefix.DATA_TransactionResult).Add(txHash), out value);
             if (result)
             {
                 TransactionResultState txResultState = TransactionResultState.DeserializeFrom(value.ToArray());
