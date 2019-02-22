@@ -7,14 +7,14 @@ namespace MineralCLI.Shell
 {
     public class ConsoleServiceBase : IDisposable
     {
-        public const string prompt = ">";
+        private const string _prompt = ">";
         public bool IsRunning { get; set; } = true;
 
         public virtual void Run(string[] args)
         {
             while (IsRunning)
             {
-                Console.Write(prompt);
+                Console.Write(_prompt);
                 string input = Console.ReadLine();
                 string[] parameters = input.Split(new char[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
 
