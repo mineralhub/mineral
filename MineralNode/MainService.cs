@@ -224,7 +224,6 @@ namespace MineralNode
                 BlockChain.Instance.NormalizeTransactions(ref txs);
                 Block block = CreateBlock(height + i, prevhash, txs);
                 
-                // TODO : else 처리
                 if (!BlockChain.Instance.VerityBlock(block))
                 {
                     Logger.Warning("Block [" + block.Height + ":" + block.Hash + "] has unconfirmed transactions.");

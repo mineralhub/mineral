@@ -403,7 +403,7 @@ namespace Mineral.Database.BlockChain
                 {
                     BlockState blockState = BlockState.DeserializeFrom(v.ToArray());
                     return blockState.Header;
-                });
+                }).OrderBy(p => p.Height).ToArray();
             }
             catch (Exception e)
             {
