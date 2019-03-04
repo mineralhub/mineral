@@ -12,7 +12,7 @@ namespace Mineral.Core
         public int BlockCount => _hashBlocks.Count;
 
         public uint Capacity { get; set; }
-        public uint HeaderHeight => (uint)(_headerIndices.Count - 1);
+        public uint HeaderHeight => (uint)(_headerIndices.Count > 0 ? _headerIndices.Count - 1 : 0);
         public UInt256 HeaderHash
         {
             get
@@ -32,7 +32,7 @@ namespace Mineral.Core
 
         public bool AddHeaderHash(uint height, UInt256 hash)
         {
-            if (HeaderHeight + 1 != height) return false;
+            if (HeaderHeight != 0 && HeaderHeight + 1 != height) return false;
             return _headerIndices.TryAdd(height, hash);
         }
 

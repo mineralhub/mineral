@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Reflection;
+using Mineral.CommandLine.Attributes;
 using Mineral.Network.RPC.Command;
 using MineralCLI.Commands;
 using static MineralCLI.Commands.BaseCommand;
@@ -50,33 +52,50 @@ namespace MineralCLI.Shell
 
                 + "\n"
                 + "\n" + "".PadLeft(0) + "COMMAND : "
-                + "\n" + "".PadLeft(4) + "BLOCK COMMAND :"
-                + "\n" + "".PadLeft(8) + RpcCommand.Block.GetBlock
-                + "\n" + "".PadLeft(8) + RpcCommand.Block.GetBlockHash
-                + "\n" + "".PadLeft(8) + RpcCommand.Block.GetHeight
-                + "\n" + "".PadLeft(8) + RpcCommand.Block.GetCurrentBlockHash
-                + "\n" + "".PadLeft(8) + RpcCommand.Block.GetTransaction
+                + "\n" + "".PadLeft(1) + "BLOCK COMMAND :"
+                ;
+            foreach (FieldInfo info in typeof(RpcCommand.Block).GetFields())
+            {
+                CommandLineAttribute attr = (CommandLineAttribute)info.GetCustomAttribute(typeof(CommandLineAttribute));
+                if (attr != null)
+                {
+                    message += "\n" + "".PadLeft(4);
+                    message += string.Format("{0,-25} {1}", attr.Name, attr.Description);
+                }
+            }
 
+            message += string.Empty
                 + "\n"
-                + "\n" + "".PadLeft(4) + "NODE COMMAND : "
-                + "\n" + "".PadLeft(8) + RpcCommand.Node.NodeList
+                + "\n" + "".PadLeft(1) + "NODE COMMAND : "
+                ;
+            foreach (FieldInfo info in typeof(RpcCommand.Node).GetFields())
+            {
+                CommandLineAttribute attr = (CommandLineAttribute)info.GetCustomAttribute(typeof(CommandLineAttribute));
+                if (attr != null)
+                {
+                    message += "\n" + "".PadLeft(4);
+                    message += string.Format("{0,-25} {1}", attr.Name, attr.Description);
+                }
+            }
 
+            message += string.Empty
                 + "\n"
-                + "\n" + "".PadLeft(4) + "WALLET COMMAND :"
-                + "\n" + "".PadLeft(8) + RpcCommand.Wallet.CreateAccount
-                + "\n" + "".PadLeft(8) + RpcCommand.Wallet.OpenAccount
-                + "\n" + "".PadLeft(8) + RpcCommand.Wallet.CloseAccount
-                + "\n" + "".PadLeft(8) + RpcCommand.Wallet.BackupAccount
-                + "\n" + "".PadLeft(8) + RpcCommand.Wallet.GetBalance
-                + "\n" + "".PadLeft(8) + RpcCommand.Wallet.SendTo
-                + "\n" + "".PadLeft(8) + RpcCommand.Wallet.LockBalance
-                + "\n" + "".PadLeft(8) + RpcCommand.Wallet.UnlockBalance
-                + "\n" + "".PadLeft(8) + RpcCommand.Wallet.VoteWitness
-                + "\n" + "".PadLeft(8) + RpcCommand.Wallet.GetVoteWitness
+                + "\n" + "".PadLeft(1) + "WALLET COMMAND :"
+                ;
+            foreach (FieldInfo info in typeof(RpcCommand.Wallet).GetFields())
+            {
+                CommandLineAttribute attr = (CommandLineAttribute)info.GetCustomAttribute(typeof(CommandLineAttribute));
+                if (attr != null)
+                {
+                    message += "\n" + "".PadLeft(4);
+                    message += string.Format("{0,-25} {1}", attr.Name, attr.Description);
+                }
+            }
 
+            message += string.Empty
                 + "\n"
                 + "\n" + "".PadLeft(0) + "MISC OPTION :"
-                + "\n" + "".PadLeft(8) + BaseCommand.HelpCommandOption.Help;
+                + "\n" + "".PadLeft(4) + BaseCommand.HelpCommandOption.Help;
 
             Console.WriteLine(message);
         }
