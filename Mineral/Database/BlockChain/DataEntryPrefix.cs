@@ -1,4 +1,7 @@
-﻿namespace Mineral.Database.LevelDB
+﻿using System.ComponentModel;
+using System.Text;
+
+namespace Mineral.Database.BlockChain
 {
     internal static class DataEntryPrefix
     {
@@ -32,5 +35,11 @@
         public const byte IX_Accounts = 0x81;
 
         public const byte SYS_Version = 0xf0;
+    }
+
+    // Properties
+    internal static class PropertyEntryPrefix
+    {
+        public static readonly byte[] BLOCK_GENERATE_CYCLE_TIME = Encoding.ASCII.GetBytes("BLOCK_GENERATE_CYCLE_TIME");
     }
 }
