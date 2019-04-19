@@ -1,5 +1,6 @@
 ﻿using Mineral.Core;
 using Mineral.Core.State;
+using Mineral.Database.BlockChain;
 using Mineral.Database.LevelDB;
 using Mineral.Utils;
 using System;
