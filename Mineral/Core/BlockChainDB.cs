@@ -14,10 +14,12 @@ namespace Mineral.Core
     {
         #region Fields
         private LevelDBBlockChain _dbManager = null;
+        private Manager _manager = null;
         #endregion
 
 
         #region Properties
+        public Manager Manager { get { return _manager; } }
         #endregion
 
 
