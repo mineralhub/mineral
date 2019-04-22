@@ -12,8 +12,28 @@ namespace Mineral.Core
 {
     public partial class BlockChain
     {
+        #region Fields
         private LevelDBBlockChain _dbManager = null;
+        #endregion
 
+
+        #region Properties
+        #endregion
+
+
+        #region Constructor
+        #endregion
+
+
+        #region Event Method
+        #endregion
+
+
+        #region Internal Method
+        #endregion
+
+
+        #region External Method
         public Storage NewStorage()
         {
             _dbManager.NewStorage();
@@ -154,5 +174,7 @@ namespace Mineral.Core
             return _dbManager.GetDelegateStateAll().ToList();
         }
         #endregion
+        #endregion
+
     }
 }
