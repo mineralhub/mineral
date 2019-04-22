@@ -6,6 +6,7 @@ using Mineral.Utils;
 using Mineral.Wallets;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Text;
 
 namespace Mineral.UnitTests.BlcokChain

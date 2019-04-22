@@ -14,7 +14,7 @@
 	"block": {
 		"next_block_time_sec": 5,
 		"cache_capacity": 4096,
-    "payload_capacity": 2000,
+        "payload_capacity": 2000,
 		"sync_check": true
 	},
   "transaction": {

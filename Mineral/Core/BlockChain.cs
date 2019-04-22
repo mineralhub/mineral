@@ -536,6 +536,5 @@ namespace Mineral.Core
             _dbManager.Dispose();
         }
         #endregion
-
     }
 }

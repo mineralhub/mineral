@@ -5,12 +5,32 @@ namespace Mineral.Database.BlockChain
 {
     internal class LevelDBProperty : BaseLevelDB
     {
+        #region Fields
+        #endregion
+
+
+        #region Properties
+        #endregion
+
+
+        #region Constructor
         public LevelDBProperty(string path)
             : base(path)
         {
             InitializeProperty(PropertyEntryPrefix.BLOCK_GENERATE_CYCLE_TIME, BitConverter.GetBytes(5));
         }
+        #endregion
 
+
+        #region Event Method
+        #endregion
+
+
+        #region Internal Method
+        #endregion
+
+
+        #region External Method
         public void InitializeProperty(byte[] prefix, byte[] defaultValue)
         {
             Slice key = SliceBuilder.Begin().Add(prefix);
@@ -23,9 +43,10 @@ namespace Mineral.Database.BlockChain
             return Get(SliceBuilder.Begin().Add(prefix));
         }
 
-        public void PutProperty(byte[] prefix, byte[] value)
+        public void SetProperty(byte[] prefix, byte[] value)
         {
             Put(SliceBuilder.Begin().Add(prefix), SliceBuilder.Begin().Add(value));
         }
+        #endregion
     }
 }

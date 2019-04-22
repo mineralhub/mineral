@@ -9,6 +9,27 @@ namespace Mineral.Core
 {
     public partial class BlockChain
     {
+        #region Fields
+        #endregion
+
+
+        #region Properties
+        #endregion
+
+
+        #region Constructor
+        #endregion
+
+
+        #region Event Method
+        #endregion
+
+
+        #region Internal Method
+        #endregion
+
+
+        #region External Method
         public bool AddTransactionPool(Transaction tx)
         {
             if (!tx.Verify())
@@ -107,5 +128,6 @@ namespace Mineral.Core
                 return false;
             }
         }
+        #endregion
     }
 }

@@ -16,13 +16,10 @@ namespace Mineral.Database.BlockChain
 {
     internal class LevelDBBlockChain : BaseLevelDB, IDisposable
     {
+        #region Fields
         private Storage _storage = null;
+        #endregion
 
-        public LevelDBBlockChain(string path)
-            : base(path)
-        {
-            NewStorage();
-        }
 
         #region Properties
         public Storage Storage { get { return _storage; } }
@@ -36,6 +33,24 @@ namespace Mineral.Database.BlockChain
         #endregion
 
 
+        #region Constructor
+        public LevelDBBlockChain(string path)
+            : base(path)
+        {
+            NewStorage();
+        }
+        #endregion
+
+
+        #region Event Method
+        #endregion
+
+
+        #region Internal Method
+        #endregion
+
+
+        #region External Method
         #region Storage
         public void NewStorage()
         {
@@ -572,6 +587,7 @@ namespace Mineral.Database.BlockChain
                 Put(SliceBuilder.Begin(DataEntryPrefix.ST_TurnTable).Add(state.turnTableHeight), data);
             }
         }
+        #endregion
         #endregion
     }
 }
