@@ -18,14 +18,6 @@ using System.Threading.Tasks;
 
 namespace Mineral.Core
 {
-    public enum ERROR_BLOCK
-    {
-        NO_ERROR = 0,
-        ERROR = 1,
-        ERROR_HEIGHT = 2,
-        ERROR_HASH = 3,
-    };
-
     public partial class BlockChain : IDisposable
     {
         #region Field
@@ -371,7 +363,7 @@ namespace Mineral.Core
         public ERROR_BLOCK AddBlock(Block block)
         {
             if (!_cacheBlocks.AddHeaderHash(block.Height, block.Hash))
-                return ERROR_BLOCK.ERROR_HEIGHT;
+                return ERROR_BLOCK.ERROR_EXIST_HEIGHT;
 
             var err = _cacheBlocks.AddBlock(block);
             if (err != ERROR_BLOCK.NO_ERROR)
