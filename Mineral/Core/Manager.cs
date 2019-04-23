@@ -12,9 +12,9 @@ namespace Mineral.Core
     public class Manager
     {
         #region Field
-        private LevelDBBlockChain _blockChain = null;
-        private LevelDBWalletIndexer _walletIndexer = null;
-        private LevelDBProperty _properties = null;
+        private LevelDBBlockChain _blockChain = new LevelDBBlockChain("./output-database");
+        private LevelDBWalletIndexer _walletIndexer = new LevelDBWalletIndexer("./output-wallet-index");
+        private LevelDBProperty _properties = new LevelDBProperty("./output-property");
         private CacheBlocks _cacheBlocks = null;
 
         private const uint _defaultCacheCapacity = 200000;
@@ -42,25 +42,6 @@ namespace Mineral.Core
 
 
         #region External Method
-        public void InitGenesistBlock(string path)
-        {
-            _blockChain = new LevelDBBlockChain(path);
-        }
-
-        public void InitWalletIndexer(string path)
-        {
-            _walletIndexer = new LevelDBWalletIndexer(path);
-        }
-
-        public void InitProperty(string path)
-        {
-            _properties = new LevelDBProperty(path);
-        }
-
-        public void InitCacheBlocks(uint capacity)
-        {
-            _cacheBlocks = new CacheBlocks(capacity);
-        }
         #endregion
     }
 }

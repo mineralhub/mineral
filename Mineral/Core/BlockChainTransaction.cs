@@ -41,7 +41,7 @@ namespace Mineral.Core
                     return false;
                 if (_txPool.ContainsKey(tx.Hash))
                     return false;
-                if (_dbManager.Storage.Transaction.Get(tx.Hash) != null)
+                if (_manager.BlockChain.Storage.Transaction.Get(tx.Hash) != null)
                     return false;
                 _rxPool.Add(tx.Hash, tx);
                 return true;

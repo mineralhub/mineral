@@ -34,8 +34,11 @@ namespace Mineral.Database.BlockChain
         public void InitializeProperty(byte[] prefix, byte[] defaultValue)
         {
             Slice key = SliceBuilder.Begin().Add(prefix);
-            Slice value = SliceBuilder.Begin().Add(defaultValue);
-            if (!TryGet(key, out value)) Put(key, value);
+            Slice value;
+            if (!TryGet(key, out value))
+            {
+                Put(key, SliceBuilder.Begin().Add(defaultValue));
+            }
         }
 
         public Slice GetProperty(byte[] prefix)

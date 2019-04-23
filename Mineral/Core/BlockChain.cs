@@ -138,7 +138,7 @@ namespace Mineral.Core
         {
             AddHeader(block.Header);
 
-            using (Storage snapshot = _dbManager.SnapShot)
+            using (Storage snapshot = _manager.BlockChain.SnapShot)
             {
                 Fixed8 fee = block.Transactions.Sum(p => p.Fee);
                 snapshot.Block.Add(block.Header.Hash, block, fee);
@@ -146,7 +146,7 @@ namespace Mineral.Core
                 foreach (Transaction tx in block.Transactions)
                 {
                     snapshot.Transaction.Add(tx.Hash, block.Header.Height, tx);
-                    if (_genesisBlock != block && !tx.VerifyBlockChain(_dbManager.Storage))
+                    if (_genesisBlock != block && !tx.VerifyBlockChain(_manager.BlockChain.Storage))
                     {
                         if (Fixed8.Zero < tx.Fee)
                         {
@@ -269,9 +269,9 @@ namespace Mineral.Core
             }
 
             WriteBatch batch = new WriteBatch();
-            _dbManager.PutCurrentHeader(batch, block.Header);
-            _dbManager.PutCurrentBlock(batch, block);
-            _dbManager.BatchWrite(WriteOptions.Default, batch);
+            _manager.BlockChain.PutCurrentHeader(batch, block.Header);
+            _manager.BlockChain.PutCurrentBlock(batch, block);
+            _manager.BlockChain.BatchWrite(WriteOptions.Default, batch);
 
             _currentBlockHeight = block.Header.Height;
             _currentBlockHash = block.Header.Hash;
@@ -282,21 +282,20 @@ namespace Mineral.Core
 
 
         #region External Method
-        public void Initialize(string path, Block genesisBlock)
+        public void Initialize(Block genesisBlock)
         {
             _genesisBlock = genesisBlock;
-            _dbManager = new LevelDBBlockChain(path);
 
             Version version;
-            if (_dbManager.TryGetVersion(out version))
+            if (_manager.BlockChain.TryGetVersion(out version))
             {
                 UInt256 blockHash = UInt256.Zero;
                 IEnumerable<UInt256> headerHashs;
 
-                if (_dbManager.TryGetCurrentBlock(out _currentBlockHash, out _currentBlockHeight))
+                if (_manager.BlockChain.TryGetCurrentBlock(out _currentBlockHash, out _currentBlockHeight))
                 {
                     _cacheBlocks = new CacheBlocks((uint)(_currentBlockHeight * 1.1F));
-                    headerHashs = _dbManager.GetHeaderHashList();
+                    headerHashs = _manager.BlockChain.GetHeaderHashList();
                     foreach (UInt256 headerHash in headerHashs)
                     {
                         _cacheBlocks.AddHeaderHash(_storeHeaderCount++, headerHash);
@@ -304,7 +303,7 @@ namespace Mineral.Core
 
                     if (_storeHeaderCount == 0)
                     {
-                        foreach (BlockHeader blockHeader in _dbManager.GetBlockHeaderList())
+                        foreach (BlockHeader blockHeader in _manager.BlockChain.GetBlockHeaderList())
                             _cacheBlocks.AddHeaderHash(blockHeader.Height, blockHeader.Hash);
                     }
                     else if (_storeHeaderCount <= _currentBlockHeight)
@@ -314,7 +313,7 @@ namespace Mineral.Core
 
                         while (hash != _cacheBlocks.GetBlockHash((uint)_cacheBlocks.HeaderCount - 1))
                         {
-                            BlockState blockState = _dbManager.Storage.Block.Get(hash);
+                            BlockState blockState = _manager.BlockChain.Storage.Block.Get(hash);
                             if (blockState != null)
                             {
                                 headers.Add(blockState.Header.Height, blockState.Header.Hash);
@@ -325,7 +324,7 @@ namespace Mineral.Core
                         foreach (var header in headers.OrderBy(x => x.Key))
                             _cacheBlocks.AddHeaderHash(header.Key, header.Value);
                     }
-                    _proof.SetTurnTable(_dbManager.GetCurrentTurnTable());
+                    _proof.SetTurnTable(_manager.BlockChain.GetCurrentTurnTable());
                 }
             }
             else
@@ -334,7 +333,7 @@ namespace Mineral.Core
                 _cacheBlocks.AddHeaderHash(genesisBlock.Height, genesisBlock.Hash);
                 _currentBlockHash = genesisBlock.Hash;
                 Persist(genesisBlock);
-                _dbManager.PutVersion(Assembly.GetExecutingAssembly().GetName().Version);
+                _manager.BlockChain.PutVersion(Assembly.GetExecutingAssembly().GetName().Version);
                 _proof.Update(this);
             }
 
@@ -358,14 +357,14 @@ namespace Mineral.Core
                 {
                     bw.WriteSerializableArray(_cacheBlocks.GetBlcokHashs(_storeHeaderCount, _storeHeaderCount + 2000));
                     bw.Flush();
-                    _dbManager.PutHeaderHashList(batch, (int)_storeHeaderCount, ms.ToArray());
+                    _manager.BlockChain.PutHeaderHashList(batch, (int)_storeHeaderCount, ms.ToArray());
                 }
                 _storeHeaderCount += 2000;
             }
 
             if (_storeHeaderCount > oStoreHeaderCount)
             {
-                _dbManager.BatchWrite(WriteOptions.Default, batch);
+                _manager.BlockChain.BatchWrite(WriteOptions.Default, batch);
             }
         }
 
@@ -402,7 +401,7 @@ namespace Mineral.Core
         // TODO : clean
         public bool VerityBlock(Block block)
         {
-            Storage snapshot = _dbManager.SnapShot;
+            Storage snapshot = _manager.BlockChain.SnapShot;
             List<Transaction> errList = new List<Transaction>();
 
             foreach (Transaction tx in block.Transactions)
@@ -456,17 +455,17 @@ namespace Mineral.Core
                         {
                             for (int i = 0; i < signTx.TxHashes.Count; ++i)
                             {
-                                OtherSignTransactionState state = _dbManager.Storage.OtherSign.GetAndChange(signTx.TxHashes[i]);
+                                OtherSignTransactionState state = _manager.BlockChain.Storage.OtherSign.GetAndChange(signTx.TxHashes[i]);
                                 state.Sign(signTx.Owner.Signature);
                                 if (state.RemainSign.Count == 0)
                                 {
-                                    TransactionState txState = _dbManager.Storage.Transaction.Get(state.TxHash);
+                                    TransactionState txState = _manager.BlockChain.Storage.Transaction.Get(state.TxHash);
                                     if (txState != null)
                                     {
                                         var osign = txState.Transaction.Data as OtherSignTransaction;
                                         foreach (var to in osign.To)
-                                            _dbManager.Storage.Account.GetAndChange(to.Key).AddBalance(to.Value);
-                                        var trigger = _dbManager.Storage.BlockTrigger.GetAndChange(signTx.Reference[i].ExpirationBlockHeight);
+                                            _manager.BlockChain.Storage.Account.GetAndChange(to.Key).AddBalance(to.Value);
+                                        var trigger = _manager.BlockChain.Storage.BlockTrigger.GetAndChange(signTx.Reference[i].ExpirationBlockHeight);
                                         trigger.TransactionHashes.Remove(signTx.TxHashes[i]);
                                     }
                                 }
@@ -526,7 +525,7 @@ namespace Mineral.Core
             WriteBatch batch = new WriteBatch();
             TurnTableState state = new TurnTableState();
             state.SetTurnTable(addrs, height);
-            _dbManager.PutTurnTable(state);
+            _manager.BlockChain.PutTurnTable(state);
         }
 
         public void OnPersistCompleted(Block block)
@@ -538,7 +537,7 @@ namespace Mineral.Core
         public void Dispose()
         {
             _disposed = true;
-            _dbManager.Dispose();
+            _manager.BlockChain.Dispose();
         }
         #endregion
     }
