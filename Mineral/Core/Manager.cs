@@ -1,23 +1,31 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
+using System.Reflection;
 using System.Text;
+using Mineral.Core.State;
 using Mineral.Database.BlockChain;
+using Mineral.Utils;
 
 namespace Mineral.Core
 {
     public class Manager
     {
-        #region Fields
-        private LevelDBBlockChain _blockChain = null;
-        private LevelDBWalletIndexer _walletIndexer = null;
-        private LevelDBProperty _properties = null;
+        #region Field
+        private LevelDBBlockChain _blockChain = new LevelDBBlockChain("./output-database");
+        private LevelDBWalletIndexer _walletIndexer = new LevelDBWalletIndexer("./output-wallet-index");
+        private LevelDBProperty _properties = new LevelDBProperty("./output-property");
+        private CacheBlocks _cacheBlocks = null;
+
+        private const uint _defaultCacheCapacity = 200000;
         #endregion
 
 
-        #region Properties
-        internal LevelDBBlockChain BlockChain { get { return _blockChain; } set { _blockChain = value; } }
-        internal LevelDBWalletIndexer WalletIndexer { get { return _walletIndexer; } set { _walletIndexer = value; } }
-        internal LevelDBProperty Properties { get { return _properties; } set { _properties = value; } }
+        #region Property
+        internal LevelDBBlockChain BlockChain { get { return _blockChain; } }
+        internal LevelDBWalletIndexer WalletIndexer { get { return _walletIndexer; } }
+        internal LevelDBProperty Properties { get { return _properties; } }
+        internal CacheBlocks CacheBlocks { get { return _cacheBlocks; } }
         #endregion
 
 

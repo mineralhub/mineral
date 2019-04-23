@@ -16,12 +16,12 @@ namespace Mineral.Database.BlockChain
 {
     internal class LevelDBBlockChain : BaseLevelDB, IDisposable
     {
-        #region Fields
+        #region Field
         private Storage _storage = null;
         #endregion
 
 
-        #region Properties
+        #region Property
         public Storage Storage { get { return _storage; } }
         public Storage SnapShot
         {

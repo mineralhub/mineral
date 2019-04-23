@@ -10,11 +10,11 @@ namespace Mineral.Database.BlockChain
 {
     internal class LevelDBBlock : BaseLevelDB, IDisposable
     {
-        #region Fields
+        #region Field
         #endregion
 
 
-        #region Properties
+        #region Property
         #endregion
 
 

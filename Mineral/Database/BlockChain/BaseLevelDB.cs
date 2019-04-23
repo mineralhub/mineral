@@ -7,12 +7,12 @@ namespace Mineral.Database.BlockChain
 {
     internal class BaseLevelDB : IDisposable
     {
-        #region Fields
+        #region Field
         protected DB _db = null;
         #endregion
 
 
-        #region Properties
+        #region Property
         public WriteOptions WriteOption { get; set; } = WriteOptions.Default;
         public ReadOptions ReadOption { get; set; } = ReadOptions.Default;
         #endregion

@@ -159,14 +159,14 @@ namespace MineralNode
 
             Logger.Debug("genesis block. hash : " + _genesisBlock.Hash);
 
-            BlockChain.Instance.Initialize("./output-database", _genesisBlock);
+            BlockChain.Instance.Initialize(_genesisBlock);
             BlockChain.Instance.CacheBlockCapacity = Config.Instance.Block.CacheCapacity;
             BlockChain.Instance.PersistCompleted += PersistCompleted;
 
             var genesisBlockTx = BlockChain.Instance.GetTransaction(_genesisBlock.Transactions[0].Hash);
             Logger.Debug("genesis block tx. hash : " + genesisBlockTx.Transaction.Hash);
 
-            WalletIndexer.SetInstance(new LevelDBWalletIndexer("./output-wallet-index"));
+            //WalletIndexer.SetInstance(new LevelDBWalletIndexer("./output-wallet-index"));
 
             return true;
         }

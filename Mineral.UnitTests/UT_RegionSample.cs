@@ -8,11 +8,11 @@ namespace Mineral.UnitTests
     [TestClass]
     public class UT_RegionSample
     {
-        #region Fields
+        #region Field
         #endregion
 
 
-        #region Properties
+        #region Property
         #endregion
 
 
