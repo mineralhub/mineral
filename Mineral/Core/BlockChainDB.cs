@@ -12,13 +12,13 @@ namespace Mineral.Core
 {
     public partial class BlockChain
     {
-        #region Fields
+        #region Field
         private LevelDBBlockChain _dbManager = null;
         private Manager _manager = null;
         #endregion
 
 
-        #region Properties
+        #region Property
         public Manager Manager { get { return _manager; } }
         #endregion
 
@@ -45,7 +45,7 @@ namespace Mineral.Core
         #region Block Header
         public BlockHeader GetHeader(uint height)
         {
-            Block block = _cacheChain.GetBlock(height);
+            Block block = _cacheBlocks.GetBlock(height);
             if (block != null)
                 return block.Header;
 
@@ -59,7 +59,7 @@ namespace Mineral.Core
 
         public BlockHeader GetHeader(UInt256 hash)
         {
-            Block block = _cacheChain.GetBlock(hash);
+            Block block = _cacheBlocks.GetBlock(hash);
             if (block != null)
                 return block.Header;
 
@@ -86,7 +86,7 @@ namespace Mineral.Core
         #region Block
         public Block GetBlock(uint height)
         {
-            Block block = _cacheChain.GetBlock(height);
+            Block block = _cacheBlocks.GetBlock(height);
             if (block != null)
                 return block;
 
@@ -99,7 +99,7 @@ namespace Mineral.Core
 
         public Block GetBlock(UInt256 hash)
         {
-            Block block = _cacheChain.GetBlock(hash);
+            Block block = _cacheBlocks.GetBlock(hash);
             if (block != null)
                 return block;
 
@@ -109,7 +109,7 @@ namespace Mineral.Core
 
         public UInt256 GetBlockHash(uint height)
         {
-            UInt256 hash = _cacheChain.GetBlockHash(height);
+            UInt256 hash = _cacheBlocks.GetBlockHash(height);
             return hash;
         }
 
@@ -124,7 +124,7 @@ namespace Mineral.Core
 
         public List<Block> GetBlocks(uint start, uint end)
         {
-            var hashes = _cacheChain.GetBlcokHashs(start, end);
+            var hashes = _cacheBlocks.GetBlcokHashs(start, end);
             List<Block> blocks = new List<Block>();
             foreach (var hash in hashes)
             {

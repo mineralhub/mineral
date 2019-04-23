@@ -9,11 +9,11 @@ namespace Mineral.Core
 {
     public partial class BlockChain
     {
-        #region Fields
+        #region Field
         #endregion
 
 
-        #region Properties
+        #region Property
         #endregion
 
 
