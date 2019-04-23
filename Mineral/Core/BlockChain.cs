@@ -72,6 +72,11 @@ namespace Mineral.Core
         #endregion
 
 
+        #region Constructor
+        private BlockChain() { }
+        #endregion
+
+
         #region Event Method
         private void PersistBlocksLoop()
         {
