@@ -1,5 +1,15 @@
 ﻿namespace Mineral.Core
 {
+    public enum ERROR_BLOCK
+    {
+        NO_ERROR = 0,
+        ERROR,
+        ERROR_HEIGHT,
+        ERROR_EXIST_HEIGHT,
+        ERROR_HASH,
+        ERORR_EXIST_HASH,
+    };
+
     public enum MINERAL_ERROR_CODES
     {
         // System

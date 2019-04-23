@@ -208,7 +208,8 @@ namespace Mineral.Network
 
                 ERROR_BLOCK err = BlockChain.Instance.AddBlock(block);
                 if (err != ERROR_BLOCK.NO_ERROR &&
-                    err != ERROR_BLOCK.ERROR_HEIGHT)
+                    err != ERROR_BLOCK.ERROR_HEIGHT &&
+                    err != ERROR_BLOCK.ERROR_EXIST_HEIGHT)
                 {
                     Disconnect(DisconnectType.InvalidBlock, "Failed AddResponseBlocks.");
                     break;
@@ -230,7 +231,8 @@ namespace Mineral.Network
                     }
                     ERROR_BLOCK err = BlockChain.Instance.AddBlock(block);
                     if (err != ERROR_BLOCK.NO_ERROR &&
-                        err != ERROR_BLOCK.ERROR_HEIGHT)
+                        err != ERROR_BLOCK.ERROR_HEIGHT &&
+                        err != ERROR_BLOCK.ERROR_EXIST_HEIGHT)
                     {
                         Disconnect(DisconnectType.InvalidBlock, "Failed AddBroadcastBlocks.");
                         break;

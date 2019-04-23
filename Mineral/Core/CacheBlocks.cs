@@ -76,5 +76,45 @@ namespace Mineral.Core
                     yield return hash;
             }
         }
+
+        public KeyValuePair<List<Block>, List<Block>> GetBranch(UInt256 hash1, UInt256 hash2)
+        {
+            List<Block> keys = new List<Block>();
+            List<Block> values = new List<Block>();
+            Block block1 = null;
+            Block block2 = null;
+
+            _hashBlocks.TryGetValue(hash1, out block1);
+            _hashBlocks.TryGetValue(hash2, out block2);
+
+            if (block1 == null && block2 != null)
+            {
+                while (!object.Equals(block1.Hash, block2.Hash))
+                {
+                    if (block1.Height > block2.Height)
+                    {
+                        keys.Add(block1);
+                        _hashBlocks.TryGetValue(block1.Header.PrevHash, out block1);
+                    }
+                    else if (block1.Height < block2.Height)
+                    {
+                        values.Add(block2);
+                        _hashBlocks.TryGetValue(block2.Header.PrevHash, out block2);
+                    }
+                    else
+                    {
+                        keys.Add(block1);
+                        _hashBlocks.TryGetValue(block1.Header.PrevHash, out block1);
+                        values.Add(block2);
+                        _hashBlocks.TryGetValue(block2.Header.PrevHash, out block2);
+                    }
+                }
+            }
+
+            keys.Reverse();
+            values.Reverse();
+
+            return new KeyValuePair<List<Block>, List<Block>>(keys, values);
+        }
     }
 }
