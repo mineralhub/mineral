@@ -15,7 +15,7 @@ namespace Mineral.Core
         private LevelDBBlockChain _blockChain = new LevelDBBlockChain("./output-database");
         private LevelDBWalletIndexer _walletIndexer = new LevelDBWalletIndexer("./output-wallet-index");
         private LevelDBProperty _properties = new LevelDBProperty("./output-property");
-        private CacheBlocks _cacheBlocks = null;
+        private CacheBlocks _cacheBlocks = new CacheBlocks(_defaultCacheCapacity);
 
         private const uint _defaultCacheCapacity = 200000;
         #endregion
@@ -42,6 +42,11 @@ namespace Mineral.Core
 
 
         #region External Method
+        public void InitCacheBlock(uint capacity)
+        {
+            _cacheBlocks = new CacheBlocks(capacity);
+        }
+
         public KeyValuePair<List<Block>, List<Block>> GetBranch(UInt256 hash1, UInt256 hash2)
         {
             List<Block> keys = new List<Block>();
