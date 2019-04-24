@@ -42,6 +42,44 @@ namespace Mineral.Core
 
 
         #region External Method
+        public KeyValuePair<List<Block>, List<Block>> GetBranch(UInt256 hash1, UInt256 hash2)
+        {
+            List<Block> keys = new List<Block>();
+            List<Block> values = new List<Block>();
+            Block block1 = _cacheBlocks.GetBlock(hash1);
+            Block block2 = _cacheBlocks.GetBlock(hash2);
+
+            if (block1 == null && block2 != null)
+            {
+                while (!object.Equals(block1.Hash, block2.Hash))
+                {
+                    if (block1.Height >= block2.Height)
+                    {
+                        keys.Add(block1);
+                        block1 = _cacheBlocks.GetBlock(block1.Header.PrevHash);
+                        if (block1 == null)
+                        {
+                            block1 = _blockChain.GetBlock(block2.Header.PrevHash);
+                        }
+                    }
+
+                    if (block1.Height <= block2.Height)
+                    {
+                        values.Add(block2);
+                        block2 = _cacheBlocks.GetBlock(block2.Header.PrevHash);
+                        if (block2 == null)
+                        {
+                            block2 = _blockChain.GetBlock(block2.Header.PrevHash);
+                        }
+                    }
+                }
+            }
+
+            keys.Reverse();
+            values.Reverse();
+
+            return new KeyValuePair<List<Block>, List<Block>>(keys, values);
+        }
         #endregion
     }
 }
