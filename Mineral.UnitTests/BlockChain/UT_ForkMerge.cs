@@ -15,6 +15,59 @@ namespace Mineral.UnitTests.BlockChain
     [TestClass]
     public class UT_ForkMerge
     {
+        class SimChain
+        {
+            WalletAccount _acc;
+            Dictionary<UInt256, Block> chain = new Dictionary<UInt256, Block>();
+            List<BlockHeader> header = new List<BlockHeader>();
+
+            public SimChain(WalletAccount acc)
+            {
+                _acc = acc;
+            }
+
+            public bool addBlock(Block block)
+            {
+                if (header.Count == block.Header.Height + 1)
+                {
+                    header.Add(block.Header);
+                    chain.Add(block.Hash, block);
+                    return true;
+                }
+                else if (header.Count < block.Header.Height + 1)
+                {   // 도달해야될 블럭보다 이후의 블럭이 도달
+                    return false;
+                }
+                else if (header.Count > block.Header.Height + 1)
+                {   // 도달해야될 블럭보다 이전의 블럭이 도달
+                    return false;
+                }
+                return false;
+            }
+
+            public bool isForked(Block block)
+            {
+                if (header.Count == block.Header.Height + 1)
+                {
+                    return false;
+                }
+                else if (header.Count > block.Header.Height + 1)
+                {
+                    return true;
+                }
+                return false;
+            }
+
+            public List<BlockHeader> GetBranch(Block block)
+            {
+                List<BlockHeader> hdrs = new List<BlockHeader>();
+                return hdrs;
+            }
+        }
+
+        SimChain simchain1 = new SimChain(new WalletAccount(Encoding.Default.GetBytes("0")));
+        SimChain simchain2 = new SimChain(new WalletAccount(Encoding.Default.GetBytes("1")));
+
         WalletAccount _1 = new WalletAccount(Encoding.Default.GetBytes("0"));
         WalletAccount _2 = new WalletAccount(Encoding.Default.GetBytes("1"));
         Dictionary<UInt256, Block> chain1 = new Dictionary<UInt256, Block>();
@@ -105,7 +158,6 @@ namespace Mineral.UnitTests.BlockChain
         {
             BlockHeader hdr1 = header1[header1.Count - 1];
             Block block1 = chain1[hdr1.Hash];
-
             BlockHeader hdr2 = header2[header2.Count - 1];
             Block block2 = chain2[hdr2.Hash];
 
@@ -114,6 +166,18 @@ namespace Mineral.UnitTests.BlockChain
                 Block prev = chain1[block1.Header.PrevHash];
                 block1 = prev;
             }
+        }
+
+        void addBlock1(Block block)
+        {
+            header1.Add(block.Header);
+            chain1.Add(block.Hash, block);
+        }
+
+        void addBlock2(Block block)
+        {
+            header2.Add(block.Header);
+            chain2.Add(block.Hash, block);
         }
     }
 }
