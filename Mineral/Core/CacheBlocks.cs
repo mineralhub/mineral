@@ -8,8 +8,8 @@ namespace Mineral.Core
     {
         private ConcurrentDictionary<uint, UInt256> _headerIndices = null;
         private ConcurrentDictionary<UInt256, Block> _hashBlocks = null;
-        public int HeaderCount => _headerIndices.Count;
-        public int BlockCount => _hashBlocks.Count;
+        public uint HeaderCount => (uint)_headerIndices.Count;
+        public uint BlockCount => (uint)_hashBlocks.Count;
 
         public uint Capacity { get; set; }
         public uint HeaderHeight => (uint)(_headerIndices.Count > 0 ? _headerIndices.Count - 1 : 0);
