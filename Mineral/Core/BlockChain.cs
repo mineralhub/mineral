@@ -18,21 +18,12 @@ using System.Threading.Tasks;
 
 namespace Mineral.Core
 {
-    public enum ERROR_BLOCK
-    {
-        NO_ERROR = 0,
-        ERROR = 1,
-        ERROR_HEIGHT = 2,
-        ERROR_HASH = 3,
-    };
-
     public partial class BlockChain : IDisposable
     {
         #region Field
         private Proof _proof = null;
         private Block _genesisBlock = null;
         private static BlockChain _instance = null;
-        private CacheBlocks _cacheBlocks = null;
 
         private bool _disposed = false;
         private Thread _threadPersist = null;
@@ -64,11 +55,11 @@ namespace Mineral.Core
 
         public Proof Proof { get { return _proof; } }
         public Block GenesisBlock { get { return _genesisBlock; } }
-        public uint CurrentHeaderHeight { get { return _cacheBlocks.HeaderHeight; } }
-        public UInt256 CurrentHeaderHash { get { return _cacheBlocks.HeaderHash; } }
+        public uint CurrentHeaderHeight { get { return _manager.CacheBlocks.HeaderHeight; } }
+        public UInt256 CurrentHeaderHash { get { return _manager.CacheBlocks.HeaderHash; } }
         public uint CurrentBlockHeight { get { return _currentBlockHeight; } }
         public UInt256 CurrentBlockHash { get { return _currentBlockHash; } }
-        public uint CacheBlockCapacity { get { return _cacheBlocks.Capacity; } set { _cacheBlocks.Capacity = value; } }
+        public uint CacheBlockCapacity { get { return _manager.CacheBlocks.Capacity; } set { _manager.CacheBlocks.Capacity = value; } }
         #endregion
 
 
@@ -85,10 +76,10 @@ namespace Mineral.Core
             while (!_disposed)
             {
                 uint height = CurrentBlockHeight + 1;
-                for (Block block = _cacheBlocks.GetBlock(height); block != null; height++)
+                for (Block block = _manager.CacheBlocks.GetBlock(height); block != null; height++)
                 {
                     blocks.AddLast(block);
-                    block = _cacheBlocks.GetBlock(height);
+                    block = _manager.CacheBlocks.GetBlock(height);
                 }
 
                 if (blocks.Count == 0)
@@ -294,24 +285,24 @@ namespace Mineral.Core
 
                 if (_manager.BlockChain.TryGetCurrentBlock(out _currentBlockHash, out _currentBlockHeight))
                 {
-                    _cacheBlocks = new CacheBlocks((uint)(_currentBlockHeight * 1.1F));
+                    _manager.InitCacheBlock((uint)(_currentBlockHeight * 1.1F));
                     headerHashs = _manager.BlockChain.GetHeaderHashList();
                     foreach (UInt256 headerHash in headerHashs)
                     {
-                        _cacheBlocks.AddHeaderHash(_storeHeaderCount++, headerHash);
+                        _manager.CacheBlocks.AddHeaderHash(_storeHeaderCount++, headerHash);
                     }
 
                     if (_storeHeaderCount == 0)
                     {
                         foreach (BlockHeader blockHeader in _manager.BlockChain.GetBlockHeaderList())
-                            _cacheBlocks.AddHeaderHash(blockHeader.Height, blockHeader.Hash);
+                            _manager.CacheBlocks.AddHeaderHash(blockHeader.Height, blockHeader.Hash);
                     }
                     else if (_storeHeaderCount <= _currentBlockHeight)
                     {
                         UInt256 hash = _currentBlockHash;
                         Dictionary<uint, UInt256> headers = new Dictionary<uint, UInt256>();
 
-                        while (hash != _cacheBlocks.GetBlockHash((uint)_cacheBlocks.HeaderCount - 1))
+                        while (hash != _manager.CacheBlocks.GetBlockHash((uint)_manager.CacheBlocks.HeaderCount - 1))
                         {
                             BlockState blockState = _manager.BlockChain.Storage.Block.Get(hash);
                             if (blockState != null)
@@ -322,15 +313,15 @@ namespace Mineral.Core
                         }
 
                         foreach (var header in headers.OrderBy(x => x.Key))
-                            _cacheBlocks.AddHeaderHash(header.Key, header.Value);
+                            _manager.CacheBlocks.AddHeaderHash(header.Key, header.Value);
                     }
                     _proof.SetTurnTable(_manager.BlockChain.GetCurrentTurnTable());
                 }
             }
             else
             {
-                _cacheBlocks = new CacheBlocks(_defaultCacheCapacity);
-                _cacheBlocks.AddHeaderHash(genesisBlock.Height, genesisBlock.Hash);
+                _manager.InitCacheBlock(_defaultCacheCapacity);
+                _manager.CacheBlocks.AddHeaderHash(genesisBlock.Height, genesisBlock.Hash);
                 _currentBlockHash = genesisBlock.Hash;
                 Persist(genesisBlock);
                 _manager.BlockChain.PutVersion(Assembly.GetExecutingAssembly().GetName().Version);
@@ -355,7 +346,7 @@ namespace Mineral.Core
                 using (MemoryStream ms = new MemoryStream())
                 using (BinaryWriter bw = new BinaryWriter(ms))
                 {
-                    bw.WriteSerializableArray(_cacheBlocks.GetBlcokHashs(_storeHeaderCount, _storeHeaderCount + 2000));
+                    bw.WriteSerializableArray(_manager.CacheBlocks.GetBlcokHashs(_storeHeaderCount, _storeHeaderCount + 2000));
                     bw.Flush();
                     _manager.BlockChain.PutHeaderHashList(batch, (int)_storeHeaderCount, ms.ToArray());
                 }
@@ -370,10 +361,10 @@ namespace Mineral.Core
 
         public ERROR_BLOCK AddBlock(Block block)
         {
-            if (!_cacheBlocks.AddHeaderHash(block.Height, block.Hash))
-                return ERROR_BLOCK.ERROR_HEIGHT;
+            if (!_manager.CacheBlocks.AddHeaderHash(block.Height, block.Hash))
+                return ERROR_BLOCK.ERROR_EXIST_HEIGHT;
 
-            var err = _cacheBlocks.AddBlock(block);
+            var err = _manager.CacheBlocks.AddBlock(block);
             if (err != ERROR_BLOCK.NO_ERROR)
                 return err;
             return err;
@@ -381,10 +372,10 @@ namespace Mineral.Core
 
         public ERROR_BLOCK AddBlockDirectly(Block block)
         {
-            if (!_cacheBlocks.AddHeaderHash(block.Height, block.Hash))
+            if (!_manager.CacheBlocks.AddHeaderHash(block.Height, block.Hash))
                 return ERROR_BLOCK.ERROR_HEIGHT;
 
-            var err = _cacheBlocks.AddBlock(block);
+            var err = _manager.CacheBlocks.AddBlock(block);
             if (err != ERROR_BLOCK.NO_ERROR)
                 return err;
 

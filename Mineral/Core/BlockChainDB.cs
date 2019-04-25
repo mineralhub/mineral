@@ -45,7 +45,7 @@ namespace Mineral.Core
         #region Block Header
         public BlockHeader GetHeader(uint height)
         {
-            Block block = _cacheBlocks.GetBlock(height);
+            Block block = _manager.CacheBlocks.GetBlock(height);
             if (block != null)
                 return block.Header;
 
@@ -59,7 +59,7 @@ namespace Mineral.Core
 
         public BlockHeader GetHeader(UInt256 hash)
         {
-            Block block = _cacheBlocks.GetBlock(hash);
+            Block block = _manager.CacheBlocks.GetBlock(hash);
             if (block != null)
                 return block.Header;
 
@@ -86,7 +86,7 @@ namespace Mineral.Core
         #region Block
         public Block GetBlock(uint height)
         {
-            Block block = _cacheBlocks.GetBlock(height);
+            Block block = _manager.CacheBlocks.GetBlock(height);
             if (block != null)
                 return block;
 
@@ -99,7 +99,7 @@ namespace Mineral.Core
 
         public Block GetBlock(UInt256 hash)
         {
-            Block block = _cacheBlocks.GetBlock(hash);
+            Block block = _manager.CacheBlocks.GetBlock(hash);
             if (block != null)
                 return block;
 
@@ -109,7 +109,7 @@ namespace Mineral.Core
 
         public UInt256 GetBlockHash(uint height)
         {
-            UInt256 hash = _cacheBlocks.GetBlockHash(height);
+            UInt256 hash = _manager.CacheBlocks.GetBlockHash(height);
             return hash;
         }
 
@@ -124,7 +124,7 @@ namespace Mineral.Core
 
         public List<Block> GetBlocks(uint start, uint end)
         {
-            var hashes = _cacheBlocks.GetBlcokHashs(start, end);
+            var hashes = _manager.CacheBlocks.GetBlcokHashs(start, end);
             List<Block> blocks = new List<Block>();
             foreach (var hash in hashes)
             {
