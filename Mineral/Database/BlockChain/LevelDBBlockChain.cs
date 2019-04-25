@@ -148,6 +148,38 @@ namespace Mineral.Database.BlockChain
             return result;
         }
 
+        public bool TryGetCurrentBlockHash(out UInt256 blockHash)
+        {
+            Slice value;
+            bool result = TryGet(new ReadOptions { FillCache = false }, SliceBuilder.Begin(DataEntryPrefix.SYS_CurrentBlock), out value);
+            if (result)
+            {
+                blockHash = new UInt256(value.ToArray().Take(32).ToArray());
+            }
+            else
+            {
+                blockHash = UInt256.Zero;
+            }
+
+            return result;
+        }
+
+        public bool TryGetCurrentBlockHeight(out uint blockHeight)
+        {
+            Slice value;
+            bool result = TryGet(new ReadOptions { FillCache = false }, SliceBuilder.Begin(DataEntryPrefix.SYS_CurrentBlock), out value);
+            if (result)
+            {
+                blockHeight = value.ToArray().ToUInt32(32);
+            }
+            else
+            {
+                blockHeight = 0;
+            }
+
+            return result;
+        }
+
         public bool TryGetCurrentBlock(out UInt256 blockHash, out uint blockHeight)
         {
             Slice value;
@@ -159,7 +191,7 @@ namespace Mineral.Database.BlockChain
             }
             else
             {
-                blockHash = new UInt256();
+                blockHash = UInt256.Zero;
                 blockHeight = 0;
             }
 
