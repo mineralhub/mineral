@@ -65,6 +65,59 @@ namespace Mineral.UnitTests.BlockChain
             }
         }
 
+        class SimClient
+        {
+            WalletAccount _acc;
+            public SimClient(WalletAccount acc)
+            {
+                _acc = acc;
+            }
+
+            public Transaction transfer(WalletAccount _to, long balance)
+            {
+                TransferTransaction _transfer;
+                Transaction _transaction;
+                _transfer = new TransferTransaction
+                {
+                    From = _acc.AddressHash,
+                    To = new Dictionary<UInt160, Fixed8> { { _to.AddressHash, new Fixed8(balance) } }
+                };
+                _transfer.CalcFee();
+
+                _transaction = new Transaction
+                {
+                    Version = 0,
+                    Type = TransactionType.Transfer,
+                    Timestamp = DateTime.UtcNow.ToTimestamp(),
+                    Data = _transfer,
+                };
+                _transaction.Sign(_acc.Key);
+                return _transaction;
+            }
+
+            public Transaction vote(WalletAccount _to, long data)
+            {
+                VoteTransaction _vote;
+                Transaction _transaction;
+                _vote = new VoteTransaction
+                {
+                    From = _acc.AddressHash,
+                    Votes = new Dictionary<UInt160, Fixed8> { { _to.AddressHash, new Fixed8(data) } }
+                };
+                _vote.CalcFee();
+
+                _transaction = new Transaction
+                {
+                    Version = 0,
+                    Type = TransactionType.Transfer,
+                    Timestamp = DateTime.UtcNow.ToTimestamp(),
+                    Data = _vote,
+                };
+                _transaction.Sign(_acc.Key);
+                return _transaction;
+            }
+        }
+
         SimChain simchain1 = new SimChain(new WalletAccount(Encoding.Default.GetBytes("0")));
         SimChain simchain2 = new SimChain(new WalletAccount(Encoding.Default.GetBytes("1")));
 
