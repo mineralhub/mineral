@@ -273,67 +273,34 @@ namespace Mineral.Core
 
 
         #region External Method
-        public void Initialize(Block genesisBlock)
+        public bool Initialize(Block genesisBlock)
         {
-            _genesisBlock = genesisBlock;
-
-            Version version;
-            if (_manager.BlockChain.TryGetVersion(out version))
+            bool result = _manager.Initialize(genesisBlock);
+            if (result)
             {
-                UInt256 blockHash = UInt256.Zero;
-                IEnumerable<UInt256> headerHashs;
+                _genesisBlock = genesisBlock;
 
                 if (_manager.BlockChain.TryGetCurrentBlock(out _currentBlockHash, out _currentBlockHeight))
                 {
-                    _manager.InitCacheBlock((uint)(_currentBlockHeight * 1.1F));
-                    headerHashs = _manager.BlockChain.GetHeaderHashList();
-                    foreach (UInt256 headerHash in headerHashs)
-                    {
-                        _manager.CacheBlocks.AddHeaderHash(_storeHeaderCount++, headerHash);
-                    }
-
-                    if (_storeHeaderCount == 0)
-                    {
-                        foreach (BlockHeader blockHeader in _manager.BlockChain.GetBlockHeaderList())
-                            _manager.CacheBlocks.AddHeaderHash(blockHeader.Height, blockHeader.Hash);
-                    }
-                    else if (_storeHeaderCount <= _currentBlockHeight)
-                    {
-                        UInt256 hash = _currentBlockHash;
-                        Dictionary<uint, UInt256> headers = new Dictionary<uint, UInt256>();
-
-                        while (hash != _manager.CacheBlocks.GetBlockHash((uint)_manager.CacheBlocks.HeaderCount - 1))
-                        {
-                            BlockState blockState = _manager.BlockChain.Storage.Block.Get(hash);
-                            if (blockState != null)
-                            {
-                                headers.Add(blockState.Header.Height, blockState.Header.Hash);
-                                hash = blockState.Header.PrevHash;
-                            }
-                        }
-
-                        foreach (var header in headers.OrderBy(x => x.Key))
-                            _manager.CacheBlocks.AddHeaderHash(header.Key, header.Value);
-                    }
                     _proof.SetTurnTable(_manager.BlockChain.GetCurrentTurnTable());
                 }
-            }
-            else
-            {
-                _manager.InitCacheBlock(_defaultCacheCapacity);
-                _manager.CacheBlocks.AddHeaderHash(genesisBlock.Height, genesisBlock.Hash);
-                _currentBlockHash = genesisBlock.Hash;
-                Persist(genesisBlock);
-                _manager.BlockChain.PutVersion(Assembly.GetExecutingAssembly().GetName().Version);
-                _proof.Update(this);
+                else
+                {
+                    Persist(genesisBlock);
+                    _proof.Update(this);
+                }
+
+                _storeHeaderCount = _manager.CacheBlocks.HeaderCount;
+
+                _threadPersist = new Thread(PersistBlocksLoop)
+                {
+                    IsBackground = true,
+                    Name = "Mineral.BlockChain.PersistBlocksLoop"
+                };
+                _threadPersist.Start();
             }
 
-            _threadPersist = new Thread(PersistBlocksLoop)
-            {
-                IsBackground = true,
-                Name = "Mineral.BlockChain.PersistBlocksLoop"
-            };
-            _threadPersist.Start();
+            return result;
         }
 
         public void AddHeader(BlockHeader header)

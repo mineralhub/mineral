@@ -42,9 +42,64 @@ namespace Mineral.Core
 
 
         #region External Method
-        public void InitCacheBlock(uint capacity)
+        public bool Initialize(Block genesisBlock)
         {
-            _cacheBlocks = new CacheBlocks(capacity);
+            bool result = false;
+
+            if (_blockChain.TryGetVersion(out Version version))
+            {
+                if (_blockChain.TryGetCurrentBlock(out UInt256 currentHash, out uint currentHeight))
+                {
+                    _cacheBlocks = new CacheBlocks((uint)(currentHeight * 1.1F));
+
+                    uint index = 0;
+                    IEnumerable<UInt256> headerHashs = _blockChain.GetHeaderHashList();
+                    foreach (UInt256 headerHash in headerHashs)
+                    {
+                        _cacheBlocks.AddHeaderHash(index++, headerHash);
+                    }
+
+                    if (index == 0)
+                    {
+                        foreach (BlockHeader blockHeader in _blockChain.GetBlockHeaderList())
+                            _cacheBlocks.AddHeaderHash(blockHeader.Height, blockHeader.Hash);
+                    }
+                    else if (index <= currentHeight)
+                    {
+                        UInt256 hash = currentHash;
+                        Dictionary<uint, UInt256> headers = new Dictionary<uint, UInt256>();
+
+                        while (hash != _cacheBlocks.GetBlockHash((uint)_cacheBlocks.HeaderCount - 1))
+                        {
+                            BlockState blockState = _blockChain.Storage.Block.Get(hash);
+                            if (blockState != null)
+                            {
+                                headers.Add(blockState.Header.Height, blockState.Header.Hash);
+                                hash = blockState.Header.PrevHash;
+                            }
+                        }
+
+                        foreach (var header in headers.OrderBy(x => x.Key))
+                            _cacheBlocks.AddHeaderHash(header.Key, header.Value);
+                    }
+
+                    result = true;
+                }
+                else
+                {
+                    Logger.Error("[Error] " + MethodBase.GetCurrentMethod().Name + " : " + "Not found lastest block.");
+                }
+            }
+            else
+            {
+                _blockChain.PutVersion(Assembly.GetExecutingAssembly().GetName().Version);
+
+                _cacheBlocks = new CacheBlocks(_defaultCacheCapacity);
+                _cacheBlocks.AddHeaderHash(genesisBlock.Height, genesisBlock.Hash);
+                result = true;
+            }
+
+            return result;
         }
 
         public KeyValuePair<List<Block>, List<Block>> GetBranch(UInt256 hash1, UInt256 hash2)
