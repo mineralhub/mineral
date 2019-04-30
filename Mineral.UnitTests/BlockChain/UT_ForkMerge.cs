@@ -123,10 +123,10 @@ namespace Mineral.UnitTests.BlockChain
 
         WalletAccount _1 = new WalletAccount(Encoding.Default.GetBytes("0"));
         WalletAccount _2 = new WalletAccount(Encoding.Default.GetBytes("1"));
-        Dictionary<UInt256, Block> chain1 = new Dictionary<UInt256, Block>();
-        Dictionary<UInt256, Block> chain2 = new Dictionary<UInt256, Block>();
-        List<BlockHeader> header1 = new List<BlockHeader>();
-        List<BlockHeader> header2 = new List<BlockHeader>();
+        Dictionary<UInt256, Block> _chain1 = new Dictionary<UInt256, Block>();
+        Dictionary<UInt256, Block> _chain2 = new Dictionary<UInt256, Block>();
+        List<BlockHeader> _header1 = new List<BlockHeader>();
+        List<BlockHeader> _header2 = new List<BlockHeader>();
         Block _block1;
         Block _block2;
 
@@ -176,8 +176,8 @@ namespace Mineral.UnitTests.BlockChain
             hdr.Sign(_1.Key);
             _block1 = new Block(hdr, trx);
             Trace.WriteLine(_block1.ToJson().ToString());
-            chain1.Add(_block1.Hash, _block1);
-            header1.Add(_block1.Header);
+            _chain1.Add(_block1.Hash, _block1);
+            _header1.Add(_block1.Header);
 
             hdr = new BlockHeader
             {
@@ -190,18 +190,18 @@ namespace Mineral.UnitTests.BlockChain
             hdr.Sign(_2.Key);
             _block2 = new Block(hdr, trx);
             TestContext.WriteLine(_block2.ToJson().ToString());
-            chain2.Add(_block2.Hash, _block2);
-            header2.Add(_block2.Header);
+            _chain2.Add(_block2.Hash, _block2);
+            _header2.Add(_block2.Header);
         }
 
         [TestMethod]
         public void CheckForked()
         {
-            BlockHeader hdr1 = header1[header1.Count - 1];
-            Block block1 = chain1[hdr1.Hash];
+            BlockHeader hdr1 = _header1[_header1.Count - 1];
+            Block block1 = _chain1[hdr1.Hash];
 
-            BlockHeader hdr2 = header2[header2.Count - 1];
-            Block block2 = chain2[hdr2.Hash];
+            BlockHeader hdr2 = _header2[_header2.Count - 1];
+            Block block2 = _chain2[hdr2.Hash];
 
             (block1.Hash != block2.Hash && block1.Height == block2.Height).Should().BeTrue();
         }
@@ -209,28 +209,28 @@ namespace Mineral.UnitTests.BlockChain
         [TestMethod]
         public void FindBranchBlock()
         {
-            BlockHeader hdr1 = header1[header1.Count - 1];
-            Block block1 = chain1[hdr1.Hash];
-            BlockHeader hdr2 = header2[header2.Count - 1];
-            Block block2 = chain2[hdr2.Hash];
+            BlockHeader hdr1 = _header1[_header1.Count - 1];
+            Block block1 = _chain1[hdr1.Hash];
+            BlockHeader hdr2 = _header2[_header2.Count - 1];
+            Block block2 = _chain2[hdr2.Hash];
 
             if (block1.Hash != block2.Hash && block1.Height == block2.Height) // ????
             {
-                Block prev = chain1[block1.Header.PrevHash];
+                Block prev = _chain1[block1.Header.PrevHash];
                 block1 = prev;
             }
         }
 
         void addBlock1(Block block)
         {
-            header1.Add(block.Header);
-            chain1.Add(block.Hash, block);
+            _header1.Add(block.Header);
+            _chain1.Add(block.Hash, block);
         }
 
         void addBlock2(Block block)
         {
-            header2.Add(block.Header);
-            chain2.Add(block.Hash, block);
+            _header2.Add(block.Header);
+            _chain2.Add(block.Hash, block);
         }
     }
 }
