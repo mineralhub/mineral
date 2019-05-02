@@ -63,6 +63,17 @@ namespace Mineral.UnitTests.BlockChain
                 List<BlockHeader> hdrs = new List<BlockHeader>();
                 return hdrs;
             }
+
+            public List<Block> GetBlocks(int from, int to)
+            {
+                List<Block> blocks = new List<Block>();
+                for (int i = from; i < to && i < header.Count; i++)
+                {
+                    Block block = chain[header[i].Hash];
+                    blocks.Add(block);
+                }
+                return blocks; ;
+            }
         }
 
         class SimClient
@@ -118,17 +129,15 @@ namespace Mineral.UnitTests.BlockChain
             }
         }
 
-        SimChain simchain1 = new SimChain(new WalletAccount(Encoding.Default.GetBytes("0")));
-        SimChain simchain2 = new SimChain(new WalletAccount(Encoding.Default.GetBytes("1")));
-
         WalletAccount _1 = new WalletAccount(Encoding.Default.GetBytes("0"));
         WalletAccount _2 = new WalletAccount(Encoding.Default.GetBytes("1"));
-        Dictionary<UInt256, Block> chain1 = new Dictionary<UInt256, Block>();
-        Dictionary<UInt256, Block> chain2 = new Dictionary<UInt256, Block>();
-        List<BlockHeader> header1 = new List<BlockHeader>();
-        List<BlockHeader> header2 = new List<BlockHeader>();
-        Block _block1;
-        Block _block2;
+
+        SimChain simchain1 = null;
+        SimChain simchain2 = null;
+        SimClient simClient1 = null;
+        SimClient simClient2 = null;
+
+        Block _forkedBlock = null;
 
         private TestContext testContextInstance;
         public TestContext TestContext
@@ -140,6 +149,12 @@ namespace Mineral.UnitTests.BlockChain
         [TestInitialize]
         public void TestSetup()
         {
+            simchain1 = new SimChain(_1);
+            simchain2 = new SimChain(_2);
+            simClient1 = new SimClient(_1);
+            simClient2 = new SimClient(_2);
+
+
             TransferTransaction _transfer;
             Transaction _transaction;
             UInt256 rootHash = UInt256.Zero;
@@ -174,10 +189,9 @@ namespace Mineral.UnitTests.BlockChain
                 Height = 1
             };
             hdr.Sign(_1.Key);
-            _block1 = new Block(hdr, trx);
+            Block _block1 = new Block(hdr, trx);
             Trace.WriteLine(_block1.ToJson().ToString());
-            chain1.Add(_block1.Hash, _block1);
-            header1.Add(_block1.Header);
+            simchain1.addBlock(_block1);
 
             hdr = new BlockHeader
             {
@@ -188,49 +202,34 @@ namespace Mineral.UnitTests.BlockChain
                 Height = 1
             };
             hdr.Sign(_2.Key);
-            _block2 = new Block(hdr, trx);
-            TestContext.WriteLine(_block2.ToJson().ToString());
-            chain2.Add(_block2.Hash, _block2);
-            header2.Add(_block2.Header);
+            simchain2.addBlock(_block1);
+
+            trx.Clear();
+            trx.Add(simClient1.transfer(_2, 1));
+            merkle = new MerkleTree(trx.ConvertAll(p => p.Hash).ToArray());
+            hdr = new BlockHeader
+            {
+                PrevHash = _block1.Hash,
+                MerkleRoot = merkle.RootHash,
+                Version = 0,
+                Timestamp = 0,
+                Height = 1
+            };
+            hdr.Sign(_1.Key);
+            _forkedBlock = new Block(hdr, trx);
         }
 
         [TestMethod]
         public void CheckForked()
         {
-            BlockHeader hdr1 = header1[header1.Count - 1];
-            Block block1 = chain1[hdr1.Hash];
-
-            BlockHeader hdr2 = header2[header2.Count - 1];
-            Block block2 = chain2[hdr2.Hash];
-
-            (block1.Hash != block2.Hash && block1.Height == block2.Height).Should().BeTrue();
+            simchain1.isForked(_forkedBlock).Should().BeTrue();
+            simchain2.isForked(_forkedBlock).Should().BeTrue();
         }
 
         [TestMethod]
         public void FindBranchBlock()
         {
-            BlockHeader hdr1 = header1[header1.Count - 1];
-            Block block1 = chain1[hdr1.Hash];
-            BlockHeader hdr2 = header2[header2.Count - 1];
-            Block block2 = chain2[hdr2.Hash];
-
-            if (block1.Hash != block2.Hash && block1.Height == block2.Height) // ????
-            {
-                Block prev = chain1[block1.Header.PrevHash];
-                block1 = prev;
-            }
-        }
-
-        void addBlock1(Block block)
-        {
-            header1.Add(block.Header);
-            chain1.Add(block.Hash, block);
-        }
-
-        void addBlock2(Block block)
-        {
-            header2.Add(block.Header);
-            chain2.Add(block.Hash, block);
+            simchain1.GetBranch(_forkedBlock);
         }
     }
 }
