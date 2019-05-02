@@ -1,4 +1,4 @@
-ï»¿using FluentAssertions;
+using FluentAssertions;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Mineral.Core;
 using Mineral.Core.Transactions;
@@ -35,11 +35,11 @@ namespace Mineral.UnitTests.BlockChain
                     return true;
                 }
                 else if (header.Count < block.Header.Height + 1)
-                {   // ë„ë‹¬í•´ì•¼ë  ë¸”ëŸ­ë³´ë‹¤ ì´í›„ì˜ ë¸”ëŸ­ì´ ë„ë‹¬
+                {   // µµ´ŞÇØ¾ßµÉ ºí·°º¸´Ù ÀÌÈÄÀÇ ºí·°ÀÌ µµ´Ş
                     return false;
                 }
                 else if (header.Count > block.Header.Height + 1)
-                {   // ë„ë‹¬í•´ì•¼ë  ë¸”ëŸ­ë³´ë‹¤ ì´ì „ì˜ ë¸”ëŸ­ì´ ë„ë‹¬
+                {   // µµ´ŞÇØ¾ßµÉ ºí·°º¸´Ù ÀÌÀüÀÇ ºí·°ÀÌ µµ´Ş
                     return false;
                 }
                 return false;

@@ -15,7 +15,7 @@ namespace Mineral.Core
         private LevelDBBlockChain _blockChain = new LevelDBBlockChain("./output-database");
         private LevelDBWalletIndexer _walletIndexer = new LevelDBWalletIndexer("./output-wallet-index");
         private LevelDBProperty _properties = new LevelDBProperty("./output-property");
-        private CacheBlocks _cacheBlocks = new CacheBlocks(_defaultCacheCapacity);
+        private CacheBlocks _cacheBlocks = null;
 
         private const uint _defaultCacheCapacity = 200000;
         #endregion

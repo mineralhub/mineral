@@ -10,7 +10,9 @@ namespace Mineral.Core
         {
             // if same height and different hash than forked block.
             Block hasBlock = BlockChain.Instance.GetBlock(block.Height);
-            if (hasBlock != null && block.Hash.Equals(hasBlock.Hash))
+            if (hasBlock == null)
+                return false;
+            if (object.Equals(hasBlock.Hash, block.Hash) || object.Equals(hasBlock.Header.PrevHash, block.Header.PrevHash))
                 return true;
             return false;
         }
@@ -19,7 +21,7 @@ namespace Mineral.Core
         {
             foreach(Transactions.Transaction tx in block.Transactions)
             {
-                if (!tx.Verify()) 
+                if (!tx.Verify())
                     continue;
                 BlockChain.Instance.AddTransactionPool(tx);
             }
