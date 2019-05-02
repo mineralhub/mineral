@@ -85,6 +85,16 @@ namespace Mineral.Database.BlockChain
             return _db.Find(options, prefix, resultSelector);
         }
 
+        public void Delete(Slice key)
+        {
+            Delete(WriteOption, key);
+        }
+
+        public void Delete(WriteOptions option, Slice key)
+        {
+            _db.Delete(WriteOption, key);
+        }
+
         public void Dispose()
         {
             _db.Dispose();

@@ -13,7 +13,6 @@ namespace Mineral.Database.BlockChain
     {
         #region Field
         private BlockHeader _head = null;
-        private ConcurrentDictionary<UInt256, BlockHeader> _blocks = new ConcurrentDictionary<UInt256, BlockHeader>();
         #endregion
 
 
@@ -52,6 +51,11 @@ namespace Mineral.Database.BlockChain
             }
             return blockHeader;
         }
+
+        protected void RemoveHeader(UInt256 headerHash)
+        {
+            Delete(SliceBuilder.Begin(DataEntryPrefix.DATA_Block).Add(headerHash));
+        }
         #endregion
 
 
@@ -61,7 +65,7 @@ namespace Mineral.Database.BlockChain
             _head = header;
         }
 
-        public BlockHeader GetHead(BlockHeader header)
+        public BlockHeader GetHead()
         {
             return _head;
         }
@@ -74,39 +78,39 @@ namespace Mineral.Database.BlockChain
 
         public void Pop()
         {
-            BlockHeader header = GetBlockHeader(_head.Hash);
-            _head = GetBlockHeader(header.PrevHash);
+            _head = GetBlockHeader(_head.Hash);
+            if (_head != null)
+            {
+                RemoveHeader(_head.Hash);
+            }
         }
 
-        public KeyValuePair<List<BlockHeader>, List<BlockHeader>> GetBranch(Block block1, Block block2)
+        public void Remove(UInt256 headerHash)
+        {
+            RemoveHeader(headerHash);
+        }
+
+        public KeyValuePair<List<BlockHeader>, List<BlockHeader>> GetBranch(UInt256 hash1, UInt256 hash2)
         {
             List<BlockHeader> keys = new List<BlockHeader>();
             List<BlockHeader> values = new List<BlockHeader>();
-            BlockHeader blockHeader1 = GetBlockHeader(block1.Hash);
-            BlockHeader blockHeader2 = GetBlockHeader(block1.Hash);
+            BlockHeader blockHeader1 = GetBlockHeader(hash1);
+            BlockHeader blockHeader2 = GetBlockHeader(hash2);
 
-            if (block1 == null && block2 != null)
+            if (blockHeader1 == null && blockHeader2 != null)
             {
-                while (!object.Equals(block1.Hash, block2.Hash))
+                while (!object.Equals(blockHeader1.Hash, blockHeader2.Hash))
                 {
                     if (blockHeader1.Height >= blockHeader2.Height)
                     {
                         keys.Add(blockHeader1);
-                        blockHeader1 = GetBlockHeader(block1.Header.PrevHash);
-                        if (blockHeader1 == null)
-                        {
-                            blockHeader1 = GetBlockHeader(block2.Header.PrevHash);
-                        }
+                        blockHeader1 = GetBlockHeader(blockHeader1.PrevHash);
                     }
 
                     if (blockHeader1.Height <= blockHeader2.Height)
                     {
                         values.Add(blockHeader2);
-                        blockHeader2 = GetBlockHeader(block2.Header.PrevHash);
-                        if (blockHeader2 == null)
-                        {
-                            blockHeader2 = GetBlockHeader(block2.Header.PrevHash);
-                        }
+                        blockHeader2 = GetBlockHeader(blockHeader2.PrevHash);
                     }
                 }
             }

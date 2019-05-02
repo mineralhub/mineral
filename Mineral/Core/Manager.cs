@@ -12,6 +12,7 @@ namespace Mineral.Core
     public class Manager
     {
         #region Field
+        private LevelDBBlock _fork_db = new LevelDBBlock(".output-fork-database");
         private LevelDBBlockChain _blockChain = new LevelDBBlockChain("./output-database");
         private LevelDBWalletIndexer _walletIndexer = new LevelDBWalletIndexer("./output-wallet-index");
         private LevelDBProperty _properties = new LevelDBProperty("./output-property");
@@ -22,6 +23,7 @@ namespace Mineral.Core
 
 
         #region Property
+        internal LevelDBBlock ForkDB { get { return _fork_db; } }
         internal LevelDBBlockChain BlockChain { get { return _blockChain; } }
         internal LevelDBWalletIndexer WalletIndexer { get { return _walletIndexer; } }
         internal LevelDBProperty Properties { get { return _properties; } }
@@ -102,43 +104,34 @@ namespace Mineral.Core
             return result;
         }
 
-        public KeyValuePair<List<Block>, List<Block>> GetBranch(UInt256 hash1, UInt256 hash2)
+        public void SwitchFork(Block newBlock)
         {
-            List<Block> keys = new List<Block>();
-            List<Block> values = new List<Block>();
-            Block block1 = _cacheBlocks.GetBlock(hash1);
-            Block block2 = _cacheBlocks.GetBlock(hash2);
+            Block lastBlock = _blockChain.GetBlock(_blockChain.GetCurrentBlockHash());
 
-            if (block1 == null && block2 != null)
+            KeyValuePair<List<BlockHeader>, List<BlockHeader>> branches = _fork_db.GetBranch(newBlock.Hash, lastBlock.Hash);
+
+            foreach (BlockHeader header in branches.Value)
             {
-                while (!object.Equals(block1.Hash, block2.Hash))
-                {
-                    if (block1.Height >= block2.Height)
-                    {
-                        keys.Add(block1);
-                        block1 = _cacheBlocks.GetBlock(block1.Header.PrevHash);
-                        if (block1 == null)
-                        {
-                            block1 = _blockChain.GetBlock(block2.Header.PrevHash);
-                        }
-                    }
-
-                    if (block1.Height <= block2.Height)
-                    {
-                        values.Add(block2);
-                        block2 = _cacheBlocks.GetBlock(block2.Header.PrevHash);
-                        if (block2 == null)
-                        {
-                            block2 = _blockChain.GetBlock(block2.Header.PrevHash);
-                        }
-                    }
-                }
+                _fork_db.Pop();
             }
 
-            keys.Reverse();
-            values.Reverse();
+            foreach (BlockHeader header in branches.Key)
+            {
+                try
+                {
+                    //ApplyBlock();
+                }
+                catch (Exception e)
+                {
+                    foreach (BlockHeader keyHeader in branches.Key)
+                        _fork_db.Pop();
 
-            return new KeyValuePair<List<Block>, List<Block>>(keys, values);
+                    foreach (BlockHeader ValueHeader in branches.Value)
+                        //ApplyBlock();
+
+                    break;
+                }
+            }
         }
         #endregion
     }
