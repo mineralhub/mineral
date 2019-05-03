@@ -129,7 +129,7 @@ namespace Mineral.Core
         {
             AddHeader(block.Header);
 
-            using (Storage snapshot = _manager.BlockChain.SnapShot)
+            using (Storage snapshot = _manager.Chain.SnapShot)
             {
                 Fixed8 fee = block.Transactions.Sum(p => p.Fee);
                 snapshot.Block.Add(block.Header.Hash, block, fee);
@@ -137,7 +137,7 @@ namespace Mineral.Core
                 foreach (Transaction tx in block.Transactions)
                 {
                     snapshot.Transaction.Add(tx.Hash, block.Header.Height, tx);
-                    if (_genesisBlock != block && !tx.VerifyBlockChain(_manager.BlockChain.Storage))
+                    if (_genesisBlock != block && !tx.VerifyBlockChain(_manager.Chain.Storage))
                     {
                         if (Fixed8.Zero < tx.Fee)
                         {
@@ -260,9 +260,9 @@ namespace Mineral.Core
             }
 
             WriteBatch batch = new WriteBatch();
-            _manager.BlockChain.PutCurrentHeader(batch, block.Header);
-            _manager.BlockChain.PutCurrentBlock(batch, block);
-            _manager.BlockChain.BatchWrite(WriteOptions.Default, batch);
+            _manager.Chain.PutCurrentHeader(batch, block.Header);
+            _manager.Chain.PutCurrentBlock(batch, block);
+            _manager.Chain.BatchWrite(WriteOptions.Default, batch);
 
             _currentBlockHeight = block.Header.Height;
             _currentBlockHash = block.Header.Hash;
@@ -280,9 +280,9 @@ namespace Mineral.Core
             {
                 _genesisBlock = genesisBlock;
 
-                if (_manager.BlockChain.TryGetCurrentBlock(out _currentBlockHash, out _currentBlockHeight))
+                if (_manager.Chain.TryGetCurrentBlock(out _currentBlockHash, out _currentBlockHeight))
                 {
-                    _proof.SetTurnTable(_manager.BlockChain.GetCurrentTurnTable());
+                    _proof.SetTurnTable(_manager.Chain.GetCurrentTurnTable());
                 }
                 else
                 {
@@ -315,14 +315,14 @@ namespace Mineral.Core
                 {
                     bw.WriteSerializableArray(_manager.CacheBlocks.GetBlcokHashs(_storeHeaderCount, _storeHeaderCount + 2000));
                     bw.Flush();
-                    _manager.BlockChain.PutHeaderHashList(batch, (int)_storeHeaderCount, ms.ToArray());
+                    _manager.Chain.PutHeaderHashList(batch, (int)_storeHeaderCount, ms.ToArray());
                 }
                 _storeHeaderCount += 2000;
             }
 
             if (_storeHeaderCount > oStoreHeaderCount)
             {
-                _manager.BlockChain.BatchWrite(WriteOptions.Default, batch);
+                _manager.Chain.BatchWrite(WriteOptions.Default, batch);
             }
         }
 
@@ -359,7 +359,7 @@ namespace Mineral.Core
         // TODO : clean
         public bool VerityBlock(Block block)
         {
-            Storage snapshot = _manager.BlockChain.SnapShot;
+            Storage snapshot = _manager.Chain.SnapShot;
             List<Transaction> errList = new List<Transaction>();
 
             foreach (Transaction tx in block.Transactions)
@@ -413,17 +413,17 @@ namespace Mineral.Core
                         {
                             for (int i = 0; i < signTx.TxHashes.Count; ++i)
                             {
-                                OtherSignTransactionState state = _manager.BlockChain.Storage.OtherSign.GetAndChange(signTx.TxHashes[i]);
+                                OtherSignTransactionState state = _manager.Chain.Storage.OtherSign.GetAndChange(signTx.TxHashes[i]);
                                 state.Sign(signTx.Owner.Signature);
                                 if (state.RemainSign.Count == 0)
                                 {
-                                    TransactionState txState = _manager.BlockChain.Storage.Transaction.Get(state.TxHash);
+                                    TransactionState txState = _manager.Chain.Storage.Transaction.Get(state.TxHash);
                                     if (txState != null)
                                     {
                                         var osign = txState.Transaction.Data as OtherSignTransaction;
                                         foreach (var to in osign.To)
-                                            _manager.BlockChain.Storage.Account.GetAndChange(to.Key).AddBalance(to.Value);
-                                        var trigger = _manager.BlockChain.Storage.BlockTrigger.GetAndChange(signTx.Reference[i].ExpirationBlockHeight);
+                                            _manager.Chain.Storage.Account.GetAndChange(to.Key).AddBalance(to.Value);
+                                        var trigger = _manager.Chain.Storage.BlockTrigger.GetAndChange(signTx.Reference[i].ExpirationBlockHeight);
                                         trigger.TransactionHashes.Remove(signTx.TxHashes[i]);
                                     }
                                 }
@@ -483,7 +483,7 @@ namespace Mineral.Core
             WriteBatch batch = new WriteBatch();
             TurnTableState state = new TurnTableState();
             state.SetTurnTable(addrs, height);
-            _manager.BlockChain.PutTurnTable(state);
+            _manager.Chain.PutTurnTable(state);
         }
 
         public void OnPersistCompleted(Block block)
@@ -495,7 +495,7 @@ namespace Mineral.Core
         public void Dispose()
         {
             _disposed = true;
-            _manager.BlockChain.Dispose();
+            _manager.Chain.Dispose();
         }
         #endregion
     }
