@@ -20,6 +20,9 @@ namespace Mineral.UnitTests.BlockChain
             WalletAccount _acc;
             Dictionary<UInt256, Block> chain = new Dictionary<UInt256, Block>();
             List<BlockHeader> header = new List<BlockHeader>();
+            List<Transaction> trx = new List<Transaction>();
+            uint lastHeight = 0;
+            UInt256 lastHash = UInt256.Zero;
 
             public SimChain(WalletAccount acc)
             {
@@ -28,17 +31,20 @@ namespace Mineral.UnitTests.BlockChain
 
             public bool addBlock(Block block)
             {
-                if (header.Count == block.Header.Height + 1)
+                if (header.Count == block.Header.Height - 1)
                 {
                     header.Add(block.Header);
+                    lastHash = block.Header.Hash;
+                    lastHeight = block.Header.Height;
+
                     chain.Add(block.Hash, block);
                     return true;
                 }
-                else if (header.Count < block.Header.Height + 1)
+                else if (header.Count < block.Header.Height - 1)
                 {   // 도달해야될 블럭보다 이후의 블럭이 도달
                     return false;
                 }
-                else if (header.Count > block.Header.Height + 1)
+                else if (header.Count > block.Header.Height - 1)
                 {   // 도달해야될 블럭보다 이전의 블럭이 도달
                     return false;
                 }
@@ -47,11 +53,11 @@ namespace Mineral.UnitTests.BlockChain
 
             public bool isForked(Block block)
             {
-                if (header.Count == block.Header.Height + 1)
+                if (header.Count == block.Header.Height)
                 {
                     return false;
                 }
-                else if (header.Count > block.Header.Height + 1)
+                else if (header.Count > block.Header.Height)
                 {
                     return true;
                 }
@@ -73,6 +79,28 @@ namespace Mineral.UnitTests.BlockChain
                     blocks.Add(block);
                 }
                 return blocks; ;
+            }
+
+            public void AddTransaction(Transaction tx)
+            {
+                trx.Add(tx);
+            }
+
+            public Block CreateBlock()
+            {
+                var merkle = new MerkleTree(trx.ConvertAll(p => p.Hash).ToArray());
+                BlockHeader hdr = new BlockHeader
+                {
+                    PrevHash = lastHash,
+                    MerkleRoot = merkle.RootHash,
+                    Version = 0,
+                    Timestamp = DateTime.UtcNow.ToTimestamp(),
+                    Height = lastHeight + 1
+                };
+                hdr.Sign(_acc.Key);
+                Block block = new Block(hdr, trx);
+                trx.Clear();
+                return block;
             }
         }
 
@@ -120,7 +148,7 @@ namespace Mineral.UnitTests.BlockChain
                 _transaction = new Transaction
                 {
                     Version = 0,
-                    Type = TransactionType.Transfer,
+                    Type = TransactionType.Vote,
                     Timestamp = DateTime.UtcNow.ToTimestamp(),
                     Data = _vote,
                 };
@@ -131,11 +159,18 @@ namespace Mineral.UnitTests.BlockChain
 
         WalletAccount _1 = new WalletAccount(Encoding.Default.GetBytes("0"));
         WalletAccount _2 = new WalletAccount(Encoding.Default.GetBytes("1"));
+        WalletAccount _3 = new WalletAccount(Encoding.Default.GetBytes("2"));
+        WalletAccount _4 = new WalletAccount(Encoding.Default.GetBytes("3"));
 
-        SimChain simchain1 = null;
-        SimChain simchain2 = null;
+        SimChain simchainA = null;
+        SimChain simchainB = null;
+        SimChain simchainC = null;
+        SimChain simchainD = null;
+
         SimClient simClient1 = null;
         SimClient simClient2 = null;
+        SimClient simClient3 = null;
+        SimClient simClient4 = null;
 
         Block _forkedBlock = null;
 
@@ -149,11 +184,15 @@ namespace Mineral.UnitTests.BlockChain
         [TestInitialize]
         public void TestSetup()
         {
-            simchain1 = new SimChain(_1);
-            simchain2 = new SimChain(_2);
+            simchainA = new SimChain(_1);
+            simchainB = new SimChain(_2);
+            simchainC = new SimChain(_3);
+            simchainD = new SimChain(_4);
+
             simClient1 = new SimClient(_1);
             simClient2 = new SimClient(_2);
-
+            simClient3 = new SimClient(_3);
+            simClient4 = new SimClient(_4);
 
             TransferTransaction _transfer;
             Transaction _transaction;
@@ -174,62 +213,48 @@ namespace Mineral.UnitTests.BlockChain
                 Data = _transfer,
             };
             _transaction.Sign(_1.Key);
-            _transaction.Signature.Pubkey.Should().NotBeNull();
-            _transaction.Signature.Signature.Should().NotBeNull();
-            List<Transaction> trx = new List<Transaction>();
-            trx.Add(_transaction);
 
-            var merkle = new MerkleTree(trx.ConvertAll(p => p.Hash).ToArray());
-            BlockHeader hdr = new BlockHeader
-            {
-                PrevHash = rootHash,
-                MerkleRoot = merkle.RootHash,
-                Version = 0,
-                Timestamp = 0,
-                Height = 1
-            };
-            hdr.Sign(_1.Key);
-            Block _block1 = new Block(hdr, trx);
-            Trace.WriteLine(_block1.ToJson().ToString());
-            simchain1.addBlock(_block1);
+            Block _block = simchainA.CreateBlock();
+            Trace.WriteLine(_block.ToJson().ToString());
 
-            hdr = new BlockHeader
-            {
-                PrevHash = rootHash,
-                MerkleRoot = merkle.RootHash,
-                Version = 0,
-                Timestamp = 0,
-                Height = 1
-            };
-            hdr.Sign(_2.Key);
-            simchain2.addBlock(_block1);
+            simchainA.addBlock(_block);
+            simchainB.addBlock(_block);
+            simchainC.addBlock(_block);
+            simchainD.addBlock(_block);
 
-            trx.Clear();
-            trx.Add(simClient1.transfer(_2, 1));
-            merkle = new MerkleTree(trx.ConvertAll(p => p.Hash).ToArray());
-            hdr = new BlockHeader
-            {
-                PrevHash = _block1.Hash,
-                MerkleRoot = merkle.RootHash,
-                Version = 0,
-                Timestamp = 0,
-                Height = 1
-            };
-            hdr.Sign(_1.Key);
-            _forkedBlock = new Block(hdr, trx);
+            _block = simchainB.CreateBlock();
+
+            simchainA.addBlock(_block);
+            simchainB.addBlock(_block);
+            simchainC.addBlock(_block);
+            simchainD.addBlock(_block);
+
+            _block = simchainC.CreateBlock();
+
+            simchainA.addBlock(_block);
+            simchainB.addBlock(_block);
+            simchainC.addBlock(_block);
+            simchainD.addBlock(_block);
+
+            _block = simchainD.CreateBlock();
+
+            simchainA.addBlock(_block);
+            simchainB.addBlock(_block);
+            simchainC.addBlock(_block);
+            simchainD.addBlock(_block);
         }
 
         [TestMethod]
         public void CheckForked()
         {
-            simchain1.isForked(_forkedBlock).Should().BeTrue();
-            simchain2.isForked(_forkedBlock).Should().BeTrue();
+            simchainA.isForked(_forkedBlock).Should().BeTrue();
+            simchainB.isForked(_forkedBlock).Should().BeTrue();
         }
 
         [TestMethod]
         public void FindBranchBlock()
         {
-            simchain1.GetBranch(_forkedBlock);
+            simchainA.GetBranch(_forkedBlock);
         }
     }
 }
