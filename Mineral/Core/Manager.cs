@@ -5,6 +5,7 @@ using System.Reflection;
 using System.Text;
 using Mineral.Core.State;
 using Mineral.Core.Transactions;
+using Mineral.Database;
 using Mineral.Database.BlockChain;
 using Mineral.Database.LevelDB;
 using Mineral.Utils;
@@ -15,22 +16,22 @@ namespace Mineral.Core
     public class Manager
     {
         #region Field
-        private LevelDBBlock _fork_db = new LevelDBBlock(".output-fork-database");
         private LevelDBBlockChain _chain = new LevelDBBlockChain("./output-database");
         private LevelDBWalletIndexer _walletIndexer = new LevelDBWalletIndexer("./output-wallet-index");
         private LevelDBProperty _properties = new LevelDBProperty("./output-property");
         private CacheBlocks _cacheBlocks = null;
+        private ForkDatabase _fork_db = new ForkDatabase();
 
         private const uint _defaultCacheCapacity = 200000;
         #endregion
 
 
         #region Property
-        internal LevelDBBlock ForkDB { get { return _fork_db; } }
         internal LevelDBBlockChain Chain { get { return _chain; } }
         internal LevelDBWalletIndexer WalletIndexer { get { return _walletIndexer; } }
         internal LevelDBProperty Properties { get { return _properties; } }
         internal CacheBlocks CacheBlocks { get { return _cacheBlocks; } }
+        internal ForkDatabase ForkDB { get { return _fork_db; } }
         #endregion
 
 
@@ -111,14 +112,14 @@ namespace Mineral.Core
         {
             Block lastBlock = _chain.GetBlock(_chain.GetCurrentBlockHash());
 
-            KeyValuePair<List<BlockHeader>, List<BlockHeader>> branches = _fork_db.GetBranch(newBlock.Hash, lastBlock.Hash);
+            KeyValuePair<List<Block>, List<Block>> branches = _fork_db.GetBranch(newBlock.Hash, lastBlock.Hash);
 
-            foreach (BlockHeader header in branches.Value)
+            foreach (Block block in branches.Value)
             {
                 _fork_db.Pop();
             }
 
-            foreach (BlockHeader header in branches.Key)
+            foreach (Block block in branches.Key)
             {
                 try
                 {
@@ -126,10 +127,10 @@ namespace Mineral.Core
                 }
                 catch (Exception e)
                 {
-                    foreach (BlockHeader keyHeader in branches.Key)
+                    foreach (Block key in branches.Key)
                         _fork_db.Pop();
 
-                    foreach (BlockHeader ValueHeader in branches.Value)
+                    foreach (Block value in branches.Value)
                         //ApplyBlock();
 
                     break;
