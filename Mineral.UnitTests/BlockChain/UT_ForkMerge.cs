@@ -21,12 +21,18 @@ namespace Mineral.UnitTests.BlockChain
             Dictionary<UInt256, Block> chain = new Dictionary<UInt256, Block>();
             List<BlockHeader> header = new List<BlockHeader>();
             List<Transaction> trx = new List<Transaction>();
+            List<UInt160> delegates = new List<UInt160>();
             uint lastHeight = 0;
             UInt256 lastHash = UInt256.Zero;
 
             public SimChain(WalletAccount acc)
             {
                 _acc = acc;
+            }
+
+            public void addDelegate(UInt160 addr)
+            {
+                delegates.Add(addr);
             }
 
             public bool addBlock(Block block)
@@ -51,15 +57,14 @@ namespace Mineral.UnitTests.BlockChain
                 return false;
             }
 
-            public bool isForked(Block block)
+            public bool isForked()
             {
-                if (header.Count == block.Header.Height)
+                for (int i = 0; i < lastHeight; i++)
                 {
-                    return false;
-                }
-                else if (header.Count > block.Header.Height)
-                {
-                    return true;
+                    Block b = chain[header[i].Hash];
+                    if (b == null) return true;
+                    ECKey pkey = new ECKey(b.Header.Signature.Pubkey, false);
+                    // pub key compare with delegate's
                 }
                 return false;
             }
@@ -189,6 +194,26 @@ namespace Mineral.UnitTests.BlockChain
             simchainC = new SimChain(_3);
             simchainD = new SimChain(_4);
 
+            simchainA.addDelegate(_1.AddressHash);
+            simchainA.addDelegate(_2.AddressHash);
+            simchainA.addDelegate(_3.AddressHash);
+            simchainA.addDelegate(_4.AddressHash);
+
+            simchainB.addDelegate(_1.AddressHash);
+            simchainB.addDelegate(_2.AddressHash);
+            simchainB.addDelegate(_3.AddressHash);
+            simchainB.addDelegate(_4.AddressHash);
+
+            simchainC.addDelegate(_1.AddressHash);
+            simchainC.addDelegate(_2.AddressHash);
+            simchainC.addDelegate(_3.AddressHash);
+            simchainC.addDelegate(_4.AddressHash);
+
+            simchainD.addDelegate(_1.AddressHash);
+            simchainD.addDelegate(_2.AddressHash);
+            simchainD.addDelegate(_3.AddressHash);
+            simchainD.addDelegate(_4.AddressHash);
+
             simClient1 = new SimClient(_1);
             simClient2 = new SimClient(_2);
             simClient3 = new SimClient(_3);
@@ -245,10 +270,17 @@ namespace Mineral.UnitTests.BlockChain
         }
 
         [TestMethod]
+        public void CheckNotForked()
+        {
+            simchainA.isForked().Should().BeFalse();
+            simchainB.isForked().Should().BeFalse();
+        }
+
+        [TestMethod]
         public void CheckForked()
         {
-            simchainA.isForked(_forkedBlock).Should().BeTrue();
-            simchainB.isForked(_forkedBlock).Should().BeTrue();
+            simchainC.isForked().Should().BeTrue();
+            simchainD.isForked().Should().BeTrue();
         }
 
         [TestMethod]
