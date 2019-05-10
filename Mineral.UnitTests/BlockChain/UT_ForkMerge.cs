@@ -267,19 +267,29 @@ namespace Mineral.UnitTests.BlockChain
             simchainB.addBlock(_block);
             simchainC.addBlock(_block);
             simchainD.addBlock(_block);
+
+
+            _block = simchainA.CreateBlock();
+            _forkedBlock = simchainB.CreateBlock();
+
+            simchainA.addBlock(_block);
+            simchainC.addBlock(_block);
+
+            simchainB.addBlock(_forkedBlock);
+            simchainD.addBlock(_forkedBlock);
         }
 
         [TestMethod]
         public void CheckNotForked()
         {
             simchainA.isForked().Should().BeFalse();
-            simchainB.isForked().Should().BeFalse();
+            simchainC.isForked().Should().BeFalse();
         }
 
         [TestMethod]
         public void CheckForked()
         {
-            simchainC.isForked().Should().BeTrue();
+            simchainB.isForked().Should().BeTrue();
             simchainD.isForked().Should().BeTrue();
         }
 
