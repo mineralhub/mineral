@@ -9,6 +9,9 @@ using System;
 using System.Diagnostics;
 using System.Collections.Generic;
 using System.Text;
+using System.IO;
+using Mineral.Database.LevelDB;
+using Newtonsoft.Json.Linq;
 
 namespace Mineral.UnitTests.BlockChain
 {
@@ -18,7 +21,8 @@ namespace Mineral.UnitTests.BlockChain
         class SimChain
         {
             WalletAccount _acc;
-            Dictionary<UInt256, Block> chain = new Dictionary<UInt256, Block>();
+            Dictionary<UInt256, Block> blockCache = new Dictionary<UInt256, Block>();
+            Dictionary<UInt256, Block> persistCache = new Dictionary<UInt256, Block>();
             List<BlockHeader> header = new List<BlockHeader>();
             List<Transaction> trx = new List<Transaction>();
             List<UInt160> delegates = new List<UInt160>();
@@ -39,12 +43,29 @@ namespace Mineral.UnitTests.BlockChain
             {
                 if (header.Count == block.Header.Height - 1)
                 {
-                    header.Add(block.Header);
-                    lastHash = block.Header.Hash;
-                    lastHeight = block.Header.Height;
+                    if (blockCache.TryAdd(block.Hash, block))
+                    {
+                        header.Add(block.Header);
+                        lastHash = block.Header.Hash;
+                        lastHeight = block.Header.Height;
 
-                    chain.Add(block.Hash, block);
-                    return true;
+                        BlockSignTransaction blockSignTransaction = new BlockSignTransaction()
+                        {
+                            Header = block.Header
+                        };
+                        Transaction tx = new Transaction()
+                        {
+                            Version = 0,
+                            Type = TransactionType.BlockSign,
+                            Data = blockSignTransaction
+                        };
+                        tx.Sign(_acc);
+
+                        AddTransaction(tx);
+                        return true;
+                    }
+                    // 이미 등록되어 있음
+                    return false;
                 }
                 else if (header.Count < block.Header.Height - 1)
                 {   // 도달해야될 블럭보다 이후의 블럭이 도달
@@ -57,13 +78,26 @@ namespace Mineral.UnitTests.BlockChain
                 return false;
             }
 
-            public bool isForked()
+            public void persist()
+            {
+
+            }
+
+            public bool CanForked()
             {
                 for (int i = 0; i < lastHeight; i++)
                 {
-                    Block b = chain[header[i].Hash];
+                    Block b = blockCache[header[i].Hash];
                     if (b == null) return true;
-                    ECKey pkey = new ECKey(b.Header.Signature.Pubkey, false);
+                    UInt160 delegateAddr = WalletAccount.ToAddressHash(b.Header.Signature.Pubkey);
+                    UInt160 ordered = delegates[i % delegates.Count];
+
+                    if (ordered != delegateAddr)
+                    {
+                        Debug.WriteLine(delegateAddr);
+                        Debug.WriteLine(ordered);
+                        return true;
+                    }
                     // pub key compare with delegate's
                 }
                 return false;
@@ -80,7 +114,7 @@ namespace Mineral.UnitTests.BlockChain
                 List<Block> blocks = new List<Block>();
                 for (int i = from; i < to && i < header.Count; i++)
                 {
-                    Block block = chain[header[i].Hash];
+                    Block block = blockCache[header[i].Hash];
                     blocks.Add(block);
                 }
                 return blocks; ;
@@ -189,6 +223,11 @@ namespace Mineral.UnitTests.BlockChain
         [TestInitialize]
         public void TestSetup()
         {
+            Debug.WriteLine(_1.Address);
+            Debug.WriteLine(_2.Address);
+            Debug.WriteLine(_3.Address);
+            Debug.WriteLine(_4.Address);
+
             simchainA = new SimChain(_1);
             simchainB = new SimChain(_2);
             simchainC = new SimChain(_3);
@@ -282,15 +321,15 @@ namespace Mineral.UnitTests.BlockChain
         [TestMethod]
         public void CheckNotForked()
         {
-            simchainA.isForked().Should().BeFalse();
-            simchainC.isForked().Should().BeFalse();
+            simchainA.CanForked().Should().BeFalse();
+            simchainC.CanForked().Should().BeFalse();
         }
 
         [TestMethod]
         public void CheckForked()
         {
-            simchainB.isForked().Should().BeTrue();
-            simchainD.isForked().Should().BeTrue();
+            simchainB.CanForked().Should().BeTrue();
+            simchainD.CanForked().Should().BeTrue();
         }
 
         [TestMethod]
