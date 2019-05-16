@@ -2,11 +2,11 @@
 using System.Collections.Generic;
 using System.Text;
 using Newtonsoft.Json.Linq;
-using Mineral.Core;
+using Mineral.Core2;
 using Mineral.Cryptography;
 using Mineral.Wallets;
 using Mineral.Utils;
-using Mineral.Core.State;
+using Mineral.Core2.State;
 
 namespace Mineral.Network.RPC.Command
 {

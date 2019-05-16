@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Text;
-using Mineral.Core;
+using Mineral.Core2;
 using Mineral.Utils;
 
 namespace Mineral.Database

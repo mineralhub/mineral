@@ -1,9 +1,9 @@
 ﻿using Newtonsoft.Json.Linq;
-using Mineral.Core;
+using Mineral.Core2;
 using System;
 using System.Collections.Generic;
 using System.Text;
-using Mineral.Core.Transactions;
+using Mineral.Core2.Transactions;
 using Mineral.Utils;
 
 namespace Mineral.Network.RPC.Command

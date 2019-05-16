@@ -9,9 +9,9 @@ using System.Net.WebSockets;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Linq;
-using Mineral.Core;
+using Mineral.Core2;
 using Mineral.Network.Payload;
-using Mineral.Core.Transactions;
+using Mineral.Core2.Transactions;
 
 namespace Mineral.Network
 {

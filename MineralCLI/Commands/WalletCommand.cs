@@ -11,7 +11,7 @@ using Mineral.Wallets.KeyStore;
 using MineralCLI.Network;
 using MineralCLI.Shell;
 using Mineral.Utils;
-using Mineral.Core.Transactions;
+using Mineral.Core2.Transactions;
 
 namespace MineralCLI.Commands
 {

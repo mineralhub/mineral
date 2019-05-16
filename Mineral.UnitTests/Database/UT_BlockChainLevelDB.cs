@@ -1,7 +1,7 @@
 ﻿using FluentAssertions;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Mineral.Core;
-using Mineral.Core.Transactions;
+using Mineral.Core2;
+using Mineral.Core2.Transactions;
 using Mineral.Database.BlockChain;
 using Mineral.Database.LevelDB;
 using Mineral.Utils;

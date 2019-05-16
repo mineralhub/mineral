@@ -4,8 +4,8 @@ using System.IO;
 using System.Text;
 using FluentAssertions;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Mineral.Core;
-using Mineral.Core.State;
+using Mineral.Core2;
+using Mineral.Core2.State;
 using Mineral.Cryptography;
 using Mineral.Database.CacheStorage;
 using Mineral.Database.LevelDB;
@@ -37,7 +37,7 @@ namespace Mineral.UnitTests.Database.CacheStorage
                 Signature = new MakerSignature()
             };
 
-            Block block = new Block(header, new List<Core.Transactions.Transaction>());
+            Block block = new Block(header, new List<Core2.Transactions.Transaction>());
             _blockState = new BlockState(block);
         }
 

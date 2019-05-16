@@ -24,7 +24,7 @@ namespace Mineral.Network.Payload
                 Timestamp = DateTime.Now.ToTimestamp(),
                 Port = (ushort)port,
                 Nonce = Config.Instance.Nonce,
-                Height = Core.BlockChain.Instance.CurrentBlockHeight,
+                Height = Core2.BlockChain.Instance.CurrentBlockHeight,
                 Relay = true,
                 NodeID = guid
             };

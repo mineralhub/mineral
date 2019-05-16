@@ -2,8 +2,8 @@
 using System.Collections.Generic;
 using System.Text;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Mineral.Core;
-using Mineral.Core.Transactions;
+using Mineral.Core2;
+using Mineral.Core2.Transactions;
 using Mineral.Database;
 using Mineral.Utils;
 using Mineral.Wallets;

@@ -4,9 +4,9 @@ using System.Linq;
 using System.Reflection;
 using System.Security.Cryptography;
 using System.Threading;
-using Mineral.Core;
-using Mineral.Core.State;
-using Mineral.Core.Transactions;
+using Mineral.Core2;
+using Mineral.Core2.State;
+using Mineral.Core2.Transactions;
 using Mineral.Database.LevelDB;
 using Mineral.Utils;
 
@@ -196,7 +196,7 @@ namespace Mineral.Database.BlockChain
                         {
                             foreach (var hash in signTx.TxHashes)
                             {
-                                TransactionState txState = Core.BlockChain.Instance.GetTransaction(hash);
+                                TransactionState txState = Core2.BlockChain.Instance.GetTransaction(hash);
                                 if (txState != null)
                                 {
                                     var osign = txState.Transaction.Data as OtherSignTransaction;
@@ -246,13 +246,13 @@ namespace Mineral.Database.BlockChain
                         continue;
                     }
                     uint height = (uint)_accountGroup.Keys.Min();
-                    if (Core.BlockChain.Instance.CurrentBlockHeight <= height)
+                    if (Core2.BlockChain.Instance.CurrentBlockHeight <= height)
                     {
                         sleep = true;
                         continue;
                     }
 
-                    Block block = Core.BlockChain.Instance.GetBlock(height);
+                    Block block = Core2.BlockChain.Instance.GetBlock(height);
                     if (block == null)
                     {
                         sleep = true;

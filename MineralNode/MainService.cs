@@ -5,9 +5,9 @@ using System.Threading;
 using System.Collections.Generic;
 using Mineral;
 using Mineral.Cryptography;
-using Mineral.Core;
+using Mineral.Core2;
 using Mineral.Wallets;
-using Mineral.Core.DPos;
+using Mineral.Core2.DPos;
 using Mineral.Network;
 using Mineral.Network.Payload;
 using Mineral.Network.RPC;
@@ -17,7 +17,7 @@ using Newtonsoft.Json.Linq;
 using Newtonsoft.Json;
 using Mineral.Utils;
 using Mineral.Database.BlockChain;
-using Mineral.Core.Transactions;
+using Mineral.Core2.Transactions;
 
 namespace MineralNode
 {

@@ -1,9 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
-using Mineral.Core;
-using Mineral.Core.State;
-using Mineral.Core.Transactions;
+using Mineral.Core2;
+using Mineral.Core2.State;
+using Mineral.Core2.Transactions;
 using Mineral.Database.CacheStorage;
 using Mineral.Database.LevelDB;
 using Mineral.Utils;

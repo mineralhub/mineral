@@ -7,7 +7,7 @@ using System.Collections.Generic;
 using Org.BouncyCastle.Crypto;
 using Org.BouncyCastle.Security;
 using Org.BouncyCastle.Crypto.Parameters;
-using Mineral.Core;
+using Mineral.Core2;
 using Mineral.Utils;
 
 namespace Mineral.Cryptography

@@ -1,5 +1,5 @@
-﻿using Mineral.Core;
-using Mineral.Core.State;
+﻿using Mineral.Core2;
+using Mineral.Core2.State;
 using Mineral.Cryptography;
 using Mineral.Utils;
 using System;

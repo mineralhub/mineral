@@ -4,7 +4,7 @@ using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Linq;
-using Mineral.Core;
+using Mineral.Core2;
 using Mineral.Network.Payload;
 using System.IO;
 using Mineral.Utils;

@@ -101,7 +101,7 @@ namespace Mineral.Database.LevelDB
 
         public void Write(WriteOptions options, WriteBatch write_batch)
         {
-            // There's a bug in .Net Core.
+            // There's a bug in .Net Core2.
             // When calling DB.Write(), it will throw LevelDBException sometimes.
             // But when you try to catch the exception, the bug disappears.
             // We shall remove the "try...catch" clause when Microsoft fix the bug.
