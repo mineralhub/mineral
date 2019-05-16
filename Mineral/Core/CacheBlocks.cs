@@ -4,12 +4,12 @@ using System.Collections.Generic;
 
 namespace Mineral.Core
 {
-    public class CacheChain
+    public class CacheBlocks
     {
         private ConcurrentDictionary<uint, UInt256> _headerIndices = null;
         private ConcurrentDictionary<UInt256, Block> _hashBlocks = null;
-        public int HeaderCount => _headerIndices.Count;
-        public int BlockCount => _hashBlocks.Count;
+        public uint HeaderCount => (uint)_headerIndices.Count;
+        public uint BlockCount => (uint)_hashBlocks.Count;
 
         public uint Capacity { get; set; }
         public uint HeaderHeight => (uint)(_headerIndices.Count > 0 ? _headerIndices.Count - 1 : 0);
@@ -23,8 +23,8 @@ namespace Mineral.Core
             }
         }
 
-        private CacheChain() { }
-        public CacheChain(uint header_capacity)
+        private CacheBlocks() { }
+        public CacheBlocks(uint header_capacity)
         {
             _headerIndices = new ConcurrentDictionary<uint, UInt256>(System.Environment.ProcessorCount * 2, (int)header_capacity);
             _hashBlocks = new ConcurrentDictionary<UInt256, Block>();

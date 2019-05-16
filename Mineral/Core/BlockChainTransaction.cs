@@ -9,6 +9,27 @@ namespace Mineral.Core
 {
     public partial class BlockChain
     {
+        #region Field
+        #endregion
+
+
+        #region Property
+        #endregion
+
+
+        #region Constructor
+        #endregion
+
+
+        #region Event Method
+        #endregion
+
+
+        #region Internal Method
+        #endregion
+
+
+        #region External Method
         public bool AddTransactionPool(Transaction tx)
         {
             if (!tx.Verify())
@@ -20,7 +41,7 @@ namespace Mineral.Core
                     return false;
                 if (_txPool.ContainsKey(tx.Hash))
                     return false;
-                if (_dbManager.Storage.Transaction.Get(tx.Hash) != null)
+                if (_manager.Chain.Storage.Transaction.Get(tx.Hash) != null)
                     return false;
                 _rxPool.Add(tx.Hash, tx);
                 return true;
@@ -107,5 +128,6 @@ namespace Mineral.Core
                 return false;
             }
         }
+        #endregion
     }
 }

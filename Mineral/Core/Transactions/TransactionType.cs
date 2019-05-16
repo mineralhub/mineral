@@ -10,5 +10,6 @@
         Sign,
         Lock,
         Unlock,
+        BlockSign,
     }
 }
