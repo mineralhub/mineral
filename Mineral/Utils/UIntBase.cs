@@ -59,6 +59,11 @@ namespace Mineral.Utils
             return 0;
         }
 
+        public bool IsNullOrEmpty()
+        {
+            return _data.IsNullOrEmpty();
+        }
+
         public override int GetHashCode()
         {
             return _data.ToInt32(0);
