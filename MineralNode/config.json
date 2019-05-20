@@ -1,78 +1,101 @@
 {
-	"block_version": 1,
-	"address_version": 0,
-	"state_version": 0,
-	"log-level": "DEBUG",
-	"log-console": true,
-	"network": {
-		"listen_address": "0.0.0.0",
-		"tcp_port": 11255,
-		"ws_port": 11256,
-		"rpc_port": 11257,
-		"seed_list": [ "127.0.0.1:11355", "127.0.0.1:11455" ]
-	},
-	"block": {
-		"next_block_time_sec": 5,
-		"cache_capacity": 4096,
+    "net": {
+        "type": "tesetnet"
+    },
+
+    "witness": {
+        "local_witness": [],
+        "local_witness_account_address": "",
+        "local_witness_keystore": []
+    },
+
+    "storage": {
+        "directory": "",
+        "version": 1,
+        "engine": "",
+        "sync": false,
+        "index_directory": "",
+        "index_switch": "",
+        "transaction_history_switch": "",
+        "properties": [],
+        "on":  ""
+    },
+
+
+    "block_version": 1,
+    "address_version": 0,
+    "state_version": 0,
+    "log-level": "DEBUG",
+    "log-console": true,
+    "network": {
+        "listen_address": "0.0.0.0",
+        "tcp_port": 11255,
+        "ws_port": 11256,
+        "rpc_port": 11257,
+        "seed_list": [ "127.0.0.1:11355", "127.0.0.1:11455" ]
+    },
+    "block": {
+        "next_block_time_sec": 5,
+        "cache_capacity": 4096,
         "payload_capacity": 2000,
-		"sync_check": true
-	},
-  "transaction": {
-    "payload_capacity": 2000
-  },
-	"genesis_block": {
-		"account": [
-			{
-				"address": "12AKRNHpFhDSBDD9rSn74VAzZSL3774PxQ",
-				"balance": "100000"
-			},
-			{
-				"address": "19mqdnsraLrBSHTupx9HcnmJrCryM5Jpjy",
-				"balance": "200000"
-			},
-			{
-				"address": "1889nUYazT9MhsqE4fxutq1dpyspHZEiaM",
-				"balance": "300000"
-			},
-			{
-				"address": "1CvKHaVAKsGGftTFZBdJRcxozxeQo7rXUk",
-				"balance": "400000"
-			},
-			{
-				"address": "12iMNgciNRutMSeu18iaByKYBPnk88Hcm1",
-				"balance": "500000"
-			}
-		],
-        "delegate": [
-          {
-            "name": "one",
-            "address": "12AKRNHpFhDSBDD9rSn74VAzZSL3774PxQ"
-          },
-          {
-            "name": "two",
-            "address": "19mqdnsraLrBSHTupx9HcnmJrCryM5Jpjy"
-          },
-          {
-            "name": "three",
-            "address": "1889nUYazT9MhsqE4fxutq1dpyspHZEiaM"
-          },
-          {
-            "name": "four",
-            "address": "1CvKHaVAKsGGftTFZBdJRcxozxeQo7rXUk"
-          },
-          {
-            "name": "five",
-            "address": "12iMNgciNRutMSeu18iaByKYBPnk88Hcm1"
-          },
-          {
-            "name": "six",
-            "address": "1D8kDhZypRVGjuhTT6YWKBgVpJMip2n8ew"
-          },
-          {
-            "name": "seven",
-            "address": "1NP16nFctRtWeBq9PM4azdKudKtacW8h25"
-          }
+        "sync_check": true
+    },
+    "transaction": {
+        "payload_capacity": 2000
+    },
+    "genesis_block": {
+        "account": [
+            {
+                "address": "12AKRNHpFhDSBDD9rSn74VAzZSL3774PxQ",
+                "balance": "100000"
+            },
+            {
+                "address": "19mqdnsraLrBSHTupx9HcnmJrCryM5Jpjy",
+                "balance": "200000"
+            },
+            {
+                "address": "1889nUYazT9MhsqE4fxutq1dpyspHZEiaM",
+                "balance": "300000"
+            },
+            {
+                "address": "1CvKHaVAKsGGftTFZBdJRcxozxeQo7rXUk",
+                "balance": "400000"
+            },
+            {
+                "address": "12iMNgciNRutMSeu18iaByKYBPnk88Hcm1",
+                "balance": "500000"
+            }
         ],
-		"timestamp": 1532051710
-	}
+        "delegate": [
+            {
+                "name": "one",
+                "address": "12AKRNHpFhDSBDD9rSn74VAzZSL3774PxQ"
+            },
+            {
+                "name": "two",
+                "address": "19mqdnsraLrBSHTupx9HcnmJrCryM5Jpjy"
+            },
+            {
+                "name": "three",
+                "address": "1889nUYazT9MhsqE4fxutq1dpyspHZEiaM"
+            },
+            {
+                "name": "four",
+                "address": "1CvKHaVAKsGGftTFZBdJRcxozxeQo7rXUk"
+            },
+            {
+                "name": "five",
+                "address": "12iMNgciNRutMSeu18iaByKYBPnk88Hcm1"
+            },
+            {
+                "name": "six",
+                "address": "1D8kDhZypRVGjuhTT6YWKBgVpJMip2n8ew"
+            },
+            {
+                "name": "seven",
+                "address": "1NP16nFctRtWeBq9PM4azdKudKtacW8h25"
+            }
+        ],
+        "timestamp": 1532051710
+    }
 }

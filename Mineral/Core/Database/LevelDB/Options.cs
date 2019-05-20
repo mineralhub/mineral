@@ -2,7 +2,7 @@
 
 namespace Mineral.Core.Database.LevelDB
 {
-    internal class Options
+    public class Options
     {
         public static readonly Options Default = new Options();
         public IntPtr Handle { get; private set; }
@@ -62,6 +62,14 @@ namespace Mineral.Core.Database.LevelDB
             set
             {
                 Native.leveldb_options_set_block_size(Handle, (UIntPtr)value);
+            }
+        }
+
+        public long CacheSize
+        {
+            set
+            {
+                Native.leveldb_options_set_cache(Handle, (IntPtr)value);
             }
         }
 

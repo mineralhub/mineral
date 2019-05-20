@@ -15,8 +15,8 @@ namespace Mineral.CommandLine.Attributes
 
         public CommandLineAttribute()
         {
-            _name = string.Empty;
-            _description = string.Empty;
+            _name = "";
+            _description = "";
         }
     }
 }

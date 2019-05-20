@@ -64,7 +64,7 @@ namespace MineralCLI.Shell
                 }
             }
 
-            message += string.Empty
+            message += ""
                 + "\n"
                 + "\n" + "".PadLeft(1) + "NODE COMMAND : "
                 ;
@@ -78,7 +78,7 @@ namespace MineralCLI.Shell
                 }
             }
 
-            message += string.Empty
+            message += ""
                 + "\n"
                 + "\n" + "".PadLeft(1) + "WALLET COMMAND :"
                 ;
@@ -92,7 +92,7 @@ namespace MineralCLI.Shell
                 }
             }
 
-            message += string.Empty
+            message += ""
                 + "\n"
                 + "\n" + "".PadLeft(0) + "MISC OPTION :"
                 + "\n" + "".PadLeft(4) + BaseCommand.HelpCommandOption.Help;

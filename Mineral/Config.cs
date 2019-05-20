@@ -8,21 +8,23 @@ using Mineral.Converter;
 using System.Net.NetworkInformation;
 using System.Linq;
 using Mineral.Utils;
+using Mineral.Core.Database.LevelDB;
 
 namespace Mineral
 {
-    public class ConfigClassAttribute : Attribute
+    public class Property
     {
+        public string Name { get; set; }
+        public string Path { get; set; }
+        public Options Option { get; set; }
     }
 
-    [ConfigClass]
     public class NetConfig
     {
         [JsonProperty("type")]
         public string Type { get; set; }
     }
 
-    [ConfigClass]
     public class WitnessConfig
     {
         [JsonProperty("local_witness")]
@@ -33,8 +35,29 @@ namespace Mineral
         public List<string> LocalWitnessKeyStore { get; set; }
     }
 
+    public class StorageConfig
+    {
+        [JsonProperty("directory")]
+        public string Directory { get; set; }
+        [JsonProperty("version")]
+        public int? Version { get; set; }
+        [JsonProperty("engine")]
+        public string Engine { get; set; }
+        [JsonProperty("sync")]
+        public bool? Sync { get; set; }
+        [JsonProperty("index_directory")]
+        public string IndexDirectory { get; set; }
+        [JsonProperty("index_switch")]
+        public string IndexSwitch { get; set; }
+        [JsonProperty("transaction_history_switch")]
+        public string TransactionHistorySwitch { get; set; }
+        [JsonProperty("on")]
+        public string On { get; set; }
+        [JsonProperty("properties")]
+        public List<Property> Properties { get; set; }
+}
 
-    [ConfigClass]
+
     public class NetworkConfig
     {
         [JsonProperty("listen_address")]
@@ -49,7 +72,6 @@ namespace Mineral
         public string[] SeedList { get; set; }
     }
 
-    [ConfigClass]
     public class BlockConfig
     {
         [JsonProperty("next_block_time_sec")]
@@ -62,14 +84,12 @@ namespace Mineral
         public bool SyncCheck { get; set; } = true;
     }
 
-    [ConfigClass]
     public class TransactionConfig
     {
         [JsonProperty("payload_capacity")]
         public uint PayloadCapacity { get; set; }
     }
 
-    [ConfigClass]
     public class DelegateConfig
     {
         [JsonProperty("name")]
@@ -79,7 +99,6 @@ namespace Mineral
         public UInt160 Address { get; set; }
     }
 
-    [ConfigClass]
     public class AccountConfig
     {
         [JsonProperty("address")]
@@ -90,7 +109,6 @@ namespace Mineral
         public Fixed8 Balance { get; set; }
     }
 
-    [ConfigClass]
     public class GenesisBlockConfig
     {
         [JsonProperty("account")]
@@ -109,6 +127,8 @@ namespace Mineral
         public NetConfig Net { get; set; }
         [JsonProperty("witness")]
         public WitnessConfig Witness { get; set;}
+        [JsonProperty("stroage")]
+        public StorageConfig Storage { get; set; }
 
         [JsonProperty("network")]
         public NetworkConfig Network { get; set; }

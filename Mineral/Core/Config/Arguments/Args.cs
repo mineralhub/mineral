@@ -21,22 +21,36 @@ namespace Mineral.Core.Config.Arguments
         #region Field
         private static Args instance = null;
 
+        private Storage storage = new Storage();
         private LocalWitness local_witness = new LocalWitness();
 
 
         public static readonly string Version = "1.0.0";
 
         [Parameter("-p", "==private-key", Description = "Private key")]
-        private string privatekey = string.Empty;
-
+        private string privatekey = "";
         [Parameter("-v", "--version", Description = "Version")]
         private bool version = false;
-
         [Parameter("-w", "--witness", Description = "Version")]
         private bool witness = false;
-
         [Parameter("--witness-address", Description = "Witness address")]
-        private string witness_address = string.Empty;
+        private string witness_address = "";
+        [Parameter("--storage-db-directory", Description = "Storage db directory")]
+        private string storage_directory = "";
+        [Parameter("--storage-db-engine", Description = "Storage db engine.(leveldb or rocksdb)")]
+        private string storage_engine = "";
+        [Parameter("--storage-db-synchronous", Description = "Storage db is synchronous or not.(true or flase)")]
+        private string storage_sync = "";
+        [Parameter("--contract-parse-enable", Description = "enable contract parses in java-tron or not.(true or flase)")]
+        private string contract_parse_enable = "";
+        [Parameter("storage-index-directory", Description = "Storage index directory")]
+        private string storage_index_directory = "";
+        [Parameter("storage-index-switch", Description = "Storage index switch.(on or off)")]
+        private string storage_index_switch = "";
+        [Parameter("--storage-transactionHistory-switch", Description = "Storage transaction history switch.(on or off)")]
+        private string storage_transaction_history_switch = "";
+        [Parameter("--storage-db-version", Description = "Storage db version.(1 or 2)")]
+        private String storage_version = "";
         #endregion
 
 
@@ -182,6 +196,9 @@ namespace Mineral.Core.Config.Arguments
             {
                 Logger.Warning("local witness null");
             }
+
+            instance.storage = new Storage();
+            //instance.storage.Version = 
         }
         #endregion
     }

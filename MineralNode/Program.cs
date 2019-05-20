@@ -22,9 +22,13 @@ namespace MineralNode
         {
             AppDomain.CurrentDomain.UnhandledException += UnhandledException;
 
-            MainService service = new MainService();
-            if (service.Initialize(args))
-                service.Run();
+            Mineral.Core.Config.Arguments.Args.SetParam(null, "config.json");
+
+            //MainService service = new MainService();
+            //if (service.Initialize(args))
+            //    service.Run();
+
+
         }
     }
 }
