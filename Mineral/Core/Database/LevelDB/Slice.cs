@@ -4,7 +4,7 @@ using System.Runtime.InteropServices;
 using System.Text;
 using Mineral.Cryptography;
 
-namespace Mineral.Database.LevelDB
+namespace Mineral.Core.Database.LevelDB
 {
     internal struct Slice : IComparable<Slice>, IEquatable<Slice>
     {

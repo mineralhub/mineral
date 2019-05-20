@@ -1,4 +1,5 @@
-﻿using Mineral.Database.LevelDB;
+﻿using Mineral.Core.Database.LevelDB;
+using Mineral.Database.LevelDB;
 using System;
 using System.Collections.Generic;
 using System.Text;

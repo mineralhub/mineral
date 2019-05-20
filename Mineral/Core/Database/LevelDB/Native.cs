@@ -3,7 +3,7 @@ using System;
 using System.IO;
 using System.Runtime.InteropServices;
 
-namespace Mineral.Database.LevelDB
+namespace Mineral.Core.Database.LevelDB
 {
     internal enum CompressionType : byte
     {

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
+using Mineral.Core.Database.LevelDB;
 using Mineral.Core2;
 using Mineral.Core2.State;
 using Mineral.Core2.Transactions;

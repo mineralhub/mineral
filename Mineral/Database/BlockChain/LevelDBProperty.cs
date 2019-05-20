@@ -1,4 +1,5 @@
 ﻿using System;
+using Mineral.Core.Database.LevelDB;
 using Mineral.Database.LevelDB;
 
 namespace Mineral.Database.BlockChain

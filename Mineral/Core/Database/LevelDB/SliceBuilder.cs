@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace Mineral.Database.LevelDB
+namespace Mineral.Core.Database.LevelDB
 {
     internal class SliceBuilder
     {

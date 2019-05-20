@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 
-namespace Mineral.Database.LevelDB
+namespace Mineral.Core.Database.LevelDB
 {
     internal static class Helper
     {

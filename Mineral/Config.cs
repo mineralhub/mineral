@@ -16,6 +16,25 @@ namespace Mineral
     }
 
     [ConfigClass]
+    public class NetConfig
+    {
+        [JsonProperty("type")]
+        public string Type { get; set; }
+    }
+
+    [ConfigClass]
+    public class WitnessConfig
+    {
+        [JsonProperty("local_witness")]
+        public List<string> LocalWitness { get; set; }
+        [JsonProperty("local_witness_account_address")]
+        public string LocalWitnessAccountAddress { get; set; }
+        [JsonProperty("local_witness_keystore")]
+        public List<string> LocalWitnessKeyStore { get; set; }
+    }
+
+
+    [ConfigClass]
     public class NetworkConfig
     {
         [JsonProperty("listen_address")]
@@ -85,6 +104,11 @@ namespace Mineral
     public class Config
     {
         private Config() { }
+
+        [JsonProperty("net")]
+        public NetConfig Net { get; set; }
+        [JsonProperty("witness")]
+        public WitnessConfig Witness { get; set;}
 
         [JsonProperty("network")]
         public NetworkConfig Network { get; set; }

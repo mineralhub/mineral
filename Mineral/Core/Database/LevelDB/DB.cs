@@ -3,7 +3,7 @@ using System;
 using System.Runtime.CompilerServices;
 
 [assembly: InternalsVisibleTo("Mineral.UnitTests")]
-namespace Mineral.Database.LevelDB
+namespace Mineral.Core.Database.LevelDB
 {
     internal class DB : IDisposable
     {

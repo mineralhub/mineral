@@ -4,6 +4,7 @@ using System.Linq;
 using System.Reflection;
 using System.Security.Cryptography;
 using System.Threading;
+using Mineral.Core.Database.LevelDB;
 using Mineral.Core2;
 using Mineral.Core2.State;
 using Mineral.Core2.Transactions;

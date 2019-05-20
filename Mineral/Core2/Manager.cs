@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.Text;
+using Mineral.Core.Database.LevelDB;
 using Mineral.Core2.State;
 using Mineral.Core2.Transactions;
 using Mineral.Database;

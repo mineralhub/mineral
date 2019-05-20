@@ -1,4 +1,5 @@
-﻿using Mineral.Core2;
+﻿using Mineral.Core.Database.LevelDB;
+using Mineral.Core2;
 using Mineral.Core2.State;
 using Mineral.Database.BlockChain;
 using Mineral.Database.LevelDB;

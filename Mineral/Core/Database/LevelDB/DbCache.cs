@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 
 
-namespace Mineral.Database.LevelDB
+namespace Mineral.Core.Database.LevelDB
 {
     internal class DbCache<TKey, TValue>
         where TKey : IEquatable<TKey>, ISerializable, new()

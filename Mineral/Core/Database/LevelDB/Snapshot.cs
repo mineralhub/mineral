@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Mineral.Database.LevelDB
+namespace Mineral.Core.Database.LevelDB
 {
     internal class Snapshot : IDisposable
     {
