@@ -5,6 +5,7 @@ using System.Text;
 using Mineral.Database.LevelDB;
 using FluentAssertions;
 using System.Linq;
+using Mineral.Core.Database.LevelDB;
 
 namespace Mineral.UnitTests.Database
 {

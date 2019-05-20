@@ -4,6 +4,7 @@ using System.IO;
 using System.Text;
 using FluentAssertions;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Mineral.Core.Database.LevelDB;
 using Mineral.Core2;
 using Mineral.Database.CacheStorage;
 using Mineral.Database.LevelDB;
