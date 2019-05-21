@@ -6,6 +6,7 @@ using System.Linq;
 using System.Net;
 using System.Threading;
 using Mineral.Network.Payload;
+using Mineral.Old;
 
 namespace Mineral.Network
 {
@@ -30,7 +31,7 @@ namespace Mineral.Network
 
         public SyncBlockManager()
         {
-            IsSyncing = Config.Instance.Block.SyncCheck;
+            IsSyncing = PrevConfig.Instance.Block.SyncCheck;
         }
 
         public bool SyncRequest(NodeInfo info)
@@ -100,8 +101,8 @@ namespace Mineral.Network
         {
             NodeInfo info = new NodeInfo();
             info.Version = new VersionPayload();
-            ushort tcpPort = Config.Instance.Network.TcpPort;
-            foreach (var addr in Config.Instance.LocalAddresses)
+            ushort tcpPort = PrevConfig.Instance.Network.TcpPort;
+            foreach (var addr in PrevConfig.Instance.LocalAddresses)
             {
                 info.EndPoint = new IPEndPoint(addr, tcpPort);
                 LocalInfos.Add(info);

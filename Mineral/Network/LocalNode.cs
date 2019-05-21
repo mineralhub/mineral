@@ -12,6 +12,7 @@ using System.Linq;
 using Mineral.Core2;
 using Mineral.Network.Payload;
 using Mineral.Core2.Transactions;
+using Mineral.Old;
 
 namespace Mineral.Network
 {
@@ -47,8 +48,8 @@ namespace Mineral.Network
             {
                 Task.Run(() =>
                 {
-                    int tcpPort = Config.Instance.Network.TcpPort;
-                    int wsPort = Config.Instance.Network.WsPort;
+                    int tcpPort = PrevConfig.Instance.Network.TcpPort;
+                    int wsPort = PrevConfig.Instance.Network.WsPort;
                     try
                     {
                         if (UPNP.Enable)
@@ -151,9 +152,9 @@ namespace Mineral.Network
                             node.RequestAddrs();
                         }
                     }
-                    else if (Config.Instance.Network.SeedList != null)
+                    else if (PrevConfig.Instance.Network.SeedList != null)
                     {
-                        var split = Config.Instance.Network.SeedList.OfType<string>().Select(p => p.Split(':'));
+                        var split = PrevConfig.Instance.Network.SeedList.OfType<string>().Select(p => p.Split(':'));
                         tasks = split.Select(p => ConnectToPeerAsync(p[0], int.Parse(p[1]))).ToArray();
                     }
 
@@ -189,7 +190,7 @@ namespace Mineral.Network
                     && IsSyncing)
                 {
                     uint blockHeight = BlockChain.Instance.CurrentBlockHeight;
-                    if (Config.Instance.Block.PayloadCapacity <= headerHeight - blockHeight)
+                    if (PrevConfig.Instance.Block.PayloadCapacity <= headerHeight - blockHeight)
                         continue;
 
                     NodeInfo info = null;
@@ -205,7 +206,7 @@ namespace Mineral.Network
                             {
                                 info = node.Info;
                                 var start = headerHeight + 1;
-                                var end = start + Config.Instance.Block.PayloadCapacity;
+                                var end = start + PrevConfig.Instance.Block.PayloadCapacity;
                                 var payload = GetBlocksFromHeightPayload.Create(start, end);
                                 node.EnqueueMessage(Message.CommandName.RequestBlocksFromHeight, payload);
                                 break;
@@ -254,7 +255,7 @@ namespace Mineral.Network
 
         public async Task ConnectToPeerAsync(IPEndPoint ep)
         {
-            if (ep.Port == Config.Instance.Network.TcpPort && Config.Instance.LocalAddresses.Contains(ep.Address))
+            if (ep.Port == PrevConfig.Instance.Network.TcpPort && Config.Instance.LocalAddresses.Contains(ep.Address))
                 return;
 
             NetworkManager.Instance.WaitPeers.TryRemove(ep, out _);

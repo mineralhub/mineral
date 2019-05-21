@@ -42,7 +42,7 @@ namespace Mineral.Utils
             {
                 byte[] data = address.Base58CheckDecode();
                 if (data.Length != 21)
-                    throw new FormatException();
+                    throw new FormatException("The address (" + address + ") must be 21 bytes");
                 if (data[0] != Config.Instance.AddressVersion)
                     throw new FormatException();
                 return true;

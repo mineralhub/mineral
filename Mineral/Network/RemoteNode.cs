@@ -8,6 +8,7 @@ using Mineral.Core2;
 using Mineral.Network.Payload;
 using System.IO;
 using Mineral.Utils;
+using Mineral.Old;
 
 namespace Mineral.Network
 {
@@ -175,7 +176,7 @@ namespace Mineral.Network
 
         private void ReceivedRequestBlocks(GetBlocksPayload payload)
         {
-            uint capacity = Config.Instance.Block.PayloadCapacity;
+            uint capacity = PrevConfig.Instance.Block.PayloadCapacity;
             List<Block> blocks = new List<Block>();
             UInt256 hash = payload.HashStart;
             do
@@ -192,7 +193,7 @@ namespace Mineral.Network
 
         private void ReceivedRequestBlocksFromHeight(GetBlocksFromHeightPayload payload)
         {
-            uint capacity = Config.Instance.Block.PayloadCapacity;
+            uint capacity = PrevConfig.Instance.Block.PayloadCapacity;
             uint end = capacity < payload.End - payload.Start ? payload.Start + capacity : payload.End;
             List<Block> blocks = BlockChain.Instance.GetBlocks(payload.Start, end);
             EnqueueMessage(Message.CommandName.ResponseBlocks, BlocksPayload.Create(blocks));
@@ -359,7 +360,7 @@ namespace Mineral.Network
 #if !NET47
             await Task.Yield();
 #endif
-            ushort port = 0 < Config.Instance.Network.TcpPort ? Config.Instance.Network.TcpPort : Config.Instance.Network.WsPort;
+            ushort port = 0 < PrevConfig.Instance.Network.TcpPort ? PrevConfig.Instance.Network.TcpPort : PrevConfig.Instance.Network.WsPort;
             if (!await SendMessageAsync(Message.Create(Message.CommandName.Version, VersionPayload.Create(port, NetworkManager.Instance.NodeID))))
                 return;
 

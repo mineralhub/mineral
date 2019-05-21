@@ -1,5 +1,6 @@
 ﻿using Mineral.Core2;
 using Mineral.Core2.Transactions;
+using Mineral.Old;
 using System.Collections.Generic;
 using System.IO;
 
@@ -19,7 +20,7 @@ namespace Mineral.Network.Payload
 
 		public void Deserialize(BinaryReader reader)
 		{
-			Blocks = reader.ReadSerializableArray<Block>((int)Config.Instance.Block.PayloadCapacity);
+			Blocks = reader.ReadSerializableArray<Block>((int)PrevConfig.Instance.Block.PayloadCapacity);
 		}
 
 		public void Serialize(BinaryWriter writer)
@@ -42,7 +43,7 @@ namespace Mineral.Network.Payload
 
 		public void Deserialize(BinaryReader reader)
 		{
-			Blocks = reader.ReadSerializableArray<Block>((int)Config.Instance.Block.PayloadCapacity);
+			Blocks = reader.ReadSerializableArray<Block>((int)PrevConfig.Instance.Block.PayloadCapacity);
 		}
 
 		public void Serialize(BinaryWriter writer)
@@ -73,7 +74,7 @@ namespace Mineral.Network.Payload
 
         public void Deserialize(BinaryReader reader)
         {
-            Transactions = reader.ReadSerializableArray<Transaction>((int)Config.Instance.Transaction.PayloadCapacity);
+            Transactions = reader.ReadSerializableArray<Transaction>((int)PrevConfig.Instance.Transaction.PayloadCapacity);
         }
 
         public void Serialize(BinaryWriter writer)

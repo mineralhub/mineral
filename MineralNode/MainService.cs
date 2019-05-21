@@ -18,6 +18,7 @@ using Newtonsoft.Json;
 using Mineral.Utils;
 using Mineral.Database.BlockChain;
 using Mineral.Core2.Transactions;
+using Mineral.Old;
 
 namespace MineralNode
 {
@@ -105,7 +106,7 @@ namespace MineralNode
             _dpos = new DPos();
             {
                 List<SupplyTransaction> supplyTxs = new List<SupplyTransaction>();
-                Config.Instance.GenesisBlock.Accounts.ForEach(
+                PrevConfig.Instance.GenesisBlock.Accounts.ForEach(
                     p =>
                     {
                         supplyTxs.Add(new SupplyTransaction
@@ -127,7 +128,7 @@ namespace MineralNode
                     txs.Add(tx);
                 }
 
-                Config.Instance.GenesisBlock.Delegates.ForEach(
+                PrevConfig.Instance.GenesisBlock.Delegates.ForEach(
                     p =>
                     {
                         var register = new RegisterDelegateTransaction
@@ -160,7 +161,7 @@ namespace MineralNode
             Logger.Debug("genesis block. hash : " + _genesisBlock.Hash);
 
             BlockChain.Instance.Initialize(_genesisBlock);
-            BlockChain.Instance.CacheBlockCapacity = Config.Instance.Block.CacheCapacity;
+            BlockChain.Instance.CacheBlockCapacity = PrevConfig.Instance.Block.CacheCapacity;
             BlockChain.Instance.PersistCompleted += PersistCompleted;
 
             var genesisBlockTx = BlockChain.Instance.GetTransaction(_genesisBlock.Transactions[0].Hash);
@@ -271,10 +272,10 @@ namespace MineralNode
 
         private void StartRpcServer()
         {
-            if (0 < Config.Instance.Network.RpcPort)
+            if (0 < PrevConfig.Instance.Network.RpcPort)
             {
                 _rpcServer = new RpcServer(_node);
-                _rpcServer.Start(Config.Instance.Network.RpcPort);
+                _rpcServer.Start(PrevConfig.Instance.Network.RpcPort);
             }
         }
     }

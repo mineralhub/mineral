@@ -47,9 +47,9 @@ namespace Mineral.Core.Config.Arguments
                 key = key.Substring(2);
 
             if (!string.IsNullOrEmpty(key) && 
-                key.Length != Parameter.ChainParameter.PRIVATE_KEY_LENGTH)
+                key.Length != Parameter.ChainParameters.PRIVATE_KEY_LENGTH)
             {
-                Logger.Warning("Private key [" + key + "] must be " + Parameter.ChainParameter.PRIVATE_KEY_LENGTH + "bits");
+                Logger.Warning("Private key [" + key + "] must be " + Parameter.ChainParameters.PRIVATE_KEY_LENGTH + "bits");
                 return false;
             }
 

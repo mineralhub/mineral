@@ -1,4 +1,5 @@
-﻿using Mineral.Utils;
+﻿using Mineral.Old;
+using Mineral.Utils;
 using System;
 using System.Collections.Generic;
 
@@ -42,12 +43,12 @@ namespace Mineral.Core2.DPos
 
         public uint CalcBlockTime(uint height)
         {
-            return Config.Instance.GenesisBlock.Timestamp + height * Config.Instance.Block.NextBlockTimeSec;
+            return PrevConfig.Instance.GenesisBlock.Timestamp + height * PrevConfig.Instance.Block.NextBlockTimeSec;
         }
 
         public override uint CalcBlockHeight(uint time)
         {
-            return (time - Config.Instance.GenesisBlock.Timestamp) / Config.Instance.Block.NextBlockTimeSec;
+            return (time - PrevConfig.Instance.GenesisBlock.Timestamp) / PrevConfig.Instance.Block.NextBlockTimeSec;
         }
 
         public override uint GetCreateBlockCount(UInt160 addr, uint height)

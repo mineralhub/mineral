@@ -18,7 +18,136 @@
         "index_switch": "",
         "transaction_history_switch": "",
         "properties": [],
-        "on":  ""
+        "on": ""
+    },
+
+    "event": {
+        "contract_parse": false
+    },
+
+    "seed_node": {
+        "ip_list": []
+    },
+
+    "genesis_block": {
+        "assets": [
+            {
+                "name": "1",
+                "Type": "AssetsIssue",
+                "Address": "12AKRNHpFhDSBDD9rSn74VAzZSL3774PxQ",
+                "blance": 100000
+            },
+            {
+                "name": "2",
+                "Type": "AssetsIssue",
+                "Address": "19mqdnsraLrBSHTupx9HcnmJrCryM5Jpjy",
+                "blance": 200000
+            },
+            {
+                "name": "3",
+                "Type": "AssetsIssue",
+                "Address": "1889nUYazT9MhsqE4fxutq1dpyspHZEiaM",
+                "blance": 300000
+            },
+            {
+                "name": "4",
+                "Type": "AssetsIssue",
+                "Address": "1CvKHaVAKsGGftTFZBdJRcxozxeQo7rXUk",
+                "blance": 400000
+            },
+            {
+                "name": "5",
+                "Type": "AssetsIssue",
+                "Address": "12iMNgciNRutMSeu18iaByKYBPnk88Hcm1",
+                "blance": 500000
+            }
+        ],
+
+        "Witnesses": [
+            {
+                "address": "12AKRNHpFhDSBDD9rSn74VAzZSL3774PxQ",
+                "url": [ "http://1.com" ],
+                "vote_count": 0
+            },
+            {
+                "address": "19mqdnsraLrBSHTupx9HcnmJrCryM5Jpjy",
+                "url": [ "http://2.com" ],
+                "vote_count": 0
+            },
+            {
+                "address": "1889nUYazT9MhsqE4fxutq1dpyspHZEiaM",
+                "url": [ "http://3.com" ],
+                "vote_count": 0
+            },
+            {
+                "address": "1CvKHaVAKsGGftTFZBdJRcxozxeQo7rXUk",
+                "url": [ "http://4.com" ],
+                "vote_count": 0
+            },
+            {
+                "address": "12iMNgciNRutMSeu18iaByKYBPnk88Hcm1",
+                "url": [ "http://5.com" ],
+                "vote_count": 0
+            }
+        ],
+
+        "timestamp": 0,
+        "parent_hash": 0
+    },
+
+    "node": {
+        "trust_node": "127.0.0.1:50051",
+        "listen_port": 11255,
+        "connection_timout": 2,
+        "channel_read_timeout": 0,
+        "connect_factor": 0.3,
+        "active_connect_factor": 0.1,
+        "disconnect_number_factor": 0.4,
+        "max_connect_number_factor": 0.8,
+        "receive_tcp_min_data_length": 2048,
+        "is_open_full_tcp_disconnect": true,
+        "max_active_nodes": 30,
+        "max_active_nodes_same_ip": 2,
+        "min_participation_rate": 15,
+        "active": [],
+        "passive": [],
+        "fast_forward": [],
+        "block_produced_timeout": 50,
+
+        "discovery": {
+            "enable": true,
+            "persist": true,
+            "bind_ip": "",
+            "external_ip": null
+        },
+        "backup": {
+            "port": 10001,
+            "priority": 8,
+            "member": []
+        },
+        "p2p": {
+            "version": 1
+        },
+        "http": {
+            "full_node_port": 11265,
+            "solidity_port": 11256
+        },
+        "rpc": {
+            "port": 11275,
+            "solidity_port": 11276
+        },
+    },
+    "block": {
+        "need_sync_check": false,
+        "maintenance_time_interval": 21600000,
+        "ProposalExpireTime": 259200000
+    },
+    "committee": {
+        "allow_creation_of_contracts": 0
+    },
+    "transaction": {
+        "reference_block": "head",
+        "expire_time_in_millis":  6000
     },
 
 
@@ -34,68 +163,7 @@
         "rpc_port": 11257,
         "seed_list": [ "127.0.0.1:11355", "127.0.0.1:11455" ]
     },
-    "block": {
-        "next_block_time_sec": 5,
-        "cache_capacity": 4096,
-        "payload_capacity": 2000,
-        "sync_check": true
-    },
     "transaction": {
         "payload_capacity": 2000
-    },
-    "genesis_block": {
-        "account": [
-            {
-                "address": "12AKRNHpFhDSBDD9rSn74VAzZSL3774PxQ",
-                "balance": "100000"
-            },
-            {
-                "address": "19mqdnsraLrBSHTupx9HcnmJrCryM5Jpjy",
-                "balance": "200000"
-            },
-            {
-                "address": "1889nUYazT9MhsqE4fxutq1dpyspHZEiaM",
-                "balance": "300000"
-            },
-            {
-                "address": "1CvKHaVAKsGGftTFZBdJRcxozxeQo7rXUk",
-                "balance": "400000"
-            },
-            {
-                "address": "12iMNgciNRutMSeu18iaByKYBPnk88Hcm1",
-                "balance": "500000"
-            }
-        ],
-        "delegate": [
-            {
-                "name": "one",
-                "address": "12AKRNHpFhDSBDD9rSn74VAzZSL3774PxQ"
-            },
-            {
-                "name": "two",
-                "address": "19mqdnsraLrBSHTupx9HcnmJrCryM5Jpjy"
-            },
-            {
-                "name": "three",
-                "address": "1889nUYazT9MhsqE4fxutq1dpyspHZEiaM"
-            },
-            {
-                "name": "four",
-                "address": "1CvKHaVAKsGGftTFZBdJRcxozxeQo7rXUk"
-            },
-            {
-                "name": "five",
-                "address": "12iMNgciNRutMSeu18iaByKYBPnk88Hcm1"
-            },
-            {
-                "name": "six",
-                "address": "1D8kDhZypRVGjuhTT6YWKBgVpJMip2n8ew"
-            },
-            {
-                "name": "seven",
-                "address": "1NP16nFctRtWeBq9PM4azdKudKtacW8h25"
-            }
-        ],
-        "timestamp": 1532051710
     }
 }
