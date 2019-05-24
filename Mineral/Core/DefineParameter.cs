@@ -4,24 +4,24 @@ using System.Text;
 
 namespace Mineral.Core
 {
-    public static class DefineParameter
+    public class DefineParameter
     {
-        public static readonly byte[] LAST_HASH = "lastHash".HexToBytes();
-        public static readonly String DIFFICULTY = "2001";
+        //public static readonly byte[] LAST_HASH = "lastHash".HexToBytes();
+        public static readonly string DIFFICULTY = "2001";
 
-        public static readonly String BLOCK_DB_NAME = "block_data";
-        public static readonly String TRANSACTION_DB_NAME = "transaction_data";
+        public static readonly string BLOCK_DB_NAME = "block_data";
+        public static readonly string TRANSACTION_DB_NAME = "transaction_data";
 
-        public static readonly String TESTNET_CONF = "config.conf";
+        public static readonly string CONF_FILE = "config.conf";
 
-        public static readonly String TEST_CONF = "config-test.conf";
+        public static readonly string TEST_CONF = "config-test.conf";
 
-        public static readonly String DATABASE_DIR = "storage.directory";
+        public static readonly string DATABASE_DIR = "storage.directory";
 
         public static readonly byte ADD_PRE_FIX_BYTE_MAINNET = (byte)0x41;   //41 + address
-        public static readonly String ADD_PRE_FIX_STRING_MAINNET = "41";
+        public static readonly string ADD_PRE_FIX_STRING_MAINNET = "41";
         public static readonly byte ADD_PRE_FIX_BYTE_TESTNET = (byte)0xa0;   //a0 + address
-        public static readonly String ADD_PRE_FIX_STRING_TESTNET = "a0";
+        public static readonly string ADD_PRE_FIX_STRING_TESTNET = "a0";
         public static readonly int ADDRESS_SIZE = 42;
 
         public static readonly long TRANSACTION_MAX_BYTE_SIZE = 500 * 1_024L;

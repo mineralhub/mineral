@@ -156,10 +156,19 @@ namespace Mineral.Core.Config.Arguments
 
 
         #region External Method
-        public static void SetParam(string[] args, string config_path)
+        public void SetParam(string[] args, string config_path)
         {
             CommanderParser<Args> parser = new CommanderParser<Args>();
-            instance = parser.Add(args).Parse();
+
+            try
+            {
+                instance = parser.Add(args).Parse();
+            }
+            catch (System.Exception e)
+            {
+                Logger.Error(e.Message);
+                return;
+            }
 
             if (instance.version)
             {

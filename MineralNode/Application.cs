@@ -1,13 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
-using Mineral;
-using Mineral.Core;
-using Mineral.Core.Config.Arguments;
 
 namespace MineralNode
 {
-    public class FullNode
+    public class Application
     {
         #region Field
         #endregion
@@ -30,13 +27,7 @@ namespace MineralNode
 
 
         #region External Method
-        public void Run(string[] args)
-        {
-            Logger.Info("Full node start.");
-            Args.Instance.SetParam(args, DefineParameter.CONF_FILE);
-
-
-        }
+        
         #endregion
     }
 }

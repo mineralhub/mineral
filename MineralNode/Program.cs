@@ -22,8 +22,8 @@ namespace MineralNode
         {
             AppDomain.CurrentDomain.UnhandledException += UnhandledException;
 
-            Mineral.Core.Config.Arguments.Args.SetParam(null, "config.json");
-
+            FullNode node = new FullNode();
+            node.Run(args);
             //MainService service = new MainService();
             //if (service.Initialize(args))
             //    service.Run();

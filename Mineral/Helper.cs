@@ -453,5 +453,11 @@ namespace Mineral
                 return (uint)System.Threading.Interlocked.CompareExchange(ref *(int*)ptr, (int)value, (int)comparand);
             }
         }
+
+        public static void IsNotNull(object obj, string message)
+        {
+            if (obj == null)
+                throw new ArgumentNullException(message);
+        }
     }
 }
