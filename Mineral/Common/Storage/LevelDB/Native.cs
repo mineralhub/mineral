@@ -1,5 +1,4 @@
-﻿using Mineral.Database.BlockChain;
-using System;
+﻿using System;
 using System.IO;
 using System.Runtime.InteropServices;
 
@@ -259,7 +258,7 @@ namespace Mineral.Common.Stroage.LevelDB
             {
                 string message = Marshal.PtrToStringAnsi(error);
                 Native.leveldb_free(error);
-                throw new LevelDBException(message);
+                throw new Exception(message);
             }
         }
     }

@@ -7,11 +7,6 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Mineral", "Mineral\Mineral.
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MineralNode", "MineralNode\MineralNode.csproj", "{33CC5B60-380C-4A5F-BED2-CE5517C39854}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MineralCLI", "MineralCLI\MineralCLI.csproj", "{C94FB01A-C6CF-4110-8B9A-DCCE9BDEFECB}"
-	ProjectSection(ProjectDependencies) = postProject
-		{01778075-0762-4F5A-B293-1EC672827A5E} = {01778075-0762-4F5A-B293-1EC672827A5E}
-	EndProjectSection
-EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Mineral.UnitTests", "Mineral.UnitTests\Mineral.UnitTests.csproj", "{EDFDBC7B-CFE1-42DA-B362-891CF769E1BF}"
 EndProject
 Global
@@ -38,14 +33,6 @@ Global
 		{33CC5B60-380C-4A5F-BED2-CE5517C39854}.Release|Any CPU.Build.0 = Release|Any CPU
 		{33CC5B60-380C-4A5F-BED2-CE5517C39854}.Release|x64.ActiveCfg = Release|Any CPU
 		{33CC5B60-380C-4A5F-BED2-CE5517C39854}.Release|x64.Build.0 = Release|Any CPU
-		{C94FB01A-C6CF-4110-8B9A-DCCE9BDEFECB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{C94FB01A-C6CF-4110-8B9A-DCCE9BDEFECB}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{C94FB01A-C6CF-4110-8B9A-DCCE9BDEFECB}.Debug|x64.ActiveCfg = Debug|Any CPU
-		{C94FB01A-C6CF-4110-8B9A-DCCE9BDEFECB}.Debug|x64.Build.0 = Debug|Any CPU
-		{C94FB01A-C6CF-4110-8B9A-DCCE9BDEFECB}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{C94FB01A-C6CF-4110-8B9A-DCCE9BDEFECB}.Release|Any CPU.Build.0 = Release|Any CPU
-		{C94FB01A-C6CF-4110-8B9A-DCCE9BDEFECB}.Release|x64.ActiveCfg = Release|Any CPU
-		{C94FB01A-C6CF-4110-8B9A-DCCE9BDEFECB}.Release|x64.Build.0 = Release|Any CPU
 		{EDFDBC7B-CFE1-42DA-B362-891CF769E1BF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{EDFDBC7B-CFE1-42DA-B362-891CF769E1BF}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{EDFDBC7B-CFE1-42DA-B362-891CF769E1BF}.Debug|x64.ActiveCfg = Debug|Any CPU

@@ -27,8 +27,6 @@ namespace MineralNode
             //MainService service = new MainService();
             //if (service.Initialize(args))
             //    service.Run();
-
-
         }
     }
 }

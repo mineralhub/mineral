@@ -1,6 +1,4 @@
-﻿using Mineral.Core2;
-using Mineral.Core2.State;
-using Mineral.Cryptography;
+﻿using Mineral.Cryptography;
 using Mineral.Utils;
 using System;
 using System.Linq;
@@ -25,15 +23,15 @@ namespace Mineral.Wallets
             }
         }
 
-        public bool IsDelegate()
-        {
-            return BlockChain.Instance.GetDelegateStateAll().FindIndex(p => (p.AddressHash == AddressHash)) != -1;
-        }
+        //public bool IsDelegate()
+        //{
+        //    return BlockChain.Instance.GetDelegateStateAll().FindIndex(p => (p.AddressHash == AddressHash)) != -1;
+        //}
 
-        public int IsDelegateOrder()
-        {
-            return BlockChain.Instance.GetDelegateStateAll().FindIndex(p => (p.AddressHash == AddressHash));
-        }
+        //public int IsDelegateOrder()
+        //{
+        //    return BlockChain.Instance.GetDelegateStateAll().FindIndex(p => (p.AddressHash == AddressHash));
+        //}
 
         public static WalletAccount CreateAccount()
         {
@@ -95,43 +93,43 @@ namespace Mineral.Wallets
             return data.Base58CheckEncode();
         }
 
-        public Fixed8 GetBalance()
-        {
-            return GetBalance(AddressHash);
-        }
+        //public Fixed8 GetBalance()
+        //{
+        //    return GetBalance(AddressHash);
+        //}
 
-        public static Fixed8 GetBalance(UInt160 addressHash)
-        {
-            AccountState state = BlockChain.Instance.GetAccountState(addressHash);
-            if (state == null)
-                return Fixed8.Zero;
-            return state.Balance;
-        }
+        //public static Fixed8 GetBalance(UInt160 addressHash)
+        //{
+        //    AccountState state = BlockChain.Instance.GetAccountState(addressHash);
+        //    if (state == null)
+        //        return Fixed8.Zero;
+        //    return state.Balance;
+        //}
 
-        public Fixed8 GetLockBalance()
-        {
-            return GetLockBalance(AddressHash);
-        }
+        //public Fixed8 GetLockBalance()
+        //{
+        //    return GetLockBalance(AddressHash);
+        //}
 
-        public static Fixed8 GetLockBalance(UInt160 addressHash)
-        {
-            AccountState state = BlockChain.Instance.GetAccountState(addressHash);
-            if (state == null)
-                return Fixed8.Zero;
-            return state.LockBalance;
-        }
+        //public static Fixed8 GetLockBalance(UInt160 addressHash)
+        //{
+        //    AccountState state = BlockChain.Instance.GetAccountState(addressHash);
+        //    if (state == null)
+        //        return Fixed8.Zero;
+        //    return state.LockBalance;
+        //}
 
-        public Fixed8 GetTotalBalance()
-        {
-            return GetTotalBalance(AddressHash);
-        }
+        //public Fixed8 GetTotalBalance()
+        //{
+        //    return GetTotalBalance(AddressHash);
+        //}
 
-        public static Fixed8 GetTotalBalance(UInt160 addressHash)
-        {
-            AccountState state = BlockChain.Instance.GetAccountState(addressHash);
-            if (state == null)
-                return Fixed8.Zero;
-            return state.TotalBalance;
-        }
+        //public static Fixed8 GetTotalBalance(UInt160 addressHash)
+        //{
+        //    AccountState state = BlockChain.Instance.GetAccountState(addressHash);
+        //    if (state == null)
+        //        return Fixed8.Zero;
+        //    return state.TotalBalance;
+        //}
     }
 }

@@ -52,7 +52,7 @@ namespace Mineral.Core.Database2.Core
         #region External Method
         public override void Close()
         {
-            throw new NotImplementedException();
+            ((Flusher)this.db).Close();
         }
 
         public override byte[] Get(byte[] key)
@@ -74,34 +74,46 @@ namespace Mineral.Core.Database2.Core
             this.db.Remove(key);
         }
 
+        public override ISnapshot GetRoot()
+        {
+            return this;
+        }
+
         public override ISnapshot GetSolidity()
         {
-            throw new NotImplementedException();
+            return this.solidity;
         }
 
         public override void Merge(ISnapshot snapshot)
         {
-            //Dictionary<Slice, Slice> batch = ((Snapshot)snapshot).
+            Dictionary<byte[], byte[]> batch = new Dictionary<byte[], byte[]>();
+
+            IEnumerator<KeyValuePair<byte[], byte[]>> datas = ((Snapshot)snapshot).GetEnumerator();
+            while (datas.MoveNext())
+            {
+                batch.Add(datas.Current.Key, datas.Current.Value);
+            }
+            ((Flusher)this.db).Flush(batch);
         }
 
         public override void Reset()
         {
-            throw new NotImplementedException();
+            ((Flusher)this.db).Reset();
         }
 
         public override void ResetSolidity()
         {
-            throw new NotImplementedException();
+            this.solidity = this;
         }
 
         public override ISnapshot Retreat()
         {
-            throw new NotImplementedException();
+            return this;
         }
 
         public override void UpdateSolidity()
         {
-            throw new NotImplementedException();
+            this.solidity = this.solidity.GetNext();
         }
         #endregion
     }

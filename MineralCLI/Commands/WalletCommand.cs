@@ -5,13 +5,11 @@ using System.Text;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using Mineral;
-using Mineral.Network.RPC.Command;
 using Mineral.Wallets;
 using Mineral.Wallets.KeyStore;
 using MineralCLI.Network;
 using MineralCLI.Shell;
 using Mineral.Utils;
-using Mineral.Core2.Transactions;
 
 namespace MineralCLI.Commands
 {

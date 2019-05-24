@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 using System.Threading;
+using Mineral.Core.Config.Arguments;
 using Mineral.Core.Database2.Common;
 
 namespace Mineral.Core.Database2.Core
@@ -23,8 +24,7 @@ namespace Mineral.Core.Database2.Core
         public RevokingDBWithCaching(string db_name, Type db_type)
         {
             DBName = db_name;
-            // TODO : 11111
-            //this.head = new SnapshotRoot()
+            //this.head = new SnapshotRoot(Args.Instance.)
         }
         #endregion
 

@@ -11,11 +11,11 @@ namespace Mineral.Core.Database2.Core
         protected ISnapshot previous;
         protected WeakReference next = null;
         protected IBaseDB<T, V> db { get; set; }
-
         #endregion
 
 
         #region Property
+        public IBaseDB<T, V> DB { get { return this.db; } }
         #endregion
 
 
@@ -34,7 +34,7 @@ namespace Mineral.Core.Database2.Core
         #region External Method
         public ISnapshot Advance()
         {
-            throw new NotImplementedException();
+            return new Snapshot((ISnapshot)this);
         }
 
         public void SetPrevious(ISnapshot snapshot)
@@ -58,6 +58,7 @@ namespace Mineral.Core.Database2.Core
         }
 
         #region Abstract -ISnapshot
+        public abstract ISnapshot GetRoot();
         public abstract ISnapshot GetSolidity();
         public abstract ISnapshot Retreat();
         public abstract byte[] Get(byte[] key);

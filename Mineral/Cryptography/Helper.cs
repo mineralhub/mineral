@@ -7,7 +7,6 @@ using System.Collections.Generic;
 using Org.BouncyCastle.Crypto;
 using Org.BouncyCastle.Security;
 using Org.BouncyCastle.Crypto.Parameters;
-using Mineral.Core2;
 using Mineral.Utils;
 
 namespace Mineral.Cryptography
@@ -124,10 +123,10 @@ namespace Mineral.Cryptography
             return VerifySignature(signature, message, new ECKey(pubkey, false));
         }
 
-        public static bool VerifySignature(MakerSignature makerSign, byte[] message)
-        {
-            return VerifySignature(makerSign.Signature, message, new ECKey(makerSign.Pubkey, false));
-        }
+        //public static bool VerifySignature(MakerSignature makerSign, byte[] message)
+        //{
+        //    return VerifySignature(makerSign.Signature, message, new ECKey(makerSign.Pubkey, false));
+        //}
 
         public static bool VerifySignature(byte[] signature, byte[] message, ECKey key)
         {

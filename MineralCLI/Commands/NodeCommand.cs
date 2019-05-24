@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Text;
 using Newtonsoft.Json.Linq;
 using Mineral;
-using Mineral.Network.RPC.Command;
 using MineralCLI.Network;
 
 namespace MineralCLI.Commands

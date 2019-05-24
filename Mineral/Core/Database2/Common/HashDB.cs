@@ -6,10 +6,10 @@ using Mineral.Common.Stroage.LevelDB;
 
 namespace Mineral.Core.Database2.Common
 {
-    public class HashDB : IBaseDB<Slice, Slice>
+    public class HashDB : IBaseDB<byte[], byte[]>
     {
         #region Field
-        private ConcurrentDictionary<Slice, Slice> db = new ConcurrentDictionary<Slice, Slice>();
+        private ConcurrentDictionary<byte[], byte[]> db = new ConcurrentDictionary<byte[], byte[]>();
         #endregion
 
 
@@ -32,25 +32,25 @@ namespace Mineral.Core.Database2.Common
 
 
         #region External Method
-        public Slice Get(Slice key)
+        public byte[] Get(byte[] key)
         {
-            if (this.db.TryGetValue(key, out Slice value))
+            if (this.db.TryGetValue(key, out byte[] value))
                 return value;
             else
-                return default(Slice);
+                return null;
         }
 
-        public void Put(Slice key, Slice value)
+        public void Put(byte[] key, byte[] value)
         {
             this.db.TryAdd(key, value);
         }
 
-        public void Remove(Slice key)
+        public void Remove(byte[] key)
         {
             this.db.TryRemove(key, out _);
         }
 
-        public IEnumerator<KeyValuePair<Slice, Slice>> GetEnumerator()
+        public IEnumerator<KeyValuePair<byte[], byte[]>> GetEnumerator()
         {
             return this.db.GetEnumerator();
         }

@@ -8,9 +8,9 @@ using Mineral.Converter;
 using System.Net.NetworkInformation;
 using System.Linq;
 using Mineral.Utils;
-using Mineral.Core.Database.LevelDB;
 using static Mineral.Core.Config.Arguments.Account;
 using Mineral.Core.Config.Arguments;
+using Mineral.Common.Stroage.LevelDB;
 
 namespace Mineral
 {

@@ -20,9 +20,9 @@ namespace Mineral.Core.Database2.Core
 
         ISnapshot Advance();
         ISnapshot Retreat();
+        ISnapshot GetRoot();
         ISnapshot GetPrevious();
         ISnapshot GetNext();
         ISnapshot GetSolidity();
-
     }
 }

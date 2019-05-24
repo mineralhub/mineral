@@ -7,7 +7,7 @@ using Mineral.Core.Database2.Common;
 
 namespace Mineral.Core.Database2.Core
 {
-    public class Snapshot : AbstractSnapshot<Slice, Slice>
+    public class Snapshot : AbstractSnapshot<byte[], byte[]>
     {
         #region Field
         private ISnapshot root = null;
@@ -20,9 +20,9 @@ namespace Mineral.Core.Database2.Core
 
 
         #region Constructor
-        public Snapshot(Snapshot snapshot)
+        public Snapshot(ISnapshot snapshot)
         {
-            this.root = snapshot.Root;
+            this.root = snapshot.GetRoot();
             this.previous = snapshot;
             snapshot.SetNext(this);
             this.db = new HashDB();
@@ -42,6 +42,16 @@ namespace Mineral.Core.Database2.Core
         public static bool IsRoot(ISnapshot snapshot)
         {
             return snapshot != null && typeof(Snapshot) == typeof(SnapshotRoot);
+        }
+
+        public IEnumerator<KeyValuePair<byte[], byte[]>> GetEnumerator()
+        {
+            return ((HashDB)(this.db)).GetEnumerator();
+        }
+
+        public override ISnapshot GetRoot()
+        {
+            return this.root;
         }
 
         public byte[] Get(ISnapshot head, byte[] key)
@@ -90,7 +100,7 @@ namespace Mineral.Core.Database2.Core
             if (((Snapshot)snapshot).db is HashDB)
             {
                 hash_db = (HashDB)((Snapshot)snapshot).db;
-                IEnumerator<KeyValuePair<Slice, Slice>> enumerator = hash_db.GetEnumerator();
+                IEnumerator<KeyValuePair<byte[], byte[]>> enumerator = hash_db.GetEnumerator();
 
                 while (hash_db.GetEnumerator().MoveNext())
                     this.db.Put(enumerator.Current.Key, enumerator.Current.Value);

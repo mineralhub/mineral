@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
-using Mineral.Core.Database.LevelDB;
+using Mineral.Common.Stroage.LevelDB;
 using Mineral.Utils;
 
 namespace Mineral.Core.Config.Arguments

@@ -17,7 +17,6 @@ namespace Mineral.Core.Database2.Common
         #region Property
         public long Size { get { return this.db != null ? this.db.GetTotal() : 0; } }
         public bool IsEmpty { get { return Size == 0; } }
-
         #endregion
 
 
