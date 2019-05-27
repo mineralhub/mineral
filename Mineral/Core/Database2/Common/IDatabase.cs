@@ -8,7 +8,7 @@ namespace Mineral.Core.Database2.Common
     {
         void Reset();
         void Close();
-        void Put(byte[] key, T item);
+        void Put(byte[] key, T value);
         void Delete(byte[] key);
 
         bool Contains(byte[] key);

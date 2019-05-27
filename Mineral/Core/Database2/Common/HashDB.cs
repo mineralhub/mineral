@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Text;
@@ -53,6 +54,11 @@ namespace Mineral.Core.Database2.Common
         public IEnumerator<KeyValuePair<byte[], byte[]>> GetEnumerator()
         {
             return this.db.GetEnumerator();
+        }
+
+        IEnumerator IEnumerable.GetEnumerator()
+        {
+            return (IEnumerator <KeyValuePair<byte[], byte[]>>)GetEnumerator();
         }
         #endregion
     }

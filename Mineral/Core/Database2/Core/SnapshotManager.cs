@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 using Mineral.Core.Database;
+using Mineral.Core.Database2.Common;
 
 namespace Mineral.Core.Database2.Core
 {
@@ -31,7 +32,7 @@ namespace Mineral.Core.Database2.Core
 
 
         #region External Method
-        public void Add(IRevokingDatabase revoking_db)
+        public ISession BuildSession()
         {
             throw new NotImplementedException();
         }
@@ -41,32 +42,7 @@ namespace Mineral.Core.Database2.Core
             throw new NotImplementedException();
         }
 
-        public ISession BuildSession()
-        {
-            throw new NotImplementedException();
-        }
-
-        public void Check()
-        {
-            throw new NotImplementedException();
-        }
-
-        public void Commit()
-        {
-            throw new NotImplementedException();
-        }
-
-        public void Disable()
-        {
-            throw new NotImplementedException();
-        }
-
-        public void Enable()
-        {
-            throw new NotImplementedException();
-        }
-
-        public void FastPop()
+        public void Add(IRevokingDB revoking_db)
         {
             throw new NotImplementedException();
         }
@@ -76,27 +52,37 @@ namespace Mineral.Core.Database2.Core
             throw new NotImplementedException();
         }
 
-        public void Pop()
-        {
-            throw new NotImplementedException();
-        }
-
         public void Revoke()
         {
             throw new NotImplementedException();
         }
 
-        public void SetMaxFlushCount(int max_flush_count)
+        public void Commit()
         {
             throw new NotImplementedException();
         }
 
-        public void SetMaxSize(int max_size)
+        public void Pop()
         {
             throw new NotImplementedException();
         }
 
-        public void SetMode(bool mode)
+        public void FastPop()
+        {
+            throw new NotImplementedException();
+        }
+
+        public void Enable()
+        {
+            throw new NotImplementedException();
+        }
+
+        public void Disable()
+        {
+            throw new NotImplementedException();
+        }
+
+        public void Check()
         {
             throw new NotImplementedException();
         }
@@ -107,6 +93,21 @@ namespace Mineral.Core.Database2.Core
         }
 
         public int Size()
+        {
+            throw new NotImplementedException();
+        }
+
+        public void SetMode(bool mode)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void SetMaxSize(int max_size)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void SetMaxFlushCount(int max_flush_count)
         {
             throw new NotImplementedException();
         }

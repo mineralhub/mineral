@@ -25,7 +25,10 @@ namespace Mineral.Core.Database2.Core
             this.root = snapshot.GetRoot();
             this.previous = snapshot;
             snapshot.SetNext(this);
-            this.db = new HashDB();
+            lock (this)
+            {
+                this.db = new HashDB();
+            }
         }
         #endregion
 
@@ -131,6 +134,20 @@ namespace Mineral.Core.Database2.Core
         public override void UpdateSolidity()
         {
             this.root.UpdateSolidity();
+        }
+
+        public void Collect(Dictionary<byte[], byte[]> collect)
+        {
+            ISnapshot next = GetRoot().GetNext();
+            while (next != null)
+            {
+                IEnumerator<KeyValuePair<byte[], byte[]>> values = ((Snapshot)next).GetEnumerator();
+                while (values.MoveNext())
+                {
+                    collect.Add(values.Current.Key, values.Current.Value);
+                }
+                next = next.GetNext();
+            }
         }
         #endregion
     }

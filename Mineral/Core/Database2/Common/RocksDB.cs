@@ -1,9 +1,11 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Text;
 using Mineral.Common.Storage;
 using Mineral.Core.Config.Arguments;
+using RocksDbSharp;
 
 namespace Mineral.Core.Database2.Common
 {
@@ -14,9 +16,11 @@ namespace Mineral.Core.Database2.Common
         private WriteOptionWrapper write_options = WriteOptionWrapper.GetInstance().Sync(Args.Instance.Storage.Sync);
         #endregion
 
+
         #region Property
         public long Size { get { return this.db != null ? this.db.GetTotal() : 0; } }
         public bool IsEmpty { get { return Size == 0; } }
+        public RocksDBDataSource DB { get { return this.db; } }
         #endregion
 
 
@@ -69,6 +73,16 @@ namespace Mineral.Core.Database2.Common
         public void Remove(byte[] key)
         {
             this.db.DeleteData(key);
+        }
+
+        public IEnumerator<KeyValuePair<byte[], byte[]>> GetEnumerator()
+        {
+            return this.db.GetEnumerator();
+        }
+
+        IEnumerator IEnumerable.GetEnumerator()
+        {
+            return (IEnumerator<KeyValuePair<byte[], byte[]>>)GetEnumerator();
         }
         #endregion
     }

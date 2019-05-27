@@ -79,6 +79,8 @@ namespace Mineral.Core.Config.Arguments
         private string storage_sync = "";
         [Parameter("--contract-parse-switch", Description = "enable contract parses in java-tron or not.(true or flase)")]
         private string contract_parse_switch = "";
+        [Parameter("--d", "--output-directory", Description = "Directory")]
+        private string output_directory = "";
         [Parameter("storage-index-directory", Description = "Storage index directory")]
         private string storage_index_directory = "";
         [Parameter("storage-index-switch", Description = "Storage index switch.(on or off)")]
@@ -418,6 +420,23 @@ namespace Mineral.Core.Config.Arguments
                     Config.Instance.Transaction.ExpireTimeInMillis : DefineParameter.TRANSACTION_DEFAULT_EXPIRATION_TIME
                 ) : DefineParameter.TRANSACTION_DEFAULT_EXPIRATION_TIME;
             #endregion
+        }
+
+        public string GetOutputDirectoryByDBName(string db_name)
+        {
+            string path = Storage.GetPathByDbName(db_name);
+            if (StringHelper.IsNotNullOrEmpty(path))
+                return path;
+            return GetOutputDirectory();
+        }
+
+        public string GetOutputDirectory()
+        {
+            if (this.output_directory.Equals("") || this.output_directory.EndsWith(Path.DirectorySeparatorChar.ToString()))
+            {
+                return this.output_directory + Path.DirectorySeparatorChar;
+            }
+            return this.output_directory;
         }
         #endregion
     }

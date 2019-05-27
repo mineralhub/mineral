@@ -1,8 +1,10 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Text;
 using Mineral.Common.Storage;
+using Mineral.Common.Stroage.LevelDB;
 using Mineral.Core.Config.Arguments;
 
 namespace Mineral.Core.Database2.Common
@@ -18,6 +20,7 @@ namespace Mineral.Core.Database2.Common
         #region Property
         public long Size { get { return this.db != null ? this.db.GetTotal() : 0; } }
         public bool IsEmpty { get { return Size == 0; } }
+        public LevelDBDataSource DB { get { return this.db; } }
         #endregion
 
 
@@ -67,6 +70,16 @@ namespace Mineral.Core.Database2.Common
         public void Remove(byte[] key)
         {
             this.db.DeleteData(key);
+        }
+
+        public IEnumerator<KeyValuePair<byte[], byte[]>> GetEnumerator()
+        {
+            return this.db.GetEnumerator();
+        }
+
+        IEnumerator IEnumerable.GetEnumerator()
+        {
+            return (IEnumerator<KeyValuePair<byte[], byte[]>>)GetEnumerator();
         }
         #endregion
     }

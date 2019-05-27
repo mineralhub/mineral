@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
+using Mineral.Core.Database2.Common;
 using Mineral.Core.Database2.Core;
 
 namespace Mineral.Core.Database
@@ -10,7 +11,7 @@ namespace Mineral.Core.Database
         ISession BuildSession();
         ISession BuildSeesion(bool force_enable);
 
-        void Add(IRevokingDatabase revoking_db);
+        void Add(IRevokingDB revoking_db);
         void Merge();
         void Revoke();
         void Commit();

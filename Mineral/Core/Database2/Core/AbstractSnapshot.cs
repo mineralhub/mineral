@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Text;
 using Mineral.Core.Database2.Common;
@@ -57,7 +58,17 @@ namespace Mineral.Core.Database2.Core
             return (ISnapshot)this.next.Target;
         }
 
-        #region Abstract -ISnapshot
+        IEnumerator<KeyValuePair<byte[], byte[]>> IEnumerable<KeyValuePair<byte[], byte[]>>.GetEnumerator()
+        {
+            return (IEnumerator<KeyValuePair<byte[], byte[]>>)this.GetEnumerator();
+        }
+
+        public IEnumerator GetEnumerator()
+        {
+            return this.db.GetEnumerator();
+        }
+
+        #region Abstract - ISnapshot
         public abstract ISnapshot GetRoot();
         public abstract ISnapshot GetSolidity();
         public abstract ISnapshot Retreat();

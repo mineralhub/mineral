@@ -1,10 +1,11 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Text;
 
 namespace Mineral.Core.Database2.Core
 {
-    public interface ISnapshot
+    public interface ISnapshot : IEnumerable<KeyValuePair<byte[], byte[]>>
     {
         byte[] Get(byte[] key);
         void Put(byte[] key, byte[] value);

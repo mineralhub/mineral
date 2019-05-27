@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Text;
 using Mineral.Utils;
@@ -6,7 +7,7 @@ using RocksDbSharp;
 
 namespace Mineral.Common.Storage
 {
-    public class RocksDBDataSource : IDBSourceInter<byte[]>
+    public class RocksDBDataSource : IDBSourceInter<byte[]>, IEnumerable<KeyValuePair<byte[], byte[]>>
     {
         #region Field
         private static readonly string ENGINE = "ENGINE";
@@ -189,9 +190,93 @@ namespace Mineral.Common.Storage
             this.db.Write(batch, options.Rocks);
         }
 
-        public Iterator GetEnumerator()
+        public HashSet<byte[]> GetLatestValues(long limit)
         {
-            return this.db.NewIterator();
+            HashSet<byte[]> result = new HashSet<byte[]>();
+
+            if (limit <= 0)
+                return result;
+
+            Iterator it = this.db.NewIterator();
+            long i = 0;
+            for (it.SeekToLast(); it.Valid(); it.Prev())
+            {
+                result.Add(it.Value());
+            }
+
+            return result;
+        }
+
+        public Dictionary<byte[], byte[]> GetNext(byte[] key, long limit)
+        {
+            Dictionary<byte[], byte[]> result = new Dictionary<byte[], byte[]>();
+            if (limit <= 0)
+                return result;
+
+            Iterator it = this.db.NewIterator();
+            long i = 0;
+            for (it.Seek(key); it.Valid() && i++ < limit; it.Next())
+            {
+                result.Add(it.Key(), it.Value());
+            }
+
+            return result;
+        }
+
+        public Dictionary<byte[], byte[]> GetPrevious(byte[] key, long limit, int precision)
+        {
+            Dictionary<byte[], byte[]> result = new Dictionary<byte[], byte[]>();
+
+            if (limit <= 0 || key.Length < precision)
+            {
+                return result;
+            }
+
+            long i = 0;
+            Iterator it = this.db.NewIterator();
+            for (it.SeekToFirst(); it.Valid() && i++ < limit; it.Next())
+            {
+                if (it.Key().Length >= precision)
+                {
+                    if (ByteUtil.Compare(
+                        ByteUtil.GetRange(key, 0, precision),
+                        ByteUtil.GetRange(it.Key(), 0, precision))
+                        < 0)
+                    {
+                        break;
+                    }
+                    result.Add(it.Key(), it.Value());
+                }
+            }
+
+            return result;
+        }
+
+        public Dictionary<byte[], byte[]> GetAll()
+        {
+            Dictionary<byte[], byte[]> result = new Dictionary<byte[], byte[]>();
+
+            Iterator it = this.db.NewIterator();
+            for (it.SeekToFirst(); it.Valid(); it.Next())
+            {
+                result.Add(it.Key(), it.Value());
+            }
+
+            return result;
+        }
+
+        public IEnumerator<KeyValuePair<byte[], byte[]>> GetEnumerator()
+        {
+            Iterator it = this.db.NewIterator();
+            for (; it.Valid(); it.Next())
+            {
+                yield return new KeyValuePair<byte[], byte[]>(it.Key(), it.Value());
+            }
+        }
+
+        IEnumerator IEnumerable.GetEnumerator()
+        {
+            return (IEnumerator<KeyValuePair<byte[], byte[]>>)GetEnumerator();
         }
         #endregion
     }
