@@ -6,6 +6,18 @@ namespace Mineral.Utils
 {
     public static class ByteUtil
     {
+        public static byte[] CopyRange(byte[] input, int start, int end)
+        {
+            int length = end - start;
+            if (length < 0)
+                throw new ArgumentException("from > to");
+
+            byte[] result = new byte[length];
+            Array.Copy(input, start, result, 0, length);
+
+            return result;
+        }
+
         public static byte[] GetRange(byte[] input, int offset, int length)
         {
             if (offset >= input.Length || length == 0)

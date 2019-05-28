@@ -31,7 +31,7 @@ namespace Mineral.Core.Config.Arguments
 
 
         #region Property
-        public int Version { get; set; }
+        public int Version { get; set; } // this version only : 2
         public bool Sync { get; set; }
         public bool ContractParseSwitch { get; set; }
         public string Directory { get; set; }

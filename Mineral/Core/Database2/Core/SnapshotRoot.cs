@@ -96,6 +96,22 @@ namespace Mineral.Core.Database2.Core
             ((Flusher)this.db).Flush(batch);
         }
 
+        public void Merge(List<ISnapshot> snapshots)
+        {
+            Dictionary<byte[], byte[]> batch = new Dictionary<byte[], byte[]>();
+            foreach (ISnapshot snapshot in snapshots)
+            {
+                Snapshot from = (Snapshot)snapshot;
+                IEnumerator<KeyValuePair<byte[], byte[]>> it = from.DB.GetEnumerator();
+                while (it.MoveNext())
+                {
+                    batch.Add(it.Current.Key, it.Current.Value);
+                }
+            }
+
+            ((Flusher)this.db).Flush(batch);
+        }
+
         public override void Reset()
         {
             ((Flusher)this.db).Reset();

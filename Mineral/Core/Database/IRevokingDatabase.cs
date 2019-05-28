@@ -8,6 +8,10 @@ namespace Mineral.Core.Database
 {
     public interface IRevokingDatabase
     {
+        int Size { get; }
+        int MaxSize { get; set; }
+        int MaxFlushCount { get; set; }
+
         ISession BuildSession();
         ISession BuildSeesion(bool force_enable);
 
@@ -21,10 +25,6 @@ namespace Mineral.Core.Database
         void Disable();
         void Check();
         void Shutdown();
-        int Size();
-
         void SetMode(bool mode);
-        void SetMaxSize(int max_size);
-        void SetMaxFlushCount(int max_flush_count);
     }
 }

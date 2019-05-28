@@ -9,12 +9,12 @@ using Mineral.Core.Database2.Core;
 
 namespace Mineral.Core.Database
 {
-    public abstract class MineralStoreWithRevoking<T> : IChainBase<T>
+    public abstract class MineralStoreWithRevoking<T> : IMineralChainBase<T>
         where T : ICapsule<T>
     {
         #region Field
         protected IRevokingDB revoking_db;
-        private IRevokingDatabase revoking_database;
+        private IRevokingDatabase revoking_database = new SnapshotManager();
         private string db_name = "";
         #endregion
 
