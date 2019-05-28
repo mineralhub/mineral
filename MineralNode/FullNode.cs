@@ -2,8 +2,10 @@
 using System.Collections.Generic;
 using System.Text;
 using Mineral;
+using Mineral.Common.Application;
 using Mineral.Core;
 using Mineral.Core.Config.Arguments;
+using Mineral.Core.Service;
 
 namespace MineralNode
 {
@@ -35,7 +37,14 @@ namespace MineralNode
             Logger.Info("Full node start.");
             Args.Instance.SetParam(args, DefineParameter.CONF_FILE);
 
+            Application app = new Application();
 
+            if (Args.Instance.IsWitness)
+                app.AddService(new WitnessService(app));
+
+            app.InitService(Args.Instance);
+            app.StartService();
+            app.Startup();
         }
         #endregion
     }

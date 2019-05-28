@@ -115,6 +115,8 @@ namespace Mineral.Core.Config.Arguments
         public BlockArgs Block { get; set; } = new BlockArgs();
         public CommitteArgs Committe { get; set; } = new CommitteArgs();
         public TransactionArgs Transaction { get; set; } = new TransactionArgs();
+
+        public bool IsWitness { get { return this.witness; } set { this.witness = value; } }
         #endregion
 
 

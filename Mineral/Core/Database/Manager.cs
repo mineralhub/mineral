@@ -2,15 +2,17 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace MineralNode
+namespace Mineral.Core.Database
 {
-    public class Application
+    public class Manager
     {
         #region Field
+        public BlockStore block_store;
         #endregion
 
 
         #region Property
+        public BlockStore BlockStore { get { return this.block_store; } }
         #endregion
 
 
@@ -27,7 +29,6 @@ namespace MineralNode
 
 
         #region External Method
-        
         #endregion
     }
 }
