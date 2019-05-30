@@ -109,6 +109,8 @@
         "max_active_nodes": 30,
         "max_active_nodes_same_ip": 2,
         "min_participation_rate": 15,
+        "tcp_netty_work_thread_num": 0,
+        "udp_netty_work_thread_num": 1,
         "active": [],
         "passive": [],
         "fast_forward": [],
@@ -135,7 +137,7 @@
         "rpc": {
             "port": 11275,
             "solidity_port": 11276
-        },
+        }
     },
     "block": {
         "need_sync_check": false,

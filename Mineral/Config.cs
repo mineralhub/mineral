@@ -197,6 +197,10 @@ namespace Mineral
         public int? SolidityThread { get; set; }
         [JsonProperty("net_max_trx_per_second")]
         public int? NetMaxTrxPerSecond { get; set; }
+        [JsonProperty("tcp_netty_work_thread_num")]
+        public int? TcpNettyWorkThreadNum { get; set; }
+        [JsonProperty("udp_netty_work_thread_num")]
+        public int? UdpNettyWorkThreadNum { get; set; }
 
         [JsonProperty("active")]
         public List<string> Active { get; set; }
