@@ -8,11 +8,13 @@ namespace Mineral.Core.Database
     {
         #region Field
         public BlockStore block_store;
+        private DynamicPropertiesStore dynamic_properties_store = new DynamicPropertiesStore("properties");
         #endregion
 
 
         #region Property
         public BlockStore BlockStore { get { return this.block_store; } }
+        public DynamicPropertiesStore DynamicPropertiesStore { get { return this.dynamic_properties_store; } }
         #endregion
 
 

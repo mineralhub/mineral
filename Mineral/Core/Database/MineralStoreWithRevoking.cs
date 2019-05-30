@@ -9,8 +9,9 @@ using Mineral.Core.Database2.Core;
 
 namespace Mineral.Core.Database
 {
-    public abstract class MineralStoreWithRevoking<T> : IMineralChainBase<T>
-        where T : ICapsule<T>
+    public abstract class MineralStoreWithRevoking<T, U> : IMineralChainBase<T>
+        where T : IProtoCapsule<U>
+
     {
         #region Field
         protected IRevokingDB revoking_db;

@@ -10,7 +10,7 @@ namespace Mineral.Core.Service
     public class WitnessService : IService
     {
         #region Field
-        private Application application;
+        private IApplication application;
         private Manager db_manager;
         #endregion
 

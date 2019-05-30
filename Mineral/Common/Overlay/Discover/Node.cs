@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 using Mineral.Core.Exception;
+using Mineral.Utils;
 
 namespace Mineral.Common.Overlay.Discover
 {
@@ -64,7 +65,7 @@ namespace Mineral.Common.Overlay.Discover
             {
             }
 
-            byte[] privatekey = Mineral.Cryptography.Helper.SHA256(Encoding.ASCII.GetBytes(address));
+            byte[] privatekey = Mineral.Cryptography.Helper.SHA256(address.GetBytes());
             Cryptography.ECKey key = new Cryptography.ECKey(privatekey, true);
 
             byte[] node_id = new byte[privatekey.Length - 1];
