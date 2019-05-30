@@ -49,6 +49,8 @@ namespace Mineral.Core.Config.Arguments
             public int BlockProducedTimeout { get; set; }
             public int SolidityThread { get; set; }
             public long NetMaxTrxPerSecond { get; set; }
+            public int TcpNettyWorkThreadNum { get; set; }
+            public int UdpNettyWorkThreadNum { get; set; }
             public List<Node> Active { get; set; } = new List<Node>();
             public List<Node> Passive { get; set; } = new List<Node>();
             public List<Node> FastForward { get; set; } = new List<Node>();
@@ -65,6 +67,7 @@ namespace Mineral.Core.Config.Arguments
 
         public static readonly string Version = "1.0.0";
 
+        #region Arguments
         [Parameter("-p", "==private-key", Description = "Private key")]
         private string privatekey = "";
         [Parameter("-v", "--version", Description = "Version")]
@@ -93,6 +96,7 @@ namespace Mineral.Core.Config.Arguments
         private bool witness = false;
         [Parameter("--witness-address", Description = "Witness address")]
         private string witness_address = "";
+        #endregion
         #endregion
 
 
@@ -356,6 +360,8 @@ namespace Mineral.Core.Config.Arguments
             instance.Node.BlockProducedTimeout = Math.Min(instance.Node.BlockProducedTimeout, 100);
             instance.Node.RPC.Thread = Config.Instance.Node.RPC.Thread ?? Environment.ProcessorCount / 2;
             instance.Node.NetMaxTrxPerSecond = Config.Instance.Node.NetMaxTrxPerSecond ?? Parameter.NetParameters.NET_MAX_TRX_PER_SECOND;
+            instance.Node.TcpNettyWorkThreadNum = Config.Instance.Node.TcpNettyWorkThreadNum ?? 0;
+            instance.Node.UdpNettyWorkThreadNum = Config.Instance.Node.UdpNettyWorkThreadNum ?? 1;
 
             instance.Node.Active = Config.Instance.Node.Active?.Select(uri => Mineral.Common.Overlay.Discover.Node.InstanceOf(uri)).ToList();
             instance.Node.Passive = Config.Instance.Node.Passive?.Select(uri => Mineral.Common.Overlay.Discover.Node.InstanceOf(uri)).ToList();
