@@ -30,7 +30,7 @@ namespace Mineral.Core.Database
 
 
         #region Constructor
-        protected AssetIssueStore(string db_name) : base(db_name) { }
+        public AssetIssueStore(string db_name = "asset-issue") : base(db_name) { }
         #endregion
 
 

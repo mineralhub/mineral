@@ -20,6 +20,9 @@ namespace Mineral.Core.Capsule
         {
             this.datas = bytes;
         }
+
+        public object Instance { get { return null; } }
+        public byte[] Data { get { return this.Data; } }
         #endregion
 
 

@@ -13,7 +13,7 @@ namespace Mineral.Core.Database
 {
     public partial class DynamicPropertiesStore : MineralStoreWithRevoking<BytesCapsule, object>
     {
-        public DynamicPropertiesStore(string db_name)
+        public DynamicPropertiesStore(string db_name = "properties")
             : base (db_name)
         {
             try { GetTotalSignNum(); } catch { PutTotalSignNum(5); }

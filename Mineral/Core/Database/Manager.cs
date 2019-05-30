@@ -9,12 +9,14 @@ namespace Mineral.Core.Database
         #region Field
         public BlockStore block_store;
         private DynamicPropertiesStore dynamic_properties_store = new DynamicPropertiesStore("properties");
+        private AssetIssueStore asset_issue_store = new AssetIssueStore("asset-issue");
         #endregion
 
 
         #region Property
         public BlockStore BlockStore { get { return this.block_store; } }
-        public DynamicPropertiesStore DynamicPropertiesStore { get { return this.dynamic_properties_store; } }
+        public DynamicPropertiesStore DynamicProperties { get { return this.dynamic_properties_store; } }
+        public AssetIssueStore AssetIssue { get { return this.asset_issue_store; } }
         #endregion
 
 
