@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Text;
+using System.Linq;
 using Mineral.Core.Capsule;
 using Mineral.Core.Config.Arguments;
 using Mineral.Core.Database2.Common;
@@ -95,7 +95,7 @@ namespace Mineral.Core.Database
             if (key == null || item == null)
                 return;
 
-            this.revoking_db.Put(key, item.GetData());
+            this.revoking_db.Put(key, item.Data);
         }
 
         public T Get(byte[] key)
@@ -135,12 +135,17 @@ namespace Mineral.Core.Database
 
         IEnumerator IEnumerable.GetEnumerator()
         {
-            return (IEnumerator<KeyValuePair<byte[], byte[]>>)GetEnumerator();
+            return (IEnumerator<KeyValuePair<byte[], T>>)GetEnumerator();
         }
 
-        public IEnumerator<KeyValuePair<byte[], byte[]>> GetEnumerator()
+        public IEnumerator<KeyValuePair<byte[], T>> GetEnumerator()
         {
-            return this.revoking_db.GetEnumerator();
+            Dictionary<byte[], T> result = new Dictionary<byte[], T>();
+            IEnumerator<KeyValuePair<byte[], byte[]>> it = this.revoking_db.GetEnumerator();
+            while (it.MoveNext())
+            {
+                yield return new KeyValuePair<byte[], T>(it.Current.Key, Of(it.Current.Value));
+            }
         }
         #endregion
     }

@@ -14,7 +14,7 @@ namespace Mineral.Core.Database
     public partial class DynamicPropertiesStore : MineralStoreWithRevoking<BytesCapsule, object>
     {
         public DynamicPropertiesStore(string db_name)
-            : base(db_name)
+            : base (db_name)
         {
             try { GetTotalSignNum(); } catch { PutTotalSignNum(5); }
             try { GetAllowMultiSign(); } catch { PutAllowMultiSign((int)Args.Instance.Committe.AllowMultiSign); }
