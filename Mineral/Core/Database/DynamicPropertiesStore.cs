@@ -119,7 +119,7 @@ namespace Mineral.Core.Database
         public void PutBlockFilledSlotsIndex(int block_fiiled_slots_index)
         {
             Logger.Debug("block_fiiled_slots_index : " + block_fiiled_slots_index);
-            Put(BLOCK_FILLED_SLOTS_INDEX, new BytesCapsule(BitConverter.GetBytes(block_fiiled_slots_index));
+            Put(BLOCK_FILLED_SLOTS_INDEX, new BytesCapsule(BitConverter.GetBytes(block_fiiled_slots_index)));
         }
 
         public int GetBlockFilledSlotsIndex()

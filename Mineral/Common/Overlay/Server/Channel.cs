@@ -16,6 +16,8 @@ namespace Mineral.Common.Overlay.Server
         private P2pHandler p2p_handler;
         private MineralNetHandler net_handler;
         private ChannelManager channel_manager;
+        
+        protected NodeStatistics
         #endregion
 
 

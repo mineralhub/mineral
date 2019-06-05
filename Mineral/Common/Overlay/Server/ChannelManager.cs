@@ -8,6 +8,7 @@ namespace Mineral.Common.Overlay.Server
     {
         #region Field
         private PeerServer peer_server;
+        
         #endregion
 
 

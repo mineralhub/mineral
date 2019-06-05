@@ -55,7 +55,7 @@ namespace Mineral.Core.Net.Messages
             StringBuilder builder = new StringBuilder();
             builder.Append(base.ToString())
                    .Append("tx size : ")
-                   .Append(this.transactions.Transactions_.Count)
+                   .Append(this.transactions.Transactions_.Count);
 
             return builder.ToString();
         }

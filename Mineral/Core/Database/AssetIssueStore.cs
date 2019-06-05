@@ -4,11 +4,12 @@ using System.Linq;
 using System.Text;
 using Mineral.Core.Capsule;
 using Mineral.Core.Config;
+using Protocol;
 
 namespace Mineral.Core.Database
 {
     public class AssetIssueStore 
-        : MineralStoreWithRevoking<AssetIssueCapsule, Protocol.AssetIssueContract>
+        : MineralStoreWithRevoking<AssetIssueCapsule, AssetIssueContract>
     {
         public class AssetIssueCapsuleCompare : IComparer<AssetIssueCapsule>
         {

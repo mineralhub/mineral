@@ -18,5 +18,13 @@ namespace Mineral.Utils
 
             return result;
         }
+
+        public static byte[] SubArray(this byte[] input, uint start, uint end)
+        {
+            byte[] result = new byte[end - start];
+            Array.Copy(input, start, result, 0, end - start);
+
+            return result;
+        }
     }
 }

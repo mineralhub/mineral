@@ -8,14 +8,14 @@ using DotNetty.Transport.Channels;
 
 namespace Mineral.Common.Overlay.Server
 {
-    using Message = Mineral.Common.Overlay.Message.Message;
+    using Message = Mineral.Common.Overlay.Messages.Message;
 
     public class MessageQueue
     {
         #region Field
         private volatile bool send_message_flag = false;
         private readonly long send_time = 0;
-        private Thread send_message_thread = null;
+        private Thread thread_send_message = null;
         private Channel channel = null;
         private IChannelHandlerContext context;
         private Queue<MessageRoundTrip> request_queue = new Queue<MessageRoundTrip>();
@@ -50,7 +50,7 @@ namespace Mineral.Common.Overlay.Server
 
             if (message_round_trip.RetryTime > 0)
             {
-                channel
+                this.channel.
             }
         }
         #endregion
@@ -77,6 +77,8 @@ namespace Mineral.Common.Overlay.Server
                 }
                 this.task_timer.Change(10, 0);
             }, this, 10, 0);
+
+            
         }
         #endregion
     }

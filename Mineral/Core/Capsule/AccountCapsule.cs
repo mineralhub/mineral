@@ -4,21 +4,22 @@ using System.Text;
 using Google.Protobuf;
 using Mineral.Core.Database;
 using Mineral.Utils;
+using Protocol;
 
 namespace Mineral.Core.Capsule
 {
-    public class AccountCapsule : IProtoCapsule<Protocol.Account>, IComparable<AccountCapsule>
+    public class AccountCapsule : IProtoCapsule<Account>, IComparable<AccountCapsule>
     {
         #region Field
-        private Protocol.Account account = null;
+        private Account account = null;
         #endregion
 
 
         #region Property
-        public Protocol.Account Instance { get { return this.account; } }
+        public Account Instance { get { return this.account; } }
         public byte[] Data { get { return this.account.ToByteArray(); } }
 
-        public Protocol.AccountType Type
+        public AccountType Type
         {
             get { return this.account.Type; }
         }
@@ -40,7 +41,7 @@ namespace Mineral.Core.Capsule
             set { this.account.AccountId = value; }
         }
 
-        public Protocol.Account.Types.AccountResource AccountResource
+        public Account.Types.AccountResource AccountResource
         {
             get { return this.account.AccountResource; }
             set { this.account.AccountResource = value; }
@@ -56,7 +57,7 @@ namespace Mineral.Core.Capsule
         {
             get
             {
-                List<Protocol.Account.Types.Frozen> frozen_list = new List<Protocol.Account.Types.Frozen>(this.account.Frozen);
+                List<Account.Types.Frozen> frozen_list = new List<Account.Types.Frozen>(this.account.Frozen);
                 long frozen_balance = 0;
                 frozen_list.ForEach(frozen => frozen_balance += frozen.FrozenBalance);
 
@@ -79,9 +80,9 @@ namespace Mineral.Core.Capsule
             get { return this.account.Frozen.Count; }
         }
 
-        public List<Protocol.Account.Types.Frozen> FrozenList
+        public List<Account.Types.Frozen> FrozenList
         {
-            get { return new List<Protocol.Account.Types.Frozen>(this.account.Frozen); }
+            get { return new List<Account.Types.Frozen>(this.account.Frozen); }
         }
 
         public long Allowance
@@ -189,9 +190,9 @@ namespace Mineral.Core.Capsule
             get { return FrozenBalance + AcquiredDelegatedFrozenBalanceForBandwidth; }
         }
 
-        public List<Protocol.Account.Types.Frozen> FrozenSupplyList
+        public List<Account.Types.Frozen> FrozenSupplyList
         {
-            get { return new List<Protocol.Account.Types.Frozen>(this.account.FrozenSupply); }
+            get { return new List<Account.Types.Frozen>(this.account.FrozenSupply); }
         }
 
         public int FrozenSupplyCount
@@ -260,7 +261,7 @@ namespace Mineral.Core.Capsule
 
 
         #region Constructor
-        public AccountCapsule(Protocol.Account account)
+        public AccountCapsule(Account account)
         {
             this.account = account;
         }
@@ -269,7 +270,7 @@ namespace Mineral.Core.Capsule
         {
             try
             {
-                this.account = Protocol.Account.Parser.ParseFrom(data);
+                this.account = Account.Parser.ParseFrom(data);
             }
             catch (System.Exception e)
             {
@@ -277,38 +278,38 @@ namespace Mineral.Core.Capsule
             }
         }
 
-        public AccountCapsule(ByteString address, Protocol.AccountType account_type)
+        public AccountCapsule(ByteString address, AccountType account_type)
         {
-            this.account = new Protocol.Account();
+            this.account = new Account();
             this.account.Type = account_type;
             this.account.Address = address;
         }
 
-        public AccountCapsule(ByteString address, ByteString account_name, Protocol.AccountType account_type)
+        public AccountCapsule(ByteString address, ByteString account_name, AccountType account_type)
         {
-            this.account = new Protocol.Account();
+            this.account = new Account();
             this.account.Type = account_type;
             this.account.AccountName = account_name;
             this.account.Address = address;
         }
 
-        public AccountCapsule(ByteString account_name, ByteString address, Protocol.AccountType account_type, long balance)
+        public AccountCapsule(ByteString account_name, ByteString address, AccountType account_type, long balance)
         {
-            this.account = new Protocol.Account();
+            this.account = new Account();
             this.account.AccountName = account_name;
             this.account.Type = account_type;
             this.account.Address = address;
             this.account.Balance = balance;
         }
 
-        public AccountCapsule(ByteString address, Protocol.AccountType account_type, long create_time, bool default_permission, Manager db_manager)
+        public AccountCapsule(ByteString address, AccountType account_type, long create_time, bool default_permission, Manager db_manager)
         {
             if (default_permission)
             {
-                Protocol.Permission owner = CreateDefaultOwnerPermission(this.account.Address);
-                Protocol.Permission active = CreateDefaultActivePermission(this.account.Address, db_manager);
+                Permission owner = CreateDefaultOwnerPermission(this.account.Address);
+                Permission active = CreateDefaultActivePermission(this.account.Address, db_manager);
 
-                this.account = new Protocol.Account();
+                this.account = new Account();
                 this.account.Type = account_type;
                 this.account.Address = address;
                 this.account.CreateTime = create_time;
@@ -317,21 +318,21 @@ namespace Mineral.Core.Capsule
             }
             else
             {
-                this.account = new Protocol.Account();
+                this.account = new Account();
                 this.account.Type = account_type;
                 this.account.Address = address;
                 this.account.CreateTime = create_time;
             }
         }
 
-        public AccountCapsule(Protocol.AccountCreateContract contract, long create_time, bool default_permission, Manager db_manager)
+        public AccountCapsule(AccountCreateContract contract, long create_time, bool default_permission, Manager db_manager)
         {
             if (default_permission)
             {
-                Protocol.Permission owner = CreateDefaultOwnerPermission(this.account.Address);
-                Protocol.Permission active = CreateDefaultActivePermission(this.account.Address, db_manager);
+                Permission owner = CreateDefaultOwnerPermission(this.account.Address);
+                Permission active = CreateDefaultActivePermission(this.account.Address, db_manager);
 
-                this.account = new Protocol.Account();
+                this.account = new Account();
                 this.account.Type = contract.Type;
                 this.account.Address = contract.AccountAddress;
                 this.account.CreateTime = create_time;
@@ -340,7 +341,7 @@ namespace Mineral.Core.Capsule
             }
             else
             {
-                this.account = new Protocol.Account();
+                this.account = new Account();
                 this.account.Type = contract.Type;
                 this.account.Address = contract.AccountAddress;
                 this.account.CreateTime = create_time;
@@ -362,7 +363,7 @@ namespace Mineral.Core.Capsule
 
 
         #region External Method
-        public void SetInstance(Protocol.Account account)
+        public void SetInstance(Account account)
         {
             this.account = account;
         }
@@ -407,16 +408,16 @@ namespace Mineral.Core.Capsule
             this.account.FreeAssetNetUsageV2.Add(assets);
         }
 
-        public static Protocol.Permission CreateDefaultOwnerPermission(ByteString address)
+        public static Permission CreateDefaultOwnerPermission(ByteString address)
         {
-            Protocol.Key key = new Protocol.Key();
+            Key key = new Key();
             key.Address = address;
             key.Weight = 1;
 
-            Protocol.Permission owner = new Protocol.Permission();
-            owner.Type = Protocol.Permission.Types.PermissionType.Owner;
+            Permission owner = new Permission();
+            owner.Type = Permission.Types.PermissionType.Owner;
             owner.Id = 0;
-            owner.PermissionName = Protocol.Permission.Types.PermissionType.Owner.ToString().ToLower();
+            owner.PermissionName = Permission.Types.PermissionType.Owner.ToString().ToLower();
             owner.Threshold = 1;
             owner.ParentId = 0;
             owner.Keys.Add(key);
@@ -424,16 +425,16 @@ namespace Mineral.Core.Capsule
             return owner;
         }
 
-        public static Protocol.Permission CreateDefaultActivePermission(ByteString address, Manager db_manager)
+        public static Permission CreateDefaultActivePermission(ByteString address, Manager db_manager)
         {
-            Protocol.Key key = new Protocol.Key();
+            Key key = new Key();
             key.Address = address;
             key.Weight = 1;
 
-            Protocol.Permission active = new Protocol.Permission();
-            active.Type = Protocol.Permission.Types.PermissionType.Active;
+            Permission active = new Permission();
+            active.Type = Permission.Types.PermissionType.Active;
             active.Id = 2;
-            active.PermissionName = Protocol.Permission.Types.PermissionType.Active.ToString().ToLower();
+            active.PermissionName = Permission.Types.PermissionType.Active.ToString().ToLower();
             active.Threshold = 1;
             active.ParentId = 0;
             active.Operations = GetActiveDefaultOperations(db_manager);
@@ -442,16 +443,16 @@ namespace Mineral.Core.Capsule
             return active;
         }
 
-        public static Protocol.Permission CreateDefaultWitnessPermission(ByteString address)
+        public static Permission CreateDefaultWitnessPermission(ByteString address)
         {
-            Protocol.Key key = new Protocol.Key();
+            Key key = new Key();
             key.Address = address;
             key.Weight = 1;
 
-            Protocol.Permission witness = new Protocol.Permission();
-            witness.Type = Protocol.Permission.Types.PermissionType.Witness;
+            Permission witness = new Permission();
+            witness.Type = Permission.Types.PermissionType.Witness;
             witness.Id = 1;
-            witness.PermissionName = Protocol.Permission.Types.PermissionType.Witness.ToString().ToLower();
+            witness.PermissionName = Permission.Types.PermissionType.Witness.ToString().ToLower();
             witness.Threshold = 1;
             witness.ParentId = 0;
             witness.Keys.Add(key);
@@ -461,7 +462,7 @@ namespace Mineral.Core.Capsule
 
         public void SetDefaultWitnessPermission(Manager db_manager)
         {
-            Protocol.Account account = this.account;
+            Account account = this.account;
 
             if (this.account.OwnerPermission == null)
                 this.account.OwnerPermission = CreateDefaultOwnerPermission(this.account.Address);
@@ -486,15 +487,15 @@ namespace Mineral.Core.Capsule
 
         public void AddVotes(ByteString vote_address, long vote_count)
         {
-            this.account.Votes.Add(new Protocol.Vote() { VoteAddress = vote_address, VoteCount = vote_count });
+            this.account.Votes.Add(new Vote() { VoteAddress = vote_address, VoteCount = vote_count });
         }
 
-        public List<Protocol.Vote> GetVotesList()
+        public List<Vote> GetVotesList()
         {
-            List<Protocol.Vote> result = new List<Protocol.Vote>();
+            List<Vote> result = new List<Vote>();
 
             if (this.account.Votes != null)
-                result = new List<Protocol.Vote>(this.account.Votes);
+                result = new List<Vote>(this.account.Votes);
 
             return result;
         }
@@ -701,7 +702,7 @@ namespace Mineral.Core.Capsule
 
         public void SetFrozen(long frozen_balance, long expire_time)
         {
-            Protocol.Account.Types.Frozen frozen = new Protocol.Account.Types.Frozen();
+            Account.Types.Frozen frozen = new Account.Types.Frozen();
             frozen.FrozenBalance = frozen_balance;
             frozen.ExpireTime = expire_time;
 
@@ -710,7 +711,7 @@ namespace Mineral.Core.Capsule
 
         public void SetFrozenForEnergy(long frozen_balance, long expire_time)
         {
-            Protocol.Account.Types.Frozen frozen = new Protocol.Account.Types.Frozen();
+            Account.Types.Frozen frozen = new Account.Types.Frozen();
             frozen.FrozenBalance = frozen_balance;
             frozen.ExpireTime = expire_time;
 
@@ -719,7 +720,7 @@ namespace Mineral.Core.Capsule
 
         public void SetFrozenForBandwidth(long frozen_balance, long expire_time)
         {
-            Protocol.Account.Types.Frozen frozen = new Protocol.Account.Types.Frozen();
+            Account.Types.Frozen frozen = new Account.Types.Frozen();
             frozen.FrozenBalance = frozen_balance;
             frozen.ExpireTime = expire_time;
 
@@ -757,12 +758,12 @@ namespace Mineral.Core.Capsule
             this.account.AccountResource.StorageUsage += storage_usage;
         }
 
-        public static Protocol.Permission GetDefaultPermission(ByteString owner)
+        public static Permission GetDefaultPermission(ByteString owner)
         {
             return CreateDefaultOwnerPermission(owner);
         }
 
-        public Protocol.Permission GetPermiisionById(int id)
+        public Permission GetPermissionById(int id)
         {
             if (id == 0)
             {
@@ -782,7 +783,7 @@ namespace Mineral.Core.Capsule
                 return null;
             }
 
-            foreach (Protocol.Permission permission in this.account.ActivePermission)
+            foreach (Permission permission in this.account.ActivePermission)
             {
                 if (id == permission.Id)
                     return permission;
@@ -791,7 +792,7 @@ namespace Mineral.Core.Capsule
             return null;
         }
 
-        public void UdpatePermissions(Protocol.Permission owner, Protocol.Permission witness, List<Protocol.Permission> actives)
+        public void UdpatePermissions(Permission owner, Permission witness, List<Permission> actives)
         {
             owner.Id = 0;
             this.account.OwnerPermission = owner;

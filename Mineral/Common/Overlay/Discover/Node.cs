@@ -69,7 +69,7 @@ namespace Mineral.Common.Overlay.Discover
             Cryptography.ECKey key = new Cryptography.ECKey(privatekey, true);
 
             byte[] node_id = new byte[privatekey.Length - 1];
-            Array.Copy(key.PublicKey.Q.GetEncoded(false), 1, node_id, 0, node_id.Length);
+            Array.Copy(key.GetPubKey(false), 1, node_id, 0, node_id.Length);
 
             string id = node_id.ToHexString();
             Node node = new Node("enode://" + id + "@" + address);

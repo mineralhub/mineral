@@ -4,7 +4,7 @@ using System.Text;
 
 namespace Mineral.Common.Overlay.Server
 {
-    using Message = Mineral.Common.Overlay.Message.Message;
+    using Message = Mineral.Common.Overlay.Messages.Message;
 
     public class MessageRoundTrip
     {

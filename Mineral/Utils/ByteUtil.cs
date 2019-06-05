@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
+using Google.Protobuf;
 
 namespace Mineral.Utils
 {
@@ -49,6 +50,52 @@ namespace Mineral.Utils
         public static int ToInt(byte value)
         {
             return value;
+        }
+
+        public static ByteString ToByteString(this byte[] bytes)
+        {
+            return ByteString.CopyFrom(bytes);
+        }
+
+        public static int FirstNonZeroByte(byte[] data)
+        {
+            for (int i = 0; i < data.Length; i++)
+            {
+                if (data[i] != 0)
+                {
+                    return i;
+                }
+            }
+
+            return -1;
+        }
+
+        public static byte[] StripLeadingZeroes(byte[] data)
+        {
+            byte[] result = null;
+
+            if (data == null)
+                return result;
+
+            int first_non_zero = FirstNonZeroByte(data);
+            switch (first_non_zero)
+            {
+                case -1:
+                    {
+                        result = new byte[0];
+                    } break;
+                case 0:
+                    {
+                        result = data;
+                    } break;
+                default:
+                    {
+                        result = new byte[data.Length - first_non_zero];
+                        Array.Copy(data, first_non_zero, result, 0, data.Length - first_non_zero);
+                    } break;
+            }
+
+            return result;
         }
     }
 

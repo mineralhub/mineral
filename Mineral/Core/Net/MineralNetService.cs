@@ -1,12 +1,15 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
+using Mineral.Common.Overlay.Server;
 
 namespace Mineral.Core.Net
 {
     public class MineralNetService
     {
         #region Field
+        private ChannelManager channel_manager;
+
         #endregion
 
 

@@ -2,18 +2,19 @@
 using System.Collections.Generic;
 using System.Text;
 using Google.Protobuf;
+using Protocol;
 
 namespace Mineral.Core.Capsule
 {
-    public class TransactionResultCapsule : IProtoCapsule<Protocol.Transaction.Types.Result>
+    public class TransactionResultCapsule : IProtoCapsule<Transaction.Types.Result>
     {
         #region Field
-        private Protocol.Transaction.Types.Result transaction_result = new Protocol.Transaction.Types.Result();
+        private Transaction.Types.Result transaction_result = new Transaction.Types.Result();
         #endregion
 
 
         #region Property
-        public Protocol.Transaction.Types.Result Instance { get { return this.transaction_result; } }
+        public Transaction.Types.Result Instance { get { return this.transaction_result; } }
         public byte[] Data { get { return this.transaction_result.ToByteArray(); } }
 
         public long Fee
@@ -22,7 +23,7 @@ namespace Mineral.Core.Capsule
             set { this.transaction_result.Fee = value; }
         }
 
-        public Protocol.Transaction.Types.Result.Types.code Result
+        public Transaction.Types.Result.Types.code Result
         {
             get { return this.transaction_result.Ret; }
             set { this.transaction_result.Ret = value; }
@@ -73,7 +74,8 @@ namespace Mineral.Core.Capsule
 
 
         #region Constructor
-        public TransactionResultCapsule(Protocol.Transaction.Types.Result transaction_result)
+        public TransactionResultCapsule() { }
+        public TransactionResultCapsule(Transaction.Types.Result transaction_result)
         {
             this.transaction_result = transaction_result;
         }
@@ -82,7 +84,7 @@ namespace Mineral.Core.Capsule
         {
             try
             {
-                this.transaction_result = Protocol.Transaction.Types.Result.Parser.ParseFrom(data);
+                this.transaction_result = Transaction.Types.Result.Parser.ParseFrom(data);
             }
             catch (System.Exception e)
             {
@@ -90,12 +92,12 @@ namespace Mineral.Core.Capsule
             }
         }
 
-        public TransactionResultCapsule(Protocol.Transaction.Types.Result.Types.contractResult code)
+        public TransactionResultCapsule(Transaction.Types.Result.Types.contractResult code)
         {
             this.transaction_result.ContractRet = code;
         }
 
-        public TransactionResultCapsule(Protocol.Transaction.Types.Result.Types.code code, long fee)
+        public TransactionResultCapsule(Transaction.Types.Result.Types.code code, long fee)
         {
             this.transaction_result.Ret = code;
             this.transaction_result.Fee = fee;
@@ -117,13 +119,11 @@ namespace Mineral.Core.Capsule
             this.transaction_result.Fee += fee;
         }
 
-        public void SetStatus(long fee, Protocol.Transaction.Types.Result.Types.code code)
+        public void SetStatus(long fee, Transaction.Types.Result.Types.code code)
         {
             this.transaction_result.Fee += fee;
             this.transaction_result.Ret = code;
         }
+        #endregion
     }
-
-    #endregion
-}
 }

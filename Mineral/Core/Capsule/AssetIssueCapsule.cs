@@ -4,18 +4,19 @@ using System.Text;
 using Google.Protobuf;
 using Mineral.Core.Database;
 using Mineral.Utils;
+using Protocol;
 
 namespace Mineral.Core.Capsule
 {
-    public class AssetIssueCapsule : IProtoCapsule<Protocol.AssetIssueContract>
+    public class AssetIssueCapsule : IProtoCapsule<AssetIssueContract>
     {
         #region Field
-        private Protocol.AssetIssueContract asset_issue = null;
+        private AssetIssueContract asset_issue = null;
         #endregion
 
 
         #region Property
-        public Protocol.AssetIssueContract Instance { get { return this.asset_issue; } }
+        public AssetIssueContract Instance { get { return this.asset_issue; } }
         public byte[] Data { get { return this.asset_issue.ToByteArray(); } }
 
         public ByteString Name
@@ -71,9 +72,9 @@ namespace Mineral.Core.Capsule
             get { return this.asset_issue.FrozenSupply.Count; }
         }
 
-        public List<Protocol.AssetIssueContract.Types.FrozenSupply> FrozenSupplyList
+        public List<AssetIssueContract.Types.FrozenSupply> FrozenSupplyList
         {
-            get { return new List<Protocol.AssetIssueContract.Types.FrozenSupply>(this.asset_issue.FrozenSupply); }
+            get { return new List<AssetIssueContract.Types.FrozenSupply>(this.asset_issue.FrozenSupply); }
         }
 
         public long FrozenSupply
@@ -121,7 +122,7 @@ namespace Mineral.Core.Capsule
         {
             try
             {
-                this.asset_issue = Protocol.AssetIssueContract.Parser.ParseFrom(data);
+                this.asset_issue = AssetIssueContract.Parser.ParseFrom(data);
             }
             catch (System.Exception e)
             {
@@ -129,7 +130,7 @@ namespace Mineral.Core.Capsule
             }
         }
 
-        public AssetIssueCapsule(Protocol.AssetIssueContract asset_issue)
+        public AssetIssueCapsule(AssetIssueContract asset_issue)
         {
             this.asset_issue = asset_issue;
         }

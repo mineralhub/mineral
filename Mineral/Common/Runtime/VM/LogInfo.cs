@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using Google.Protobuf;
+using Protocol;
 
 namespace Mineral.Common.Runtime.VM
 {
@@ -53,9 +54,9 @@ namespace Mineral.Common.Runtime.VM
             return result;
         }
 
-        public static Protocol.TransactionInfo.Types.Log BuildLog(LogInfo info)
+        public static TransactionInfo.Types.Log BuildLog(LogInfo info)
         {
-            Protocol.TransactionInfo.Types.Log log = new Protocol.TransactionInfo.Types.Log();
+            TransactionInfo.Types.Log log = new TransactionInfo.Types.Log();
             log.Address = ByteString.CopyFrom(info.Address);
             log.Data = ByteString.CopyFrom(info.Data);
             log.Topics.AddRange(log.Topics);
@@ -74,11 +75,13 @@ namespace Mineral.Common.Runtime.VM
             }
             result.Append("]");
 
-            return "LogInfo { " +
-                    "Address = " + this.address.ToHexString() +
-                    "Data = " + this.data.ToHexString() +
-                    "Topics =" + result +
-                    " }";
+            result.Append("LogInfo { ")
+                .Append("Address = ").Append(this.address.ToHexString())
+                .Append("Data = ").Append(this.data.ToHexString())
+                .Append("Topics =").Append(result)
+                .Append(" }");
+
+            return result.ToString();
         }
         #endregion
     }

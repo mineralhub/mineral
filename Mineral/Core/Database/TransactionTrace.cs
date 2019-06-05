@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
+using Mineral.Common.Runtime;
 using Mineral.Core.Capsule;
 
 namespace Mineral.Core.Database
@@ -9,7 +10,10 @@ namespace Mineral.Core.Database
     {
         #region Field
         private TransactionCapsule tx;
-        private ReceiptCapsule
+        private ReceiptCapsule receipt;
+        private Manager db_manager;
+        private IRunTime runtime;
+        private EnergyProcessor
         #endregion
 
 

@@ -3,27 +3,28 @@ using System.Collections.Generic;
 using System.Text;
 using Mineral.Common.Utils;
 using Mineral.Core.Database;
+using Protocol;
 
 namespace Mineral.Core.Capsule
 {
     public class ReceiptCapsule
     {
         #region Field
-        private Protocol.ResourceReceipt receipt = null;
+        private ResourceReceipt receipt = null;
         private long multi_sign_fee = 0;
         private SHA256Hash hash;
         #endregion
 
 
         #region Property
-        public Protocol.ResourceReceipt Receipt { get { return this.receipt; } }
+        public ResourceReceipt Receipt { get { return this.receipt; } }
         public long MultiSignFee { get { return this.multi_sign_fee; } set { this.multi_sign_fee = value; } }
         public SHA256Hash Hash { get { return this.hash; } }
         #endregion
 
 
         #region Constructor
-        public ReceiptCapsule(Protocol.ResourceReceipt receipt, SHA256Hash hash)
+        public ReceiptCapsule(ResourceReceipt receipt, SHA256Hash hash)
         {
             this.receipt = receipt;
             this.hash = hash;
@@ -31,11 +32,11 @@ namespace Mineral.Core.Capsule
 
         public ReceiptCapsule(SHA256Hash hash)
         {
-            this.receipt = new Protocol.ResourceReceipt();
+            this.receipt = new ResourceReceipt();
             this.hash = hash;
         }
 
-        public ReceiptCapsule(Protocol.ResourceReceipt receipt)
+        public ReceiptCapsule(ResourceReceipt receipt)
         {
             this.receipt = receipt;
         }
