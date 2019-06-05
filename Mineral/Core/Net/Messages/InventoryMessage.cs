@@ -19,6 +19,7 @@ namespace Mineral.Core.Net.Messages
         #region Property
         public Inventory Inventory => this.inventory;
         public InventoryType InventoryType => this.inventory.Type;
+        public MessageTypes.MsgType InventoryMessageType => this.inventory.Type.Equals(InventoryType.Block) ? MessageTypes.MsgType.BLOCK : MessageTypes.MsgType.TRX;
         #endregion
 
 
@@ -37,10 +38,10 @@ namespace Mineral.Core.Net.Messages
             this.data = inventory.ToByteArray();
         }
 
-        public InventoryMessage(List<SHA256Hash> hashs, InventoryType type)
+        public InventoryMessage(List<SHA256Hash> hashes, InventoryType type)
         {
             this.inventory = new Inventory();
-            foreach (SHA256Hash hash in hashs)
+            foreach (SHA256Hash hash in hashes)
             {
                 this.inventory.Ids.Add(ByteString.CopyFrom(hash.Hash));
             }
