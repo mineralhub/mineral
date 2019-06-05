@@ -1,0 +1,180 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Text;
+using Mineral.Common.LogsFilter.Trigger;
+using Mineral.Core.Capsule;
+
+namespace Mineral.Common.Runtime.VM
+{
+    public class ProgramResult
+    {
+        #region Field
+        private long energy_used = 0;
+        private long future_refund = 0;
+
+        private byte[] h_return = new byte[0];
+        private byte[] contract_address = new byte[0];
+        private System.Exception exception = null;
+        private bool is_revert;
+
+        private HashSet<DataWord> delete_account = null;
+        private HashSet<byte[]> touch_account = new HashSet<byte[]>();
+        private List<InternalTransaction> internal_transactions = null;
+        private List<LogInfo> log_infos = new List<LogInfo>();
+        private TransactionResultCapsule transaction_result = new TransactionResultCapsule();
+        private List<ContractTrigger> triggers;
+        private List<CallCreate> call_create;
+        #endregion
+
+
+        #region Property
+        public bool IsRevert
+        {
+            get { return this.is_revert; }
+            set { this.is_revert = value; }
+        }
+
+        public List<ContractTrigger> Triggers
+        {
+            get { return this.triggers; }
+            set { this.triggers = value; }
+        }
+
+        public byte[] ContractAddress
+        {
+            get { return this.contract_address; }
+            set { this.contract_address = value; }
+        }
+
+        public byte[] HReturn
+        {
+            get { return this.h_return; }
+            set { this.h_return = value; }
+        }
+
+        public TransactionResultCapsule TransactionResult
+        {
+            get { return this.transaction_result; }
+            set { this.transaction_result = value; }
+        }
+
+        public System.Exception Exception
+        {
+            get { return this.exception; }
+            set { this.exception = value; }
+        }
+
+        public HashSet<DataWord> DeleteAccount
+        {
+            get { return this.delete_account; }
+        }
+
+        public HashSet<byte[]> TouchAccount
+        {
+            get { return this.touch_account; }
+        }
+
+        public List<LogInfo> LogInfos
+        {
+            get { return this.log_infos; }
+        }
+
+        public List<CallCreate> CallCreate
+        {
+            get { return this.call_create; }
+        }
+
+        public List<InternalTransaction> InternalTransactions
+        {
+            get { return this.internal_transactions; }
+        }
+        #endregion
+
+
+        #region Constructor
+        #endregion
+
+
+        #region Event Method
+        #endregion
+
+
+        #region Internal Method
+        #endregion
+
+
+        #region External Method
+        public void SpendEnergy(long energy)
+        {
+            this.energy_used += energy;
+        }
+
+        public void RefundEnergy(long energy)
+        {
+            this.energy_used -= energy;
+        }
+
+        public void AddDeleteAccount(DataWord address)
+        {
+            this.delete_account.Add(address);
+        }
+
+        public void AddDeleteAccount(List<DataWord> addresses)
+        {
+            foreach (DataWord address in addresses)
+            {
+                this.delete_account.Add(address);
+            }
+        }
+
+        public void AddTouchAccount(byte[] address)
+        {
+            this.touch_account.Add(address);
+        }
+
+        public void AddTouchAccount(HashSet<byte[]> addresses)
+        {
+            foreach (byte[] address in addresses)
+            {
+                this.touch_account.Add(address);
+            }
+        }
+
+        public void AddLogInfo(LogInfo log_info)
+        {
+            this.log_infos.Add(log_info);
+        }
+
+        public void AddLogInfo(List<LogInfo> log_infos)
+        {
+            foreach (LogInfo log_info in log_infos)
+            {
+                this.log_infos.Add(log_info);
+            }
+        }
+
+        public void AddCallCreate(byte[] data, byte[] destination, byte[] energy_limit, byte[] value)
+        {
+            this.call_create.Add(new VM.CallCreate(data, destination, energy_limit, value));
+        }
+
+        public void AddInternalTransaction(InternalTransaction transsaction)
+        {
+            this.internal_transactions.Add(transsaction);
+        }
+
+        public void AddInternalTransaction(List<InternalTransaction> transactions)
+        {
+            this.internal_transactions.AddRange(transactions);
+        }
+
+        public void RejectInternalTransaction()
+        {
+            foreach (InternalTransaction tx in this.internal_transactions)
+            {
+                tx.re
+            }
+        }
+        #endregion
+    }
+}
