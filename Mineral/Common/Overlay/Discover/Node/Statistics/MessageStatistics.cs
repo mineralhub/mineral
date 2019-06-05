@@ -1,9 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
-using Core.Net.Message;
 using Mineral.Common.Overlay.Messages;
-using Mineral.Core.Net.Message;
 using Mineral.Core.Net.Messages;
 
 namespace Mineral.Common.Overlay.Discover.Node.Statistics
@@ -151,7 +149,6 @@ namespace Mineral.Common.Overlay.Discover.Node.Statistics
                     break;
             }
         }
-
         
         private void AddTcpMessage(Message message, bool flag)
         {
