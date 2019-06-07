@@ -211,7 +211,7 @@ namespace Mineral.Core.Capsule
                         "more than key counts of permission" + permission.Keys.Count);
             }
 
-            Dictionary<ByteString, long> signature_weight = new Dictionary<string, long>();
+            Dictionary<ByteString, long> signature_weight = new Dictionary<ByteString, long>();
             foreach (ByteString sign in signature)
             {
                 if (sign.Length < 65)
@@ -273,9 +273,35 @@ namespace Mineral.Core.Capsule
             {
                 if (permission.Type != Permission.Types.PermissionType.Active)
                     throw new PermissionException("Permission type is error");
-                if ()
+                if (Wallet.CheckPermissionOperations(permission, contract))
+                {
+                    throw new PermissionException("Invalid permission");
+                }
             }
 
+            List<ByteString> approves = new List<ByteString>();
+            ECKey ec_key = new ECKey(privatekey, true);
+            byte[] address = Wallets.WalletAccount.ToAddressHash((ec_key.GetPubKey(false))).ToArray();
+
+            if (this.transaction.Signature.Count > 0)
+            {
+                CheckWeight(permission, new List<ByteString>(this.transaction.Signature), this.GetRawHash().Hash, approves);
+                if (approves.Contains(ByteString.CopyFrom(address)))
+                {
+                    throw new PermissionException(Wallets.WalletAccount.ToAddress(address) + "had signed!");
+                }
+            }
+
+            long weight = GetWeight(permission, address);
+            if (weight == 0)
+            {
+                throw new PermissionException(
+                    privatekey.ToHexString() + " address is " +
+                    Wallet.Encode58Check(address) + "but it is not contained of permission.");
+            }
+
+            ECDSASignature signature = ec_key.Sign(this.GetRawHash().Hash);
+            this.transaction.Signature.Add(ByteString.CopyFrom(signature.ToDER()));
         }
 
         public static byte[] GetOwner(Transaction.Types.Contract contract)
@@ -364,7 +390,7 @@ namespace Mineral.Core.Capsule
                     case Transaction.Types.Contract.Types.ContractType.UpdateEnergyLimitContract:
                         owner = contractParameter.Unpack<UpdateEnergyLimitContract>().OwnerAddress;
                         break;
-                    case Transaction.Types.Contract.Types.ContractType.ClearABIContract:
+                    case Transaction.Types.Contract.Types.ContractType.ClearAbicontract:
                         owner = contractParameter.Unpack<ClearABIContract>().OwnerAddress;
                         break;
                     case Transaction.Types.Contract.Types.ContractType.ExchangeCreateContract:
@@ -610,7 +636,7 @@ namespace Mineral.Core.Capsule
                         result = contract_parameter.Unpack<TriggerSmartContract>().CallValue;
                         break;
                     case ContractType.CreateSmartContract:
-                        result = contract_parameter.Unpack<CreateSmartContract>().CallValue;
+                        result = contract_parameter.Unpack<CreateSmartContract>().NewContract.CallValue;
                         break;
                 }
             }
