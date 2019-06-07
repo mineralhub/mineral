@@ -81,8 +81,7 @@ namespace Mineral.Core.Database
             }
             catch
             {
-                int[] block_filled_slots = new int[GetBlockFilledSlotsNumber()];
-                Array.Fill(block_filled_slots, 1);
+                int[] block_filled_slots = Enumerable.Repeat(1, GetBlockFilledSlotsNumber()).ToArray();
                 PutBlockFilledSlots(block_filled_slots);
             }
             try { GetNextMaintenanceTime(); } catch { PutNextMaintenanceTime((long)Args.Instance.Genesisblock.Timestamp); }
@@ -141,7 +140,7 @@ namespace Mineral.Core.Database
         public void PutMinFrozenTime(int min_frozen_time)
         {
             Logger.Debug("MIN_FROZEN_TIME : " + min_frozen_time);
-            Put(MIN_FROZEN_TIME, new BytesCapsule(BitConverter.GetBytes(min_frozen_time));
+            Put(MIN_FROZEN_TIME, new BytesCapsule(BitConverter.GetBytes(min_frozen_time)));
         }
 
         public int GetMinFrozenTime()
@@ -164,7 +163,7 @@ namespace Mineral.Core.Database
         public void PutMaxFrozenSupplyTime(int max_frozen_supply_time)
         {
             Logger.Debug("MAX_FROZEN_SUPPLY_TIME : " + max_frozen_supply_time);
-            Put(MAX_FROZEN_SUPPLY_TIME, new BytesCapsule(BitConverter.GetBytes(max_frozen_supply_time));
+            Put(MAX_FROZEN_SUPPLY_TIME, new BytesCapsule(BitConverter.GetBytes(max_frozen_supply_time)));
         }
 
         public int GetMaxFrozenSupplyTime()
@@ -739,7 +738,7 @@ namespace Mineral.Core.Database
 
         public long GetLatestBlockHeaderTimestamp()
         {
-            return BitConverter.ToInt64(GetUnchecked(LATEST_BLOCK_HEADER_TIMESTAMP).GetData(), , 0);
+            return BitConverter.ToInt64(GetUnchecked(LATEST_BLOCK_HEADER_TIMESTAMP).GetData(), 0);
         }
 
         public long GetLatestBlockHeaderNumber()
