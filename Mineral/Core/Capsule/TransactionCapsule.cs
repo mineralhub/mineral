@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using Google.Protobuf;
 using Google.Protobuf.WellKnownTypes;
@@ -569,5 +570,228 @@ namespace Mineral.Core.Capsule
             instance.MergeFrom(stream);
             return instance;
         }
+
+        public static byte[] ToAddress(Transaction.Types.Contract contract)
+        {
+            ByteString result = null;
+            try
+            {
+                Any contract_parameter = contract.Parameter;
+                switch (contract.Type)
+                {
+                    case ContractType.TransferContract:
+                        result = contract_parameter.Unpack<TransferContract>().ToAddress;
+                        break;
+                    case ContractType.TransferAssetContract:
+                        result = contract_parameter.Unpack<TransferAssetContract>().ToAddress;
+                        break;
+                    case ContractType.ParticipateAssetIssueContract:
+                        result = contract_parameter.Unpack<ParticipateAssetIssueContract>().ToAddress;
+                        break;
+                }
+            }
+            catch (System.Exception e)
+            {
+                Logger.Error(e.Message);
+            }
+
+            return result?.ToByteArray();
+        }
+
+        public static long GetCallValue(Transaction.Types.Contract contract)
+        {
+            long result = 0;
+            try
+            {
+                Any contract_parameter = contract.Parameter;
+                switch (contract.Type)
+                {
+                    case ContractType.TriggerSmartContract:
+                        result = contract_parameter.Unpack<TriggerSmartContract>().CallValue;
+                        break;
+                    case ContractType.CreateSmartContract:
+                        result = contract_parameter.Unpack<CreateSmartContract>().CallValue;
+                        break;
+                }
+            }
+            catch (System.Exception e)
+            {
+                Logger.Error(e.Message);
+            }
+
+            return result;
+        }
+
+        public static long GetCallTokenValue(Transaction.Types.Contract contract)
+        {
+            long result = 0;
+            try
+            {
+                Any contract_parameter = contract.Parameter;
+                switch (contract.Type)
+                {
+                    case ContractType.TriggerSmartContract:
+                        result = contract_parameter.Unpack<TriggerSmartContract>().CallTokenValue;
+                        break;
+                    case ContractType.CreateSmartContract:
+                        result = contract_parameter.Unpack<CreateSmartContract>().CallTokenValue;
+                        break;
+                }
+            }
+            catch (System.Exception e)
+            {
+                Logger.Error(e.Message);
+            }
+
+            return result;
+        }
+
+        public static bool ValidateSignature(Transaction tx, byte[] hash, Manager db_manager)
+        {
+            Permission permission = null;
+            AccountStore account_store = db_manager.Account;
+            Transaction.Types.Contract contract = tx.RawData.Contract?[0];
+
+            int permission_id = contract.PermissionId;
+            byte[] owner = GetOwner(contract);
+            AccountCapsule account = account_store.Get(owner);
+
+            if (account == null)
+            {
+                if (permission_id == 0)
+                    permission = AccountCapsule.GetDefaultPermission(ByteString.CopyFrom(owner));
+                else if (permission_id == 2)
+                    permission = AccountCapsule.CreateDefaultActivePermission(ByteString.CopyFrom(owner), db_manager);
+            }
+            else
+            {
+                permission = account.GetPermissionById(permission_id);
+            }
+
+            if (permission == null)
+                throw new PermissionException("Permission is not exist");
+
+            if (permission_id != 0)
+            {
+                if (permission.Type != Permission.Types.PermissionType.Active)
+                    throw new PermissionException("Permission type is error");
+
+                if (!Wallet.CheckPermissionOperations(permission, contract))
+                    throw new PermissionException("Invalid Permission");
+            }
+
+            return CheckWeight(permission, new List<ByteString>(tx.Signature), hash, null) >= permission.Threshold;
+        }
+
+        public bool ValidateSignature(Manager db_manager)
+        {
+            if (this.is_verifyed)
+                return true;
+
+            if (this.transaction.Signature.Count <= 0 || this.transaction.RawData.Contract.Count <= 0)
+            {
+                throw new ValidateSignatureException("Invalid signature or contract");
+            }
+
+            if (this.transaction.Signature.Count > db_manager.DynamicProperties.GetTotalSignNum())
+            {
+                throw new ValidateSignatureException("Too many signatures");
+            }
+
+            byte[] hash = this.GetRawHash().Hash;
+
+            try
+            {
+                if (!ValidateSignature(this.transaction, hash, db_manager))
+                {
+                    this.is_verifyed = false;
+                    throw new ValidateSignatureException("Invalid signature");
+                }
+            }
+            catch (System.Exception e)
+            {
+                this.is_verifyed = false;
+                throw new ValidateSignatureException(e.Message);
+            }
+
+            return this.is_verifyed = true;
+        }
+
+        public void SetResultCode(Transaction.Types.Result.Types.contractResult contract_result)
+        {
+            Transaction.Types.Result result = new Transaction.Types.Result();
+            result.ContractRet = contract_result;
+            if (this.transaction.Ret.Count > 0)
+            {
+                this.transaction.Ret[0].ContractRet = contract_result;
+                return;
+            }
+
+            this.transaction.Ret.Add(result);
+        }
+
+        public override string ToString()
+        {
+            StringBuilder builder = new StringBuilder();
+
+            builder.Append("TransactionCapsule \n[ ");
+            builder.Append("hash=").Append(this.GetRawHash()).Append("\n");
+            int i = 0;
+
+            if (this.transaction.RawData.Contract.Count > 0)
+            {
+                builder.Append("contract list:{ ");
+                foreach (Transaction.Types.Contract contract in this.transaction.RawData.Contract)
+                {
+                    builder.Append("[" + i + "] ").Append("type: ").Append(contract.Type).Append("\n");
+                    builder.Append("from address=").Append(GetOwner(contract)).Append("\n");
+                    builder.Append("to address=").Append(ToAddress(contract)).Append("\n");
+
+                    if (contract.Type.Equals(ContractType.TransferContract))
+                    {
+                        TransferContract transferContract;
+                        try
+                        {
+                            transferContract = contract.Parameter.Unpack<TransferContract>();
+                            builder.Append("transfer amount=").Append(transferContract.Amount).Append("\n");
+                        }
+                        catch (InvalidProtocolBufferException e)
+                        {
+                            Logger.Warning(e.StackTrace);
+                        }
+                    }
+                    else if (contract.Type.Equals(ContractType.TransferAssetContract))
+                    {
+                        TransferAssetContract transferAssetContract;
+                        try
+                        {
+                            transferAssetContract = contract.Parameter.Unpack<TransferAssetContract>();
+                            builder.Append("transfer asset=").Append(transferAssetContract.AssetName).Append("\n");
+                            builder.Append("transfer amount=").Append(transferAssetContract.Amount).Append("\n");
+                        }
+                        catch (InvalidProtocolBufferException e)
+                        {
+                            Logger.Warning(e.StackTrace);
+                        }
+                    }
+                    if (this.transaction.Signature.Count >= i + 1)
+                    {
+                        Interlocked.Increment(ref i);
+                        builder.Append("sign=")
+                            .Append(this.transaction.Signature[i].ToBase64())
+                            .Append("\n");
+                    }
+                }
+                builder.Append("}\n");
+            }
+            else
+            {
+                builder.Append("contract list is empty\n");
+            }
+            builder.Append("]");
+
+            return builder.ToString();
+        }
+        #endregion
     }
 }
