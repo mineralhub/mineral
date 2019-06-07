@@ -22,22 +22,24 @@ namespace Mineral.Common.Runtime.VM
         private List<InternalTransaction> internal_transactions = null;
         private List<LogInfo> log_infos = new List<LogInfo>();
         private TransactionResultCapsule transaction_result = new TransactionResultCapsule();
-        private List<ContractTrigger> triggers;
+        private List<ContractTrigger> triggers = new List<ContractTrigger>();
         private List<CallCreate> call_create;
         #endregion
 
 
         #region Property
+        public HashSet<DataWord> DeleteAccount => this.delete_account;
+        public HashSet<byte[]> TouchAccount => this.touch_account;
+        public List<LogInfo> LogInfos => this.log_infos;
+        public List<CallCreate> CallCreate => this.call_create;
+        public List<InternalTransaction> InternalTransactions => this.internal_transactions;
+        public List<ContractTrigger> Triggers => this.triggers;
+        public long FutureRefund => this.future_refund;
+
         public bool IsRevert
         {
             get { return this.is_revert; }
             set { this.is_revert = value; }
-        }
-
-        public List<ContractTrigger> Triggers
-        {
-            get { return this.triggers; }
-            set { this.triggers = value; }
         }
 
         public byte[] ContractAddress
@@ -62,32 +64,7 @@ namespace Mineral.Common.Runtime.VM
         {
             get { return this.exception; }
             set { this.exception = value; }
-        }
-
-        public HashSet<DataWord> DeleteAccount
-        {
-            get { return this.delete_account; }
-        }
-
-        public HashSet<byte[]> TouchAccount
-        {
-            get { return this.touch_account; }
-        }
-
-        public List<LogInfo> LogInfos
-        {
-            get { return this.log_infos; }
-        }
-
-        public List<CallCreate> CallCreate
-        {
-            get { return this.call_create; }
-        }
-
-        public List<InternalTransaction> InternalTransactions
-        {
-            get { return this.internal_transactions; }
-        }
+        }       
         #endregion
 
 
@@ -119,7 +96,7 @@ namespace Mineral.Common.Runtime.VM
             this.delete_account.Add(address);
         }
 
-        public void AddDeleteAccount(List<DataWord> addresses)
+        public void AddDeleteAccount(HashSet<DataWord> addresses)
         {
             foreach (DataWord address in addresses)
             {
@@ -168,12 +145,49 @@ namespace Mineral.Common.Runtime.VM
             this.internal_transactions.AddRange(transactions);
         }
 
+        public void AddFutureRefund(long energy)
+        {
+            this.future_refund += energy;
+        }
+
+        public void ResetFutureRefund()
+        {
+            this.future_refund = 0;
+        }
+
         public void RejectInternalTransaction()
         {
             foreach (InternalTransaction tx in this.internal_transactions)
             {
-                tx.re
+                tx.Reject();
             }
+        }
+
+        public static ProgramResult CreateEmpty()
+        {
+            ProgramResult result = new ProgramResult();
+            result.h_return = new byte[0];
+
+            return result;
+        }
+
+        public void Merge(ProgramResult other)
+        {
+            AddInternalTransaction(other.InternalTransactions);
+            if (other.Exception == null && !other.IsRevert)
+            {
+                AddDeleteAccount(other.DeleteAccount);
+                AddLogInfo(other.LogInfos);
+                AddFutureRefund(other.FutureRefund);
+                AddTouchAccount(other.TouchAccount);
+            }
+        }
+
+        public void Reset()
+        {
+            this.delete_account.Clear();
+            this.log_infos.Clear();
+            ResetFutureRefund();
         }
         #endregion
     }
