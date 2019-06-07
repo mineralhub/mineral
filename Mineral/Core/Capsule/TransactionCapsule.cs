@@ -30,6 +30,11 @@ namespace Mineral.Core.Capsule
         public Transaction Instance { get { return this.transaction; } }
         public byte[] Data { get { return this.transaction.ToByteArray(); } }
 
+        public SHA256Hash Id
+        {
+            get { return this.GetRawHash(); }
+        }
+
         public long Expiration
         {
             get { return this.transaction.RawData.Expiration; }

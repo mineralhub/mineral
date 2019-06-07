@@ -10,7 +10,7 @@ namespace Mineral.Utils
     {
         public static string ToAddress(ECKey key)
         {
-            return ToAddress(key.PublicKey.ToByteArray(false));
+            return ToAddress(key.GetPubKey(false).ToArray());
         }
 
         public static string ToAddress(byte[] pubkey)

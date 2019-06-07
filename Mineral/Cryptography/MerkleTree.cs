@@ -1,5 +1,6 @@
 ﻿using Mineral.Utils;
 using System;
+using System.Collections.Generic;
 using System.Linq;
 
 namespace Mineral.Cryptography
@@ -15,6 +16,14 @@ namespace Mineral.Cryptography
                 return;
 
             _root = Build(hashes.Select(p => new MerkleTreeNode { Hash = p }).ToArray());
+        }
+
+        public MerkleTree(List<byte[]> hashes)
+        {
+            if (hashes.Count == 0)
+                return;
+
+            _root = Build(hashes.Select(p => new MerkleTreeNode { Hash = new UInt256(p)}).ToArray());
         }
 
         private static MerkleTreeNode Build(MerkleTreeNode[] leaves)

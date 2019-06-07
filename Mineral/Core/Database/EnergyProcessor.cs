@@ -4,7 +4,7 @@ using System.Text;
 
 namespace Mineral.Core.Database
 {
-    public class EnergyProcessor
+    public class EnergyProcessor : ResourceProcessor
     {
         #region Field
         #endregion

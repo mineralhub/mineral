@@ -56,7 +56,7 @@ namespace Mineral.Core.Database
         {
             try
             {
-                account.SetLatestAssetOperationTime(db_manager.GetHeadBlockTimestamp());
+                account.LatestOperationTime = db_manager.GetHeadBlockTimestamp();
                 db_manager.ad
             }
         }

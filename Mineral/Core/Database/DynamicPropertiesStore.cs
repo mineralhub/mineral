@@ -114,7 +114,6 @@ namespace Mineral.Core.Database
             return BitConverter.ToInt64(GetUnchecked(TOKEN_UPDATE_DONE).GetData(), 0);
         }
 
-
         public void PutBlockFilledSlotsIndex(int block_fiiled_slots_index)
         {
             Logger.Debug("block_fiiled_slots_index : " + block_fiiled_slots_index);

@@ -52,7 +52,7 @@ namespace Mineral.Common.Utils
 
         public SHA256Hash(SHA256Hash raw_hash)
         {
-            this.hash = raw_hash;
+            this.hash = raw_hash.Hash;
         }
         #endregion
 
@@ -101,6 +101,16 @@ namespace Mineral.Common.Utils
         public static SHA256Hash Of(byte[] contents)
         {
             return Wrap(contents.SHA256());
+        }
+
+        public static byte[] ToHash(byte[] input)
+        {
+            return ToHash(input, 0, input.Length);
+        }
+
+        public static byte[] ToHash(byte[] input, int offset, int length)
+        {
+            return input.SHA256(offset, length);
         }
 
         public override string ToString()

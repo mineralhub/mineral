@@ -33,6 +33,17 @@ namespace Mineral.Core.Capsule
                 num = BitConverter.ToInt64(block_num, 0);
             }
 
+            public override bool Equals(object obj)
+            {
+                if (this == obj)
+                    return true;
+
+                if (obj == null || (GetType() != obj.GetType() && !(obj is SHA256Hash)))
+                    return false;
+
+                return Array.Equals(this.Hash, ((SHA256Hash)obj).Hash);
+            }
+
             public override string ToString()
             {
                 return base.ToString();

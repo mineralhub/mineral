@@ -82,7 +82,7 @@ namespace Mineral.Core.Database.Fast.Callback
             byte[] root_hash = null;
             try
             {
-                BlockCapsule parent_block = this.db_manager.blockby
+                BlockCapsule parent_block = this.db_manager.Block.
             }
             catch (System.Exception e)
             {
