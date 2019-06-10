@@ -34,6 +34,11 @@ namespace Mineral.Core.Database
 
 
         #region Internal Method
+        private void CheckNull(KhaosBlock block)
+        {
+            if (block == null)
+                throw new NonCommonBlockException();
+        }
         #endregion
 
 
@@ -147,8 +152,81 @@ namespace Mineral.Core.Database
             return result;
         }
 
+        public KeyValuePair<List<KhaosBlock>, List<KhaosBlock>> GetBranch(SHA256Hash block1, SHA256Hash block2)
+        {
+            List<KhaosBlock> list1 = new List<KhaosBlock>();
+            List<KhaosBlock> list2 = new List<KhaosBlock>();
+            KhaosBlock kblock1 = this.mini_store.GetBlockByHash(block1);
+            KhaosBlock kblock2 = this.mini_store.GetBlockByHash(block2);
+            CheckNull(kblock1);
+            CheckNull(kblock2);
 
-        #region Override - MineralDatabase
+            while (kblock1.Num > kblock2.Num)
+            {
+                list1.Add(kblock1);
+                kblock1 = kblock1.Parent;
+                CheckNull(kblock1);
+                CheckNull(this.mini_store.GetBlockByHash(kblock1.Id));
+            }
+
+            while (kblock1.Num < kblock2.Num)
+            {
+                list2.Add(kblock2);
+                kblock2 = kblock2.Parent;
+                CheckNull(kblock2);
+                CheckNull(this.mini_store.GetBlockByHash(kblock2.Id));
+            }
+
+            while (!object.Equals(kblock1, kblock2))
+            {
+                list1.Add(kblock1);
+                list2.Add(kblock2);
+                kblock1 = kblock1.Parent;
+                CheckNull(kblock1);
+                CheckNull(this.mini_store.GetBlockByHash(kblock1.Id));
+                kblock2 = kblock2.Parent;
+                CheckNull(kblock2);
+                CheckNull(this.mini_store.GetBlockByHash(kblock2.Id));
+            }
+
+            return new KeyValuePair<List<KhaosBlock>, List<KhaosBlock>>(list1, list2);
+        }
+
+        public KeyValuePair<List<KhaosBlock>, List<KhaosBlock>> GetBranch(BlockId block1, BlockId block2)
+        {
+            List<KhaosBlock> list1 = new List<KhaosBlock>();
+            List<KhaosBlock> list2 = new List<KhaosBlock>();
+            KhaosBlock kblock1 = this.mini_store.GetBlockByHash(block1);
+            KhaosBlock kblock2 = this.mini_store.GetBlockByHash(block2);
+
+            if (kblock1 != null && kblock2 != null)
+            {
+                while (!object.Equals(kblock1, kblock2))
+                {
+                    if (kblock1.Num > kblock2.Num)
+                    {
+                        list1.Add(kblock1);
+                        kblock1 = kblock1.Parent;
+                    }
+                    else if (kblock1.Num < kblock2.Num)
+                    {
+                        list2.Add(kblock2);
+                        kblock2 = kblock2.Parent;
+                    }
+                    else
+                    {
+                        list1.Add(kblock1);
+                        list2.Add(kblock2);
+                        kblock1 = kblock1.Parent;
+                        kblock2 = kblock2.Parent;
+                    }
+                }
+            }
+
+            return new KeyValuePair<List<KhaosBlock>, List<KhaosBlock>>(list1, list2);
+        }
+
+        #region Override - MineralDatabaseint
         public override bool Contains(byte[] key) { return false; }
         public override void Put(byte[] key, BlockCapsule value) { }
         public override BlockCapsule Get(byte[] key) { return null; }
