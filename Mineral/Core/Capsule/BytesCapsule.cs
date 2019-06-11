@@ -12,6 +12,8 @@ namespace Mineral.Core.Capsule
 
 
         #region Property
+        object Instance { get { return null; } }
+        byte[] Data { get { return this.datas; } }
         #endregion
 
 
@@ -35,15 +37,6 @@ namespace Mineral.Core.Capsule
 
 
         #region External Method
-        public byte[] GetData()
-        {
-            return this.datas;
-        }
-
-        public object GetInstance()
-        {
-            return null;
-        }
         #endregion
     }
 }

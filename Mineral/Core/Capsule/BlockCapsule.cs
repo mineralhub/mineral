@@ -41,7 +41,7 @@ namespace Mineral.Core.Capsule
                 if (obj == null || (GetType() != obj.GetType() && !(obj is SHA256Hash)))
                     return false;
 
-                return Array.Equals(this.Hash, ((SHA256Hash)obj).Hash);
+                return this.Hash.SequenceEqual(((SHA256Hash)obj).Hash);
             }
 
             public override string ToString()
@@ -212,12 +212,12 @@ namespace Mineral.Core.Capsule
 
                 if (db_manager.DynamicProperties.GetAllowMultiSign() != 1)
                 {
-                    return Array.Equals(signature_address, witness_address);
+                    return signature_address.SequenceEqual(witness_address);
                 }
                 else
                 {
                     byte[] witness_permission_address = db_manager.Account.Get(witness_address)?.GetWitnessPermissionAddress();
-                    return Array.Equals(signature_address, witness_permission_address);
+                    return signature_address.SequenceEqual(witness_permission_address);
                 }
             }
             catch (System.Exception e)
