@@ -422,20 +422,6 @@ namespace Mineral
                     using (var file = File.OpenText(path))
                     {
                         instance = JsonConvert.DeserializeObject<Config>(file.ReadToEnd());
-
-                        //instance.TTLMinute = 60 / instance.Block.NextBlockTimeSec;
-                        //instance.TTLHour = instance.TTLMinute * 60;
-                        //instance.TTLDay = instance.TTLHour * 24;
-                        //instance.LockTTL = instance.TTLDay;
-                        //instance.VoteTTL = instance.TTLDay;
-                        //instance.LocalAddresses = new HashSet<IPAddress>();
-                        //instance.LocalAddresses.UnionWith(NetworkInterface.GetAllNetworkInterfaces().SelectMany(p => p.GetIPProperties().UnicastAddresses).Select(p => p.Address.MapToIPv6()));
-                        //foreach (string addr in instance.Network.SeedList)
-                        //{
-                        //    IPAddress iaddr;
-                        //    if (IPAddress.TryParse(addr, out iaddr))
-                        //        instance.LocalAddresses.Add(iaddr);
-                        //}
                     }
                     result = true;
                 }
@@ -459,12 +445,5 @@ namespace Mineral
         {
             return JObject.Parse(this.ToString());
         }
-
-        /*
-        if (Mineral.Network.UPNP.Discovery() && Mineral.Network.UPNP.Enable)
-        {
-            LocalAddresses.Add(Mineral.Network.UPNP.GetExternalIP());
-        }
-        */
     }
 }
