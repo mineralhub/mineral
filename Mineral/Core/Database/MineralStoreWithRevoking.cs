@@ -21,6 +21,7 @@ namespace Mineral.Core.Database
 
 
         #region Property
+        public long Size => this.revoking_db.LongCount();
         #endregion
 
 
@@ -90,7 +91,7 @@ namespace Mineral.Core.Database
             return this.revoking_db.Contains(key);
         }
 
-        public void Put(byte[] key, T item)
+        public virtual void Put(byte[] key, T item)
         {
             if (key == null || item == null)
                 return;
@@ -98,7 +99,7 @@ namespace Mineral.Core.Database
             this.revoking_db.Put(key, item.Data);
         }
 
-        public T Get(byte[] key)
+        public virtual T Get(byte[] key)
         {
             return Of(this.revoking_db.Get(key));
         }
@@ -108,7 +109,7 @@ namespace Mineral.Core.Database
             this.revoking_db.Delete(key);
         }
 
-        public void Close()
+        public virtual void Close()
         {
             this.revoking_db.Close();
         }

@@ -101,7 +101,7 @@ namespace Mineral.Core.Database
 
         public long GetTokenIdNum()
         {
-            return BitConverter.ToInt64(GetUnchecked(TOKEN_ID_NUM).GetData(), 0);
+            return BitConverter.ToInt64(GetUnchecked(TOKEN_ID_NUM).Data, 0);
         }
 
         public void PutTokenUpdateDone(long num)
@@ -111,7 +111,7 @@ namespace Mineral.Core.Database
 
         public long GetTokenUpdateDone()
         {
-            return BitConverter.ToInt64(GetUnchecked(TOKEN_UPDATE_DONE).GetData(), 0);
+            return BitConverter.ToInt64(GetUnchecked(TOKEN_UPDATE_DONE).Data, 0);
         }
 
         public void PutBlockFilledSlotsIndex(int block_fiiled_slots_index)
@@ -122,7 +122,7 @@ namespace Mineral.Core.Database
 
         public int GetBlockFilledSlotsIndex()
         {
-            return BitConverter.ToInt32(GetUnchecked(BLOCK_FILLED_SLOTS_INDEX).GetData(), 0);
+            return BitConverter.ToInt32(GetUnchecked(BLOCK_FILLED_SLOTS_INDEX).Data, 0);
         }
 
         public void PutMaxFrozenTime(int max_frozen_time)
@@ -133,7 +133,7 @@ namespace Mineral.Core.Database
 
         public int GetMaxFrozenTime()
         {
-            return BitConverter.ToInt32(GetUnchecked(MAX_FROZEN_TIME).GetData(), 0);
+            return BitConverter.ToInt32(GetUnchecked(MAX_FROZEN_TIME).Data, 0);
         }
 
         public void PutMinFrozenTime(int min_frozen_time)
@@ -144,7 +144,7 @@ namespace Mineral.Core.Database
 
         public int GetMinFrozenTime()
         {
-            return BitConverter.ToInt32(GetUnchecked(MIN_FROZEN_TIME).GetData(), 0);
+            return BitConverter.ToInt32(GetUnchecked(MIN_FROZEN_TIME).Data, 0);
         }
 
         public void PutMaxFrozenSupplyNumber(int max_frozen_supply_number)
@@ -156,7 +156,7 @@ namespace Mineral.Core.Database
 
         public int GetMaxFrozenSupplyNumber()
         {
-            return BitConverter.ToInt32(GetUnchecked(MAX_FROZEN_SUPPLY_NUMBER).GetData(), 0);
+            return BitConverter.ToInt32(GetUnchecked(MAX_FROZEN_SUPPLY_NUMBER).Data, 0);
         }
 
         public void PutMaxFrozenSupplyTime(int max_frozen_supply_time)
@@ -167,7 +167,7 @@ namespace Mineral.Core.Database
 
         public int GetMaxFrozenSupplyTime()
         {
-            return BitConverter.ToInt32(GetUnchecked(MAX_FROZEN_SUPPLY_TIME).GetData(), 0);
+            return BitConverter.ToInt32(GetUnchecked(MAX_FROZEN_SUPPLY_TIME).Data, 0);
         }
 
         public void PutMinFrozenSupplyTime(int min_frozen_supply_time)
@@ -178,7 +178,7 @@ namespace Mineral.Core.Database
 
         public int GetMinFrozenSupplyTime()
         {
-            return BitConverter.ToInt32(GetUnchecked(MIN_FROZEN_SUPPLY_TIME).GetData(), 0);
+            return BitConverter.ToInt32(GetUnchecked(MIN_FROZEN_SUPPLY_TIME).Data, 0);
         }
 
         public void PutWitnessAllowanceFrozenTime(int witness_allowance_frozen_time)
@@ -189,7 +189,7 @@ namespace Mineral.Core.Database
 
         public int GetWitnessAllowanceFrozenTime()
         {
-            return BitConverter.ToInt32(GetUnchecked(WITNESS_ALLOWANCE_FROZEN_TIME).GetData(), 0);
+            return BitConverter.ToInt32(GetUnchecked(WITNESS_ALLOWANCE_FROZEN_TIME).Data, 0);
         }
 
         public void PutMaintenanceTimeInterval(int time_interval)
@@ -200,7 +200,7 @@ namespace Mineral.Core.Database
 
         public int GetMaintenanceTimeInterval()
         {
-            return BitConverter.ToInt32(GetUnchecked(MAINTENANCE_TIME_INTERVAL).GetData(), 0);
+            return BitConverter.ToInt32(GetUnchecked(MAINTENANCE_TIME_INTERVAL).Data, 0);
         }
 
         public void PutAccountUpgradeCost(long account_upgrade_cost)
@@ -211,7 +211,7 @@ namespace Mineral.Core.Database
 
         public long GetAccountUpgradeCost()
         {
-            return BitConverter.ToInt64(GetUnchecked(ACCOUNT_UPGRADE_COST).GetData(), 0);
+            return BitConverter.ToInt64(GetUnchecked(ACCOUNT_UPGRADE_COST).Data, 0);
         }
 
         public void PutWitnessPayPerBlock(long pay)
@@ -222,7 +222,7 @@ namespace Mineral.Core.Database
 
         public long GetWitnessPayPerBlock()
         {
-            return BitConverter.ToInt64(GetUnchecked(WITNESS_PAY_PER_BLOCK).GetData(), 0);
+            return BitConverter.ToInt64(GetUnchecked(WITNESS_PAY_PER_BLOCK).Data, 0);
         }
 
         public void PutWitnessStandbyAllowance(long allowance)
@@ -233,7 +233,7 @@ namespace Mineral.Core.Database
 
         public long GetWitnessStandbyAllowance()
         {
-            return BitConverter.ToInt64(GetUnchecked(WITNESS_STANDBY_ALLOWANCE).GetData(), 0);
+            return BitConverter.ToInt64(GetUnchecked(WITNESS_STANDBY_ALLOWANCE).Data, 0);
         }
 
         public void PutOneDayNetLimit(long one_day_net_limit)
@@ -243,7 +243,7 @@ namespace Mineral.Core.Database
 
         public long GetOneDayNetLimit()
         {
-            return BitConverter.ToInt64(GetUnchecked(DynamicResourceProperties.ONE_DAY_NET_LIMIT).GetData(), 0);
+            return BitConverter.ToInt64(GetUnchecked(DynamicResourceProperties.ONE_DAY_NET_LIMIT).Data, 0);
         }
 
         public void PutPublicNetUsage(long public_net_usage)
@@ -253,7 +253,7 @@ namespace Mineral.Core.Database
 
         public long GetPublicNetUsage()
         {
-            return BitConverter.ToInt64(GetUnchecked(DynamicResourceProperties.PUBLIC_NET_USAGE).GetData(), 0);
+            return BitConverter.ToInt64(GetUnchecked(DynamicResourceProperties.PUBLIC_NET_USAGE).Data, 0);
         }
 
         public void PutPublicNetLimit(long public_net_limit)
@@ -263,7 +263,7 @@ namespace Mineral.Core.Database
 
         public long GetPublicNetLimit()
         {
-            return BitConverter.ToInt64(GetUnchecked(DynamicResourceProperties.PUBLIC_NET_LIMIT).GetData(), 0);
+            return BitConverter.ToInt64(GetUnchecked(DynamicResourceProperties.PUBLIC_NET_LIMIT).Data, 0);
         }
 
         public void PutPublicNetTime(long public_net_time)
@@ -273,7 +273,7 @@ namespace Mineral.Core.Database
 
         public long GetPublicNetTime()
         {
-            return BitConverter.ToInt64(GetUnchecked(DynamicResourceProperties.PUBLIC_NET_TIME).GetData(), 0);
+            return BitConverter.ToInt64(GetUnchecked(DynamicResourceProperties.PUBLIC_NET_TIME).Data, 0);
         }
 
         public void PutFreeNetLimit(long free_net_limit)
@@ -283,7 +283,7 @@ namespace Mineral.Core.Database
 
         public long GetFreeNetLimit()
         {
-            return BitConverter.ToInt64(GetUnchecked(DynamicResourceProperties.FREE_NET_LIMIT).GetData(), 0);
+            return BitConverter.ToInt64(GetUnchecked(DynamicResourceProperties.FREE_NET_LIMIT).Data, 0);
         }
 
         public void PutTotalNetWeight(long total_net_weight)
@@ -293,7 +293,7 @@ namespace Mineral.Core.Database
 
         public long GetTotalNetWeight()
         {
-            return BitConverter.ToInt64(GetUnchecked(DynamicResourceProperties.TOTAL_NET_WEIGHT).GetData(), 0);
+            return BitConverter.ToInt64(GetUnchecked(DynamicResourceProperties.TOTAL_NET_WEIGHT).Data, 0);
         }
 
         public void PutTotalEnergyWeight(long totalEnergyWeight)
@@ -303,7 +303,7 @@ namespace Mineral.Core.Database
 
         public long GetTotalEnergyWeight()
         {
-            return BitConverter.ToInt64(GetUnchecked(DynamicResourceProperties.TOTAL_ENERGY_WEIGHT).GetData(), 0);
+            return BitConverter.ToInt64(GetUnchecked(DynamicResourceProperties.TOTAL_ENERGY_WEIGHT).Data, 0);
         }
 
         public void PutTotalNetLimit(long total_net_limit)
@@ -313,7 +313,7 @@ namespace Mineral.Core.Database
 
         public long GetTotalNetLimit()
         {
-            return BitConverter.ToInt64(GetUnchecked(DynamicResourceProperties.TOTAL_NET_LIMIT).GetData(), 0);
+            return BitConverter.ToInt64(GetUnchecked(DynamicResourceProperties.TOTAL_NET_LIMIT).Data, 0);
         }
 
         public void PutTotalEnergyLimit(long total_energy_limit)
@@ -335,7 +335,7 @@ namespace Mineral.Core.Database
 
         public long GetTotalEnergyLimit()
         {
-            return BitConverter.ToInt64(GetUnchecked(DynamicResourceProperties.TOTAL_ENERGY_LIMIT).GetData(), 0);
+            return BitConverter.ToInt64(GetUnchecked(DynamicResourceProperties.TOTAL_ENERGY_LIMIT).Data, 0);
         }
 
         public void PutTotalEnergyCurrentLimit(long total_energy_current_limit)
@@ -345,7 +345,7 @@ namespace Mineral.Core.Database
 
         public long GetTotalEnergyCurrentLimit()
         {
-            return BitConverter.ToInt64(GetUnchecked(DynamicResourceProperties.TOTAL_ENERGY_CURRENT_LIMIT).GetData(), 0);
+            return BitConverter.ToInt64(GetUnchecked(DynamicResourceProperties.TOTAL_ENERGY_CURRENT_LIMIT).Data, 0);
         }
 
         public void PutTotalEnergyTargetLimit(long target_total_energy_limit)
@@ -355,7 +355,7 @@ namespace Mineral.Core.Database
 
         public long GetTotalEnergyTargetLimit()
         {
-            return BitConverter.ToInt64(GetUnchecked(DynamicResourceProperties.TOTAL_ENERGY_TARGET_LIMIT).GetData(), 0);
+            return BitConverter.ToInt64(GetUnchecked(DynamicResourceProperties.TOTAL_ENERGY_TARGET_LIMIT).Data, 0);
         }
 
         public void PutTotalEnergyAverageUsage(long total_Energy_Average_Usage)
@@ -365,7 +365,7 @@ namespace Mineral.Core.Database
 
         public long GetTotalEnergyAverageUsage()
         {
-            return BitConverter.ToInt64(GetUnchecked(DynamicResourceProperties.TOTAL_ENERGY_AVERAGE_USAGE).GetData(), 0);
+            return BitConverter.ToInt64(GetUnchecked(DynamicResourceProperties.TOTAL_ENERGY_AVERAGE_USAGE).Data, 0);
         }
 
         public void PutTotalEnergyAverageTime(long total_energy_average_time)
@@ -375,7 +375,7 @@ namespace Mineral.Core.Database
 
         public long GetTotalEnergyAverageTime()
         {
-            return BitConverter.ToInt64(GetUnchecked(DynamicResourceProperties.TOTAL_ENERGY_AVERAGE_TIME).GetData(), 0);
+            return BitConverter.ToInt64(GetUnchecked(DynamicResourceProperties.TOTAL_ENERGY_AVERAGE_TIME).Data, 0);
         }
 
         public void PutBlockEnergyUsage(long block_energy_usage)
@@ -385,7 +385,7 @@ namespace Mineral.Core.Database
 
         public long GetBlockEnergyUsage()
         {
-            return BitConverter.ToInt64(GetUnchecked(DynamicResourceProperties.BLOCK_ENERGY_USAGE).GetData(), 0);
+            return BitConverter.ToInt64(GetUnchecked(DynamicResourceProperties.BLOCK_ENERGY_USAGE).Data, 0);
         }
 
         public void PutEnergyFee(long total_energy_fee)
@@ -395,7 +395,7 @@ namespace Mineral.Core.Database
 
         public long GetEnergyFee()
         {
-            return BitConverter.ToInt64(GetUnchecked(ENERGY_FEE).GetData(), 0);
+            return BitConverter.ToInt64(GetUnchecked(ENERGY_FEE).Data, 0);
         }
 
         public void PutMaxCpuTimeOfOneTx(long time)
@@ -405,7 +405,7 @@ namespace Mineral.Core.Database
 
         public long GetMaxCpuTimeOfOneTx()
         {
-            return BitConverter.ToInt64(GetUnchecked(MAX_CPU_TIME_OF_ONE_TX).GetData(), 0);
+            return BitConverter.ToInt64(GetUnchecked(MAX_CPU_TIME_OF_ONE_TX).Data, 0);
         }
 
         public void PutCreateAccountFee(long fee)
@@ -415,7 +415,7 @@ namespace Mineral.Core.Database
 
         public long GetCreateAccountFee()
         {
-            return BitConverter.ToInt64(GetUnchecked(CREATE_ACCOUNT_FEE).GetData(), 0);
+            return BitConverter.ToInt64(GetUnchecked(CREATE_ACCOUNT_FEE).Data, 0);
         }
 
         public void PutCreateNewAccountFeeInSystemContract(long fee)
@@ -425,7 +425,7 @@ namespace Mineral.Core.Database
 
         public long GetCreateNewAccountFeeInSystemContract()
         {
-            return BitConverter.ToInt64(GetUnchecked(CREATE_NEW_ACCOUNT_FEE_IN_SYSTEM_CONTRACT).GetData(), 0);
+            return BitConverter.ToInt64(GetUnchecked(CREATE_NEW_ACCOUNT_FEE_IN_SYSTEM_CONTRACT).Data, 0);
         }
 
         public void PutCreateNewAccountBandwidthRate(long rate)
@@ -435,7 +435,7 @@ namespace Mineral.Core.Database
 
         public long GetCreateNewAccountBandwidthRate()
         {
-            return BitConverter.ToInt64(GetUnchecked(CREATE_NEW_ACCOUNT_BANDWIDTH_RATE).GetData(), 0);
+            return BitConverter.ToInt64(GetUnchecked(CREATE_NEW_ACCOUNT_BANDWIDTH_RATE).Data, 0);
         }
 
         public void PutTransactionFee(long fee)
@@ -445,7 +445,7 @@ namespace Mineral.Core.Database
 
         public long GetTransactionFee()
         {
-            return BitConverter.ToInt64(GetUnchecked(TRANSACTION_FEE).GetData(), 0);
+            return BitConverter.ToInt64(GetUnchecked(TRANSACTION_FEE).Data, 0);
         }
 
         public void PutAssetIssueFee(long fee)
@@ -465,17 +465,17 @@ namespace Mineral.Core.Database
 
         public long GetAssetIssueFee()
         {
-            return BitConverter.ToInt64(GetUnchecked(ASSET_ISSUE_FEE).GetData(), 0);
+            return BitConverter.ToInt64(GetUnchecked(ASSET_ISSUE_FEE).Data, 0);
         }
 
         public long GetUpdateAccountPermissionFee()
         {
-            return BitConverter.ToInt64(GetUnchecked(UPDATE_ACCOUNT_PERMISSION_FEE).GetData(), 0);
+            return BitConverter.ToInt64(GetUnchecked(UPDATE_ACCOUNT_PERMISSION_FEE).Data, 0);
         }
 
         public long GetMultiSignFee()
         {
-            return BitConverter.ToInt64(GetUnchecked(MULTI_SIGN_FEE).GetData(), 0);
+            return BitConverter.ToInt64(GetUnchecked(MULTI_SIGN_FEE).Data, 0);
         }
 
         public void PutExchangeCreateFee(long fee)
@@ -485,7 +485,7 @@ namespace Mineral.Core.Database
 
         public long GetExchangeCreateFee()
         {
-            return BitConverter.ToInt64(GetUnchecked(EXCHANGE_CREATE_FEE).GetData(), 0);
+            return BitConverter.ToInt64(GetUnchecked(EXCHANGE_CREATE_FEE).Data, 0);
         }
 
         public void PutExchangeBalanceLimit(long limit)
@@ -495,7 +495,7 @@ namespace Mineral.Core.Database
 
         public long GetExchangeBalanceLimit()
         {
-            return BitConverter.ToInt64(GetUnchecked(EXCHANGE_BALANCE_LIMIT).GetData(), 0);
+            return BitConverter.ToInt64(GetUnchecked(EXCHANGE_BALANCE_LIMIT).Data, 0);
         }
 
         public void PutTotalTransactionCost(long value)
@@ -505,7 +505,7 @@ namespace Mineral.Core.Database
 
         public long GetTotalTransactionCost()
         {
-            return BitConverter.ToInt64(GetUnchecked(TOTAL_TRANSACTION_COST).GetData(), 0);
+            return BitConverter.ToInt64(GetUnchecked(TOTAL_TRANSACTION_COST).Data, 0);
         }
 
         public void PutTotalCreateAccountFee(long value)
@@ -515,7 +515,7 @@ namespace Mineral.Core.Database
 
         public long GetTotalCreateAccountCost()
         {
-            return BitConverter.ToInt64(GetUnchecked(TOTAL_CREATE_ACCOUNT_COST).GetData(), 0);
+            return BitConverter.ToInt64(GetUnchecked(TOTAL_CREATE_ACCOUNT_COST).Data, 0);
         }
 
         public void PutTotalCreateWitnessFee(long value)
@@ -525,7 +525,7 @@ namespace Mineral.Core.Database
 
         public long GetTotalCreateWitnessCost()
         {
-            return BitConverter.ToInt64(GetUnchecked(TOTAL_CREATE_WITNESS_COST).GetData(), 0);
+            return BitConverter.ToInt64(GetUnchecked(TOTAL_CREATE_WITNESS_COST).Data, 0);
         }
 
         public void PutTotalStoragePool(long value)
@@ -535,7 +535,7 @@ namespace Mineral.Core.Database
 
         public long GetTotalStoragePool()
         {
-            return BitConverter.ToInt64(GetUnchecked(TOTAL_STORAGE_POOL).GetData(), 0);
+            return BitConverter.ToInt64(GetUnchecked(TOTAL_STORAGE_POOL).Data, 0);
         }
 
         public void PutTotalStorageTax(long value)
@@ -545,7 +545,7 @@ namespace Mineral.Core.Database
 
         public long GetTotalStorageTax()
         {
-            return BitConverter.ToInt64(GetUnchecked(TOTAL_STORAGE_TAX).GetData(), 0);
+            return BitConverter.ToInt64(GetUnchecked(TOTAL_STORAGE_TAX).Data, 0);
         }
 
         public void PutTotalStorageReserved(long bytes)
@@ -555,7 +555,7 @@ namespace Mineral.Core.Database
 
         public long GetTotalStorageReserved()
         {
-            return BitConverter.ToInt64(GetUnchecked(TOTAL_STORAGE_RESERVED).GetData(), 0);
+            return BitConverter.ToInt64(GetUnchecked(TOTAL_STORAGE_RESERVED).Data, 0);
         }
 
         public void PutStorageExchangeTaxRate(long rate)
@@ -565,7 +565,7 @@ namespace Mineral.Core.Database
 
         public long GetStorageExchangeTaxRate()
         {
-            return BitConverter.ToInt64(GetUnchecked(STORAGE_EXCHANGE_TAX_RATE).GetData(), 0);
+            return BitConverter.ToInt64(GetUnchecked(STORAGE_EXCHANGE_TAX_RATE).Data, 0);
         }
 
         public void PutRemoveThePowerOfTheGr(long rate)
@@ -575,7 +575,7 @@ namespace Mineral.Core.Database
 
         public long GetRemoveThePowerOfTheGr()
         {
-            return BitConverter.ToInt64(GetUnchecked(REMOVE_THE_POWER_OF_THE_GR).GetData(), 0);
+            return BitConverter.ToInt64(GetUnchecked(REMOVE_THE_POWER_OF_THE_GR).Data, 0);
         }
 
         public void PutAllowDelegateResource(int value)
@@ -585,7 +585,7 @@ namespace Mineral.Core.Database
 
         public int GetAllowDelegateResource()
         {
-            return BitConverter.ToInt32(GetUnchecked(ALLOW_DELEGATE_RESOURCE).GetData(), 0);
+            return BitConverter.ToInt32(GetUnchecked(ALLOW_DELEGATE_RESOURCE).Data, 0);
         }
 
         public void PutAllowAdaptiveEnergy(int value)
@@ -595,7 +595,7 @@ namespace Mineral.Core.Database
 
         public int GetAllowAdaptiveEnergy()
         {
-            return BitConverter.ToInt32(GetUnchecked(ALLOW_ADAPTIVE_ENERGY).GetData(), 0);
+            return BitConverter.ToInt32(GetUnchecked(ALLOW_ADAPTIVE_ENERGY).Data, 0);
         }
 
         public void PutAllowTvmTransferTrc10(int value)
@@ -605,7 +605,7 @@ namespace Mineral.Core.Database
 
         public int GetAllowTvmTransferTrc10()
         {
-            return BitConverter.ToInt32(GetUnchecked(ALLOW_TVM_TRANSFER_TRC10).GetData(), 0);
+            return BitConverter.ToInt32(GetUnchecked(ALLOW_TVM_TRANSFER_TRC10).Data, 0);
         }
 
         public void PutAllowTvmConstantinople(int value)
@@ -615,7 +615,7 @@ namespace Mineral.Core.Database
 
         public int GetAllowTvmConstantinople()
         {
-            return BitConverter.ToInt32(GetUnchecked(ALLOW_TVM_CONSTANTINOPLE).GetData(), 0);
+            return BitConverter.ToInt32(GetUnchecked(ALLOW_TVM_CONSTANTINOPLE).Data, 0);
         }
 
         public void PutAvailableContractType(byte[] value)
@@ -625,7 +625,7 @@ namespace Mineral.Core.Database
 
         public byte[] GetAvailableContractType()
         {
-            return GetUnchecked(AVAILABLE_CONTRACT_TYPE).GetData();
+            return GetUnchecked(AVAILABLE_CONTRACT_TYPE).Data;
         }
 
         public void PutActiveDefaultOperations(byte[] value)
@@ -636,7 +636,7 @@ namespace Mineral.Core.Database
 
         public byte[] GetActiveDefaultOperations()
         {
-            return GetUnchecked(ACTIVE_DEFAULT_OPERATIONS).GetData();
+            return GetUnchecked(ACTIVE_DEFAULT_OPERATIONS).Data;
         }
 
         public void PutAllowUpdateAccountName(long rate)
@@ -646,7 +646,7 @@ namespace Mineral.Core.Database
 
         public long GetAllowUpdateAccountName()
         {
-            return BitConverter.ToInt64(GetUnchecked(ALLOW_UPDATE_ACCOUNT_NAME).GetData(), 0);
+            return BitConverter.ToInt64(GetUnchecked(ALLOW_UPDATE_ACCOUNT_NAME).Data, 0);
         }
 
         public void PutAllowSameTokenName(int rate)
@@ -656,7 +656,7 @@ namespace Mineral.Core.Database
 
         public int GetAllowSameTokenName()
         {
-            return BitConverter.ToInt32(GetUnchecked(ALLOW_SAME_TOKEN_NAME).GetData(), 0);
+            return BitConverter.ToInt32(GetUnchecked(ALLOW_SAME_TOKEN_NAME).Data, 0);
         }
 
         public void PutAllowCreationOfContracts(int allow_creation_of_contracts)
@@ -666,7 +666,7 @@ namespace Mineral.Core.Database
 
         public long GetAllowCreationOfContracts()
         {
-            return BitConverter.ToInt32(GetUnchecked(ALLOW_CREATION_OF_CONTRACTS).GetData(), 0);
+            return BitConverter.ToInt32(GetUnchecked(ALLOW_CREATION_OF_CONTRACTS).Data, 0);
         }
 
         public void PutTotalSignNum(int num)
@@ -676,7 +676,7 @@ namespace Mineral.Core.Database
 
         public int GetTotalSignNum()
         {
-            return BitConverter.ToInt32(GetUnchecked(TOTAL_SIGN_NUM).GetData(), 0);
+            return BitConverter.ToInt32(GetUnchecked(TOTAL_SIGN_NUM).Data, 0);
         }
 
         public void PutAllowMultiSign(int allow_multi_sing)
@@ -686,7 +686,7 @@ namespace Mineral.Core.Database
 
         public int GetAllowMultiSign()
         {
-            return BitConverter.ToInt32(GetUnchecked(ALLOW_MULTI_SIGN).GetData(), 0);
+            return BitConverter.ToInt32(GetUnchecked(ALLOW_MULTI_SIGN).Data, 0);
         }
 
         public void PutBlockFilledSlots(int[] block_filled_slots)
@@ -697,7 +697,7 @@ namespace Mineral.Core.Database
 
         public int[] GetBlockFilledSlots()
         {
-            return GetUnchecked(BLOCK_FILLED_SLOTS).GetData().GetString().ToIntArray();
+            return GetUnchecked(BLOCK_FILLED_SLOTS).Data.GetString().ToIntArray();
         }
 
         public int GetBlockFilledSlotsNumber()
@@ -712,7 +712,7 @@ namespace Mineral.Core.Database
 
         public long GetLatestSolidifiedBlockNum()
         {
-            return BitConverter.ToInt64(GetUnchecked(LATEST_SOLIDIFIED_BLOCK_NUM).GetData(), 0);
+            return BitConverter.ToInt64(GetUnchecked(LATEST_SOLIDIFIED_BLOCK_NUM).Data, 0);
         }
 
         public void PutLatestProposalNum(long number)
@@ -722,7 +722,7 @@ namespace Mineral.Core.Database
 
         public long GetLatestProposalNum()
         {
-            return BitConverter.ToInt64(GetUnchecked(LATEST_PROPOSAL_NUM).GetData(), 0);
+            return BitConverter.ToInt64(GetUnchecked(LATEST_PROPOSAL_NUM).Data, 0);
         }
 
         public void PutLatestExchangeNum(long number)
@@ -732,27 +732,27 @@ namespace Mineral.Core.Database
 
         public long GetLatestExchangeNum()
         {
-            return BitConverter.ToInt64(GetUnchecked(LATEST_EXCHANGE_NUM).GetData(), 0);
+            return BitConverter.ToInt64(GetUnchecked(LATEST_EXCHANGE_NUM).Data, 0);
         }
 
         public long GetLatestBlockHeaderTimestamp()
         {
-            return BitConverter.ToInt64(GetUnchecked(LATEST_BLOCK_HEADER_TIMESTAMP).GetData(), 0);
+            return BitConverter.ToInt64(GetUnchecked(LATEST_BLOCK_HEADER_TIMESTAMP).Data, 0);
         }
 
         public long GetLatestBlockHeaderNumber()
         {
-            return BitConverter.ToInt64(GetUnchecked(LATEST_BLOCK_HEADER_NUMBER).GetData(), 0);
+            return BitConverter.ToInt64(GetUnchecked(LATEST_BLOCK_HEADER_NUMBER).Data, 0);
         }
 
         public int GetStateFlag()
         {
-            return BitConverter.ToInt32(GetUnchecked(STATE_FLAG).GetData(), 0);
+            return BitConverter.ToInt32(GetUnchecked(STATE_FLAG).Data, 0);
         }
 
         public SHA256Hash GetLatestBlockHeaderHash()
         {
-            return SHA256Hash.Wrap(GetUnchecked(LATEST_BLOCK_HEADER_HASH).GetData());
+            return SHA256Hash.Wrap(GetUnchecked(LATEST_BLOCK_HEADER_HASH).Data);
         }
 
         public void PutLatestBlockHeaderTimestamp(long t)
@@ -781,7 +781,7 @@ namespace Mineral.Core.Database
 
         public long GetNextMaintenanceTime()
         {
-            return BitConverter.ToInt64(GetUnchecked(NEXT_MAINTENANCE_TIME).GetData(), 0);
+            return BitConverter.ToInt64(GetUnchecked(NEXT_MAINTENANCE_TIME).Data, 0);
         }
 
         public long GetMaintenanceSkipSlots()
@@ -802,7 +802,7 @@ namespace Mineral.Core.Database
 
         public int GetAllowProtoFilterNum()
         {
-            return BitConverter.ToInt32(GetUnchecked(ALLOW_PROTO_FILTER_NUM).GetData(), 0);
+            return BitConverter.ToInt32(GetUnchecked(ALLOW_PROTO_FILTER_NUM).Data, 0);
         }
 
         public void PutAllowAccountStateRoot(int allow_account_state_root)
@@ -812,7 +812,7 @@ namespace Mineral.Core.Database
 
         public int GetAllowAccountStateRoot()
         {
-            return BitConverter.ToInt32(GetUnchecked(ALLOW_ACCOUNT_STATE_ROOT).GetData(), 0);
+            return BitConverter.ToInt32(GetUnchecked(ALLOW_ACCOUNT_STATE_ROOT).Data, 0);
         }
 
         public bool AllowAccountStateRoot()
@@ -868,7 +868,7 @@ namespace Mineral.Core.Database
             }
         }
 
-        public void applyBlock(bool fill_block)
+        public void ApplyBlock(bool fill_block)
         {
             int[] block_filled_slots = GetBlockFilledSlots();
             int block_filled_slots_index = GetBlockFilledSlotsIndex();

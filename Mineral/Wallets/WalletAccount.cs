@@ -2,6 +2,7 @@
 using Mineral.Utils;
 using System;
 using System.Linq;
+using System.Text;
 
 namespace Mineral.Wallets
 {
@@ -35,14 +36,13 @@ namespace Mineral.Wallets
 
         public static WalletAccount CreateAccount()
         {
-            ECKey key = new ECKey(ECKey.Generate());
-            WalletAccount account = new WalletAccount(key.PrivateKeyBytes);
+            WalletAccount account = new WalletAccount(Encoding.UTF8.GetBytes("1"));
             return account;
         }
 
         public static string ToAddress(ECKey key)
         {
-            return ToAddress(key.PublicKey.ToByteArray(false));
+            return ToAddress(key.GetPubKey(false));
         }
 
         public static string ToAddress(byte[] pubkey)

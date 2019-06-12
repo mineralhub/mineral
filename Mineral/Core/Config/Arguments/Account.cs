@@ -27,11 +27,9 @@ namespace Mineral.Core.Config.Arguments
         [JsonConverter(typeof(JsonArgAccountTypeConverter))]
         public AccountType Type { get; set; }
         [JsonProperty("address")]
-        [JsonConverter(typeof(JsonUInt160Converter))]
-        public UInt160 Address { get; set; }
+        public string Address { get; set; }
         [JsonProperty("balance")]
-        [JsonConverter(typeof(JsonFixed8Converter))]
-        public Fixed8 Balance { get; set; }
+        public long Balance { get; set; }
         #endregion
 
 

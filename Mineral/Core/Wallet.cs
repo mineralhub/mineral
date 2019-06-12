@@ -6,6 +6,7 @@ using Mineral.Common.Utils;
 using Mineral.Core.Capsule;
 using Mineral.Core.Exception;
 using Mineral.Cryptography;
+using Mineral.Utils;
 using Protocol;
 
 namespace Mineral.Core
@@ -13,9 +14,9 @@ namespace Mineral.Core
     public class Wallet
     {
         #region Field
+        private static byte ADDRESS_PREFIX_BYTES = DefineParameter.ADD_PRE_FIX_BYTE_MAINNET;
+
         private readonly ECKey ec_key = null;
-        private MineralNetService net_service;
-        private NetDelegate net_delegate;
         #endregion
 
 
@@ -57,6 +58,66 @@ namespace Mineral.Core
             Array.Copy(hash1, 0, input_check, input.Length, 4);
 
             return Base58.Encode(input_check);
+        }
+
+        public static byte[] Decode58Check(string input)
+        {
+            byte[] data = Base58.Decode(input);
+            if (data.Length <= 4)
+            {
+                return null;
+            }
+            byte[] decodeData = new byte[data.Length - 4];
+            Array.Copy(data, 0, decodeData, 0, decodeData.Length);
+            byte[] hash0 = SHA256Hash.ToHash(decodeData);
+            byte[] hash1 = SHA256Hash.ToHash(hash0);
+            if (hash1[0] == data[decodeData.Length] &&
+                hash1[1] == data[decodeData.Length + 1] &&
+                hash1[2] == data[decodeData.Length + 2] &&
+                hash1[3] == data[decodeData.Length + 3])
+            {
+                return decodeData;
+            }
+            return null;
+        }
+
+        public static byte[] DecodeFromBase58Check(string address)
+        {
+            byte[] result = null;
+
+            if (StringHelper.IsNullOrEmpty(address))
+            {
+                Logger.Warning("Address is empty");
+                return result;
+            }
+
+            result = Decode58Check(address);
+            AddressValid(result);
+
+            return result;
+        }
+
+        public static bool AddressValid(byte[] address)
+        {
+            if (address.IsNullOrEmpty())
+            {
+                Logger.Warning("Warning: Address is empty !!");
+                return false;
+            }
+            if (address.Length != DefineParameter.ADDRESS_SIZE / 2)
+            {
+                Logger.Warning(
+                    "Warning: Address length need " + DefineParameter.ADDRESS_SIZE + " but " + address.Length + " !!");
+                return false;
+            }
+            if (address[0] != ADDRESS_PREFIX_BYTES)
+            {
+                Logger.Warning("Warning: Address need prefix with " + ADDRESS_PREFIX_BYTES + " but "
+                    + address[0] + " !!");
+                return false;
+            }
+
+            return true;
         }
 
         public static byte[] GenerateContractAddress(Transaction tx)

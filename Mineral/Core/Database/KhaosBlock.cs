@@ -31,7 +31,7 @@ namespace Mineral.Core.Database
                 this.parent.TryGetTarget(out KhaosBlock block);
                 return block;
             }
-            set { this.parent = value; }
+            set { this.parent = new WeakReference<KhaosBlock>(value); }
         }
 
         public SHA256Hash ParentHash

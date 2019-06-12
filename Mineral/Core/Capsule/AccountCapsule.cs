@@ -373,7 +373,7 @@ namespace Mineral.Core.Capsule
             return this.account.Address.ToByteArray();
         }
 
-        public string CreateReadableString()
+        public string ToHexString()
         {
             return this.account.Address.ToByteArray().ToHexString();
         }

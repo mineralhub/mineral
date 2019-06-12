@@ -8,6 +8,7 @@ using Commander.NET;
 using Commander.NET.Attributes;
 using Mineral.CommandLine;
 using Mineral.Common.Overlay.Discover;
+using Mineral.Core.Database;
 using Mineral.Core.Exception;
 using Mineral.Utils;
 using Mineral.Wallets.KeyStore;
@@ -336,7 +337,17 @@ namespace Mineral.Core.Config.Arguments
             #endregion
 
             #region Genesis block
-            instance.Genesisblock = (GenesisBlockArgs)(Config.Instance.GenesisBlock ?? GenesisBlockConfig.DefaultGenesisBlock);
+            if (Config.Instance.GenesisBlock != null)
+            {
+                if (Config.Instance.GenesisBlock.Assets != null)
+                {
+                    AccountStore.SetAccount((GenesisBlockArgs)Config.Instance.GenesisBlock);
+                }
+            }
+            else
+            {
+                instance.Genesisblock = (GenesisBlockArgs)GenesisBlockConfig.DefaultGenesisBlock;
+            }
             #endregion
 
             #region Node

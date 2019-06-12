@@ -45,21 +45,31 @@ namespace Mineral.Core.Database
         {
             return usage * window_size / this.percision;
         }
+
+        protected bool ConsumeFee(AccountCapsule account, long fee)
+        {
+            bool result = false;
+            try
+            {
+                account.LatestOperationTime = db_manager.GetHeadBlockTimestamp();
+                db_manager.AdjustBalance(account, -fee);
+                db_manager.AdjustBalance(this.db_manager.Account.GetBlackHole().CreateDatabaseKey(), fee);
+
+                result = true;
+            }
+            catch
+            {
+                result = false;
+            }
+
+            return result;
+        }
         #endregion
 
 
         #region External Method
         public abstract void UpdateUsage(AccountCapsule account);
         public abstract void Consume(TransactionCapsule tx, TransactionTrace tx_trace);
-
-        protected bool ConsumeFee(AccountCapsule account, long fee)
-        {
-            try
-            {
-                account.LatestOperationTime = db_manager.GetHeadBlockTimestamp();
-                db_manager.ad
-            }
-        }
 
         protected long Increase(long last_usage, long usage, long last_time, long now)
         {

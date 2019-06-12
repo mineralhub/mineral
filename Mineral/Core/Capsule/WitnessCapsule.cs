@@ -120,14 +120,19 @@ namespace Mineral.Core.Capsule
             return this.witness.Address.ToByteArray();
         }
 
-        public string CreateReadableString()
+        public string ToHexString()
         {
             return this.witness.Address.ToByteArray().ToHexString();
         }
 
         public int CompareTo(WitnessCapsule other)
         {
-            return other.vote
+            return CompareTo(VoteCount, other.VoteCount);
+        }
+
+        public int CompareTo(long witness1, long witness2)
+        {
+            return (witness1 < witness2) ? -1 : ((witness1 == witness2) ? 0 : 1);
         }
         #endregion
     }

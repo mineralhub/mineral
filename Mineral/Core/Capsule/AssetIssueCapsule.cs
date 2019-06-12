@@ -158,7 +158,7 @@ namespace Mineral.Core.Capsule
 
         public byte[] CreateDatabaseKeyFinal(Manager db_manager)
         {
-            if (db_manager.DynamicPropertiesStore.GetAllowSameTokenName() == 0)
+            if (db_manager.DynamicProperties.GetAllowSameTokenName() == 0)
                 return CreateDatabaseKey();
             else
                 return CreateDatabaseKeyV2();

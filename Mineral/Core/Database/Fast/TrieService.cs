@@ -13,11 +13,15 @@ namespace Mineral.Core.Database.Fast
     {
         #region Field
         private Manager db_manager;
-        private AccountStateStoreTrie account_state_store_trie;
         #endregion
 
 
         #region Property
+        public Manager DBManager
+        {
+            get { return this.db_manager; }
+            set { this.db_manager = value; }
+        }
         #endregion
 
 

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
+using Mineral.Core.Capsule;
 
 namespace Mineral.Core.Database
 {
@@ -15,6 +16,7 @@ namespace Mineral.Core.Database
 
 
         #region Constructor
+        public EnergyProcessor(Manager db_manager) : base(db_manager) { }
         #endregion
 
 
@@ -27,6 +29,15 @@ namespace Mineral.Core.Database
 
 
         #region External Method
+        public override void Consume(TransactionCapsule tx, TransactionTrace tx_trace)
+        {
+            throw new NotImplementedException();
+        }
+
+        public override void UpdateUsage(AccountCapsule account)
+        {
+            long now = this.db_manager.Witness
+        }
         #endregion
     }
 }

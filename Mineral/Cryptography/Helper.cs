@@ -8,6 +8,7 @@ using Org.BouncyCastle.Crypto;
 using Org.BouncyCastle.Security;
 using Org.BouncyCastle.Crypto.Parameters;
 using Mineral.Utils;
+using Org.BouncyCastle.Crypto.Digests;
 
 namespace Mineral.Cryptography
 {
@@ -131,7 +132,7 @@ namespace Mineral.Cryptography
         public static bool VerifySignature(byte[] signature, byte[] message, ECKey key)
         {
             ISigner signer = SignerUtilities.GetSigner("NONEwithECDSA");
-            signer.Init(false, key.PublicKey);
+            signer.Init(false, key.GetPublicKeyParameters());
             signer.BlockUpdate(message, 0, message.Length);
             return signer.VerifySignature(signature);
         }

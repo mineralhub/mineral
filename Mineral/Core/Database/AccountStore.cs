@@ -2,6 +2,9 @@
 using System.Collections.Generic;
 using System.Text;
 using Mineral.Core.Capsule;
+using Mineral.Core.Database.Fast.Callback;
+using Mineral.Core.Database.Fast.Callback.StoreTrie;
+using Mineral.Utils;
 using Protocol;
 
 namespace Mineral.Core.Database
@@ -10,8 +13,10 @@ namespace Mineral.Core.Database
         : MineralStoreWithRevoking<AccountCapsule, Account>
     {
         #region Field
-        private Dictionary<string, byte[]> asserts_address = new Dictionary<string, byte[]>();
-        private 
+        private Manager db_manager = null;
+        private FastSyncCallBack fast_sync_callback = null;
+        private AccountStateStoreTrie account_state_store = new AccountStateStoreTrie("accountTrie");
+        private static Dictionary<string, byte[]> asserts_address = new Dictionary<string, byte[]>();
         #endregion
 
 
@@ -20,7 +25,12 @@ namespace Mineral.Core.Database
 
 
         #region Constructor
-        public AccountStore(string db_name) : base(db_name) { }
+        public AccountStore(Manager db_manager, string db_name = "account")
+            : base(db_name)
+        {
+            this.db_manager = db_manager;
+            fast_sync_callback = new FastSyncCallBack(this.db_manager);
+        }
         #endregion
 
 
@@ -33,6 +43,49 @@ namespace Mineral.Core.Database
 
 
         #region External Method
+        public static void SetAccount(Config.Arguments.Args.GenesisBlockArgs args)
+        {
+            foreach (Config.Arguments.Account account in args.Assets)
+            {
+                asserts_address.Add(account.Name, Wallet.DecodeFromBase58Check(account.Address));
+            }
+        }
+
+        public AccountCapsule GetBlackHole()
+        {
+            asserts_address.TryGetValue("Blockhole", out byte[] value);
+            return GetUnchecked(value);
+        }
+
+        public AccountCapsule GetSun()
+        {
+            asserts_address.TryGetValue("Sun", out byte[] value);
+            return GetUnchecked(value);
+        }
+
+        public AccountCapsule GetZion()
+        {
+            asserts_address.TryGetValue("Zion", out byte[] value);
+            return GetUnchecked(value);
+        }
+
+        public override void Put(byte[] key, AccountCapsule item)
+        {
+            base.Put(key, item);
+            fast_sync_callback.AccountCallBack(key, item);
+        }
+
+        public override AccountCapsule Get(byte[] key)
+        {
+            byte[] value = this.revoking_db.GetUnchecked(key);
+            return value.IsNotNullOrEmpty() ? new AccountCapsule(value) : null;
+        }
+
+        public override void Close()
+        {
+            base.Close();
+            account_state_store.Close();
+        }
         #endregion
     }
 }

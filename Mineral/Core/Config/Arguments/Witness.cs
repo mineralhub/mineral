@@ -15,12 +15,12 @@ namespace Mineral.Core.Config.Arguments
 
         #region Property
         [JsonProperty("address")]
-        [JsonConverter(typeof(JsonUInt160Converter))]
-        public UInt160 Address { get; set; }
+        [JsonConverter(typeof(JsonAddressToByteArray))]
+        public byte[] Address { get; set; }
         [JsonProperty("url")]
         public string Url { get; set; }
         [JsonProperty("vote_count")]
-        public Fixed8 VoteCount { get; set; }
+        public long VoteCount { get; set; }
         #endregion
 
 
