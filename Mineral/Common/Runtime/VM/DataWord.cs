@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Numerics;
 using System.Text;
 using Mineral.Utils;
@@ -20,10 +21,27 @@ namespace Mineral.Common.Runtime.VM
 
 
         #region Property
-        public static DataWord ONE { get { return DataWord.Of((byte)1); } }
-        public static DataWord ZERO { get { return new DataWord(new byte[32]); } }
-        public byte[] Data { get { return this.data; } }
-        public bool IsNegative { get { return (this.data[0] & 0x80) == 0x80; } }
+        public byte[] Data => this.data;
+
+        public static DataWord ONE
+        {
+            get { return DataWord.Of((byte)1); }
+        }
+
+        public static DataWord ZERO
+        {
+            get { return new DataWord(new byte[32]); }
+        }
+
+        public bool IsNegative
+        {
+            get { return (this.data[0] & 0x80) == 0x80; }
+        }
+
+        public bool IsZero
+        {
+            get { return this.data.Where(x => x != 0).ToList().Count > 0; }
+        }
         #endregion
 
 
