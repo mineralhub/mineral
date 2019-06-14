@@ -142,6 +142,19 @@ namespace Mineral.Core
 
             return Wallets.WalletAccount.ToAddressHash(combined.SHA256()).ToArray();
         }
+
+        public static byte[] ToMineralAddress(byte[] address)
+        {
+            byte[] result = address;
+            if (address.Length == 20)
+            {
+                result = new byte[21];
+                result[0] = ADDRESS_PREFIX_BYTES;
+                Array.Copy(address, 0, result, 1, address.Length);
+            }
+
+            return result;
+        }
         #endregion
     }
 }

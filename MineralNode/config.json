@@ -149,7 +149,13 @@
     },
     "transaction": {
         "reference_block": "head",
-        "expire_time_in_millis":  6000
+        "expire_time_in_millis": 6000
+    },
+    "vm": {
+        "save_internal_tx": false,
+        "support_constant": false,
+        "min_time_ratio": 0.0,
+        "max_time_ratio": 5.0
     },
 
 

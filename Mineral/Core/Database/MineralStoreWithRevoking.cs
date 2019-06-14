@@ -104,7 +104,7 @@ namespace Mineral.Core.Database
             return Of(this.revoking_db.Get(key));
         }
 
-        public void Delete(byte[] key)
+        public virtual void Delete(byte[] key)
         {
             this.revoking_db.Delete(key);
         }
@@ -124,7 +124,7 @@ namespace Mineral.Core.Database
             return this.GetType().Name;
         }
 
-        public T GetUnchecked(byte[] key)
+        public virtual T GetUnchecked(byte[] key)
         {
             return Of(this.revoking_db.GetUnchecked(key));
         }

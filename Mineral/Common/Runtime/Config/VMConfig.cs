@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
+using Mineral.Common.Utils;
+using Mineral.Core.Config;
 using Mineral.Core.Config.Arguments;
 
 namespace Mineral.Common.Runtime.Config
@@ -75,7 +77,7 @@ namespace Mineral.Common.Runtime.Config
         #region External Method
         public static void InitVmHardFork()
         {
-            ENERGY_LIMIT_HARD_FORK = ForkController.instance().pass(ForkBlockVersionConsts.ENERGY_LIMIT);
+            ENERGY_LIMIT_HARD_FORK = ForkController.Instance.Pass(Parameter.ForkBlockVersionParameters.ENERGY_LIMIT);
         }
 
         public static void InitAllowMultiSign(long allow)

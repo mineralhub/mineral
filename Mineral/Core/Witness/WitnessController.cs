@@ -238,7 +238,7 @@ namespace Mineral.Core.Witness
             Logger.Debug(
                 string.Format(
                     "Validate witnessSchedule successfully,scheduledWitness:{0}",
-                    witness_address.ToByteArray().ToHexString());
+                    witness_address.ToByteArray().ToHexString()));
 
             return true;
         }

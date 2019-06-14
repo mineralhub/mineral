@@ -24,6 +24,7 @@ namespace Mineral.Core.Config.Arguments
         public class BlockArgs : BlockConfig { }
         public class CommitteArgs : CommitteConfig { }
         public class TransactionArgs : TransactionConfig { }
+        public class VMArgs : VMConfig { }
 
         public class NodeArgs
         {
@@ -71,33 +72,60 @@ namespace Mineral.Core.Config.Arguments
         #region Arguments
         [Parameter("-p", "==private-key", Description = "Private key")]
         private string privatekey = "";
+
         [Parameter("-v", "--version", Description = "Version")]
         private bool version = false;
-        [Parameter(Description = "--seed-nodes")]
+
+        [Parameter("--min-time-ratio")]
+        private double min_time_ratio = 0.0F;
+
+        [Parameter("--max-time-ratio")]
+        private double max_time_ratio = 0.0F;
+
+        [Parameter("--save-internaltx")]
+        private bool save_internal_tx = false;
+
+        [Parameter("--seed-nodes")]
         private List<String> seed_nodes = new List<string>();
+
         [Parameter("--storage-db-directory", Description = "Storage db directory")]
         private string storage_directory = "";
+
         [Parameter("--storage-db-engine", Description = "Storage db engine.(leveldb or rocksdb)")]
         private string storage_engine = "";
+
         [Parameter("--storage-db-synchronous", Description = "Storage db is synchronous or not.(true or flase)")]
         private string storage_sync = "";
+
         [Parameter("--contract-parse-switch", Description = "enable contract parses in java-tron or not.(true or flase)")]
         private string contract_parse_switch = "";
+
         [Parameter("--d", "--output-directory", Description = "Directory")]
         private string output_directory = "";
+
         [Parameter("storage-index-directory", Description = "Storage index directory")]
         private string storage_index_directory = "";
+
         [Parameter("storage-index-switch", Description = "Storage index switch.(on or off)")]
         private string storage_index_switch = "";
+
         [Parameter("--storage-transactionHistory-switch", Description = "Storage transaction history switch.(on or off)")]
         private string storage_transaction_history_switch = "";
+
         [Parameter("--storage-db-version", Description = "Storage db version.(1 or 2)")]
         private String storage_version = "";
+
+        [Parameter("--support-constant")]
+        private bool support_constanct = false;
+
         [Parameter("-w", "--witness", Description = "Version")]
         private bool witness = false;
+
         [Parameter("--witness-address", Description = "Witness address")]
         private string witness_address = "";
         #endregion
+
+        private long block_num_Energy_limit = 0;
         #endregion
 
 
@@ -117,11 +145,22 @@ namespace Mineral.Core.Config.Arguments
         public GenesisBlockArgs Genesisblock { get; private set; } = new GenesisBlockArgs();
         public LocalWitness LocalWitness { get; private set; } = new LocalWitness();
         public NodeArgs Node { get; private set; } = new NodeArgs();
-        public BlockArgs Block { get; set; } = new BlockArgs();
-        public CommitteArgs Committe { get; set; } = new CommitteArgs();
-        public TransactionArgs Transaction { get; set; } = new TransactionArgs();
+        public BlockArgs Block { get; private set; } = new BlockArgs();
+        public CommitteArgs Committe { get; private set; } = new CommitteArgs();
+        public TransactionArgs Transaction { get; private set; } = new TransactionArgs();
+        public VMArgs VM { get; private set; } = new VMArgs();
 
-        public bool IsWitness { get { return this.witness; } set { this.witness = value; } }
+        public long BlockNumEnergyLimit
+        {
+            get { return this.block_num_Energy_limit; }
+            set { this.block_num_Energy_limit = value; }
+        }
+
+        public bool IsWitness
+        {
+            get { return this.witness; }
+            set { this.witness = value; }
+        }
         #endregion
 
 
@@ -438,6 +477,14 @@ namespace Mineral.Core.Config.Arguments
                     Config.Instance.Transaction.ExpireTimeInMillis > 0 ?
                     Config.Instance.Transaction.ExpireTimeInMillis : DefineParameter.TRANSACTION_DEFAULT_EXPIRATION_TIME
                 ) : DefineParameter.TRANSACTION_DEFAULT_EXPIRATION_TIME;
+            #endregion
+
+            #region VM
+            instance.VM.VMTrace = Config.Instance.VM.VMTrace ?? false;
+            instance.VM.SaveInternalTx = Config.Instance.VM.SaveInternalTx ?? this.save_internal_tx;
+            instance.VM.SupportConstant = Config.Instance.VM.SupportConstant ?? this.support_constanct;
+            instance.VM.MinTimeRatio = Config.Instance.VM.MinTimeRatio ?? this.min_time_ratio;
+            instance.VM.MaxTimeRatio = Config.Instance.VM.MaxTimeRatio ?? this.max_time_ratio;
             #endregion
         }
 

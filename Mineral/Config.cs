@@ -269,7 +269,19 @@ namespace Mineral
         public bool? ContractParse { get; set; }
     }
 
-
+    public class VMConfig
+    {
+        [JsonProperty("vm_trace")]
+        public bool? VMTrace { get; set; }
+        [JsonProperty("save_internal_tx")]
+        public bool? SaveInternalTx { get; set; }
+        [JsonProperty("support_constant")]
+        public bool? SupportConstant { get; set; }
+        [JsonProperty("min_time_ratio")]
+        public double? MinTimeRatio { get; set; }
+        [JsonProperty("max_time_ratio")]
+        public double? MaxTimeRatio { get; set; }
+    }
 
     public class NetworkConfig
     {
@@ -356,6 +368,8 @@ namespace Mineral
         public TransactionConfig Transaction { get; set; }
         [JsonProperty("event")]
         public EventConfig Event { get; set; }
+        [JsonProperty("vm")]
+        public VMConfig VM { get; set; }
 
 
 

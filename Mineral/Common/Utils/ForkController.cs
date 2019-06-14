@@ -20,11 +20,23 @@ namespace Mineral.Common.Utils
         private static readonly byte VERSION_UPGRADE = (byte)1;
         private static readonly byte[] check = null;
 
+        private static ForkController instance = null;
         private Manager db_manager;
         #endregion
 
 
         #region Property
+        public static ForkController Instance
+        {
+            get
+            {
+                if (instance == null)
+                    instance = new ForkController();
+
+                return instance;
+            }
+        }
+
         public Manager DBManager => this.db_manager;
         #endregion
 
@@ -92,7 +104,7 @@ namespace Mineral.Common.Utils
                         {
                             stats = new byte[slot_size];
                         }
-                        stats = Enumerable.Repeat(VERSION_UPGRADE, stats.Length);
+                        stats = Enumerable.Repeat(VERSION_UPGRADE, stats.Length).ToArray();
                         this.db_manager.DynamicProperties.StatsByVersion((int)v, stats);
                     }
                 }

@@ -35,6 +35,12 @@ namespace Mineral.Core.Capsule
             get { return this.GetRawHash(); }
         }
 
+        public long BlockNum
+        {
+            get { return this.block_num; }
+            set { this.block_num = value; }
+        }
+
         public long Expiration
         {
             get { return this.transaction.RawData.Expiration; }

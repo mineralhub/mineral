@@ -72,12 +72,12 @@ namespace Mineral.Core.Database
             if (total_energy_average_usage > target_total_energy_limit)
             {
                 result = total_energy_current_limit * Parameter.AdaptiveResourceLimitParameters.CONTRACT_RATE_NUMERATOR
-                        / Parameter.AdaptiveResourceLimitParameters..CONTRACT_RATE_DENOMINATOR;
+                        / Parameter.AdaptiveResourceLimitParameters.CONTRACT_RATE_DENOMINATOR;
             }
             else
             {
-                result = total_energy_current_limit * Parameter.AdaptiveResourceLimitParameters..EXPAND_RATE_NUMERATOR
-                    / Parameter.AdaptiveResourceLimitParameters..EXPAND_RATE_DENOMINATOR;
+                result = total_energy_current_limit * Parameter.AdaptiveResourceLimitParameters.EXPAND_RATE_NUMERATOR
+                    / Parameter.AdaptiveResourceLimitParameters.EXPAND_RATE_DENOMINATOR;
             }
 
             result = Math.Min(

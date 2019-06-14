@@ -12,6 +12,8 @@ namespace Mineral.Core.Capsule
 
 
         #region Property
+		public object Instance => null;
+        public byte[] Data => this.datas;
         #endregion
 
 
@@ -20,10 +22,6 @@ namespace Mineral.Core.Capsule
         {
             this.datas = bytes;
         }
-
-        public object Instance => null;
-        public byte[] Data => this.datas;
-
         #endregion
 
 

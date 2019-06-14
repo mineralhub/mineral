@@ -103,5 +103,19 @@ namespace Mineral.Core.Config
             ALLOW_ACCOUNT_STATE_ROOT, // 1, 25
             ALLOW_TVM_CONSTANTINOPLE, // 1, 26
         }
+
+        public enum ForkBlockVersion
+        {
+            ENERGY_LIMIT = 5,
+            VERSION_3_2_2 = 6,
+            VERSION_3_5 = 7,
+            VERSION_3_6 = 8
+        }
+
+        public class ForkBlockVersionParameters
+        {
+            public static readonly int START_NEW_TRANSACTION = 4;
+            public static readonly int ENERGY_LIMIT = 5;
+        }
     }
 }

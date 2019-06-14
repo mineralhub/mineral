@@ -185,6 +185,11 @@ namespace Mineral.Core.Capsule
             set { this.account.DelegatedFrozenBalanceForBandwidth = value; }
         }
 
+        public long AllFrozenBalanceForEnergy
+        {
+            get { return EnergyFrozenBalance + AcquiredDelegatedFrozenBalanceForEnergy; }
+        }
+
         public long AllFrozenBalanceForBandwidth
         {
             get { return FrozenBalance + AcquiredDelegatedFrozenBalanceForBandwidth; }

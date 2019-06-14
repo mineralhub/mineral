@@ -12,18 +12,23 @@ namespace Mineral.Core.Database
     public class Manager
     {
         #region Field
+        private KhaosDatabase khaos_database = null;
+
         private BlockStore block_store = null;
         private BlockIndexStore block_index_store = null;
+        private TransactionStore transaction_store = null;
         private AccountStore account_store = null;
         private WitnessStore witness_store = null;
         private WitnessScheduleStore witness_schedule_store = null;
         private VotesStore votes_store = null;
-        private DynamicPropertiesStore dynamic_properties_store = null;
+        private ProposalStore proposal_store = null;
         private AssetIssueStore asset_issue_store = null;
+        private CodeStore code_store = null;
+        private ContractStore contract_store = null;
+        private StorageRowStore storage_row_store = null;
+        private DynamicPropertiesStore dynamic_properties_store = null;
 
-        private KhaosDatabase khaos_database = null;
         private WitnessController witness_controller = null;
-
         private BlockCapsule genesis_block = null;
         #endregion
 
@@ -31,12 +36,17 @@ namespace Mineral.Core.Database
         #region Property
         public BlockStore Block => this.block_store;
         public BlockIndexStore BlockIndex => this.block_index_store;
+        public TransactionStore Transaction => this.transaction_store;
         public AccountStore Account => this.account_store;
         public WitnessStore Witness => this.witness_store;
         public WitnessScheduleStore WitnessSchedule => this.witness_schedule_store;
         public VotesStore Votes => this.votes_store;
-        public DynamicPropertiesStore DynamicProperties => this.dynamic_properties_store;
+        public ProposalStore Proposal => this.proposal_store;
         public AssetIssueStore AssetIssue => this.asset_issue_store;
+        public CodeStore Code => this.code_store;
+        public ContractStore Contract => this.contract_store;
+        public StorageRowStore StorageRow => this.storage_row_store;
+        public DynamicPropertiesStore DynamicProperties => this.dynamic_properties_store;
 
         public BlockCapsule GenesisBlock => this.genesis_block;
 
@@ -51,19 +61,24 @@ namespace Mineral.Core.Database
         #region Constructor
         public Manager()
         {
-            block_store = new BlockStore("block");
-            block_index_store = new BlockIndexStore("block-index");
-            account_store = new AccountStore(this, "account");
-            witness_store = new WitnessStore("witness");
-            witness_schedule_store = new WitnessScheduleStore("siwtness_schedule");
-            votes_store = new VotesStore("votes");
-            dynamic_properties_store = new DynamicPropertiesStore("properties");
-            asset_issue_store = new AssetIssueStore("asset-issue");
+            this.khaos_database = new KhaosDatabase("block_KDB");
 
-            witness_controller = new WitnessController(this);
+            this.block_store = new BlockStore("block");
+            this.block_index_store = new BlockIndexStore("block-index");
+            this.transaction_store = new TransactionStore(this.block_store, this.khaos_database, "transaction");
+            this.account_store = new AccountStore(this, "account");
+            this.witness_store = new WitnessStore("witness");
+            this.witness_schedule_store = new WitnessScheduleStore("siwtness_schedule");
+            this.votes_store = new VotesStore("votes");
+            this.proposal_store = new ProposalStore("proposal");
+            this.asset_issue_store = new AssetIssueStore("asset-issue");
+            this.code_store = new CodeStore("code");
+            this.contract_store = new ContractStore("contract");
+            this.storage_row_store = new StorageRowStore("storage-row");
+            this.dynamic_properties_store = new DynamicPropertiesStore("properties");
 
-            khaos_database = new KhaosDatabase("block_KDB");
-    }
+            this.witness_controller = new WitnessController(this);
+        }
         #endregion
 
 
