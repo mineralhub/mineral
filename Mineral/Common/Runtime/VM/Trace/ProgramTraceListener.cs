@@ -92,6 +92,14 @@ namespace Mineral.Common.Runtime.VM.Trace
                     actions.AddStoragePut(key, value);
             }
         }
+
+        public OpActions ResetActions()
+        {
+            OpActions result = this.actions;
+            this.actions = new OpActions();
+
+            return result;
+        }
         #endregion
     }
 }
