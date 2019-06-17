@@ -22,5 +22,13 @@ namespace Mineral.Utils
             else
                 dictionary.TryAdd(key, value);
         }
+
+        public static void PutAll<Key, Value>(this Dictionary<Key, Value> dictionary, Dictionary<Key, Value> other)
+        {
+            foreach (var item in other)
+            {
+                dictionary.Put(item.Key, item.Value);
+            }
+        }
     }
 }
