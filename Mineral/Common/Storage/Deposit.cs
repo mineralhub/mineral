@@ -44,6 +44,12 @@ namespace Mineral.Common.Storage
 
         #region Property
         public Manager DBManager => this.db_manager;
+
+        public Deposit Parent
+        {
+            get { return this.parent; }
+            set { this.parent = valuel; }
+        }
         #endregion
 
 
@@ -241,6 +247,11 @@ namespace Mineral.Common.Storage
 
 
         #region External Method
+        public static Deposit CreateRoot(Manager db_manager)
+        {
+            return new Deposit(db_manager, null);
+        }
+
         [MethodImpl(MethodImplOptions.Synchronized)]
         public long AddBalance(byte[] address, long value)
         {
