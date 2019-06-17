@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Text;
 using Mineral.Common.Runtime;
 using Mineral.Common.Runtime.VM;
+using Mineral.Common.Storage;
 using Mineral.Common.Utils;
 using Mineral.Core.Capsule;
 using static Protocol.Transaction.Types.Contract.Types;
@@ -84,7 +85,8 @@ namespace Mineral.Core.Database
         public void Init(BlockCapsule block, bool event_plugin_loaded)
         {
             this.tx_start_time = DateTime.Now.Ticks;
-            Deposit
+            Deposit deposit = Deposit.CreateRoot(this.db_manager);
+            this.runtime = new IRunTime
         }
         #endregion
     }

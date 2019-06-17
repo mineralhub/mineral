@@ -83,6 +83,11 @@ namespace Mineral
             return sb.ToString();
         }
 
+        public static string ToHexString(byte value)
+        {
+            return string.Format("{0:x2}", value);
+        }
+
         public static uint ToTimestamp(this DateTime time)
         {
             return (uint)(time.ToUniversalTime() - unixEpoch).TotalSeconds;
