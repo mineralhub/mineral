@@ -19,11 +19,11 @@ namespace Mineral.Common.Runtime.VM
 
         private HashSet<DataWord> delete_account = null;
         private HashSet<byte[]> touch_account = new HashSet<byte[]>();
-        private List<InternalTransaction> internal_transactions = null;
         private List<LogInfo> log_infos = new List<LogInfo>();
-        private TransactionResultCapsule transaction_result = new TransactionResultCapsule();
+        private List<InternalTransaction> internal_transactions = new List<InternalTransaction>();
         private List<ContractTrigger> triggers = new List<ContractTrigger>();
-        private List<CallCreate> call_create;
+        private List<CallCreate> call_create = new List<CallCreate>();
+        private TransactionResultCapsule transaction_result = new TransactionResultCapsule();
         #endregion
 
 
@@ -133,6 +133,31 @@ namespace Mineral.Common.Runtime.VM
         public void AddCallCreate(byte[] data, byte[] destination, byte[] energy_limit, byte[] value)
         {
             this.call_create.Add(new VM.CallCreate(data, destination, energy_limit, value));
+        }
+
+        public InternalTransaction AddInternalTransaction(byte[] parent_hash,
+                                                          int deep,
+                                                          byte[] sender_address,
+                                                          byte[] transfer_address,
+                                                          long value,
+                                                          byte[] data,
+                                                          String note,
+                                                          long nonce,
+                                                          Dictionary<string, long> token)
+        {
+            InternalTransaction transaction = new InternalTransaction(parent_hash,
+                                                                      deep,
+                                                                      this.internal_transactions.Count,
+                                                                      sender_address,
+                                                                      transfer_address,
+                                                                      value,
+                                                                      data,
+                                                                      note,
+                                                                      nonce,
+                                                                      token);
+            this.internal_transactions.Add(transaction);
+
+            return transaction;
         }
 
         public void AddInternalTransaction(InternalTransaction transsaction)
