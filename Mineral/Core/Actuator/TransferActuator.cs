@@ -114,7 +114,7 @@ namespace Mineral.Core.Actuator
             if (this.contract.Is(TransferContract.Descriptor))
             {
                 throw new ContractValidateException(
-                    "contract type error,expected type [TransferContract],real type[" + contract.GetType().Name + "]");
+                    "contract type error,expected type [TransferContract],real type[" + this.contract.GetType().Name + "]");
             }
 
             long fee = CalcFee();

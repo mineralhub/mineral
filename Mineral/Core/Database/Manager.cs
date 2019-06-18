@@ -23,6 +23,7 @@ namespace Mineral.Core.Database
         private VotesStore votes_store = null;
         private ProposalStore proposal_store = null;
         private AssetIssueStore asset_issue_store = null;
+        private AssetIssueV2Store asset_issue_v2_store = null;
         private CodeStore code_store = null;
         private ContractStore contract_store = null;
         private StorageRowStore storage_row_store = null;
@@ -43,6 +44,7 @@ namespace Mineral.Core.Database
         public VotesStore Votes => this.votes_store;
         public ProposalStore Proposal => this.proposal_store;
         public AssetIssueStore AssetIssue => this.asset_issue_store;
+        public AssetIssueStore AssetIssueV2 => this.asset_issue_v2_store;
         public CodeStore Code => this.code_store;
         public ContractStore Contract => this.contract_store;
         public StorageRowStore StorageRow => this.storage_row_store;
@@ -136,6 +138,14 @@ namespace Mineral.Core.Database
         public BlockCapsule GetBlockByNum(long num)
         {
             return GetBlockById(GetBlockIdByNum(num));
+        }
+
+        public AssetIssueStore GetAssetIssueStoreFinal()
+        {
+            if (DynamicProperties.GetAllowSameTokenName() == 0)
+                return this.asset_issue_store;
+            else
+                return this.asset_issue_v2_store;
         }
 
         public bool LastHeadBlockIsMaintenance()
