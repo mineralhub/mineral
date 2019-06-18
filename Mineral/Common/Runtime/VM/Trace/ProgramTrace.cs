@@ -73,7 +73,7 @@ namespace Mineral.Common.Runtime.VM.Trace
 
         public ProgramTrace SetError(System.Exception exception)
         {
-            Error = (exception != null ? string.Format("{0}: {1}", exception.StackTrace, exception.Message));
+            Error = exception != null ? string.Format("{0}: {1}", exception.StackTrace, exception.Message) : "";
             return this;
         }
 

@@ -31,9 +31,9 @@ namespace Mineral.Common.Runtime.VM.Program.Invoke
                     byte[] data,
                     Deposit deposit,
                     bool static_call,
-                    bool  by_testing_suite,
+                    bool by_testing_suite,
                     long vm_start_us,
                     long vm_should_end_us,
-                    long energy_limit)
+                    long energy_limit);
     }
 }
