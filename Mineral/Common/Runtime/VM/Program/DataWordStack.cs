@@ -18,6 +18,10 @@ namespace Mineral.Common.Runtime.VM.Program
 
 
         #region Property
+        public int Size
+        {
+            get { return this.stack.Count; }
+        }
         #endregion
 
 
