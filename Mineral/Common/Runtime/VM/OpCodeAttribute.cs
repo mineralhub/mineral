@@ -60,15 +60,6 @@ namespace Mineral.Common.Runtime.VM
 
 
         #region Contructor
-        //public OpCodeAttribute(byte op_code, int require, int result, Tier tier, CallFlags[] flags = null)
-        //{
-        //    this.OpCode = op_code;
-        //    this.Require = require;
-        //    this.Result = result;
-        //    this.OpCodeTier = tier;
-        //    this.Flags = new List<CallFlags>(flags);
-        //}
-
         public OpCodeAttribute(byte op_code, int require, int result, Tier tier, params CallFlags[] flags)
         {
             this.OpCode = op_code;
