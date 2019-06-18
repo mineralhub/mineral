@@ -48,7 +48,7 @@ namespace Mineral.Common.Storage
         public Deposit Parent
         {
             get { return this.parent; }
-            set { this.parent = valuel; }
+            set { this.parent = value; }
         }
         #endregion
 
