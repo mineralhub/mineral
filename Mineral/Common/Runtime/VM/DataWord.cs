@@ -8,7 +8,7 @@ using Mineral.Utils;
 
 namespace Mineral.Common.Runtime.VM
 {
-    public class DataWord
+    public class DataWord : IComparable<DataWord>
     {
         #region Field
         public static readonly int WORD_SIZE = 32;
@@ -161,6 +161,15 @@ namespace Mineral.Common.Runtime.VM
             return result;
         }
 
+        public int BytesOccupied()
+        {
+            int firstNonZero = ByteUtil.FirstNonZeroByte(this.data);
+            if (firstNonZero == -1)
+                return 0;
+
+            return WORD_SIZE - firstNonZero;
+        }
+
         public long ToLongSafety()
         {
             int bytesOccupied = BytesOccupied();
@@ -187,13 +196,15 @@ namespace Mineral.Common.Runtime.VM
             return this.data.ToHexString();
         }
 
-        public int BytesOccupied()
+        public int CompareTo(DataWord obj)
         {
-            int firstNonZero = ByteUtil.FirstNonZeroByte(this.data);
-            if (firstNonZero == -1)
-                return 0;
+            if (obj == null || obj.Data == null)
+                return -1;
 
-            return WORD_SIZE - firstNonZero;
+            int result = ByteUtil.Compare(this.data, 0, this.data.Length,
+                                          obj.Data, 0, obj.Data.Length);
+
+            return Math.Sign(result);
         }
         #endregion
     }
