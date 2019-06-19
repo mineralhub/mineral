@@ -28,6 +28,7 @@ namespace Mineral.Common.Runtime.VM
 
 
         #region Property
+        public long EnergyUsed => energy_used;
         public HashSet<DataWord> DeleteAccount => this.delete_account;
         public HashSet<byte[]> TouchAccount => this.touch_account;
         public List<LogInfo> LogInfos => this.log_infos;
