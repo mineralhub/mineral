@@ -66,6 +66,16 @@ namespace Mineral.Common.Runtime.VM.Program
             this.program_listener = listener;
         }
 
+        public DataWord Get(int index)
+        {
+            return this.stack.ElementAt(index);
+        }
+
+        public DataWord Peek()
+        {
+            return this.stack.Peek();
+        }
+
         [MethodImpl(MethodImplOptions.Synchronized)]
         public DataWord Pop()
         {
