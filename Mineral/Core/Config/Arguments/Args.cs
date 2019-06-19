@@ -126,6 +126,7 @@ namespace Mineral.Core.Config.Arguments
         #endregion
 
         private long block_num_Energy_limit = 0;
+        private bool is_solidity_node = false;
         #endregion
 
 
@@ -160,6 +161,12 @@ namespace Mineral.Core.Config.Arguments
         {
             get { return this.witness; }
             set { this.witness = value; }
+        }
+
+        public bool IsSolidityNode
+        {
+            get { return this.is_solidity_node; }
+            set { this.is_solidity_node = value; }
         }
         #endregion
 
