@@ -2,10 +2,10 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace Mineral.Core.Exception
+namespace Mineral.Common.Runtime.VM.Exception
 {
     [Serializable]
-    public class StackTooSmallException : System.Exception
+    public class StackTooSmallException : ByteCodeExecutionException
     {
         public StackTooSmallException() { }
         public StackTooSmallException(string message) : base(message) { }

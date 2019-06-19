@@ -2,10 +2,10 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace Mineral.Core.Exception
+namespace Mineral.Common.Runtime.VM.Exception
 {
     [Serializable]
-    public class TransferException : System.Exception
+    public class TransferException : ByteCodeExecutionException
     {
         public TransferException() { }
         public TransferException(string message) : base(message) { }

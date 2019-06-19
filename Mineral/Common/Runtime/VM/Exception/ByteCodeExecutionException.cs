@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace Mineral.Core.Exception
+namespace Mineral.Common.Runtime.VM.Exception
 {
     [Serializable]
     public class ByteCodeExecutionException : System.Exception
