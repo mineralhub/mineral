@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 using Google.Protobuf;
 using Mineral.Common.Utils;
@@ -14,7 +15,7 @@ namespace Mineral.Core
     public class Wallet
     {
         #region Field
-        private static byte ADDRESS_PREFIX_BYTES = DefineParameter.ADD_PRE_FIX_BYTE_MAINNET;
+        public static byte ADDRESS_PREFIX_BYTES = DefineParameter.ADD_PRE_FIX_BYTE_MAINNET;
 
         private readonly ECKey ec_key = null;
         #endregion
@@ -131,7 +132,7 @@ namespace Mineral.Core
             Array.Copy(tx_hash, 0, combined, 0, tx_hash.Length);
             Array.Copy(owner_address, 0, combined, tx_hash.Length, owner_address.Length);
 
-            return Wallets.WalletAccount.ToAddressHash(combined.SHA256()).ToArray();
+            return Hash.SHA3omit12(combined);
         }
 
         public static byte[] GenerateContractAddress(byte[] owner_address, byte[] tx_hash)
@@ -140,7 +141,23 @@ namespace Mineral.Core
             Array.Copy(tx_hash, 0, combined, 0, tx_hash.Length);
             Array.Copy(owner_address, 0, combined, tx_hash.Length, owner_address.Length);
 
-            return Wallets.WalletAccount.ToAddressHash(combined.SHA256()).ToArray();
+            return Hash.SHA3omit12(combined);
+        }
+
+        public static byte[] GenerateContractAddress(byte[] tx_root_id, long nonce)
+        {
+            byte[] nonce_bytes = BitConverter.GetBytes(nonce);
+            byte[] combined = new byte[tx_root_id.Length + nonce_bytes.Length];
+            Array.Copy(tx_root_id, 0, combined, 0, tx_root_id.Length);
+            Array.Copy(nonce_bytes, 0, combined, tx_root_id.Length, nonce_bytes.Length);
+
+            return Hash.SHA3omit12(combined);
+        }
+
+        public static byte[] GenerateContractAddress2(byte[] address, byte[] salt, byte[] code)
+        {
+            byte[] merge = address.Concat(salt).Concat(Hash.SHA3(code)).ToArray();
+            return Hash.SHA3omit12(merge);
         }
 
         public static byte[] ToMineralAddress(byte[] address)

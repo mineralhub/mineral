@@ -25,7 +25,7 @@ namespace Mineral.Common.Runtime.VM.Program.Invoke
         DataWord GetNumber();
         DataWord GetDifficulty();
         BlockCapsule GetBlockByNum(int index);
-        Deposit GetDeposit();
+        IDeposit GetDeposit();
 
         byte[] GetDataCopy(DataWord offset_data, DataWord length_data);
         bool ByTestingSuite();

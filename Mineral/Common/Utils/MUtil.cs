@@ -9,7 +9,7 @@ namespace Mineral.Common.Utils
 {
     public static class MUtil
     {
-        public static void Transfer(Deposit deposit, byte[] from_address, byte[] to_address, long amount)
+        public static void Transfer(IDeposit deposit, byte[] from_address, byte[] to_address, long amount)
         {
             if (amount == 0)
                 return;
@@ -19,7 +19,7 @@ namespace Mineral.Common.Utils
             deposit.AddBalance(from_address, -amount);
         }
 
-        public static void TransferAllToken(Deposit deposit, byte[] from_address, byte[] to_address)
+        public static void TransferAllToken(IDeposit deposit, byte[] from_address, byte[] to_address)
         {
             AccountCapsule from_account = deposit.GetAccount(from_address);
             AccountCapsule to_account = deposit.GetAccount(to_address);
@@ -35,13 +35,13 @@ namespace Mineral.Common.Utils
             deposit.PutAccountValue(to_address, to_account);
         }
 
-        public static void TransferToken(Deposit deposit, byte[] from_address, byte[] to_address, string token_id, long amount)
+        public static void TransferToken(IDeposit deposit, byte[] from_address, byte[] to_address, string token_id, long amount)
         {
             if (0 == amount)
                 return;
 
             byte[] token = Encoding.UTF8.GetBytes(token_id);
-            TransferAssetActuator.validateForSmartContract(deposit, from_address, to_address, token, amount);
+            TransferAssetActuator.ValidateForSmartContract(deposit, from_address, to_address, token, amount);
             deposit.AddTokenBalance(to_address, token, amount);
             deposit.AddTokenBalance(from_address, token, -amount);
         }

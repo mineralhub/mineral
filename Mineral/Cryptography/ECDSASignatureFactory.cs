@@ -56,5 +56,33 @@ namespace Mineral.Cryptography
 
             return ECDSASignatureFactory.FromComponents(r, s, v);
         }
+
+        public static bool IsLessThan(BigInteger value1, BigInteger value2)
+        {
+            return value1.CompareTo(value2) < 0;
+        }
+
+        public static bool ValidateComponents(BigInteger r, BigInteger s, byte v)
+        {
+            if (v != 27 && v != 28)
+            {
+                return false;
+            }
+
+            if (IsLessThan(r, BigInteger.One))
+            {
+                return false;
+            }
+            if (IsLessThan(s, BigInteger.One))
+            {
+                return false;
+            }
+
+            if (!IsLessThan(r, ECDSASignature.SECP256K1N))
+            {
+                return false;
+            }
+            return IsLessThan(s, ECDSASignature.SECP256K1N);
+        }
     }
 }

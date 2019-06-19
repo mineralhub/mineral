@@ -230,11 +230,9 @@ namespace Mineral.Core.Capsule
                     throw new SignatureFormatException("Signature size is" + sign.Length);
                 }
 
-                ECKey ec_key = ECKey.RecoverFromSignature(
-                                            ECDSASignatureFactory.ExtractECDSASignature(sign.ToByteArray()),
-                                            hash,
-                                            false
-                                            );
+                ECKey ec_key = ECKey.RecoverFromSignature(ECDSASignatureFactory.ExtractECDSASignature(sign.ToByteArray()),
+                                                          hash,
+                                                          false);
 
                 byte[] publickey = ec_key.GetPubKey(false);
                 long weight = GetWeight(permission, ec_key.GetPublicAddress());

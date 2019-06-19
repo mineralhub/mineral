@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Numerics;
 using System.Text;
+using Mineral.Core.Exception;
 using Mineral.Utils;
 
 namespace Mineral.Common.Runtime.VM
@@ -46,6 +47,7 @@ namespace Mineral.Common.Runtime.VM
 
 
         #region Constructor
+        public DataWord() { }
         public DataWord(int num) : this(BitConverter.GetBytes(num)) { }
         public DataWord(long num) : this(BitConverter.GetBytes(num)) { }
         public DataWord(string data) : this(data.HexToBytes()) { }
@@ -58,7 +60,7 @@ namespace Mineral.Common.Runtime.VM
             else if (data.Length < WORD_SIZE)
                 Array.Copy(bytes, 0, this.data, WORD_SIZE - bytes.Length, bytes.Length);
             else
-                throw new Exception("Data word can't exceed 32 bytes : " + bytes.ToHexString());
+                throw new System.Exception("Data word can't exceed 32 bytes : " + bytes.ToHexString());
         }
         #endregion
 
@@ -68,6 +70,14 @@ namespace Mineral.Common.Runtime.VM
 
 
         #region Internal Method
+        private byte[] CopyTo(BigInteger value)
+        {
+            byte[] dest = new byte[32];
+            byte[] src = value.ToByteArray();
+            Array.Copy(src, 0, dest, 0, src.Length);
+
+            return dest;
+        }
         #endregion
 
 
@@ -104,6 +114,22 @@ namespace Mineral.Common.Runtime.VM
             return result;
         }
 
+        public static long SizeInWords(long size)
+        {
+            return size == 0 ? 0 : (size - 1) / WORD_SIZE + 1;
+        }
+
+        public void BNot()
+        {
+            if (this.IsZero)
+            {
+                this.data = CopyTo(MAX_VALUE);
+                return;
+            }
+
+            this.data = CopyTo(BigInteger.Subtract(MAX_VALUE, this.ToBigInteger()));
+        }
+
         public DataWord AND(DataWord target)
         {
             for (int i = 0; i < this.data.Length; i++)
@@ -126,6 +152,126 @@ namespace Mineral.Common.Runtime.VM
                 this.data[i] ^= target.Data[i];
 
             return this;
+        }
+
+        public void Negate()
+        {
+            if (this.IsZero)
+                return;
+
+            BNot();
+            Add(DataWord.ONE);
+        }
+
+        public DataWord ShiftLeft(DataWord value)
+        {
+            if (value.ToBigInteger().CompareTo(new BigInteger(MAX_POW)) >= 0)
+                return DataWord.ZERO;
+
+            BigInteger result = ToBigInteger() << value.ToIntSafety();
+
+            return new DataWord(CopyTo(result & MAX_VALUE));
+        }
+
+        public DataWord ShiftRight(DataWord value)
+        {
+            if (value.ToBigInteger().CompareTo(new BigInteger(MAX_POW)) >= 0)
+                return DataWord.ZERO;
+
+            BigInteger result = ToBigInteger() >> value.ToIntSafety();
+
+            return new DataWord(CopyTo(result & MAX_VALUE));
+        }
+
+        public DataWord shiftRightSigned(DataWord value)
+        {
+            if (value.ToBigInteger().CompareTo(new BigInteger(MAX_POW)) >= 0)
+            {
+                if (this.IsNegative)
+                {
+                    DataWord result = ONE;
+                    result.Negate();
+                    return result;
+                }
+                else
+                {
+                    return ZERO;
+                }
+            }
+
+            return ShiftRight(value);
+        }
+
+        public void Add(DataWord value)
+        {
+            BigInteger result = BigInteger.Add(ToBigInteger(), value.ToBigInteger());
+            this.data = CopyTo(result & MAX_VALUE);
+        }
+
+        public void Sub(DataWord value)
+        {
+            BigInteger result = BigInteger.Subtract(ToBigInteger(), value.ToBigInteger());
+            this.data = CopyTo(result & MAX_VALUE);
+        }
+
+        public void Multiply(DataWord value)
+        {
+            BigInteger result = BigInteger.Multiply(ToBigInteger(), value.ToBigInteger());
+            this.data = CopyTo(result & MAX_VALUE);
+        }
+
+        public void Divide(DataWord value)
+        {
+            if (value.IsZero)
+            {
+                this.AND(value);
+                return;
+            }
+
+            BigInteger result = BigInteger.Divide(ToBigInteger(), value.ToBigInteger());
+            this.data = CopyTo(result & MAX_VALUE);
+        }
+
+        public void Mod(DataWord value)
+        {
+            if (value.IsZero)
+            {
+                this.AND(value);
+                return;
+            }
+
+            BigInteger result = BigInteger.Remainder(ToBigInteger(), value.ToBigInteger());
+            this.data = CopyTo(result & MAX_VALUE);
+        }
+
+        public void ModPow(DataWord word)
+        {
+            BigInteger result = BigInteger.ModPow(ToBigInteger(), word.ToBigInteger(), _2_256);
+            this.data = CopyTo(result);
+        }
+
+        public void AddMod(DataWord word1, DataWord word2)
+        {
+            if (word2.IsZero)
+            {
+                this.data = new byte[32];
+                return;
+            }
+
+            BigInteger result = BigInteger.Add(ToBigInteger(), word1.ToBigInteger()).Mod(word2.ToBigInteger());
+            this.data = CopyTo(result & MAX_VALUE);
+        }
+
+        public void MultipyMod(DataWord word1, DataWord word2)
+        {
+            if (this.IsZero || word1.IsZero || word2.IsZero)
+            {
+                this.data = new byte[32];
+                return;
+            }
+
+            BigInteger result = BigInteger.Multiply(ToBigInteger(), word1.ToBigInteger()).Mod(word2.ToBigInteger());
+            this.data = CopyTo(result & MAX_VALUE);
         }
 
         public int ToInt()
@@ -161,6 +307,29 @@ namespace Mineral.Common.Runtime.VM
             return result;
         }
 
+        public string ToPrefixString()
+        {
+            byte[] prefix = ByteUtil.StripLeadingZeroes(this.data);
+            if (prefix.Length == 0)
+                return "";
+
+            if (prefix.Length < 7)
+                return prefix.ToHexString();
+
+            return prefix.ToHexString().Substring(0, 6);
+        }
+
+        public void SignExtend(byte k)
+        {
+            if (0 > k || k > 31)
+                throw new IndexOutOfBoundsException();
+            byte mask = this.ToBigInteger().TestBit((k * 8) + 7) ? (byte)0xff : (byte)0;
+            for (int i = 31; i > k; i--)
+            {
+                this.data[31 - i] = mask;
+            }
+        }
+
         public int BytesOccupied()
         {
             int firstNonZero = ByteUtil.FirstNonZeroByte(this.data);
@@ -190,6 +359,20 @@ namespace Mineral.Common.Runtime.VM
         {
             return this.data.ToHexString();
         }
+
+        public static string ToShortHex(byte[] data)
+        {
+            byte[] bytes = ByteUtil.StripLeadingZeroes(data);
+            String hex = bytes.ToHexString().ToUpper();
+
+            return "0x" + hex.Replace("^0+(?!$)", "");
+        }
+
+        public String ToShortHex()
+        {
+            return ToShortHex(this.data);
+        }
+
 
         public override string ToString()
         {

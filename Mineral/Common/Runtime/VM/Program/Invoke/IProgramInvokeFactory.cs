@@ -15,7 +15,7 @@ namespace Mineral.Common.Runtime.VM.Program.Invoke
                     long token_value,
                     long token_id,
                     Block block,
-                    Deposit deposit,
+                    IDeposit deposit,
                     long vm_start_us,
                     long vm_should_end_us,
                     long energy_limit);
@@ -29,7 +29,7 @@ namespace Mineral.Common.Runtime.VM.Program.Invoke
                     DataWord token_id,
                     long balance,
                     byte[] data,
-                    Deposit deposit,
+                    IDeposit deposit,
                     bool static_call,
                     bool by_testing_suite,
                     long vm_start_us,

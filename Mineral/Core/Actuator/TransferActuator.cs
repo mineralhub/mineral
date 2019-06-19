@@ -174,7 +174,7 @@ namespace Mineral.Core.Actuator
             return true;
         }
 
-        public static bool ValidateForSmartContract(Deposit deposit, byte[] owner_address, byte[] to_address, long amount)
+        public static bool ValidateForSmartContract(IDeposit deposit, byte[] owner_address, byte[] to_address, long amount)
         {
             if (!Wallet.AddressValid(owner_address))
                 throw new ContractValidateException("Invalid ownerAddress");

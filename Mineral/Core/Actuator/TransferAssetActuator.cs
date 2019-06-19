@@ -204,7 +204,7 @@ namespace Mineral.Core.Actuator
             return true;
         }
 
-        public static bool validateForSmartContract(Deposit deposit, byte[] owner_address, byte[] to_address, byte[] token_id, long amount)
+        public static bool ValidateForSmartContract(IDeposit deposit, byte[] owner_address, byte[] to_address, byte[] token_id, long amount)
         {
             if (deposit == null)
                 throw new ContractValidateException("No deposit!");

@@ -8,6 +8,8 @@ namespace Mineral.Cryptography
     public class ECDSASignature
     {
         private const string InvalidDERSignature = "Invalid DER signature";
+        public static readonly BigInteger SECP256K1N = new BigInteger("fffffffffffffffffffffffffffffffebaaedce6af48a03bbfd25e8cd0364141", 16);
+
 
         public ECDSASignature(BigInteger r, BigInteger s)
         {
@@ -66,6 +68,11 @@ namespace Mineral.Cryptography
             {
                 return false;
             }
+        }
+
+        public bool ValidateComponents()
+        {
+            return ECDSASignatureFactory.ValidateComponents(R, S, V[0]);
         }
 
         public ECDSASignature MakeCanonical()

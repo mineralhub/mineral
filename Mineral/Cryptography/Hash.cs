@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
+using Mineral.Core;
 using Mineral.Core.Capsule.Util;
+using Mineral.Utils;
 using Org.BouncyCastle.Crypto.Digests;
 
 namespace Mineral.Cryptography
@@ -24,6 +26,15 @@ namespace Mineral.Cryptography
             sha3.DoFinal(result, 0);
 
             return result;
+        }
+
+        public static byte[] SHA3omit12(byte[] input)
+        {
+            byte[] hash = SHA3(input);
+            byte[] address = ByteUtil.CopyRange(hash, 11, hash.Length);
+            address[0] = Wallet.ADDRESS_PREFIX_BYTES;
+
+            return address;
         }
     }
 }

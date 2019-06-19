@@ -1,6 +1,8 @@
 ﻿using System;
 using Mineral.Core;
 using Mineral.Core.Config;
+using Mineral.Core.Exception;
+using Mineral.Utils;
 using Org.BouncyCastle.Asn1.Sec;
 using Org.BouncyCastle.Asn1.X9;
 using Org.BouncyCastle.Crypto.Parameters;
@@ -225,6 +227,38 @@ namespace Mineral.Cryptography
             return curve.DecodePoint(compEnc);
         }
 
+        public static byte[] ComputeAddress(byte[] publickey)
+        {
+            return Hash.SHA3omit12(ByteUtil.CopyRange(publickey, 1, publickey.Length));
+        }
 
+        public static byte[] SignatureToAddress(byte[] hash, ECDSASignature signature)
+        {
+            return ComputeAddress(SignatureToKeyBytes(hash, signature));
+        }
+
+        public static byte[] SignatureToKeyBytes(byte[] hash, ECDSASignature signature)
+        {
+            if (hash.Length != 32)
+                throw new ArgumentException("messageHash argument has length " + hash.Length);
+
+            int header = signature.V.ToInt32(0);
+            if (header < 27 || header > 34)
+            {
+                throw new SignatureException("Header byte out of range: " + header);
+            }
+            if (header >= 31)
+            {
+                header -= 4;
+            }
+            int rec_id = header - 27;
+            byte[] key = RecoverFromSignature(rec_id, signature, hash, false).GetPubKey(false);
+            if (key == null)
+            {
+                throw new SignatureException("Could not recover public key from " +
+                    "signature");
+            }
+            return key;
+        }
     }
 }
