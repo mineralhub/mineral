@@ -10,6 +10,7 @@ using System.Numerics;
 using System.Globalization;
 using Mineral.Utils;
 using System.Reflection;
+using System.Diagnostics;
 
 namespace Mineral
 {
@@ -91,6 +92,14 @@ namespace Mineral
         public static uint ToTimestamp(this DateTime time)
         {
             return (uint)(time.ToUniversalTime() - unixEpoch).TotalSeconds;
+        }
+
+        public static long NanoTime()
+        {
+            long nano = 10000L * Stopwatch.GetTimestamp();
+            nano /= TimeSpan.TicksPerMillisecond;
+            nano *= 100L;
+            return nano;
         }
 
         public static byte[] HexToBytes(this string value)

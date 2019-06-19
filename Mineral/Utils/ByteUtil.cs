@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Numerics;
 using System.Text;
 using Google.Protobuf;
 
@@ -7,6 +8,17 @@ namespace Mineral.Utils
 {
     public static class ByteUtil
     {
+        public static byte[] Copy(byte[] source)
+        {
+            if (source == null)
+                throw new ArgumentException("Source is null");
+
+            byte[] result = new byte[source.Length];
+            Array.Copy(source, 0, result, 0, source.Length);
+
+            return result;
+        }
+
         public static byte[] CopyRange(byte[] input, int start, int end)
         {
             int length = end - start;
@@ -121,6 +133,61 @@ namespace Mineral.Utils
             }
 
             return result;
+        }
+
+        private static int NumberOfLeadingZeros(int i)
+        {
+            if (i == 0)
+                return 32;
+            int n = 1;
+            if ((int)((uint)i >> 16) == 0) { n += 16; i <<= 16; }
+            if ((int)((uint)i >> 24) == 0) { n += 8; i <<= 8; }
+            if ((int)((uint)i >> 28) == 0) { n += 4; i <<= 4; }
+            if ((int)((uint)i >> 30) == 0) { n += 2; i <<= 2; }
+            n -= (int)((uint)i >> 31);
+
+            return n;
+        }
+
+        public static int NumberOfLeadingZeros(byte[] bytes)
+        {
+            int result = 0;
+            int i = FirstNonZeroByte(bytes);
+
+            if (i == -1)
+            {
+                result = bytes.Length * 8;
+            }
+            else
+            {
+                int byteLeadingZeros = NumberOfLeadingZeros((int)bytes[i] & 0xff) - 24;
+                result = i * 8 + byteLeadingZeros;
+            }
+
+            return result;
+        }
+
+        public static byte[] ParseBytes(byte[] input, int offset, int len)
+        {
+            if (offset >= input.Length || len == 0)
+            {
+                return new byte[0];
+            }
+
+            byte[] bytes = new byte[len];
+            Array.Copy(input, offset, bytes, 0, Math.Min(input.Length - offset, len));
+
+            return bytes;
+        }
+
+        public static byte[] ParseWord(byte[] input, int idx)
+        {
+            return ParseBytes(input, 32 * idx, 32);
+        }
+
+        public static BigInteger BytesToBigInteger(byte[] value)
+        {
+            return (value == null || value.Length == 0) ? BigInteger.Zero : new BigInteger(value);
         }
     }
 
