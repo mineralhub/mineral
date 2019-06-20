@@ -22,7 +22,7 @@ namespace Mineral.Common.Runtime.VM.Exception
             return NotEnoughOpEnergy(op, op_energy.ToLong(), program_energy.ToLong());
         }
 
-        public static OutOfEnergyException notEnoughSpendEnergy(string hint, long need_energy, long left_energy)
+        public static OutOfEnergyException NotEnoughSpendEnergy(string hint, long need_energy, long left_energy)
         {
             return new OutOfEnergyException(
                 string.Format(
