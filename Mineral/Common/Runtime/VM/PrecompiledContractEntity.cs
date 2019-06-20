@@ -16,7 +16,7 @@ namespace Mineral.Common.Runtime.VM
         {
             public byte[] CallerAddress { get; set; }
             public ProgramResult Result { get; set; }
-            public IDeposit Despoit { get; set; }
+            public IDeposit Desposit { get; set; }
             public bool IsStaticCall { get; set; }
 
             public abstract long GetEnergyForData(byte[] data);
