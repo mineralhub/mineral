@@ -185,6 +185,11 @@ namespace Mineral.Utils
             return ParseBytes(input, 32 * idx, 32);
         }
 
+        public static byte[] ParseWord(byte[] input, int offset, int idx)
+        {
+            return ParseBytes(input, offset + 32 * idx, 32);
+        }
+
         public static BigInteger BytesToBigInteger(byte[] value)
         {
             return (value == null || value.Length == 0) ? BigInteger.Zero : new BigInteger(value);
