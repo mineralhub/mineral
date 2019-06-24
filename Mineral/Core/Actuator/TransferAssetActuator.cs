@@ -118,87 +118,91 @@ namespace Mineral.Core.Actuator
             if (this.db_manager == null)
                 throw new ContractValidateException("No dbManager!");
 
-            if (!this.contract.Is(TransferAssetContract.Descriptor)) {
-                  throw new ContractValidateException(
-                      "contract type error,expected type [TransferAssetContract],real type[" + contract.GetType().Name + "]");
-            }
-            TransferAssetContract transfer_asset_contract = null;
-            try
+            if (this.contract.Is(TransferAssetContract.Descriptor))
             {
-                transfer_asset_contract = this.contract.Unpack< TransferAssetContract>();
-            }
-            catch (InvalidProtocolBufferException e)
-            {
-                Logger.Debug(e.Message);
-                throw new ContractValidateException(e.Message);
-            }
-
-            long fee = CalcFee();
-            byte[] owner_address = transfer_asset_contract.OwnerAddress.ToByteArray();
-            byte[] to_address = transfer_asset_contract.ToAddress.ToByteArray();
-            byte[] asset_name = transfer_asset_contract.AssetName.ToByteArray();
-            long amount = transfer_asset_contract.Amount;
-
-            if (!Wallet.AddressValid(owner_address))
-                throw new ContractValidateException("Invalid ownerAddress");
-
-            if (!Wallet.AddressValid(to_address))
-                throw new ContractValidateException("Invalid toAddress");
-
-            if (amount <= 0)
-                throw new ContractValidateException("Amount must greater than 0.");
-
-            if (owner_address.SequenceEqual(to_address))
-                throw new ContractValidateException("Cannot transfer asset to yourself.");
-
-            AccountCapsule owner_account = this.db_manager.Account.Get(owner_address);
-            if (owner_account == null)
-                throw new ContractValidateException("No owner account!");
-
-            if (!this.db_manager.GetAssetIssueStoreFinal().Contains(asset_name))
-                throw new ContractValidateException("No asset !");
-
-            Dictionary<string, long> asset = this.db_manager.DynamicProperties.GetAllowSameTokenName() == 0 ? owner_account.Asset : owner_account.AssetV2;
-            if (asset == null || asset.Count == 0)
-                throw new ContractValidateException("Owner no asset!");
-
-            asset.TryGetValue(Encoding.UTF8.GetString(asset_name), out long asset_balance);
-            if (asset_balance <= 0)
-                throw new ContractValidateException("assetBalance must greater than 0.");
-
-            if (amount > asset_balance)
-                throw new ContractValidateException("assetBalance is not sufficient.");
-
-            AccountCapsule to_account = this.db_manager.Account.Get(to_address);
-            if (to_account != null)
-            {
-                bool success = false;
-                if (this.db_manager.DynamicProperties.GetAllowSameTokenName() == 0)
-                    success = to_account.Asset.TryGetValue(Encoding.UTF8.GetString(asset_name), out asset_balance);
-                else
-                    success = to_account.AssetV2.TryGetValue(Encoding.UTF8.GetString(asset_name), out asset_balance);
-
-                if (success)
+                TransferAssetContract transfer_asset_contract = null;
+                try
                 {
-                    try
+                    transfer_asset_contract = this.contract.Unpack<TransferAssetContract>();
+                }
+                catch (InvalidProtocolBufferException e)
+                {
+                    Logger.Debug(e.Message);
+                    throw new ContractValidateException(e.Message);
+                }
+
+                long fee = CalcFee();
+                byte[] owner_address = transfer_asset_contract.OwnerAddress.ToByteArray();
+                byte[] to_address = transfer_asset_contract.ToAddress.ToByteArray();
+                byte[] asset_name = transfer_asset_contract.AssetName.ToByteArray();
+                long amount = transfer_asset_contract.Amount;
+
+                if (!Wallet.AddressValid(owner_address))
+                    throw new ContractValidateException("Invalid ownerAddress");
+
+                if (!Wallet.AddressValid(to_address))
+                    throw new ContractValidateException("Invalid toAddress");
+
+                if (amount <= 0)
+                    throw new ContractValidateException("Amount must greater than 0.");
+
+                if (owner_address.SequenceEqual(to_address))
+                    throw new ContractValidateException("Cannot transfer asset to yourself.");
+
+                AccountCapsule owner_account = this.db_manager.Account.Get(owner_address);
+                if (owner_account == null)
+                    throw new ContractValidateException("No owner account!");
+
+                if (!this.db_manager.GetAssetIssueStoreFinal().Contains(asset_name))
+                    throw new ContractValidateException("No asset !");
+
+                Dictionary<string, long> asset = this.db_manager.DynamicProperties.GetAllowSameTokenName() == 0 ? owner_account.Asset : owner_account.AssetV2;
+                if (asset == null || asset.Count == 0)
+                    throw new ContractValidateException("Owner no asset!");
+
+                asset.TryGetValue(Encoding.UTF8.GetString(asset_name), out long asset_balance);
+                if (asset_balance <= 0)
+                    throw new ContractValidateException("assetBalance must greater than 0.");
+
+                if (amount > asset_balance)
+                    throw new ContractValidateException("assetBalance is not sufficient.");
+
+                AccountCapsule to_account = this.db_manager.Account.Get(to_address);
+                if (to_account != null)
+                {
+                    bool success = false;
+                    if (this.db_manager.DynamicProperties.GetAllowSameTokenName() == 0)
+                        success = to_account.Asset.TryGetValue(Encoding.UTF8.GetString(asset_name), out asset_balance);
+                    else
+                        success = to_account.AssetV2.TryGetValue(Encoding.UTF8.GetString(asset_name), out asset_balance);
+
+                    if (success)
                     {
-                        asset_balance = asset_balance + amount;
+                        try
+                        {
+                            asset_balance = asset_balance + amount;
+                        }
+                        catch (System.Exception e)
+                        {
+                            Logger.Debug(e.Message);
+                            throw new ContractValidateException(e.Message);
+                        }
                     }
-                    catch (System.Exception e)
+                }
+                else
+                {
+                    fee = fee + this.db_manager.DynamicProperties.GetCreateNewAccountFeeInSystemContract();
+                    if (owner_account.Balance < fee)
                     {
-                        Logger.Debug(e.Message);
-                        throw new ContractValidateException(e.Message);
+                        throw new ContractValidateException(
+                            "Validate TransferAssetActuator error, insufficient fee.");
                     }
                 }
             }
             else
             {
-                fee = fee + this.db_manager.DynamicProperties.GetCreateNewAccountFeeInSystemContract();
-                if (owner_account.Balance < fee)
-                {
-                    throw new ContractValidateException(
-                        "Validate TransferAssetActuator error, insufficient fee.");
-                }
+                  throw new ContractValidateException(
+                      "contract type error,expected type [TransferAssetContract],real type[" + contract.GetType().Name + "]");
             }
 
             return true;

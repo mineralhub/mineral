@@ -84,51 +84,53 @@ namespace Mineral.Core.Actuator
             if (this.db_manager == null)
                 throw new ContractValidateException("No dbManager!");
 
-            if (this.contract is AccountUpdateContract)
+            if (this.contract.Is(AccountUpdateContract.Descriptor))
+            {
+                AccountUpdateContract account_update_contract;
+                try
+                {
+                    account_update_contract = contract.Unpack<AccountUpdateContract>();
+                }
+                catch (InvalidProtocolBufferException e)
+                {
+                    Logger.Debug(e.Message);
+                    throw new ContractValidateException(e.Message);
+                }
+
+                byte[] owner_address = account_update_contract.OwnerAddress.ToByteArray();
+                byte[] account_name = account_update_contract.AccountName.ToByteArray();
+
+                if (!TransactionUtil.ValidAccountName(account_name))
+                {
+                    throw new ContractValidateException("Invalid accountName");
+                }
+                if (!Wallet.AddressValid(owner_address))
+                {
+                    throw new ContractValidateException("Invalid ownerAddress");
+                }
+
+                AccountCapsule account = db_manager.Account.Get(owner_address);
+                if (account == null)
+                {
+                    throw new ContractValidateException("Account has not existed");
+                }
+
+                if (account.AccountName != null && !account.AccountName.IsEmpty
+                    && db_manager.DynamicProperties.GetAllowUpdateAccountName() == 0)
+                {
+                    throw new ContractValidateException("This account name already exist");
+                }
+
+                if (db_manager.AccountIndex.Contains(account_name)
+                    && db_manager.DynamicProperties.GetAllowUpdateAccountName() == 0)
+                {
+                    throw new ContractValidateException("This name has existed");
+                }
+            }
+            else
             {
                 throw new ContractValidateException(
                             "contract type error,expected type [AccountUpdateContract], real type[" + contract.GetType().Name + "]");
-            }
-
-            AccountUpdateContract account_update_contract;
-            try
-            {
-                account_update_contract = contract.Unpack<AccountUpdateContract>();
-            }
-            catch (InvalidProtocolBufferException e)
-            {
-                Logger.Debug(e.Message);
-                throw new ContractValidateException(e.Message);
-            }
-
-            byte[] owner_address = account_update_contract.OwnerAddress.ToByteArray();
-            byte[] account_name = account_update_contract.AccountName.ToByteArray();
-
-            if (!TransactionUtil.ValidAccountName(account_name))
-            {
-                throw new ContractValidateException("Invalid accountName");
-            }
-            if (!Wallet.AddressValid(owner_address))
-            {
-                throw new ContractValidateException("Invalid ownerAddress");
-            }
-
-            AccountCapsule account = db_manager.Account.Get(owner_address);
-            if (account == null)
-            {
-                throw new ContractValidateException("Account has not existed");
-            }
-
-            if (account.AccountName != null && !account.AccountName.IsEmpty
-                && db_manager.DynamicProperties.GetAllowUpdateAccountName() == 0)
-            {
-                throw new ContractValidateException("This account name already exist");
-            }
-
-            if (db_manager.AccountIndex.Contains(account_name)
-                && db_manager.DynamicProperties.GetAllowUpdateAccountName() == 0)
-            {
-                throw new ContractValidateException("This name has existed");
             }
 
             return true;

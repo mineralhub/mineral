@@ -80,42 +80,44 @@ namespace Mineral.Core.Actuator
             if (this.db_manager == null)
                 throw new ContractValidateException("No dbManager!");
 
-            if (!(this.contract is WitnessUpdateContract))
+            if (this.contract.Is(WitnessUpdateContract.Descriptor))
+            {
+                WitnessUpdateContract witness_update_contract = null;
+                try
+                {
+                    witness_update_contract = this.contract.Unpack<WitnessUpdateContract>();
+                }
+                catch (InvalidProtocolBufferException e)
+                {
+                    Logger.Debug(e.Message);
+                    throw new ContractValidateException(e.Message);
+                }
+
+                byte[] owner_address = witness_update_contract.OwnerAddress.ToByteArray();
+                if (!Wallet.AddressValid(owner_address))
+                {
+                    throw new ContractValidateException("Invalid address");
+                }
+
+                if (!this.db_manager.Account.Contains(owner_address))
+                {
+                    throw new ContractValidateException("account does not exist");
+                }
+
+                if (!TransactionUtil.ValidUrl(witness_update_contract.UpdateUrl.ToByteArray()))
+                {
+                    throw new ContractValidateException("Invalid url");
+                }
+
+                if (!this.db_manager.Witness.Contains(owner_address))
+                {
+                    throw new ContractValidateException("Witness does not exist");
+                }
+            }
+            else
             {
                 throw new ContractValidateException(
                         "contract type error,expected type [WitnessUpdateContract],real type[" + contract.GetType().Name + "]");
-            }
-
-            WitnessUpdateContract witness_update_contract = null;
-            try
-            {
-                witness_update_contract = this.contract.Unpack<WitnessUpdateContract>();
-            }
-            catch (InvalidProtocolBufferException e)
-            {
-                Logger.Debug(e.Message);
-                throw new ContractValidateException(e.Message);
-            }
-
-            byte[] owner_address = witness_update_contract.OwnerAddress.ToByteArray();
-            if (!Wallet.AddressValid(owner_address))
-            {
-                throw new ContractValidateException("Invalid address");
-            }
-
-            if (!this.db_manager.Account.Contains(owner_address))
-            {
-                throw new ContractValidateException("account does not exist");
-            }
-
-            if (!TransactionUtil.ValidUrl(witness_update_contract.UpdateUrl.ToByteArray()))
-            {
-                throw new ContractValidateException("Invalid url");
-            }
-
-            if (!this.db_manager.Witness.Contains(owner_address))
-            {
-                throw new ContractValidateException("Witness does not exist");
             }
 
             return true;

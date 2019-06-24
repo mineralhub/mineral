@@ -88,47 +88,49 @@ namespace Mineral.Core.Actuator
             if (this.db_manager == null)
                 throw new ContractValidateException("No dbManager!");
 
-            if (!(this.contract is AccountCreateContract))
+            if (this.contract.Is(AccountCreateContract.Descriptor))
+            {
+                AccountCreateContract account_create_contract = null;
+                try
+                {
+                    account_create_contract = this.contract.Unpack<AccountCreateContract>();
+                }
+                catch (InvalidProtocolBufferException e)
+                {
+                    Logger.Debug(e.Message);
+                    throw new ContractValidateException(e.Message);
+                }
+
+                byte[] owner_address = account_create_contract.OwnerAddress.ToByteArray();
+                if (!Wallet.AddressValid(owner_address))
+                    throw new ContractValidateException("Invalid ownerAddress");
+
+                AccountCapsule account = this.db_manager.Account.Get(owner_address);
+                if (account == null)
+                {
+                    throw new ContractValidateException(
+                        "Account[" + owner_address.ToHexString() + "] not exists");
+                }
+
+                long fee = CalcFee();
+                if (account.Balance < fee)
+                {
+                    throw new ContractValidateException(
+                        "Validate CreateAccountActuator error, insufficient fee.");
+                }
+
+                byte[] account_address = account_create_contract.AccountAddress.ToByteArray();
+                if (!Wallet.AddressValid(account_address))
+                    throw new ContractValidateException("Invalid account address");
+
+                if (this.db_manager.Account.Contains(account_address))
+                    throw new ContractValidateException("Account has existed");
+            }
+            else
             {
                 throw new ContractValidateException(
                     "contract type error,expected type [AccountCreateContract],real type[" + contract.GetType().Name + "]");
             }
-
-            AccountCreateContract account_create_contract = null;
-            try
-            {
-                account_create_contract = this.contract.Unpack<AccountCreateContract>();
-            }
-            catch (InvalidProtocolBufferException e)
-            {
-                Logger.Debug(e.Message);
-                throw new ContractValidateException(e.Message);
-            }
-
-            byte[] owner_address = account_create_contract.OwnerAddress.ToByteArray();
-            if (!Wallet.AddressValid(owner_address))
-                throw new ContractValidateException("Invalid ownerAddress");
-
-            AccountCapsule account = this.db_manager.Account.Get(owner_address);
-            if (account == null)
-            {
-                throw new ContractValidateException(
-                    "Account[" + owner_address.ToHexString() + "] not exists");
-            }
-
-            long fee = CalcFee();
-            if (account.Balance < fee)
-            {
-                throw new ContractValidateException(
-                    "Validate CreateAccountActuator error, insufficient fee.");
-            }
-
-            byte[] account_address = account_create_contract.AccountAddress.ToByteArray();
-            if (!Wallet.AddressValid(account_address))
-                throw new ContractValidateException("Invalid account address");
-
-            if (this.db_manager.Account.Contains(account_address))
-                throw new ContractValidateException("Account has existed");
 
             return true;
         }

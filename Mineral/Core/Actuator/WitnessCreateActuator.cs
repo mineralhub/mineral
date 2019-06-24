@@ -108,51 +108,54 @@ namespace Mineral.Core.Actuator
             {
                 throw new ContractValidateException("No dbManager!");
             }
-            if (!(this.contract is WitnessCreateContract))
+
+            if (this.contract.Is(WitnessCreateContract.Descriptor))
+            {
+                WitnessCreateContract witness_create_contract = null;
+                try
+                {
+                    witness_create_contract = this.contract.Unpack<WitnessCreateContract>();
+                }
+                catch (InvalidProtocolBufferException e)
+                {
+                    throw new ContractValidateException(e.Message);
+                }
+
+                byte[] owner_address = witness_create_contract.OwnerAddress.ToByteArray();
+                string owner_address_str = owner_address.ToHexString();
+
+                if (!Wallet.AddressValid(owner_address))
+                {
+                    throw new ContractValidateException("Invalid address");
+                }
+
+                if (!TransactionUtil.ValidUrl(witness_create_contract.Url.ToByteArray()))
+                {
+                    throw new ContractValidateException("Invalid url");
+                }
+
+                AccountCapsule account = this.db_manager.Account.Get(owner_address);
+
+                if (account == null)
+                {
+                    throw new ContractValidateException("account[" + owner_address_str + "] not exists");
+                }
+
+
+                if (this.db_manager.Witness.Contains(owner_address))
+                {
+                    throw new ContractValidateException("Witness[" + owner_address_str + "] has existed");
+                }
+
+                if (account.Balance < this.db_manager.DynamicProperties.GetAccountUpgradeCost())
+                {
+                    throw new ContractValidateException("balance < AccountUpgradeCost");
+                }
+            }
+            else
             {
                 throw new ContractValidateException(
                     "contract type error,expected type [WitnessCreateContract],real type[" + this.contract.GetType().Name + "]");
-            }
-
-            WitnessCreateContract witness_create_contract = null;
-            try
-            {
-                witness_create_contract = this.contract.Unpack<WitnessCreateContract>();
-            }
-            catch (InvalidProtocolBufferException e)
-            {
-                throw new ContractValidateException(e.Message);
-            }
-
-            byte[] owner_address = witness_create_contract.OwnerAddress.ToByteArray();
-            string owner_address_str = owner_address.ToHexString();
-
-            if (!Wallet.AddressValid(owner_address))
-            {
-                throw new ContractValidateException("Invalid address");
-            }
-
-            if (!TransactionUtil.ValidUrl(witness_create_contract.Url.ToByteArray()))
-            {
-                throw new ContractValidateException("Invalid url");
-            }
-
-            AccountCapsule account = this.db_manager.Account.Get(owner_address);
-
-            if (account == null)
-            {
-                throw new ContractValidateException("account[" + owner_address_str + "] not exists");
-            }
-
-
-            if (this.db_manager.Witness.Contains(owner_address))
-            {
-                throw new ContractValidateException("Witness[" + owner_address_str + "] has existed");
-            }
-
-            if (account.Balance < this.db_manager.DynamicProperties.GetAccountUpgradeCost())
-            {
-                throw new ContractValidateException("balance < AccountUpgradeCost");
             }
 
             return true;

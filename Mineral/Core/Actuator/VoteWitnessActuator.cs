@@ -124,103 +124,105 @@ namespace Mineral.Core.Actuator
             if (this.db_manager == null && (this.deposit == null || this.deposit.DBManager == null))
                 throw new ContractValidateException("No dbManager!");
 
-            if (!(this.contract is VoteWitnessContract))
+            if (this.contract.Is(VoteWitnessContract.Descriptor))
             {
-                throw new ContractValidateException(
-                    "contract type error,expected type [VoteWitnessContract],real type[" + contract.GetType().Name + "]");
-            }
-
-            VoteWitnessContract witness_contract = null;
-            try
-            {
-                witness_contract = this.contract.Unpack<VoteWitnessContract>();
-            }
-            catch (InvalidProtocolBufferException e)
-            {
-                Logger.Debug(e.Message);
-                throw new ContractValidateException(e.Message);
-            }
-
-            if (!Wallet.AddressValid(witness_contract.OwnerAddress.ToByteArray()))
-            {
-                throw new ContractValidateException("Invalid address");
-            }
-
-            byte[] owner_address = witness_contract.OwnerAddress.ToByteArray();
-            string owner_address_str = owner_address.ToHexString();
-            if (witness_contract.Votes.Count == 0)
-            {
-                throw new ContractValidateException("VoteNumber must more than 0");
-            }
-
-            int max_vote = Parameter.ChainParameters.MAX_VOTE_NUMBER;
-            if (witness_contract.Votes.Count > max_vote)
-            {
-                throw new ContractValidateException("VoteNumber more than maxVoteNumber " + max_vote);
-            }
-
-            try
-            {
-                long sum = 0;
-                foreach (VoteWitnessContract.Types.Vote vote in witness_contract.Votes)
+                VoteWitnessContract witness_contract = null;
+                try
                 {
-                    byte[] witness_candidate = vote.VoteAddress.ToByteArray();
-                    if (!Wallet.AddressValid(witness_candidate))
-                        throw new ContractValidateException("Invalid vote address!");
+                    witness_contract = this.contract.Unpack<VoteWitnessContract>();
+                }
+                catch (InvalidProtocolBufferException e)
+                {
+                    Logger.Debug(e.Message);
+                    throw new ContractValidateException(e.Message);
+                }
 
-                    if (vote.VoteCount <= 0)
-                        throw new ContractValidateException("vote count must be greater than 0");
+                if (!Wallet.AddressValid(witness_contract.OwnerAddress.ToByteArray()))
+                {
+                    throw new ContractValidateException("Invalid address");
+                }
 
-                    string witness_address_str = vote.VoteAddress.ToHexString();
-                    if (Deposit != null)
+                byte[] owner_address = witness_contract.OwnerAddress.ToByteArray();
+                string owner_address_str = owner_address.ToHexString();
+                if (witness_contract.Votes.Count == 0)
+                {
+                    throw new ContractValidateException("VoteNumber must more than 0");
+                }
+
+                int max_vote = Parameter.ChainParameters.MAX_VOTE_NUMBER;
+                if (witness_contract.Votes.Count > max_vote)
+                {
+                    throw new ContractValidateException("VoteNumber more than maxVoteNumber " + max_vote);
+                }
+
+                try
+                {
+                    long sum = 0;
+                    foreach (VoteWitnessContract.Types.Vote vote in witness_contract.Votes)
                     {
-                        if (Deposit.GetAccount(witness_candidate) == null)
+                        byte[] witness_candidate = vote.VoteAddress.ToByteArray();
+                        if (!Wallet.AddressValid(witness_candidate))
+                            throw new ContractValidateException("Invalid vote address!");
+
+                        if (vote.VoteCount <= 0)
+                            throw new ContractValidateException("vote count must be greater than 0");
+
+                        string witness_address_str = vote.VoteAddress.ToHexString();
+                        if (Deposit != null)
+                        {
+                            if (Deposit.GetAccount(witness_candidate) == null)
+                            {
+                                throw new ContractValidateException(
+                                    ActuatorParameter.ACCOUNT_EXCEPTION_STR + witness_address_str + ActuatorParameter.NOT_EXIST_STR);
+                            }
+                        }
+                        else if (!db_manager.Account.Contains(witness_candidate))
                         {
                             throw new ContractValidateException(
                                 ActuatorParameter.ACCOUNT_EXCEPTION_STR + witness_address_str + ActuatorParameter.NOT_EXIST_STR);
                         }
-                    }
-                    else if (!db_manager.Account.Contains(witness_candidate))
-                    {
-                        throw new ContractValidateException(
-                            ActuatorParameter.ACCOUNT_EXCEPTION_STR + witness_address_str + ActuatorParameter.NOT_EXIST_STR);
-                    }
-                    if (Deposit != null)
-                    {
-                        if (Deposit.GetWitness(witness_candidate) == null)
+                        if (Deposit != null)
+                        {
+                            if (Deposit.GetWitness(witness_candidate) == null)
+                            {
+                                throw new ContractValidateException(
+                                    ActuatorParameter.WITNESS_EXCEPTION_STR + witness_address_str + ActuatorParameter.NOT_EXIST_STR);
+                            }
+                        }
+                        else if (!db_manager.Witness.Contains(witness_candidate))
                         {
                             throw new ContractValidateException(
                                 ActuatorParameter.WITNESS_EXCEPTION_STR + witness_address_str + ActuatorParameter.NOT_EXIST_STR);
                         }
+                        sum += vote.VoteCount;
                     }
-                    else if (!db_manager.Witness.Contains(witness_candidate))
+
+                    AccountCapsule account = Deposit == null ? db_manager.Account.Get(owner_address) : Deposit.GetAccount(owner_address);
+                    if (account == null)
                     {
                         throw new ContractValidateException(
-                            ActuatorParameter.WITNESS_EXCEPTION_STR + witness_address_str + ActuatorParameter.NOT_EXIST_STR);
+                            ActuatorParameter.ACCOUNT_EXCEPTION_STR + owner_address_str + ActuatorParameter.NOT_EXIST_STR);
                     }
-                    sum += vote.VoteCount;
+
+                    long power = account.GetMineralPower();
+
+                    sum += 1000000L;
+                    if (sum > power)
+                    {
+                        throw new ContractValidateException(
+                            "The total number of votes[" + sum + "] is greater than the tronPower[" + power + "]");
+                    }
                 }
-
-                AccountCapsule account = Deposit == null ? db_manager.Account.Get(owner_address) : Deposit.GetAccount(owner_address);
-                if (account == null)
+                catch (ArithmeticException e)
                 {
-                    throw new ContractValidateException(
-                        ActuatorParameter.ACCOUNT_EXCEPTION_STR + owner_address_str + ActuatorParameter.NOT_EXIST_STR);
-                }
-
-                long power = account.GetMineralPower();
-
-                sum += 1000000L;
-                if (sum > power)
-                {
-                    throw new ContractValidateException(
-                        "The total number of votes[" + sum + "] is greater than the tronPower[" + power + "]");
+                    Logger.Debug(e.Message);
+                    throw new ContractValidateException(e.Message);
                 }
             }
-            catch (ArithmeticException e)
+            else
             {
-                Logger.Debug(e.Message);
-                throw new ContractValidateException(e.Message);
+                throw new ContractValidateException(
+                    "contract type error,expected type [VoteWitnessContract],real type[" + contract.GetType().Name + "]");
             }
 
             return true;

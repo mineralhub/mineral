@@ -140,161 +140,164 @@ namespace Mineral.Core.Actuator
             if (this.db_manager == null)
                 throw new ContractValidateException("No dbManager!");
 
-            if (!(this.contract is AssetIssueContract))
+            if (this.contract.Is(AssetIssueContract.Descriptor))
+            {
+
+                AssetIssueContract asset_issue_contract = null;
+                try
+                {
+                    asset_issue_contract = this.contract.Unpack<AssetIssueContract>();
+                }
+                catch (InvalidProtocolBufferException e)
+                {
+                    Logger.Debug(e.Message);
+                    throw new ContractValidateException(e.Message);
+                }
+
+                byte[] owner_address = asset_issue_contract.OwnerAddress.ToByteArray();
+                if (!Wallet.AddressValid(owner_address))
+                    throw new ContractValidateException("Invalid ownerAddress");
+
+                if (!TransactionUtil.ValidAssetName(asset_issue_contract.Name.ToByteArray()))
+                    throw new ContractValidateException("Invalid assetName");
+
+                if (this.db_manager.DynamicProperties.GetAllowSameTokenName() != 0)
+                {
+                    string name = asset_issue_contract.Name.ToStringUtf8().ToLower();
+                    if (name.Equals("tx"))
+                    {
+                        throw new ContractValidateException("assetName can't be tx");
+                    }
+                }
+
+                int precision = asset_issue_contract.Precision;
+                if (precision != 0 && this.db_manager.DynamicProperties.GetAllowSameTokenName() != 0)
+                {
+                    if (precision < 0 || precision > 6)
+                    {
+                        throw new ContractValidateException("precision cannot exceed 6");
+                    }
+                }
+
+                if ((!asset_issue_contract.Abbr.IsEmpty) && !TransactionUtil.ValidAssetName(asset_issue_contract.Abbr.ToByteArray()))
+                {
+                    throw new ContractValidateException("Invalid abbreviation for token");
+                }
+
+                if (!TransactionUtil.ValidUrl(asset_issue_contract.Url.ToByteArray()))
+                {
+                    throw new ContractValidateException("Invalid url");
+                }
+
+                if (!TransactionUtil.ValidAssetDescription(asset_issue_contract.Description.ToByteArray()))
+                {
+                    throw new ContractValidateException("Invalid description");
+                }
+
+                if (asset_issue_contract.StartTime == 0)
+                {
+                    throw new ContractValidateException("Start time should be not empty");
+                }
+                if (asset_issue_contract.EndTime == 0)
+                {
+                    throw new ContractValidateException("End time should be not empty");
+                }
+                if (asset_issue_contract.EndTime <= asset_issue_contract.StartTime)
+                {
+                    throw new ContractValidateException("End time should be greater than start time");
+                }
+                if (asset_issue_contract.StartTime <= this.db_manager.GetHeadBlockTimestamp())
+                {
+                    throw new ContractValidateException("Start time should be greater than HeadBlockTime");
+                }
+
+                if (this.db_manager.DynamicProperties.GetAllowSameTokenName() == 0
+                    && this.db_manager.AssetIssue.Get(asset_issue_contract.Name.ToByteArray()) != null)
+                {
+                    throw new ContractValidateException("Token exists");
+                }
+
+                if (asset_issue_contract.TotalSupply <= 0)
+                {
+                    throw new ContractValidateException("TotalSupply must greater than 0!");
+                }
+
+                if (asset_issue_contract.TrxNum <= 0)
+                {
+                    throw new ContractValidateException("TrxNum must greater than 0!");
+                }
+
+                if (asset_issue_contract.Num <= 0)
+                {
+                    throw new ContractValidateException("Num must greater than 0!");
+                }
+
+                if (asset_issue_contract.PublicFreeAssetNetUsage != 0)
+                {
+                    throw new ContractValidateException("PublicFreeAssetNetUsage must be 0!");
+                }
+
+                if (asset_issue_contract.FrozenSupply.Count > this.db_manager.DynamicProperties.GetMaxFrozenSupplyNumber())
+                {
+                    throw new ContractValidateException("Frozen supply list length is too long");
+                }
+
+                if (asset_issue_contract.FreeAssetNetLimit < 0
+                    || asset_issue_contract.FreeAssetNetLimit >= this.db_manager.DynamicProperties.GetOneDayNetLimit())
+                {
+                    throw new ContractValidateException("Invalid FreeAssetNetLimit");
+                }
+
+                if (asset_issue_contract.PublicFreeAssetNetLimit < 0
+                    || asset_issue_contract.PublicFreeAssetNetLimit >= this.db_manager.DynamicProperties.GetOneDayNetLimit())
+                {
+                    throw new ContractValidateException("Invalid PublicFreeAssetNetLimit");
+                }
+
+                long remain_supply = asset_issue_contract.TotalSupply;
+                long min_frozen_time = this.db_manager.DynamicProperties.GetMinFrozenSupplyTime();
+                long max_frozen_time = this.db_manager.DynamicProperties.GetMaxFrozenSupplyTime();
+
+                foreach (AssetIssueContract.Types.FrozenSupply frozen in asset_issue_contract.FrozenSupply)
+                {
+                    if (frozen.FrozenAmount <= 0)
+                    {
+                        throw new ContractValidateException("Frozen supply must be greater than 0!");
+                    }
+                    if (frozen.FrozenAmount > remain_supply)
+                    {
+                        throw new ContractValidateException("Frozen supply cannot exceed total supply");
+                    }
+                    if (!(frozen.FrozenDays >= min_frozen_time
+                        && frozen.FrozenDays <= max_frozen_time))
+                    {
+                        throw new ContractValidateException(
+                            "frozenDuration must be less than " + max_frozen_time + " days "
+                                + "and more than " + min_frozen_time + " days");
+                    }
+                    remain_supply -= frozen.FrozenAmount;
+                }
+
+                AccountCapsule account = this.db_manager.Account.Get(owner_address);
+                if (account == null)
+                {
+                    throw new ContractValidateException("Account not exists");
+                }
+
+                if (!account.AssetIssuedName.IsEmpty)
+                {
+                    throw new ContractValidateException("An account can only issue one asset");
+                }
+
+                if (account.Balance < CalcFee())
+                {
+                    throw new ContractValidateException("No enough balance for fee!");
+                }
+            }
+            else
             {
                 throw new ContractValidateException(
                     "contract type error,expected type [AssetIssueContract],real type[" + contract.GetType().Name + "]");
-            }
-
-            AssetIssueContract asset_issue_contract = null;
-            try
-            {
-                asset_issue_contract = this.contract.Unpack<AssetIssueContract>();
-            }
-            catch (InvalidProtocolBufferException e)
-            {
-                Logger.Debug(e.Message);
-                throw new ContractValidateException(e.Message);
-            }
-
-            byte[] owner_address = asset_issue_contract.OwnerAddress.ToByteArray();
-            if (!Wallet.AddressValid(owner_address))
-                throw new ContractValidateException("Invalid ownerAddress");
-
-            if (!TransactionUtil.ValidAssetName(asset_issue_contract.Name.ToByteArray()))
-                throw new ContractValidateException("Invalid assetName");
-
-            if (this.db_manager.DynamicProperties.GetAllowSameTokenName() != 0)
-            {
-                string name = asset_issue_contract.Name.ToStringUtf8().ToLower();
-                if (name.Equals("tx"))
-                {
-                    throw new ContractValidateException("assetName can't be tx");
-                }
-            }
-
-            int precision = asset_issue_contract.Precision;
-            if (precision != 0 && this.db_manager.DynamicProperties.GetAllowSameTokenName() != 0)
-            {
-                if (precision < 0 || precision > 6)
-                {
-                    throw new ContractValidateException("precision cannot exceed 6");
-                }
-            }
-
-            if ((!asset_issue_contract.Abbr.IsEmpty) && !TransactionUtil.ValidAssetName(asset_issue_contract.Abbr.ToByteArray()))
-            {
-                throw new ContractValidateException("Invalid abbreviation for token");
-            }
-
-            if (!TransactionUtil.ValidUrl(asset_issue_contract.Url.ToByteArray()))
-            {
-                throw new ContractValidateException("Invalid url");
-            }
-
-            if (!TransactionUtil.ValidAssetDescription(asset_issue_contract.Description.ToByteArray()))
-            {
-                throw new ContractValidateException("Invalid description");
-            }
-
-            if (asset_issue_contract.StartTime == 0)
-            {
-                throw new ContractValidateException("Start time should be not empty");
-            }
-            if (asset_issue_contract.EndTime == 0)
-            {
-                throw new ContractValidateException("End time should be not empty");
-            }
-            if (asset_issue_contract.EndTime <= asset_issue_contract.StartTime)
-            {
-                throw new ContractValidateException("End time should be greater than start time");
-            }
-            if (asset_issue_contract.StartTime <= this.db_manager.GetHeadBlockTimestamp())
-            {
-                throw new ContractValidateException("Start time should be greater than HeadBlockTime");
-            }
-
-            if (this.db_manager.DynamicProperties.GetAllowSameTokenName() == 0
-                && this.db_manager.AssetIssue.Get(asset_issue_contract.Name.ToByteArray()) != null)
-            {
-                throw new ContractValidateException("Token exists");
-            }
-
-            if (asset_issue_contract.TotalSupply <= 0)
-            {
-                throw new ContractValidateException("TotalSupply must greater than 0!");
-            }
-
-            if (asset_issue_contract.TrxNum <= 0)
-            {
-                throw new ContractValidateException("TrxNum must greater than 0!");
-            }
-
-            if (asset_issue_contract.Num <= 0)
-            {
-                throw new ContractValidateException("Num must greater than 0!");
-            }
-
-            if (asset_issue_contract.PublicFreeAssetNetUsage != 0)
-            {
-                throw new ContractValidateException("PublicFreeAssetNetUsage must be 0!");
-            }
-
-            if (asset_issue_contract.FrozenSupply.Count > this.db_manager.DynamicProperties.GetMaxFrozenSupplyNumber())
-            {
-                throw new ContractValidateException("Frozen supply list length is too long");
-            }
-
-            if (asset_issue_contract.FreeAssetNetLimit < 0
-                || asset_issue_contract.FreeAssetNetLimit >= this.db_manager.DynamicProperties.GetOneDayNetLimit())
-            {
-                throw new ContractValidateException("Invalid FreeAssetNetLimit");
-            }
-
-            if (asset_issue_contract.PublicFreeAssetNetLimit < 0
-                || asset_issue_contract.PublicFreeAssetNetLimit >= this.db_manager.DynamicProperties.GetOneDayNetLimit())
-            {
-                throw new ContractValidateException("Invalid PublicFreeAssetNetLimit");
-            }
-
-            long remain_supply = asset_issue_contract.TotalSupply;
-            long min_frozen_time = this.db_manager.DynamicProperties.GetMinFrozenSupplyTime();
-            long max_frozen_time = this.db_manager.DynamicProperties.GetMaxFrozenSupplyTime();
-
-            foreach (AssetIssueContract.Types.FrozenSupply frozen in asset_issue_contract.FrozenSupply)
-            {
-                if (frozen.FrozenAmount <= 0)
-                {
-                    throw new ContractValidateException("Frozen supply must be greater than 0!");
-                }
-                if (frozen.FrozenAmount > remain_supply)
-                {
-                    throw new ContractValidateException("Frozen supply cannot exceed total supply");
-                }
-                if (!(frozen.FrozenDays >= min_frozen_time
-                    && frozen.FrozenDays <= max_frozen_time))
-                {
-                    throw new ContractValidateException(
-                        "frozenDuration must be less than " + max_frozen_time + " days "
-                            + "and more than " + min_frozen_time + " days");
-                }
-                remain_supply -= frozen.FrozenAmount;
-            }
-
-            AccountCapsule account = this.db_manager.Account.Get(owner_address);
-            if (account == null)
-            {
-                throw new ContractValidateException("Account not exists");
-            }
-
-            if (!account.AssetIssuedName.IsEmpty)
-            {
-                throw new ContractValidateException("An account can only issue one asset");
-            }
-
-            if (account.Balance < CalcFee())
-            {
-                throw new ContractValidateException("No enough balance for fee!");
             }
 
             return true;

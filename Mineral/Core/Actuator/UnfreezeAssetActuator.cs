@@ -109,58 +109,62 @@ namespace Mineral.Core.Actuator
             {
                 throw new ContractValidateException("No dbManager!");
             }
-            if (!(this.contract is UnfreezeAssetContract))
-            {
-                throw new ContractValidateException(
-                    "contract type error,expected type [UnfreezeAssetContract],real type[" + contract.GetType().Name + "]");
-            }
-            UnfreezeAssetContract unfreeze_asset_contract = null;
-            try
-            {
-                unfreeze_asset_contract = this.contract.Unpack<UnfreezeAssetContract>(); a
-            }
-            catch (InvalidProtocolBufferException e)
-            {
-                Logger.Debug(e.Message);
-                throw new ContractValidateException(e.Message);
-            }
-            byte[] owner_address = unfreeze_asset_contract.OwnerAddress.ToByteArray();
-            if (!Wallet.AddressValid(owner_address))
-            {
-                throw new ContractValidateException("Invalid address");
-            }
 
-            AccountCapsule account = this.db_manager.Account.Get(owner_address);
-            if (account == null)
+            if (this.contract.Is(UnfreezeAssetContract.Descriptor))
             {
-                throw new ContractValidateException(
-                    "Account[" + owner_address.ToHexString() + "] not exists");
-            }
-
-            if (account.FrozenSupplyCount <= 0)
-            {
-                throw new ContractValidateException("no frozen supply balance");
-            }
-
-            if (this.db_manager.DynamicProperties.GetAllowSameTokenName() == 0)
-            {
-                if (account.AssetIssuedName.IsEmpty)
+                UnfreezeAssetContract unfreeze_asset_contract = null;
+                try
                 {
-                    throw new ContractValidateException("this account did not issue any asset");
+                    unfreeze_asset_contract = this.contract.Unpack<UnfreezeAssetContract>();
+                }
+                catch (InvalidProtocolBufferException e)
+                {
+                    Logger.Debug(e.Message);
+                    throw new ContractValidateException(e.Message);
+                }
+                byte[] owner_address = unfreeze_asset_contract.OwnerAddress.ToByteArray();
+                if (!Wallet.AddressValid(owner_address))
+                {
+                    throw new ContractValidateException("Invalid address");
+                }
+
+                AccountCapsule account = this.db_manager.Account.Get(owner_address);
+                if (account == null)
+                {
+                    throw new ContractValidateException(
+                        "Account[" + owner_address.ToHexString() + "] not exists");
+                }
+
+                if (account.FrozenSupplyCount <= 0)
+                {
+                    throw new ContractValidateException("no frozen supply balance");
+                }
+
+                if (this.db_manager.DynamicProperties.GetAllowSameTokenName() == 0)
+                {
+                    if (account.AssetIssuedName.IsEmpty)
+                    {
+                        throw new ContractValidateException("this account did not issue any asset");
+                    }
+                }
+                else
+                {
+                    if (account.AssetIssuedID.IsEmpty)
+                    {
+                        throw new ContractValidateException("this account did not issue any asset");
+                    }
+                }
+
+                long now = this.db_manager.GetHeadBlockTimestamp();
+                if (account.FrozenSupplyList.Where(frozen => frozen.ExpireTime < now).Count() <= 0)
+                {
+                    throw new ContractValidateException("It's not time to unfreeze asset supply");
                 }
             }
             else
             {
-                if (account.AssetIssuedID.IsEmpty)
-                {
-                    throw new ContractValidateException("this account did not issue any asset");
-                }
-            }
-
-            long now = this.db_manager.GetHeadBlockTimestamp();
-            if (account.FrozenSupplyList.Where(frozen => frozen.ExpireTime < now).Count() <= 0)
-            {
-                throw new ContractValidateException("It's not time to unfreeze asset supply");
+                throw new ContractValidateException(
+                    "contract type error,expected type [UnfreezeAssetContract],real type[" + contract.GetType().Name + "]");
             }
 
             return true;

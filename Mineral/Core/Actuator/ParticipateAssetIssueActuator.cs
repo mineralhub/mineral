@@ -38,7 +38,7 @@ namespace Mineral.Core.Actuator
         #region External Method
         public override long CalcFee()
         {
-            throw new NotImplementedException();
+            return 0;
         }
 
         public override bool Execute(TransactionResultCapsule result)
@@ -94,7 +94,7 @@ namespace Mineral.Core.Actuator
 
         public override ByteString GetOwnerAddress()
         {
-            throw new NotImplementedException();
+            return this.contract.Unpack<ParticipateAssetIssueContract>().OwnerAddress;
         }
 
         public override bool Validate()
@@ -107,101 +107,104 @@ namespace Mineral.Core.Actuator
             {
                 throw new ContractValidateException("No this.db_manager!");
             }
-            if (!(this.contract is ParticipateAssetIssueContract))
+
+            if (this.contract.Is(ParticipateAssetIssueContract.Descriptor))
+            {
+                ParticipateAssetIssueContract asset_issue_contract;
+                try
+                {
+                    asset_issue_contract = this.contract.Unpack<ParticipateAssetIssueContract>();
+                }
+                catch (InvalidProtocolBufferException e)
+                {
+                    Logger.Debug(e.Message);
+                    throw new ContractValidateException(e.Message);
+                }
+
+                byte[] owner_address = asset_issue_contract.OwnerAddress.ToByteArray();
+                byte[] to_address = asset_issue_contract.ToAddress.ToByteArray();
+                byte[] asset_name = asset_issue_contract.AssetName.ToByteArray();
+                long amount = asset_issue_contract.Amount;
+
+                if (!Wallet.AddressValid(owner_address))
+                {
+                    throw new ContractValidateException("Invalid ownerAddress");
+                }
+
+                if (!Wallet.AddressValid(to_address))
+                {
+                    throw new ContractValidateException("Invalid toAddress");
+                }
+
+                if (amount <= 0)
+                {
+                    throw new ContractValidateException("Amount must greater than 0!");
+                }
+
+                if (owner_address.SequenceEqual(to_address))
+                {
+                    throw new ContractValidateException("Cannot participate asset Issue yourself !");
+                }
+
+                AccountCapsule owner_account = this.db_manager.Account.Get(owner_address);
+                if (owner_account == null)
+                    throw new ContractValidateException("Account does not exist!");
+
+                try
+                {
+                    //Whether the balance is enough
+                    long fee = CalcFee();
+                    if (owner_account.Balance < amount + fee)
+                    {
+                        throw new ContractValidateException("No enough balance !");
+                    }
+
+                    AssetIssueCapsule asset_issue = this.db_manager.GetAssetIssueStoreFinal().Get(asset_name);
+                    if (asset_issue == null)
+                    {
+                        throw new ContractValidateException("No asset named " + asset_name.ToString());
+                    }
+
+                    if (!to_address.SequenceEqual(asset_issue.OwnerAddress.ToByteArray()))
+                    {
+                        throw new ContractValidateException(
+                            "The asset is not issued by " + to_address.ToHexString());
+                    }
+
+                    long now = this.db_manager.DynamicProperties.GetLatestBlockHeaderTimestamp();
+                    if (now >= asset_issue.EndTime || now < asset_issue.StartTime)
+                        throw new ContractValidateException("No longer valid period!");
+
+                    int tx_num = asset_issue.TransactionNum;
+                    int num = asset_issue.Num;
+                    long exchange_amount = amount * num;
+                    exchange_amount = (long)Math.Floor((double)(exchange_amount / tx_num));
+
+                    if (exchange_amount <= 0)
+                        throw new ContractValidateException("Can not process the exchange!");
+
+                    AccountCapsule to_account = this.db_manager.Account.Get(to_address);
+                    if (to_account == null)
+                    {
+                        throw new ContractValidateException("To account does not exist!");
+                    }
+
+                    if (!to_account.AssetBalanceEnoughV2(asset_name, exchange_amount,
+                        this.db_manager))
+                    {
+                        throw new ContractValidateException("Asset balance is not enough !");
+                    }
+                }
+                catch (ArithmeticException e)
+                {
+                    Logger.Debug(e.Message);
+                    throw new ContractValidateException(e.Message);
+                }
+            }
+            else
             {
                 throw new ContractValidateException(
                     "contract type error,expected type [ParticipateAssetIssueContract],real type[" + contract.GetType().Name + "]");
-            }
-
-            ParticipateAssetIssueContract asset_issue_contract;
-            try
-            {
-                asset_issue_contract = this.contract.Unpack<ParticipateAssetIssueContract>();
-            }
-            catch (InvalidProtocolBufferException e)
-            {
-                Logger.Debug(e.Message);
-                throw new ContractValidateException(e.Message);
-            }
-
-            byte[] owner_address = asset_issue_contract.OwnerAddress.ToByteArray();
-            byte[] to_address = asset_issue_contract.ToAddress.ToByteArray();
-            byte[] asset_name = asset_issue_contract.AssetName.ToByteArray();
-            long amount = asset_issue_contract.Amount;
-
-            if (!Wallet.AddressValid(owner_address))
-            {
-                throw new ContractValidateException("Invalid ownerAddress");
-            }
-
-            if (!Wallet.AddressValid(to_address))
-            {
-                throw new ContractValidateException("Invalid toAddress");
-            }
-
-            if (amount <= 0)
-            {
-                throw new ContractValidateException("Amount must greater than 0!");
-            }
-
-            if (owner_address.SequenceEqual(to_address))
-            {
-                throw new ContractValidateException("Cannot participate asset Issue yourself !");
-            }
-
-            AccountCapsule owner_account = this.db_manager.Account.Get(owner_address);
-            if (owner_account == null)
-                throw new ContractValidateException("Account does not exist!");
-
-            try
-            {
-                //Whether the balance is enough
-                long fee = CalcFee();
-                if (owner_account.Balance < amount + fee)
-                {
-                    throw new ContractValidateException("No enough balance !");
-                }
-
-                AssetIssueCapsule asset_issue = this.db_manager.GetAssetIssueStoreFinal().Get(asset_name);
-                if (asset_issue == null)
-                {
-                    throw new ContractValidateException("No asset named " + asset_name.ToString());
-                }
-
-                if (!to_address.SequenceEqual(asset_issue.OwnerAddress.ToByteArray()))
-                {
-                    throw new ContractValidateException(
-                        "The asset is not issued by " + to_address.ToHexString());
-                }
-
-                long now = this.db_manager.DynamicProperties.GetLatestBlockHeaderTimestamp();
-                if (now >= asset_issue.EndTime || now < asset_issue.StartTime)
-                    throw new ContractValidateException("No longer valid period!");
-
-                int tx_num = asset_issue.TransactionNum;
-                int num = asset_issue.Num;
-                long exchange_amount = amount * num;
-                exchange_amount = (long)Math.Floor((double)(exchange_amount / tx_num));
-
-                if (exchange_amount <= 0)
-                    throw new ContractValidateException("Can not process the exchange!");
-
-                AccountCapsule to_account = this.db_manager.Account.Get(to_address);
-                if (to_account == null)
-                {
-                    throw new ContractValidateException("To account does not exist!");
-                }
-
-                if (!to_account.AssetBalanceEnoughV2(asset_name, exchange_amount,
-                    this.db_manager))
-                {
-                    throw new ContractValidateException("Asset balance is not enough !");
-                }
-            }
-            catch (ArithmeticException e)
-            {
-                Logger.Debug(e.Message);
-                throw new ContractValidateException(e.Message);
             }
 
             return true;

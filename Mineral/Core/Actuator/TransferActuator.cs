@@ -113,62 +113,64 @@ namespace Mineral.Core.Actuator
 
             if (this.contract.Is(TransferContract.Descriptor))
             {
+                long fee = CalcFee();
+                TransferContract transfer_contract = null;
+                try
+                {
+                    transfer_contract = contract.Unpack<TransferContract>();
+                }
+                catch (InvalidProtocolBufferException e)
+                {
+                    Logger.Debug(e.Message);
+                    throw new ContractValidateException(e.Message);
+                }
+
+                byte[] to_address = transfer_contract.ToAddress.ToByteArray();
+                byte[] owner_address = transfer_contract.OwnerAddress.ToByteArray();
+                long amount = transfer_contract.Amount;
+
+                if (!Wallet.AddressValid(owner_address))
+                    throw new ContractValidateException("Invalid ownerAddress");
+
+                if (!Wallet.AddressValid(to_address))
+                    throw new ContractValidateException("Invalid toAddress");
+
+                if (to_address.SequenceEqual(owner_address))
+                    throw new ContractValidateException("Cannot transfer trx to yourself.");
+
+                AccountCapsule owner_account = this.db_manager.Account.Get(owner_address);
+                if (owner_account == null)
+                    throw new ContractValidateException("Validate TransferContract error, no OwnerAccount.");
+
+                long balance = owner_account.Balance;
+
+                if (amount <= 0)
+                    throw new ContractValidateException("Amount must greater than 0.");
+
+                try
+                {
+                    AccountCapsule to_account = this.db_manager.Account.Get(to_address);
+                    if (to_account == null)
+                    {
+                        fee = fee + this.db_manager.DynamicProperties.GetCreateNewAccountFeeInSystemContract();
+                    }
+
+                    if (balance < amount + fee)
+                    {
+                        throw new ContractValidateException(
+                            "Validate TransferContract error, balance is not sufficient.");
+                    }
+                }
+                catch (ArithmeticException e)
+                {
+                    Logger.Debug(e.Message);
+                    throw new ContractValidateException(e.Message);
+                }
+            }
+            else
+            {
                 throw new ContractValidateException(
                     "contract type error,expected type [TransferContract],real type[" + this.contract.GetType().Name + "]");
-            }
-
-            long fee = CalcFee();
-            TransferContract transfer_contract = null;
-            try
-            {
-                transfer_contract = contract.Unpack<TransferContract>();
-            }
-            catch (InvalidProtocolBufferException e)
-            {
-                Logger.Debug(e.Message);
-                throw new ContractValidateException(e.Message);
-            }
-
-            byte[] to_address = transfer_contract.ToAddress.ToByteArray();
-            byte[] owner_address = transfer_contract.OwnerAddress.ToByteArray();
-            long amount = transfer_contract.Amount;
-
-            if (!Wallet.AddressValid(owner_address))
-                throw new ContractValidateException("Invalid ownerAddress");
-
-            if (!Wallet.AddressValid(to_address))
-                throw new ContractValidateException("Invalid toAddress");
-
-            if (to_address.SequenceEqual(owner_address))
-                throw new ContractValidateException("Cannot transfer trx to yourself.");
-
-            AccountCapsule owner_account = this.db_manager.Account.Get(owner_address);
-            if (owner_account == null)
-                throw new ContractValidateException("Validate TransferContract error, no OwnerAccount.");
-
-            long balance = owner_account.Balance;
-
-            if (amount <= 0)
-                throw new ContractValidateException("Amount must greater than 0.");
-
-            try
-            {
-                AccountCapsule to_account = this.db_manager.Account.Get(to_address);
-                if (to_account == null)
-                {
-                    fee = fee + this.db_manager.DynamicProperties.GetCreateNewAccountFeeInSystemContract();
-                }
-
-                if (balance < amount + fee)
-                {
-                    throw new ContractValidateException(
-                        "Validate TransferContract error, balance is not sufficient.");
-                }
-            }
-            catch (ArithmeticException e)
-            {
-                Logger.Debug(e.Message);
-                throw new ContractValidateException(e.Message);
             }
 
             return true;
