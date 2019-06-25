@@ -14,12 +14,12 @@ namespace Mineral.Core.Actuator
         #region Field
         protected Any contract = null;
         protected Manager db_manager = null;
-        protected Deposit deposit = null;
+        protected IDeposit deposit = null;
         #endregion
 
 
         #region Property
-        public Deposit Deposit
+        public IDeposit Deposit
         {
             get { return this.deposit; }
             set { this.deposit = value; }
