@@ -19,12 +19,15 @@ namespace Mineral.Core.Database
         private TransactionStore transaction_store = null;
         private AccountStore account_store = null;
         private AccountIndexStore account_index_store = null;
+        private AccountIdIndexStore account_id_index_store = null;
         private WitnessStore witness_store = null;
         private WitnessScheduleStore witness_schedule_store = null;
         private VotesStore votes_store = null;
         private ProposalStore proposal_store = null;
         private AssetIssueStore asset_issue_store = null;
         private AssetIssueV2Store asset_issue_v2_store = null;
+        private ExchangeStore exchange_store = null;
+        private ExchangeV2Store exchange_v2_store = null;
         private CodeStore code_store = null;
         private ContractStore contract_store = null;
         private StorageRowStore storage_row_store = null;
@@ -44,12 +47,16 @@ namespace Mineral.Core.Database
         public TransactionStore Transaction => this.transaction_store;
         public AccountStore Account => this.account_store;
         public AccountIndexStore AccountIndex => this.account_index_store;
+        public AccountIdIndexStore AccountIdIndex => this.account_id_index_store;
         public WitnessStore Witness => this.witness_store;
         public WitnessScheduleStore WitnessSchedule => this.witness_schedule_store;
         public VotesStore Votes => this.votes_store;
         public ProposalStore Proposal => this.proposal_store;
         public AssetIssueStore AssetIssue => this.asset_issue_store;
         public AssetIssueStore AssetIssueV2 => this.asset_issue_v2_store;
+        public ExchangeStore Exchange => this.exchange_store;
+        public ExchangeStore ExchangeFinal => this.dynamic_properties_store.GetAllowSameTokenName() == 0 ? this.exchange_store : this.exchange_v2_store;
+        public ExchangeV2Store ExchangeV2 => this.exchange_v2_store;
         public CodeStore Code => this.code_store;
         public ContractStore Contract => this.contract_store;
         public StorageRowStore StorageRow => this.storage_row_store;
@@ -163,6 +170,22 @@ namespace Mineral.Core.Database
         public bool LastHeadBlockIsMaintenance()
         {
             return DynamicProperties.GetStateFlag() == 1;
+        }
+
+        public void PutExchangeCapsule(ExchangeCapsule exchange)
+        {
+            if (this.dynamic_properties_store.GetAllowSameTokenName() == 0)
+            {
+                this.exchange_store.Put(exchange.CreateDatabaseKey(), exchange);
+
+                ExchangeCapsule exchange_v2 = new ExchangeCapsule(exchange.Data);
+                exchange_v2.ResetTokenWithID(this);
+                this.exchange_v2_store.Put(exchange_v2.CreateDatabaseKey(), exchange_v2);
+            }
+            else
+            {
+                this.exchange_v2_store.Put(exchange.CreateDatabaseKey(), exchange);
+            }
         }
         #endregion
     }
