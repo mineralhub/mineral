@@ -18,12 +18,16 @@ namespace Mineral.Common.LogsFilter.Trigger
         public static readonly string CONTRACT_EVENT_TRIGGER_NAME = "contract_event_trigger";
 
         private string trigger_name = "";
-        protected long timestampe = 0;
-
+        protected long timestamp = 0;
         #endregion
 
 
         #region Property
+        public long Timestamp
+        {
+            get { return this.timestamp; }
+            set { this.timestamp = value; }
+        }
         #endregion
 
 

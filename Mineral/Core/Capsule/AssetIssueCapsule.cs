@@ -67,6 +67,18 @@ namespace Mineral.Core.Capsule
             get { return this.asset_issue.OwnerAddress; }
         }
 
+        public ByteString Url
+        {
+            get { return this.asset_issue.Url; }
+            set { this.asset_issue.Url = value; }
+        }
+
+        public ByteString Description
+        {
+            get { return this.asset_issue.Description; }
+            set { this.asset_issue.Description = value; }
+        }
+
         public int FrozenSupplyCount
         {
             get { return this.asset_issue.FrozenSupply.Count; }
@@ -167,16 +179,6 @@ namespace Mineral.Core.Capsule
         public static string CreateDatabaseKeyString(string name, long order)
         {
             return name + "_" + order;
-        }
-
-        public void SetUrl(ByteString url)
-        {
-            this.asset_issue.Url = url;
-        }
-
-        public void SetDescription(ByteString description)
-        {
-            this.asset_issue.Description = description;
         }
 
         public override string ToString()

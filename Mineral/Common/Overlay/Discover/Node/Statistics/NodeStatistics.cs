@@ -171,7 +171,7 @@ namespace Mineral.Common.Overlay.Discover.Node.Statistics
             this.persisted_reputation = this.persisted_reputation / 2;
         }
 
-        public override String ToString()
+        public override string ToString()
         {
             return "NodeStat[reput: " + GetReputation() + "(" + this.persisted_reputation + "), discover: "
                 + this.message_statistics.DiscoverInPong + "/" + this.message_statistics.DiscoverOutPing + " "

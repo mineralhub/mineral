@@ -16,9 +16,9 @@ namespace Mineral.Common.Runtime.VM
     {
         #region Field
         private static readonly BigInteger _32_ = new BigInteger(32);
-        private static readonly String ENERGY_LOG_FORMATE = "{} Op:[{}]  Energy:[{}] Deep:[{}] Hint:[{}]";
+        private static readonly string ENERGY_LOG_FORMATE = "{} Op:[{}]  Energy:[{}] Deep:[{}] Hint:[{}]";
         private static readonly BigInteger MEM_LIMIT = new BigInteger(3L * 1024 * 1024);
-        public static readonly String ADDRESS_LOG = "address: ";
+        public static readonly string ADDRESS_LOG = "address: ";
         #endregion
 
 

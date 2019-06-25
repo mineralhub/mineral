@@ -242,7 +242,7 @@ namespace Mineral.Common.Runtime.VM.Program
                                                            byte[] transfer_address,
                                                            long value,
                                                            byte[] data,
-                                                           String note,
+                                                           string note,
                                                            long nonce,
                                                            Dictionary<string, long> token_info)
         {
@@ -500,7 +500,7 @@ namespace Mineral.Common.Runtime.VM.Program
             this.result.ResetFutureRefund();
         }
 
-        public void CheckCPUTimeLimit(String opName)
+        public void CheckCPUTimeLimit(string opName)
         {
             if (Args.Instance.IsSolidityNode)
                 return;

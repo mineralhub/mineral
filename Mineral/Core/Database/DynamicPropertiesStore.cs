@@ -924,13 +924,13 @@ namespace Mineral.Core.Database
 
         public void StatsByVersion(int version, byte[] stats)
         {
-            String stats_key = FORK_PREFIX + version;
+            string stats_key = FORK_PREFIX + version;
             Put(stats_key.GetBytes(), new BytesCapsule(stats));
         }
 
         public byte[] StatsByVersion(int version)
         {
-            String statsKey = FORK_PREFIX + version;
+            string statsKey = FORK_PREFIX + version;
             return this.revoking_db.GetUnchecked(statsKey.GetBytes());
         }
 

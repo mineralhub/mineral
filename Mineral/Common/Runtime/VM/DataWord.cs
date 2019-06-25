@@ -363,12 +363,12 @@ namespace Mineral.Common.Runtime.VM
         public static string ToShortHex(byte[] data)
         {
             byte[] bytes = ByteUtil.StripLeadingZeroes(data);
-            String hex = bytes.ToHexString().ToUpper();
+            string hex = bytes.ToHexString().ToUpper();
 
             return "0x" + hex.Replace("^0+(?!$)", "");
         }
 
-        public String ToShortHex()
+        public string ToShortHex()
         {
             return ToShortHex(this.data);
         }

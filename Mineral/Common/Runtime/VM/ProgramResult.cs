@@ -142,7 +142,7 @@ namespace Mineral.Common.Runtime.VM
                                                           byte[] transfer_address,
                                                           long value,
                                                           byte[] data,
-                                                          String note,
+                                                          string note,
                                                           long nonce,
                                                           Dictionary<string, long> token)
         {

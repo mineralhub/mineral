@@ -86,7 +86,7 @@ namespace Mineral.Core.Database
 
 
         #region External Method
-        public bool Contains(byte[] key)
+        public virtual bool Contains(byte[] key)
         {
             return this.revoking_db.Contains(key);
         }

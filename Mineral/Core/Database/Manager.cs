@@ -18,6 +18,7 @@ namespace Mineral.Core.Database
         private BlockIndexStore block_index_store = null;
         private TransactionStore transaction_store = null;
         private AccountStore account_store = null;
+        private AccountIndexStore account_index_store = null;
         private WitnessStore witness_store = null;
         private WitnessScheduleStore witness_schedule_store = null;
         private VotesStore votes_store = null;
@@ -27,8 +28,11 @@ namespace Mineral.Core.Database
         private CodeStore code_store = null;
         private ContractStore contract_store = null;
         private StorageRowStore storage_row_store = null;
+        private DelegatedResourceStore delegated_resource_store = null;
+        private DelegatedResourceAccountIndexStore delegate_resource_Account_index_store;
         private DynamicPropertiesStore dynamic_properties_store = null;
 
+        private ForkController fork_controller = ForkController.Instance;
         private WitnessController witness_controller = null;
         private BlockCapsule genesis_block = null;
         #endregion
@@ -39,6 +43,7 @@ namespace Mineral.Core.Database
         public BlockIndexStore BlockIndex => this.block_index_store;
         public TransactionStore Transaction => this.transaction_store;
         public AccountStore Account => this.account_store;
+        public AccountIndexStore AccountIndex => this.account_index_store;
         public WitnessStore Witness => this.witness_store;
         public WitnessScheduleStore WitnessSchedule => this.witness_schedule_store;
         public VotesStore Votes => this.votes_store;
@@ -48,9 +53,16 @@ namespace Mineral.Core.Database
         public CodeStore Code => this.code_store;
         public ContractStore Contract => this.contract_store;
         public StorageRowStore StorageRow => this.storage_row_store;
+        public DelegatedResourceStore DelegatedResource => this.delegated_resource_store;
+        public DelegatedResourceAccountIndexStore DelegateResourceAccountIndex => this.delegate_resource_Account_index_store;
         public DynamicPropertiesStore DynamicProperties => this.dynamic_properties_store;
 
         public BlockCapsule GenesisBlock => this.genesis_block;
+
+        public ForkController ForkController
+        {
+            get { return this.fork_controller; }
+        }
 
         public WitnessController WitnessController
         {

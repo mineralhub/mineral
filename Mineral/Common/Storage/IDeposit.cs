@@ -14,7 +14,7 @@ namespace Mineral.Common.Storage
         Manager DBManager { get; }
 
         AccountCapsule CreateAccount(byte[] address, Protocol.AccountType type);
-        AccountCapsule CreateAccount(byte[] address, String account_name, Protocol.AccountType type);
+        AccountCapsule CreateAccount(byte[] address, string account_name, Protocol.AccountType type);
         AccountCapsule GetAccount(byte[] address);
         WitnessCapsule GetWitness(byte[] address);
         VotesCapsule GetVotesCapsule(byte[] address);
