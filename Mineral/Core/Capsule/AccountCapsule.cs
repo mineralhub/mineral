@@ -809,7 +809,7 @@ namespace Mineral.Core.Capsule
             return null;
         }
 
-        public void UdpatePermissions(Permission owner, Permission witness, List<Permission> actives)
+        public void UpdatePermissions(Permission owner, Permission witness, List<Permission> actives)
         {
             owner.Id = 0;
             this.account.OwnerPermission = owner;
