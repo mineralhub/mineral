@@ -56,7 +56,7 @@ namespace Mineral.Common.Runtime.VM.Program
             return result;
         }
 
-        public static byte[] getCode(byte[] ops)
+        public static byte[] GetCode(byte[] ops)
         {
             for (int i = 0; i < ops.Length; ++i)
             {

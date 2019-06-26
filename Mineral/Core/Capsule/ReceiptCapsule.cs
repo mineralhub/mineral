@@ -20,6 +20,13 @@ namespace Mineral.Core.Capsule
         public ResourceReceipt Receipt { get { return this.receipt; } }
         public long MultiSignFee { get { return this.multi_sign_fee; } set { this.multi_sign_fee = value; } }
         public SHA256Hash Hash { get { return this.hash; } }
+
+
+        public long EnergyUsageTotal
+        {
+            get { return this.receipt.EnergyUsageTotal; }
+            set { this.receipt.EnergyUsageTotal = value; }
+        }
         #endregion
 
 

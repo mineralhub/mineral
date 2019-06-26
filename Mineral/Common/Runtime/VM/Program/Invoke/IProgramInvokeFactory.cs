@@ -16,8 +16,8 @@ namespace Mineral.Common.Runtime.VM.Program.Invoke
                     long token_id,
                     Block block,
                     IDeposit deposit,
-                    long vm_start_us,
-                    long vm_should_end_us,
+                    long vm_start,
+                    long vm_should_end,
                     long energy_limit);
 
         IProgramInvoke CreateProgramInvoke(
@@ -30,10 +30,10 @@ namespace Mineral.Common.Runtime.VM.Program.Invoke
                     long balance,
                     byte[] data,
                     IDeposit deposit,
-                    bool static_call,
-                    bool by_testing_suite,
-                    long vm_start_us,
-                    long vm_should_end_us,
+                    bool is_static_call,
+                    bool is_testing_suite,
+                    long vm_start,
+                    long vm_should_end,
                     long energy_limit);
     }
 }

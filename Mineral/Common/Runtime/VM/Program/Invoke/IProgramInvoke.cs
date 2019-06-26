@@ -8,31 +8,30 @@ namespace Mineral.Common.Runtime.VM.Program.Invoke
 {
     public interface IProgramInvoke
     {
-        bool IsStaticCall { get; }
+        bool IsStaticCall { get; set; }
 
-        DataWord GetContractAddress();
-        DataWord GetBalance();
-        DataWord GetOriginAddress();
-        DataWord GetCallerAddress();
-        DataWord GetCallValue();
-        DataWord GetTokenValue();
-        DataWord GetTokenId();
-        DataWord GetDataSize();
-        DataWord GetDataValue(DataWord index_data);
-        DataWord GetPrevHash();
-        DataWord GetCoinbase();
-        DataWord GetTimestamp();
-        DataWord GetNumber();
-        DataWord GetDifficulty();
+        DataWord ContractAddress { get; }
+        DataWord Balance { get; }
+        DataWord OriginAddress { get; }
+        DataWord CallerAddress { get; }
+        DataWord CallValue { get; }
+        DataWord TokenValue { get; }
+        DataWord TokenId { get; }
+        DataWord DataSize { get; }
+        DataWord PrevHash { get; }
+        DataWord Coinbase { get; }
+        DataWord Timestamp { get; }
+        DataWord Number { get; }
+        DataWord Difficulty { get; }
+        IDeposit Deposit { get; }
+        bool IsTestingSuite { get; }
+        int CallDeep { get; }
+        long VMShouldEndInUs { get; }
+        long VMStartInUs { get; }
+        long EnergyLimit { get; }
+
         BlockCapsule GetBlockByNum(int index);
-        IDeposit GetDeposit();
-
+        DataWord GetDataValue(DataWord index_data);
         byte[] GetDataCopy(DataWord offset_data, DataWord length_data);
-        bool ByTestingSuite();
-        int GetCallDeep();
-        long GetVMShouldEndInUs();
-        long GetVMStartInUs();
-        long GetEnergyLimit();
-        void GetStaticCall();
     }
 }

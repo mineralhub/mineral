@@ -34,13 +34,18 @@ namespace Mineral.Common.Runtime.VM
         public List<LogInfo> LogInfos => this.log_infos;
         public List<CallCreate> CallCreate => this.call_create;
         public List<InternalTransaction> InternalTransactions => this.internal_transactions;
-        public List<ContractTrigger> Triggers => this.triggers;
         public long FutureRefund => this.future_refund;
 
         public bool IsRevert
         {
             get { return this.is_revert; }
             set { this.is_revert = value; }
+        }
+
+        public List<ContractTrigger> Triggers
+        {
+            get { return this.triggers; }
+            set { this.triggers = value; }
         }
 
         public byte[] ContractAddress

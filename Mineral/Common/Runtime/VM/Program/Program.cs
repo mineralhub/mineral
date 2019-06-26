@@ -92,59 +92,65 @@ namespace Mineral.Common.Runtime.VM.Program
             get { return this.result; }
         }
 
+        public DataWord PrevHash
+        {
+            get { return this.invoke.PrevHash; }
+        }
+
         public DataWord ContractAddress
         {
-            get { return new DataWord(this.invoke.GetContractAddress().Clone()); }
+            get { return new DataWord(this.invoke.ContractAddress.Clone()); }
         }
 
         public DataWord OriginAddress
         {
-            get { return new DataWord(this.invoke.GetOriginAddress().Clone()); }
+            get { return new DataWord(this.invoke.OriginAddress.Clone()); }
         }
 
         public DataWord CallerAddress
         {
-            get { return new DataWord(this.invoke.GetCallerAddress().Clone()); }
+            get { return new DataWord(this.invoke.CallerAddress.Clone()); }
         }
 
         public DataWord CallValue
         {
-            get { return new DataWord(this.invoke.GetCallValue().Clone()); }
+            get { return new DataWord(this.invoke.CallValue.Clone()); }
         }
 
         public DataWord TokenValue
         {
-            get { return new DataWord(this.invoke.GetTokenValue().Clone()); }
+            get { return new DataWord(this.invoke.TokenValue.Clone()); }
         }
 
         public DataWord TokenId
         {
-            get { return new DataWord(this.invoke.GetTokenId().Clone()); }
+            get { return new DataWord(this.invoke.TokenId.Clone()); }
         }
 
-        public DataWord CoinBase
+        public DataWord Coinbase
         {
-            get { return new DataWord(this.invoke.GetCoinbase().Clone()); }
+            get { return new DataWord(this.invoke.Coinbase.Clone()); }
         }
 
         public DataWord Number
         {
-            get { return new DataWord(this.invoke.GetNumber().Clone()); }
+            get { return new DataWord(this.invoke.Number.Clone()); }
         }
 
         public DataWord Difficulty
         {
-            get { return new DataWord(this.invoke.GetDifficulty().Clone()); }
+            get { return new DataWord(this.invoke.Difficulty.Clone()); }
         }
 
         public DataWord Timestamp
         {
-            get { return new DataWord(this.invoke.GetTimestamp().Clone()); }
+            get { return new DataWord(this.invoke.Timestamp.Clone()); }
         }
 
         public bool IsStaticCall
         {
             get { return this.invoke.IsStaticCall; }
+            set { this.invoke.IsStaticCall = value; }
         }
 
         public int PC
@@ -192,17 +198,17 @@ namespace Mineral.Common.Runtime.VM.Program
 
         public int CallDeep
         {
-            get { return this.invoke.GetCallDeep(); }
+            get { return this.invoke.CallDeep; }
         }
 
         public DataWord EnergyLimitLeft
         {
-            get { return new DataWord(this.invoke.GetEnergyLimit() - this.result.EnergyUsed); }
+            get { return new DataWord(this.invoke.EnergyLimit - this.result.EnergyUsed); }
         }
 
         public long EnergylimitLeftLong
         {
-            get { return this.invoke.GetEnergyLimit() - this.result.EnergyUsed; }
+            get { return this.invoke.EnergyLimit - this.result.EnergyUsed; }
         }
 
         public bool IsStopped
@@ -278,7 +284,7 @@ namespace Mineral.Common.Runtime.VM.Program
 
         private void CreateContract(DataWord value, byte[] program_code, byte[] new_address)
         {
-            byte[] sender_address = Wallet.ToMineralAddress(this.invoke.GetContractAddress().GetLast20Bytes());
+            byte[] sender_address = Wallet.ToMineralAddress(this.invoke.ContractAddress.GetLast20Bytes());
 
             Logger.Debug(string.Format("creating a new contract inside contract run: [{0}]", sender_address.ToHexString()));
 
@@ -305,7 +311,7 @@ namespace Mineral.Common.Runtime.VM.Program
             deposit.AddBalance(new_address, old_balance);
 
             long new_balance = 0;
-            if (!ByTestingSuite() && endowment > 0)
+            if (!IsTestingSuite() && endowment > 0)
             {
                 try
                 {
@@ -334,7 +340,7 @@ namespace Mineral.Common.Runtime.VM.Program
             IProgramInvoke program_invoke = this.invoke_factory.CreateProgramInvoke(
                                                                     this,
                                                                     new DataWord(new_address),
-                                                                    this.invoke.GetContractAddress(),
+                                                                    this.invoke.ContractAddress,
                                                                     value,
                                                                     new DataWord(0),
                                                                     new DataWord(0),
@@ -342,9 +348,9 @@ namespace Mineral.Common.Runtime.VM.Program
                                                                     null,
                                                                     deposit,
                                                                     false,
-                                                                    ByTestingSuite(),
+                                                                    IsTestingSuite(),
                                                                     vm_start_in,
-                                                                    this.invoke.GetVMShouldEndInUs(),
+                                                                    this.invoke.VMShouldEndInUs,
                                                                     EnergyLimitLeft.ToLongSafety());
 
             ProgramResult create_result = ProgramResult.CreateEmpty();
@@ -370,7 +376,7 @@ namespace Mineral.Common.Runtime.VM.Program
             byte[] code = create_result.HReturn;
             long save_code_energy = (long)code.Length * EnergyCost.CREATE_DATA;
 
-            long after_spend = this.invoke.GetEnergyLimit() - create_result.EnergyUsed - save_code_energy;
+            long after_spend = this.invoke.EnergyLimit - create_result.EnergyUsed - save_code_energy;
             if (!create_result.IsRevert)
             {
                 if (after_spend < 0)
@@ -378,7 +384,7 @@ namespace Mineral.Common.Runtime.VM.Program
                     create_result.Exception = VMExceptions.NotEnoughSpendEnergy(
                                                             "No energy to save just created contract code",
                                                             save_code_energy,
-                                                            this.invoke.GetEnergyLimit() - create_result.EnergyUsed
+                                                            this.invoke.EnergyLimit - create_result.EnergyUsed
                                                             );
                 }
                 else
@@ -410,7 +416,7 @@ namespace Mineral.Common.Runtime.VM.Program
             }
             else
             {
-                if (!ByTestingSuite())
+                if (!IsTestingSuite())
                 {
                     deposit.Commit();
                 }
@@ -427,7 +433,7 @@ namespace Mineral.Common.Runtime.VM.Program
         public void CreateContract(DataWord value, DataWord mem_start, DataWord mem_size)
         {
             this.return_data = null;
-            if (this.invoke.GetCallDeep() == MAX_DEPTH)
+            if (this.invoke.CallDeep == MAX_DEPTH)
             {
                 StackPushZero();
                 return;
@@ -441,16 +447,16 @@ namespace Mineral.Common.Runtime.VM.Program
 
         public void CreateContract2(DataWord value, DataWord mem_start, DataWord mem_size, DataWord salt)
         {
-            byte[] sender_address = Wallet.ToMineralAddress(this.invoke.GetCallerAddress().GetLast20Bytes());
+            byte[] sender_address = Wallet.ToMineralAddress(this.invoke.CallerAddress.GetLast20Bytes());
             byte[] program_code = MemoryChunk(mem_start.ToInt(), mem_size.ToInt());
 
             byte[] contract_address = Wallet.GenerateContractAddress2(sender_address, salt.Data, program_code);
             CreateContract(value, program_code, contract_address);
         }
 
-        public bool ByTestingSuite()
+        public bool IsTestingSuite()
         {
-            return this.invoke.ByTestingSuite();
+            return this.invoke.IsTestingSuite;
         }
 
         public void SpendEnergy(long energy_value, string op_name)
@@ -460,7 +466,7 @@ namespace Mineral.Common.Runtime.VM.Program
                 throw new OutOfEnergyException(string.Format(
                     "Not enough energy for '%s' operation executing: curInvokeEnergyLimit[%d],"
                         + " curOpEnergy[%d], usedEnergy[%d]",
-                    op_name, this.invoke.GetEnergyLimit(), energy_value, this.result.EnergyUsed));
+                    op_name, this.invoke.EnergyLimit, energy_value, this.result.EnergyUsed));
             }
             this.result.SpendEnergy(energy_value);
         }
@@ -506,7 +512,7 @@ namespace Mineral.Common.Runtime.VM.Program
                 return;
 
             long vm_now = Helper.NanoTime() / 1000;
-            if (vm_now > this.invoke.GetVMShouldEndInUs())
+            if (vm_now > this.invoke.VMShouldEndInUs)
             {
                 Logger.Info(
                     string.Format(
@@ -514,7 +520,7 @@ namespace Mineral.Common.Runtime.VM.Program
                         + "vm now time in us: {3}, vm start time in us: {4}",
                         Args.Instance.VM.MinTimeRatio,
                         Args.Instance.VM.MaxTimeRatio,
-                        this.invoke.GetVMShouldEndInUs(), vm_now, this.invoke.GetVMStartInUs()));
+                        this.invoke.VMShouldEndInUs, vm_now, this.invoke.VMStartInUs));
 
                 throw VMExceptions.NotEnoughTime(opName);
             }
@@ -755,7 +761,7 @@ namespace Mineral.Common.Runtime.VM.Program
                 account != null ? this.contract_state.GetCode(code_address) : new byte[0];
 
             long context_balance = 0L;
-            if (ByTestingSuite())
+            if (IsTestingSuite())
             {
                 this.result.AddCallCreate(data, context_address, msg.Energy.GetNoLeadZeroesData(), msg.Endowment.GetNoLeadZeroesData());
             }
@@ -830,9 +836,9 @@ namespace Mineral.Common.Runtime.VM.Program
                                                             data,
                                                             deposit,
                                                             OpCodeUtil.ContainStatic(msg.Type) || IsStaticCall,
-                                                            ByTestingSuite(),
+                                                            IsTestingSuite(),
                                                             vm_start_in,
-                                                            this.invoke.GetVMShouldEndInUs(),
+                                                            this.invoke.VMShouldEndInUs,
                                                             msg.Energy.ToLongSafety());
 
                 VM vm = new VM();
@@ -868,7 +874,7 @@ namespace Mineral.Common.Runtime.VM.Program
                     StackPushOne();
                 }
 
-                if (ByTestingSuite())
+                if (IsTestingSuite())
                 {
                     Logger.Debug("Testing run, skipping storage diff listener");
                 }
@@ -1171,7 +1177,7 @@ namespace Mineral.Common.Runtime.VM.Program
                 Logger.Trace(string.Format(" -- MEMORY --  {0}", memory_data));
                 Logger.Trace(string.Format("\n  Spent Drop: [{0}]/[{1}]\n  Left Energy:  [{2}]\n",
                                            this.result.EnergyUsed,
-                                           this.invoke.GetEnergyLimit(),
+                                           this.invoke.EnergyLimit,
                                            EnergyLimitLeft.ToLong()));
 
                 StringBuilder global_output = new StringBuilder("\n");
@@ -1279,7 +1285,7 @@ namespace Mineral.Common.Runtime.VM.Program
 
         public DataWord GetDataSize()
         {
-            return new DataWord(this.invoke.GetDataSize().Clone());
+            return new DataWord(this.invoke.DataSize.Clone());
         }
 
         public DataWord GetReturnDataBufferSize()
@@ -1298,7 +1304,7 @@ namespace Mineral.Common.Runtime.VM.Program
 
         public byte[] GetCodeAt(DataWord address)
         {
-            byte[] code = this.invoke.GetDeposit().GetCode(Wallet.ToMineralAddress(address.GetLast20Bytes()));
+            byte[] code = this.invoke.Deposit.GetCode(Wallet.ToMineralAddress(address.GetLast20Bytes()));
             return code ?? new byte[0];
         }
 
@@ -1336,7 +1342,7 @@ namespace Mineral.Common.Runtime.VM.Program
 
         public DataWord GetBlockHash(int index)
         {
-            if (index < this.invoke.GetNumber().ToLong() && index >= Math.Max(256, this.invoke.GetNumber().ToLong()) - 256)
+            if (index < this.invoke.Number.ToLong() && index >= Math.Max(256, this.invoke.Number.ToLong()) - 256)
             {
                 BlockCapsule block = this.invoke.GetBlockByNum(index);
                 if (block != null)

@@ -13,6 +13,7 @@ using Mineral.Cryptography;
 using Mineral.Utils;
 using Protocol;
 using static Protocol.Transaction.Types.Contract.Types;
+using static Protocol.Transaction.Types.Result.Types;
 
 namespace Mineral.Core.Capsule
 {
@@ -56,6 +57,11 @@ namespace Mineral.Core.Capsule
         public SHA256Hash MerkleHash
         {
             get { return SHA256Hash.Of(this.transaction.ToByteArray()); }
+        }
+
+        public contractResult ContractResult
+        {
+            get { return this.transaction.Ret.Count > 0 ? this.transaction.Ret[0].ContractRet : contractResult.Unknown; }
         }
         #endregion
 

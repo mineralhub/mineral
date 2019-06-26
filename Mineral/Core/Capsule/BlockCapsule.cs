@@ -107,6 +107,11 @@ namespace Mineral.Core.Capsule
             get { return this.block.BlockHeader.RawData.WitnessAddress; }
         }
 
+        public bool IsGenerateMyself
+        {
+            get { return this.generate_by_myself; }
+        }
+
         public List<TransactionCapsule> Transactions
         {
             get { return this.transactions; }
