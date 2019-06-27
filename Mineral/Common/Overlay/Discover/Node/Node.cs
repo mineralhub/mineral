@@ -4,7 +4,7 @@ using System.Text;
 using Mineral.Core.Exception;
 using Mineral.Utils;
 
-namespace Mineral.Common.Overlay.Discover
+namespace Mineral.Common.Overlay.Discover.Node
 {
     public class Node
     {
@@ -38,6 +38,18 @@ namespace Mineral.Common.Overlay.Discover
             {
                 throw new ConfigrationException("Exception URL in the format enode://PUBLIC@HOST:PORT");
             }
+        }
+
+        public Node(byte[] id, string host, int port)
+        {
+            if (id != null)
+            {
+                Id = new byte[id.Length];
+                Array.Copy(id, 0, Id, 0, id.Length);
+            }
+
+            Host = host;
+            Port = port;
         }
         #endregion
 
@@ -87,6 +99,36 @@ namespace Mineral.Common.Overlay.Discover
                 .Append(Host)
                 .Append(":")
                 .Append(Port).ToString();
+        }
+
+        public override bool Equals(object obj)
+        {
+            if (obj == null)
+            {
+                return false;
+            }
+
+            if (obj == this)
+            {
+                return true;
+            }
+
+            if (obj.GetType() == GetType())
+            {
+                return string.Equals(Id.ToString(), ((Node)obj).Id.ToString());
+            }
+
+            return false;
+        }
+
+        public override int GetHashCode()
+        {
+            return this.ToString().GetHashCode();
+        }
+
+        public override string ToString()
+        {
+            return "Node{" + " host='" + Host + '\'' + ", port=" + Port + ", id=" + Id.ToHexString() + '}';
         }
         #endregion
     }
