@@ -5,15 +5,17 @@ using DotNetty.Buffers;
 using DotNetty.Codecs;
 using DotNetty.Transport.Channels;
 using Mineral.Common.Overlay.Server;
+using Mineral.Core.Exception;
+using Mineral.Core.Net.Messages;
 
 namespace Mineral.Common.Overlay.Messages
 {
     public class MessageCodec : ByteToMessageDecoder
     {
         #region Field
-        private Channel channel;
-        private P2pMessageFactory p2p_message_factory = new P2pMessageFactory();
-        private MineralMessageFactory mineral_message_factory = new MineralMessageFactory();
+        private IChannel channel;
+        private P2pMessageFactory p2p_message = new P2pMessageFactory();
+        private MineralMessageFactory mineral_message = new MineralMessageFactory();
         #endregion
 
 
@@ -30,13 +32,41 @@ namespace Mineral.Common.Overlay.Messages
 
 
         #region Internal Method
+        private Message CreateMessage(byte[] encoded)
+        {
+            byte type = encoded[0];
+            if (MessageTypes.IsP2p(type))
+            {
+                return this.p2p_message.Create(encoded);
+            }
+
+            if (MessageTypes.IsMineral(type))
+            {
+                return this.mineral_message.Create(encoded);
+            }
+
+            throw new P2pException(P2pException.ErrorType.NO_SUCH_MESSAGE, "type=" + encoded[0]);
+        }
         #endregion
 
 
         #region External Method
         protected override void Decode(IChannelHandlerContext context, IByteBuffer input, List<object> output)
         {
-            throw new NotImplementedException();
+            int length = input.ReadableBytes;
+            byte[] encoded = new byte[length];
+
+            input.ReadBytes(encoded);
+            try
+            {
+                Message msg = CreateMessage(encoded);
+                channel.NodeStatistics.tcpFlow.add(length);
+                output.Add(msg);
+            }
+            catch (Exception e)
+            {
+                channel.processException(e);
+            }
         }
         #endregion
     }

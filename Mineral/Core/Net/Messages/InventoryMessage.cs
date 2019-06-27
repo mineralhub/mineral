@@ -17,9 +17,20 @@ namespace Mineral.Core.Net.Messages
 
 
         #region Property
-        public Inventory Inventory => this.inventory;
-        public InventoryType InventoryType => this.inventory.Type;
-        public MessageTypes.MsgType InventoryMessageType => this.inventory.Type.Equals(InventoryType.Block) ? MessageTypes.MsgType.BLOCK : MessageTypes.MsgType.TRX;
+        public Inventory Inventory
+        {
+            get { return this.inventory; }
+        }
+
+        public InventoryType InventoryType
+        {
+            get { return this.inventory.Type; }
+        }
+
+        public MessageTypes.MsgType InventoryMessageType 
+        {
+            get { return this.inventory.Type.Equals(InventoryType.Block) ? MessageTypes.MsgType.BLOCK : MessageTypes.MsgType.TX; }
+        }
         #endregion
 
 

@@ -21,9 +21,25 @@ namespace Mineral.Common.Overlay.Messages
 
 
         #region Property
-        public byte[] Data { get { return this.data; } }
-        public MsgType Type { get { return MessageTypes.FromByte(this.type); } }
-        public static bool IsFilter { get { return db_manager.DynamicProperties.GetAllowProtoFilterNum() == 1; } }
+        public virtual byte[] Data
+        {
+            get { return this.data; }
+        }
+
+        public virtual MsgType Type
+        {
+            get { return MessageTypes.FromByte(this.type); }
+        }
+
+        public static bool IsFilter
+        {
+            get { return db_manager.DynamicProperties.GetAllowProtoFilterNum() == 1; }
+        }
+
+        public virtual byte[] MessageId
+        {
+            get { return this.data.SHA256(); }
+        }
         #endregion
 
 
@@ -67,11 +83,6 @@ namespace Mineral.Common.Overlay.Messages
             }
 
             return Unpooled.WrappedBuffer(result);
-        }
-
-        public byte[] GetMessageId()
-        {
-            return this.data.SHA256();
         }
 
         public static void CompareBytes(byte[] src, byte[] dst)

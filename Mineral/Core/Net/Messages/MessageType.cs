@@ -9,9 +9,9 @@ namespace Mineral.Core.Net.Messages
         public enum MsgType : byte
         {
             FIRST = 0x00,
-            TRX = 0x01,
+            TX = 0x01,
             BLOCK = 0x02,
-            TRXS = 0x03,
+            TXS = 0x03,
             BLOCKS = 0x04,
             BLOCKHEADERS = 0x05,
             INVENTORY = 0x06,
@@ -21,7 +21,7 @@ namespace Mineral.Core.Net.Messages
             ITEM_NOT_FOUND = 0x10,
             FETCH_BLOCK_HEADERS = 0x11,
             BLOCK_INVENTORY = 0x12,
-            TRX_INVENTORY = 0x13,
+            TX_INVENTORY = 0x13,
             P2P_HELLO = 0x20,
             P2P_DISCONNECT = 0x21,
             P2P_PING = 0x22,
@@ -35,11 +35,20 @@ namespace Mineral.Core.Net.Messages
 
         private static Dictionary<int, MsgType> messages = new Dictionary<int, MsgType>();
 
-
         static MessageTypes()
         {
             foreach (MsgType type in Enum.GetValues(typeof(MsgType)))
                 messages.Add((int)type, type);
+        }
+
+        public static bool IsP2p(byte code)
+        {
+            return code <= (byte)MsgType.P2P_PONG && code >= (byte)MsgType.P2P_HELLO;
+        }
+
+        public static bool IsMineral(byte code)
+        {
+            return code <= (byte)MsgType.TX_INVENTORY && code >= (byte)MsgType.FIRST;
         }
 
         public static MsgType FromByte(byte value)
