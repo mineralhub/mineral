@@ -31,6 +31,11 @@ namespace Mineral.Core.Net.Messages
         {
             get { return this.inventory.Type.Equals(InventoryType.Block) ? MessageTypes.MsgType.BLOCK : MessageTypes.MsgType.TX; }
         }
+
+        public override Type AnswerMessage
+        {
+            get { return null; }
+        }
         #endregion
 
 
@@ -56,6 +61,7 @@ namespace Mineral.Core.Net.Messages
             {
                 this.inventory.Ids.Add(ByteString.CopyFrom(hash.Hash));
             }
+
             this.type = (byte)MessageTypes.MsgType.INVENTORY;
             this.data = inventory.ToByteArray();
         }

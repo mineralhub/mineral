@@ -22,9 +22,9 @@ namespace Mineral.Common.Overlay.Discover.Node.Statistics
         private long last_disconnect_time = 0;
         private long first_disconnect_time = 0;
 
-        public readonly MessageStatistics message_statistics = new MessageStatistics();
-        public readonly MessageCount p2p_handshake = new MessageCount();
-        public readonly MessageCount tcp_flow = new MessageCount();
+        private readonly MessageStatistics message_statistics = new MessageStatistics();
+        private readonly MessageCount p2p_handshake = new MessageCount();
+        private readonly MessageCount tcp_flow = new MessageCount();
 
         public readonly SimpleStatter discovery_message_latency;
         public readonly long last_pong_reply_time = 0;
@@ -34,6 +34,21 @@ namespace Mineral.Common.Overlay.Discover.Node.Statistics
 
 
         #region Property
+        public MessageStatistics Message
+        {
+            get { return this.message_statistics; }
+        }
+
+        public MessageCount P2pHandshake
+        {
+            get { return this.p2p_handshake; }
+        }
+
+        public MessageCount TcpFlow
+        {
+            get { return this.tcp_flow; }
+        }
+
         public bool IsPreDefine
         {
             get { return this.is_predefined; }
@@ -56,7 +71,7 @@ namespace Mineral.Common.Overlay.Discover.Node.Statistics
         #region Constructor
         public NodeStatistics(Node node)
         {
-            this.discovery_message_latency = new SimpleStatter(new string(node.Id));
+            this.discovery_message_latency = new SimpleStatter(node.Id.ToString());
             this.reputation = new Reputation(this);
         }
         #endregion
@@ -99,7 +114,7 @@ namespace Mineral.Common.Overlay.Discover.Node.Statistics
 
         public bool IsReputationPenalized()
         {
-            if (WasDisconnected &&  last_remote_disconnect == ReasonCode.TooManyPeers
+            if (WasDisconnected && last_remote_disconnect == ReasonCode.TooManyPeers
                 && DateTime.Now.Ticks - this.last_disconnect_time < TOO_MANY_PEERS_PENALIZE_TIMEOUT)
             {
                 return true;

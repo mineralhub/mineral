@@ -18,6 +18,11 @@ namespace Mineral.Common.Overlay.Messages
         {
             get { return this.message.Reason; }
         }
+
+        public override Type AnswerMessage
+        {
+            get { return null; }
+        }
         #endregion
 
 

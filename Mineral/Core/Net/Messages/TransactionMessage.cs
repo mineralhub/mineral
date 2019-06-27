@@ -2,10 +2,11 @@
 using System.Collections.Generic;
 using System.Text;
 using Google.Protobuf;
+using Mineral.Common.Overlay.Messages;
 using Mineral.Core.Capsule;
 using Mineral.Core.Net.Messages;
 
-namespace Mineral.Common.Overlay.Messages
+namespace Mineral.Core.Net.Messages
 {
     public class TransactionMessage : MineralMessage
     {
@@ -23,6 +24,11 @@ namespace Mineral.Common.Overlay.Messages
         public override byte[] MessageId
         {
             get { return this.transaction.Id.Hash; }
+        }
+
+        public override Type AnswerMessage
+        {
+            get { return null; }
         }
         #endregion
 

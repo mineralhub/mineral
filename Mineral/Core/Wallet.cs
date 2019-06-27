@@ -5,10 +5,13 @@ using System.Text;
 using Google.Protobuf;
 using Mineral.Common.Utils;
 using Mineral.Core.Capsule;
+using Mineral.Core.Config.Arguments;
 using Mineral.Core.Exception;
 using Mineral.Cryptography;
 using Mineral.Utils;
 using Protocol;
+using static Protocol.SmartContract.Types;
+using static Protocol.SmartContract.Types.ABI.Types.Entry.Types;
 
 namespace Mineral.Core
 {
@@ -34,10 +37,86 @@ namespace Mineral.Core
 
 
         #region Internal Method
+        private static byte[] GetSelector(byte[] data)
+        {
+            if (data == null || data.Length < 4)
+                return null;
+
+            byte[] result = new byte[4];
+            Array.Copy(data, 0, result, 0, 4);
+
+            return result;
+        }
+
+        private static bool IsConstant(ABI abi, byte[] selector)
+        {
+            bool result = false;
+
+            if (selector == null || selector.Length != 4 || abi.Entrys.Count == 0)
+                return false;
+
+            for (int i = 0; i < abi.Entrys.Count; i++)
+            {
+                ABI.Types.Entry entry = abi.Entrys[i];
+                if (entry.Type != ABI.Types.Entry.Types.EntryType.Function)
+                {
+                    continue;
+                }
+
+                int input_count = entry.Inputs.Count;
+
+                StringBuilder sb = new StringBuilder();
+                sb.Append(entry.Name);
+                sb.Append("(");
+                for (int k = 0; k < input_count; k++)
+                {
+                    var param = entry.Inputs[k];
+                    sb.Append(param.Type);
+                    if (k + 1 < input_count)
+                    {
+                        sb.Append(",");
+                    }
+                }
+                sb.Append(")");
+
+                byte[] func_selector = new byte[4];
+                Array.Copy(Hash.SHA3(sb.ToString().GetBytes()), 0, func_selector, 0, 4);
+                if (func_selector.SequenceEqual(selector))
+                {
+                    result = entry.Constant == true || entry.StateMutability.Equals(StateMutabilityType.View);
+                }
+            }
+
+            return result;
+        }
         #endregion
 
 
         #region External Method
+        public static bool IsConstant(ABI abi, TriggerSmartContract trigger_contract)
+        {
+            try
+            {
+                bool constant = IsConstant(abi, GetSelector(trigger_contract.Data.ToByteArray()));
+                if (constant)
+                {
+                    if (Args.Instance.VM.SupportConstant == false)
+                    {
+                        throw new ContractValidateException("this node don't support constant");
+                    }
+                }
+                return constant;
+            }
+            catch (ContractValidateException e)
+            {
+                throw e;
+            }
+            catch
+            {
+                return false;
+            }
+        }
+
         public static bool CheckPermissionOperations(Permission permission, Transaction.Types.Contract contract)
         {
             ByteString operations = permission.Operations;

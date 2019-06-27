@@ -7,7 +7,7 @@ using Mineral.Core.Net.Messages;
 using Mineral.Utils;
 using Protocol;
 
-namespace Mineral.Common.Overlay.Messages
+namespace Mineral.Core.Net.Messages
 {
     public class BlocksMessage : MineralMessage
     {
@@ -20,6 +20,11 @@ namespace Mineral.Common.Overlay.Messages
         public List<Protocol.Block> Blocks
         {
             get { return this.blocks; }
+        }
+
+        public override Type AnswerMessage
+        {
+            get { return null; }
         }
         #endregion
 

@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Text;
 using Mineral.Core.Net.Messages;
 
-namespace Mineral.Common.Overlay.Messages
+namespace Mineral.Core.Net.Messages
 {
     public class FetchBlockHeadersMessage : InventoryMessage
     {

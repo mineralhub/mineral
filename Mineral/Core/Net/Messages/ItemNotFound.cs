@@ -4,7 +4,7 @@ using System.Text;
 using Google.Protobuf;
 using Mineral.Core.Net.Messages;
 
-namespace Mineral.Common.Overlay.Messages
+namespace Mineral.Core.Net.Messages
 {
     public class ItemNotFoundMessage : MineralMessage
     {
@@ -14,6 +14,10 @@ namespace Mineral.Common.Overlay.Messages
 
 
         #region Property
+        public override Type AnswerMessage
+        {
+            get { return null; }
+        }
         #endregion
 
 

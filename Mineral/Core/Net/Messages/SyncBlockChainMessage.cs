@@ -4,7 +4,7 @@ using System.Text;
 using Mineral.Core.Capsule;
 using Mineral.Core.Net.Messages;
 
-namespace Mineral.Common.Overlay.Messages
+namespace Mineral.Core.Net.Messages
 {
     public class SyncBlockChainMessage : BlockInventoryMessage
     {
@@ -13,6 +13,10 @@ namespace Mineral.Common.Overlay.Messages
 
 
         #region Property
+        public override Type AnswerMessage
+        {
+            get { return GetType(); }
+        }
         #endregion
 
 

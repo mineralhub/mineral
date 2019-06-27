@@ -56,7 +56,7 @@ namespace Mineral.Common.Overlay.Messages
                     return new ItemNotFoundMessage();
                 case MessageTypes.MsgType.FETCH_BLOCK_HEADERS:
                     return new FetchBlockHeadersMessage(packed);
-                case MessageTypes.MsgType.TRX_INVENTORY:
+                case MessageTypes.MsgType.TX_INVENTORY:
                     return new TransactionInventoryMessage(packed);
                 default:
                     throw new P2pException(

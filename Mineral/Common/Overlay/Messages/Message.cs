@@ -40,6 +40,8 @@ namespace Mineral.Common.Overlay.Messages
         {
             get { return this.data.SHA256(); }
         }
+
+        public abstract Type AnswerMessage { get; }
         #endregion
 
 

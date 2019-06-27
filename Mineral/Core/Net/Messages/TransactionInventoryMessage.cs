@@ -4,7 +4,7 @@ using System.Text;
 using Mineral.Common.Utils;
 using Mineral.Core.Net.Messages;
 
-namespace Mineral.Common.Overlay.Messages
+namespace Mineral.Core.Net.Messages
 {
     public class TransactionInventoryMessage : InventoryMessage
     {

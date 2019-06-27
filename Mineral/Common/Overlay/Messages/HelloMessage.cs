@@ -1,4 +1,5 @@
-﻿using System.Text;
+﻿using System;
+using System.Text;
 using Google.Protobuf;
 using Mineral.Common.Overlay.Discover.Node;
 using Mineral.Core.Capsule;
@@ -48,6 +49,11 @@ namespace Mineral.Common.Overlay.Messages
         public BlockCapsule.BlockId HeadBlockId
         {
             get { return new BlockCapsule.BlockId(this.message.HeadBlockId.Hash, this.message.HeadBlockId.Number); }
+        }
+
+        public override Type AnswerMessage
+        {
+            get { return null; }
         }
         #endregion
 

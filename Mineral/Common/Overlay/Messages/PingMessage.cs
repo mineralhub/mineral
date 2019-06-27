@@ -15,6 +15,11 @@ namespace Mineral.Common.Overlay.Messages
         #region Property
         public override byte[] Data => FIXED_PAYLOAD;
         public override MessageTypes.MsgType Type => (MessageTypes.MsgType)this.type;
+
+        public override Type AnswerMessage
+        {
+            get { return GetType(); }
+        }
         #endregion
 
 

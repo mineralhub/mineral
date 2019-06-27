@@ -4,7 +4,7 @@ using System.Text;
 using Mineral.Core.Capsule;
 using Mineral.Core.Net.Messages;
 
-namespace Mineral.Common.Overlay.Messages
+namespace Mineral.Core.Net.Messages
 {
     public class BlockMessage : MineralMessage
     {
@@ -22,6 +22,11 @@ namespace Mineral.Common.Overlay.Messages
         public override byte[] MessageId
         {
             get { return this.block.Id.Hash; }
+        }
+
+        public override Type AnswerMessage
+        {
+            get { return null; }
         }
         #endregion
 

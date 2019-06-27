@@ -13,7 +13,7 @@ namespace Mineral.Common.Overlay.Messages
     public class MessageCodec : ByteToMessageDecoder
     {
         #region Field
-        private IChannel channel;
+        private Channel channel;
         private P2pMessageFactory p2p_message = new P2pMessageFactory();
         private MineralMessageFactory mineral_message = new MineralMessageFactory();
         #endregion
@@ -60,7 +60,7 @@ namespace Mineral.Common.Overlay.Messages
             try
             {
                 Message msg = CreateMessage(encoded);
-                channel.NodeStatistics.tcpFlow.add(length);
+                channel.Node.TcpFlow.Add(length);
                 output.Add(msg);
             }
             catch (Exception e)

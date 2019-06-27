@@ -16,6 +16,11 @@ namespace Mineral.Core.Net.Messages
 
         #region Property
         public Transactions Transactions => this.transactions;
+
+        public override Type AnswerMessage
+        {
+            get { return null; }
+        }
         #endregion
 
 
@@ -23,14 +28,14 @@ namespace Mineral.Core.Net.Messages
         public TransactionsMessage(List<Transaction> txs)
         {
             txs.ForEach(tx => this.transactions.Transactions_.Add(tx));
-            this.type = (byte)MessageTypes.MsgType.TRXS;
+            this.type = (byte)MessageTypes.MsgType.TXS;
             this.data = this.transactions.ToByteArray();
         }
 
         public TransactionsMessage(byte[] data)
             : base(data)
         {
-            this.type = (byte)MessageTypes.MsgType.TRXS;
+            this.type = (byte)MessageTypes.MsgType.TXS;
             this.transactions = Transactions.Parser.ParseFrom(data);
             if (IsFilter)
             {

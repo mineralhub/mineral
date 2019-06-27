@@ -9,7 +9,7 @@ using Mineral.Utils;
 using Protocol;
 using static Mineral.Core.Capsule.BlockCapsule;
 
-namespace Mineral.Common.Overlay.Messages
+namespace Mineral.Core.Net.Messages
 {
     public class BlockInventoryMessage : MineralMessage
     {
@@ -27,6 +27,11 @@ namespace Mineral.Common.Overlay.Messages
         public List<BlockCapsule.BlockId> Ids
         {
             get { return this.inventory.Ids.Select(id => new BlockId(id.Hash, id.Number)).ToList(); }
+        }
+
+        public override Type AnswerMessage
+        {
+            get { return null; }
         }
         #endregion
 

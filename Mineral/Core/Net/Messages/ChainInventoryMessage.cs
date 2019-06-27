@@ -7,7 +7,7 @@ using Mineral.Core.Capsule;
 using Mineral.Core.Net.Messages;
 using Mineral.Utils;
 
-namespace Mineral.Common.Overlay.Messages
+namespace Mineral.Core.Net.Messages
 {
     public class ChainInventoryMessage : MineralMessage
     {
@@ -30,6 +30,11 @@ namespace Mineral.Common.Overlay.Messages
         public long RemainNumber
         {
             get { return this.inventory.RemainNum; }
+        }
+
+        public override Type AnswerMessage
+        {
+            get { return null; }
         }
         #endregion
 
