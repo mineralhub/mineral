@@ -2,12 +2,10 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Reflection;
-using System.Text;
 using Commander.NET;
 using Commander.NET.Attributes;
 using Mineral.CommandLine;
-using Mineral.Common.Overlay.Discover;
+using Mineral.Common.Overlay.Discover.Node;
 using Mineral.Core.Database;
 using Mineral.Core.Exception;
 using Mineral.Utils;
@@ -75,6 +73,9 @@ namespace Mineral.Core.Config.Arguments
 
         [Parameter("-v", "--version", Description = "Version")]
         private bool version = false;
+
+        [Parameter("--long-running-time")]
+        private int long_running_time = 10;
 
         [Parameter("--min-time-ratio")]
         private double min_time_ratio = 0.0F;
@@ -155,6 +156,11 @@ namespace Mineral.Core.Config.Arguments
         {
             get { return this.block_num_Energy_limit; }
             set { this.block_num_Energy_limit = value; }
+        }
+
+        public int LongRunningTime
+        {
+            get { return this.long_running_time; }
         }
 
         public bool IsWitness
@@ -420,9 +426,9 @@ namespace Mineral.Core.Config.Arguments
             instance.Node.TcpNettyWorkThreadNum = Config.Instance.Node.TcpNettyWorkThreadNum ?? 0;
             instance.Node.UdpNettyWorkThreadNum = Config.Instance.Node.UdpNettyWorkThreadNum ?? 1;
 
-            instance.Node.Active = Config.Instance.Node.Active?.Select(uri => Mineral.Common.Overlay.Discover.Node.InstanceOf(uri)).ToList();
-            instance.Node.Passive = Config.Instance.Node.Passive?.Select(uri => Mineral.Common.Overlay.Discover.Node.InstanceOf(uri)).ToList();
-            instance.Node.FastForward = Config.Instance.Node.FastForward?.Select(uri => Mineral.Common.Overlay.Discover.Node.InstanceOf(uri)).ToList();
+            instance.Node.Active = Config.Instance.Node.Active?.Select(uri => Mineral.Common.Overlay.Discover.Node.Node.InstanceOf(uri)).ToList();
+            instance.Node.Passive = Config.Instance.Node.Passive?.Select(uri => Mineral.Common.Overlay.Discover.Node.Node.InstanceOf(uri)).ToList();
+            instance.Node.FastForward = Config.Instance.Node.FastForward?.Select(uri => Mineral.Common.Overlay.Discover.Node.Node.InstanceOf(uri)).ToList();
 
             instance.Node.Discovery.Enable = Config.Instance.Node.Discovery.Enable ?? false;
             instance.Node.Discovery.Persist = Config.Instance.Node.Discovery.Persist ?? false;
