@@ -29,10 +29,26 @@ namespace Mineral.Common.Net.Udp.Message.Discover
         {
             get { return this.message.Timestamp; }
         }
+
+        public List<Node> Nodes
+        {
+            get
+            {
+                List<Node> nodes = new List<Node>();
+                foreach (var neighbour in this.message.Neighbours_)
+                {
+                    nodes.Add(new Node(neighbour.NodeId.ToByteArray(),
+                                       neighbour.Address.ToByteArray().ToString(),
+                                       neighbour.Port));
+                }
+
+                return nodes;
+            }
+        }
         #endregion
 
 
-        #region Contructor
+            #region Contructor
         public NeighborsMessage(byte[] data)
             : base(UdpMessageType.DISCOVER_NEIGHBORS, data)
         {
