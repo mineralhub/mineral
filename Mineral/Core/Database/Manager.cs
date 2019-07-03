@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
+using Mineral.Common.Overlay.Discover.Node;
 using Mineral.Common.Utils;
 using Mineral.Core.Capsule;
 using Mineral.Core.Exception;
@@ -35,6 +36,8 @@ namespace Mineral.Core.Database
         private DelegatedResourceAccountIndexStore delegate_resource_Account_index_store;
         private DynamicPropertiesStore dynamic_properties_store = null;
 
+        private PeerStore peer_store = new PeerStore();
+
         private ForkController fork_controller = ForkController.Instance;
         private WitnessController witness_controller = null;
         private BlockCapsule genesis_block = null;
@@ -66,6 +69,38 @@ namespace Mineral.Core.Database
 
         public BlockCapsule GenesisBlock => this.genesis_block;
 
+
+        public BlockId GenesisBlockId
+        {
+            get { return this.genesis_block != null ? this.genesis_block.Id : null; }
+        }
+
+        public BlockId SolidBlockId
+        {
+            get
+            {
+                try
+                {
+                    long num = this.dynamic_properties_store.GetLatestSolidifiedBlockNum();
+                    return GetBlockByNum(num)?.Id;
+                }
+                catch
+                {
+                    return GenesisBlock?.Id;
+                }
+            }
+        }
+
+        public BlockId HeadBlockId
+        {
+            get
+            {
+                return new BlockId(this.dynamic_properties_store.GetLatestBlockHeaderHash(),
+                                   this.dynamic_properties_store.GetLatestBlockHeaderNumber());
+            }
+        }
+
+
         public ForkController ForkController
         {
             get { return this.fork_controller; }
@@ -74,7 +109,7 @@ namespace Mineral.Core.Database
         public WitnessController WitnessController
         {
             get { return this.witness_controller; }
-            set { this.witness_controller = value ; }
+            set { this.witness_controller = value; }
         }
         #endregion
 
@@ -167,9 +202,31 @@ namespace Mineral.Core.Database
                 return this.asset_issue_v2_store;
         }
 
+        public HashSet<Node> ReadNeighbours()
+        {
+            return this.peer_store.Get(Encoding.UTF8.GetBytes("neighbours"));
+        }
+
+        public void ClearAndWriteNeighbours(HashSet<Node> nodes)
+        {
+            this.peer_store.Put(Encoding.UTF8.GetBytes("neighbours"), nodes);
+        }
+
         public bool LastHeadBlockIsMaintenance()
         {
             return DynamicProperties.GetStateFlag() == 1;
+        }
+
+        public bool ContainBlockInMainChain(BlockId blockId)
+        {
+            try
+            {
+                return this.block_store.Get(blockId.Hash) != null;
+            }
+            catch (ItemNotFoundException e)
+            {
+                return false;
+            }
         }
 
         public void PutExchangeCapsule(ExchangeCapsule exchange)
