@@ -64,7 +64,7 @@ namespace Mineral.Common.Net.Udp.Message.Discover
             this.message = new Protocol.FindNeighbours();
             this.message.From = endpoint_from;
             this.message.TargetId = ByteString.CopyFrom(target_id);
-            this.message.Timestamp = DateTime.Now.Ticks;
+            this.message.Timestamp = Helper.CurrentTimeMillis();
             this.data = this.message.ToByteArray();
         }
         #endregion

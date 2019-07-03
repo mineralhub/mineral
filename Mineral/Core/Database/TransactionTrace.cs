@@ -118,7 +118,7 @@ namespace Mineral.Core.Database
 
         public void Init(BlockCapsule block, bool event_plugin_loaded)
         {
-            this.tx_start_time = DateTime.Now.Ticks;
+            this.tx_start_time = Helper.CurrentTimeMillis();
             Deposit deposit = Deposit.CreateRoot(this.db_manager);
             this.runtime = new RunTime(this, block, deposit, new ProgramInvokeFactory());
             this.runtime.SetEnableEventListener(event_plugin_loaded);
@@ -214,7 +214,7 @@ namespace Mineral.Core.Database
                 {
                     this.time_result_type = TimeResultType.OutOfTime;
                 }
-                else if (DateTime.Now.Ticks - this.tx_start_time > Args.Instance.LongRunningTime)
+                else if (Helper.CurrentTimeMillis() - this.tx_start_time > Args.Instance.LongRunningTime)
                 {
                     this.time_result_type = TimeResultType.LongRunning;
                 }

@@ -74,13 +74,13 @@ namespace Mineral.Common.Net.Udp.Message.Discover
             Protocol.Endpoint endpoint_to = new Protocol.Endpoint();
             endpoint_to.NodeId = ByteString.CopyFrom(to.Id);
             endpoint_to.Port = to.Port;
-            endpoint_to.Address = ByteString.CopyFrom(Encoding.UTF8.GetBytes(to.Host)));
+            endpoint_to.Address = ByteString.CopyFrom(Encoding.UTF8.GetBytes(to.Host));
 
             this.message = new Protocol.PingMessage();
             this.message.Version = (int)Args.Instance.Node.P2P.Version;
             this.message.From = endpoint_from;
             this.message.To = endpoint_to;
-            this.message.Timestamp = DateTime.Now.Ticks;
+            this.message.Timestamp = Helper.CurrentTimeMillis();
             this.data = this.message.ToByteArray();
         }
         #endregion

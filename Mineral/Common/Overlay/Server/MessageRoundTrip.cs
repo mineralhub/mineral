@@ -54,12 +54,12 @@ namespace Mineral.Common.Overlay.Server
 
         public void SaveTime()
         {
-            this.last_timestamp = DateTime.Now.Ticks;
+            this.last_timestamp = Helper.CurrentTimeMillis();
         }
 
         public bool HasToRetry()
         {
-            return 20000 < DateTime.Now.Ticks - this.last_timestamp;
+            return 20000 < Helper.CurrentTimeMillis() - this.last_timestamp;
         }
         #endregion
     }

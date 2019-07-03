@@ -23,7 +23,7 @@ namespace Mineral.Common.Overlay.Discover.Node.Statistics
         #region Constructor
         public MessageCount()
         {
-            this.index_time = DateTime.Now.Ticks / 1000;
+            this.index_time = Helper.CurrentTimeMillis() / 1000;
             this.index = (int)(this.index_time % SIZE);
         }
         #endregion
@@ -36,7 +36,7 @@ namespace Mineral.Common.Overlay.Discover.Node.Statistics
         #region Internal Method
         private void Update()
         {
-            long time = DateTime.Now.Ticks / 1000;
+            long time = Helper.CurrentTimeMillis() / 1000;
             long gap = time - this.index_time;
 
             int k = gap > SIZE ? SIZE : (int)gap;

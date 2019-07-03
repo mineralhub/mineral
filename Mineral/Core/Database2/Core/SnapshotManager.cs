@@ -419,17 +419,17 @@ namespace Mineral.Core.Database2.Core
 
             if (ShouldBeRefreshed())
             {
-                long start = DateTime.Now.Ticks;
+                long start = Helper.CurrentTimeMillis();
                 DeleteCheckPoint();
                 CreateCheckPoint();
-                long end = DateTime.Now.Ticks;
+                long end = Helper.CurrentTimeMillis();
                 Refresh();
                 this.flush_count = 0;
                 Logger.Info(
                     string.Format("flush cost:{0}, create checkpoint cost:{1}, refresh cost:{2}",
-                                DateTime.Now.Ticks - start,
+                                Helper.CurrentTimeMillis() - start,
                                 end - start,
-                                DateTime.Now.Ticks - end
+                                Helper.CurrentTimeMillis() - end
                 ));
             }
         }

@@ -151,7 +151,7 @@ namespace Mineral.Core.Witness
         public long GetSlotTime(long slot_num)
         {
             if (slot_num == 0)
-                return DateTime.Now.Ticks;
+                return Helper.CurrentTimeMillis();
 
             long interval = Parameter.ChainParameters.BLOCK_PRODUCED_INTERVAL;
             if (this.db_manager.DynamicProperties.GetLatestBlockHeaderNumber() == 0)

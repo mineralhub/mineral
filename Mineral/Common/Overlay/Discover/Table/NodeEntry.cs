@@ -94,7 +94,7 @@ namespace Mineral.Common.Overlay.Discover.Table
         #region External Method
         public void Touch()
         {
-            this.modified = DateTime.Now.Ticks;
+            this.modified = Helper.CurrentTimeMillis();
         }
 
         public static int GetDistance(byte[] owner_id, byte[] target_id)
