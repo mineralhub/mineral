@@ -94,6 +94,11 @@ namespace Mineral
             return (uint)(time.ToUniversalTime() - unixEpoch).TotalSeconds;
         }
 
+        public static long CurrentTimeMillis()
+        {
+            return (long)(DateTime.UtcNow - unixEpoch).TotalMilliseconds;
+        }
+
         public static long NanoTime()
         {
             long nano = 10000L * Stopwatch.GetTimestamp();
