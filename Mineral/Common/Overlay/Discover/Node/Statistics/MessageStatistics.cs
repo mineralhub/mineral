@@ -1,24 +1,16 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
+using Mineral.Common.Net.Udp.Message;
 using Mineral.Common.Overlay.Messages;
 using Mineral.Core.Net.Messages;
 
 namespace Mineral.Common.Overlay.Discover.Node.Statistics
 {
+    using Message = Common.Overlay.Messages.Message;
+
     public class MessageStatistics
     {
-        public enum UdpMessageType : byte
-        {
-            DISCOVER_PING = 0x01,
-            DISCOVER_PONG = 0x02,
-            DISCOVER_FIND_NODE = 0x03,
-            DISCOVER_NEIGHBORS = 0x04,
-            BACKUP_KEEP_ALIVE = 0x05,
-            UNKNOWN = 0xFF
-        }
-
-
         #region Field
         //udp discovery
         public readonly MessageCount DiscoverInPing = new MessageCount();
@@ -200,7 +192,7 @@ namespace Mineral.Common.Overlay.Discover.Node.Statistics
                     int inventory_count = inventory_message.Inventory.Ids.Count;
                     if (flag)
                     {
-                        if (inventory_message.InventoryMessageType ==  MessageTypes.MsgType.trxTRX)
+                        if (inventory_message.InventoryMessageType ==  MessageTypes.MsgType.TX)
                         {
                             MineralInTrxInventory.Add();
                             MineralInTrxInventoryElement.Add(inventory_count);
@@ -213,7 +205,7 @@ namespace Mineral.Common.Overlay.Discover.Node.Statistics
                     }
                     else
                     {
-                        if (inventory_message.InventoryMessageType == MessageTypes.MsgType.TRX)
+                        if (inventory_message.InventoryMessageType == MessageTypes.MsgType.TX)
                         {
                             MineralOutTrxInventory.Add();
                             MineralOutTrxInventoryElement.Add(inventory_count);
@@ -230,7 +222,7 @@ namespace Mineral.Common.Overlay.Discover.Node.Statistics
                     int fetch_count = fetch_inventory_message.Inventory.Ids.Count;
                     if (flag)
                     {
-                        if (fetch_inventory_message.InventoryMessageType == MessageTypes.MsgType.TRX)
+                        if (fetch_inventory_message.InventoryMessageType == MessageTypes.MsgType.TX)
                         {
                             MineralInTrxFetchInvData.Add();
                             MineralInTrxFetchInvDataElement.Add(fetch_count);
@@ -243,7 +235,7 @@ namespace Mineral.Common.Overlay.Discover.Node.Statistics
                     }
                     else
                     {
-                        if (fetch_inventory_message.InventoryMessageType == MessageTypes.MsgType.TRX)
+                        if (fetch_inventory_message.InventoryMessageType == MessageTypes.MsgType.TX)
                         {
                             MineralOutTrxFetchInvData.Add();
                             MineralOutTrxFetchInvDataElement.Add(fetch_count);
@@ -255,7 +247,7 @@ namespace Mineral.Common.Overlay.Discover.Node.Statistics
                         }
                     }
                     break;
-                case MessageTypes.MsgType.TRXS:
+                case MessageTypes.MsgType.TXS:
                     TransactionsMessage transactionsMessage = (TransactionsMessage)message;
                     if (flag)
                     {
@@ -268,7 +260,7 @@ namespace Mineral.Common.Overlay.Discover.Node.Statistics
                         MineralOutTrx.Add(transactionsMessage.Transactions.Transactions_.Count);
                     }
                     break;
-                case MessageTypes.MsgType.TRX:
+                case MessageTypes.MsgType.TX:
                     if (flag)
                     {
                         MineralInMessage.Add();

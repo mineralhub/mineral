@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
+using System.Threading;
 using Mineral.Core.Config.Arguments;
 using Protocol;
 
@@ -17,8 +18,8 @@ namespace Mineral.Common.Overlay.Discover.Node.Statistics
         private bool is_predefined = false;
         private int persisted_reputation = 0;
         private int disconnect_times = 0;
-        private ReasonCode? last_remote_disconnect;
-        private ReasonCode? last_local_disconnect;
+        private ReasonCode? last_remote_disconnect = ReasonCode.Unknown;
+        private ReasonCode? last_local_disconnect = ReasonCode.Unknown;
         private long last_disconnect_time = 0;
         private long first_disconnect_time = 0;
 
@@ -26,15 +27,15 @@ namespace Mineral.Common.Overlay.Discover.Node.Statistics
         private readonly MessageCount p2p_handshake = new MessageCount();
         private readonly MessageCount tcp_flow = new MessageCount();
 
-        public readonly SimpleStatter discovery_message_latency;
-        public readonly long last_pong_reply_time = 0;
+        private readonly SimpleStatter discovery_message_latency;
+        private long last_pong_reply_time = 0;
 
         private Reputation reputation = null;
         #endregion
 
 
         #region Property
-        public MessageStatistics Message
+        public MessageStatistics MessageStatistics
         {
             get { return this.message_statistics; }
         }
@@ -61,10 +62,55 @@ namespace Mineral.Common.Overlay.Discover.Node.Statistics
             set { this.persisted_reputation = value; }
         }
 
-        public bool WasDisconnected => this.last_disconnect_time > 0;
-        public int DisconnectTime => this.disconnect_times;
-        public ReasonCode? LastRemoteDisconnect => this.last_remote_disconnect;
-        public ReasonCode? LastLocalDisconnect => this.last_local_disconnect;
+        public bool WasDisconnected
+        {
+            get { return this.last_disconnect_time > 0; }
+        }
+
+        public int DisconnectTime
+        {
+            get { return this.disconnect_times; }
+        }
+
+        public ReasonCode? LastRemoteDisconnect
+        {
+            get { return this.last_remote_disconnect; }
+        }
+
+        public ReasonCode? LastLocalDisconnect
+        {
+            get { return this.last_local_disconnect; }
+        }
+
+        public long LastPongReplyTime
+        {
+            get { return this.last_pong_reply_time; }
+            set { Interlocked.Exchange(ref this.last_pong_reply_time, value); }
+        }
+
+        public int Reputation
+        {
+            get
+            {
+                int score = 0;
+                if (!IsReputationPenalized())
+                {
+                    score += this.persisted_reputation / 5 + this.reputation.Calculate();
+                }
+
+                if (this.is_predefined)
+                {
+                    score += REPUTATION_PREDEFINED;
+                }
+
+                return score;
+            }
+        }
+
+        public SimpleStatter DiscoveryMessageLatency
+        {
+            get { return this.discovery_message_latency; }
+        }
         #endregion
 
 
@@ -86,22 +132,6 @@ namespace Mineral.Common.Overlay.Discover.Node.Statistics
 
 
         #region External Method
-        public int GetReputation()
-        {
-            int score = 0;
-            if (!IsReputationPenalized())
-            {
-                score += this.persisted_reputation / 5 + this.reputation.Calculate();
-            }
-
-            if (this.is_predefined)
-            {
-                score += REPUTATION_PREDEFINED;
-            }
-
-            return score;
-        }
-
         public ReasonCode? GetDisconnectReason()
         {
             if (this.last_local_disconnect != null)
@@ -115,19 +145,19 @@ namespace Mineral.Common.Overlay.Discover.Node.Statistics
         public bool IsReputationPenalized()
         {
             if (WasDisconnected && last_remote_disconnect == ReasonCode.TooManyPeers
-                && DateTime.Now.Ticks - this.last_disconnect_time < TOO_MANY_PEERS_PENALIZE_TIMEOUT)
+                && Helper.CurrentTimeMillis() - this.last_disconnect_time < TOO_MANY_PEERS_PENALIZE_TIMEOUT)
             {
                 return true;
             }
 
             if (WasDisconnected && last_remote_disconnect == ReasonCode.DuplicatePeer
-                && DateTime.Now.Ticks - this.last_disconnect_time < TOO_MANY_PEERS_PENALIZE_TIMEOUT)
+                && Helper.CurrentTimeMillis() - this.last_disconnect_time < TOO_MANY_PEERS_PENALIZE_TIMEOUT)
             {
                 return true;
             }
 
             if (this.first_disconnect_time > 0
-                && (DateTime.Now.Ticks - this.first_disconnect_time) > CLEAR_CYCLE_TIME)
+                && (Helper.CurrentTimeMillis() - this.first_disconnect_time) > CLEAR_CYCLE_TIME)
             {
                 this.last_local_disconnect = null;
                 this.last_remote_disconnect = null;
@@ -163,19 +193,19 @@ namespace Mineral.Common.Overlay.Discover.Node.Statistics
 
         public void NodeDisconnectedRemote(ReasonCode reason)
         {
-            this.last_disconnect_time = DateTime.Now.Ticks;
+            this.last_disconnect_time = Helper.CurrentTimeMillis();
             this.last_remote_disconnect = reason;
         }
 
         public void NodeDisconnectedLocal(ReasonCode reason)
         {
-            this.last_disconnect_time = DateTime.Now.Ticks;
+            this.last_disconnect_time = Helper.CurrentTimeMillis();
             this.last_local_disconnect = reason;
         }
 
         public void NodifyDisconnect()
         {
-            this.last_disconnect_time = DateTime.Now.Ticks;
+            this.last_disconnect_time = Helper.CurrentTimeMillis();
             if (this.first_disconnect_time <= 0)
                 this.first_disconnect_time = last_disconnect_time;
 
@@ -188,7 +218,7 @@ namespace Mineral.Common.Overlay.Discover.Node.Statistics
 
         public override string ToString()
         {
-            return "NodeStat[reput: " + GetReputation() + "(" + this.persisted_reputation + "), discover: "
+            return "NodeStat[reput: " + Reputation + "(" + this.persisted_reputation + "), discover: "
                 + this.message_statistics.DiscoverInPong + "/" + this.message_statistics.DiscoverOutPing + " "
                 + this.message_statistics.DiscoverOutPong + "/" + this.message_statistics.DiscoverInPing + " "
                 + this.message_statistics.DiscoverInNeighbours + "/" + this.message_statistics.DiscoverOutFindNode
