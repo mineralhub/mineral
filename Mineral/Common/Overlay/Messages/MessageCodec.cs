@@ -20,6 +20,11 @@ namespace Mineral.Common.Overlay.Messages
 
 
         #region Property
+        public Channel Channel
+        {
+            get { return this.channel; }
+            set { this.channel = value; }
+        }
         #endregion
 
 
@@ -60,12 +65,12 @@ namespace Mineral.Common.Overlay.Messages
             try
             {
                 Message msg = CreateMessage(encoded);
-                channel.Node.TcpFlow.Add(length);
+                this.channel.NodeStatistics.TcpFlow.Add(length);
                 output.Add(msg);
             }
             catch (Exception e)
             {
-                channel.processException(e);
+                this.channel.ProcessException(e);
             }
         }
         #endregion
