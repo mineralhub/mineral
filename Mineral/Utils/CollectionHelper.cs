@@ -15,5 +15,25 @@ namespace Mineral.Utils
         {
             return !collection.IsNullOrEmpty();
         }
+
+        public static List<T> Truncate<T>(this List<T> collection, int limit)
+        {
+            if (limit > collection.Count)
+            {
+                return new List<T>(collection);
+            }
+
+            List<T> result = new List<T>();
+            foreach (T item in collection)
+            {
+                result.Add(item);
+                if (result.Count == limit)
+                {
+                    break;
+                }
+            }
+
+            return result;
+        }
     }
 }
