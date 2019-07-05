@@ -17,8 +17,10 @@ namespace Mineral.Common.Backup
     public class BackupServer
     {
         #region Field
+        private static BackupServer instance = null;
+
         private int port = (int)Args.Instance.Node.Backup.Port;
-        private BackupManager backup_manager = null;
+        private BackupManager backup_manager = BackupManager.Instance;
         private IChannel channel = null;
         private WireTrafficStats stats = new WireTrafficStats();
         private volatile bool is_shutdown = false;
@@ -26,14 +28,15 @@ namespace Mineral.Common.Backup
 
 
         #region Property
+        public static BackupServer Instance
+        {
+            get { return instance ?? new BackupServer(); }
+        }
         #endregion
 
 
         #region Contructor
-        public BackupServer(BackupManager backup_manager)
-        {
-            this.backup_manager = backup_manager;
-        }
+        private BackupServer() { }
         #endregion
 
 

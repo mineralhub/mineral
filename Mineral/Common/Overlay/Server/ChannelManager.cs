@@ -15,14 +15,16 @@ namespace Mineral.Common.Overlay.Server
     public class ChannelManager
     {
         #region Field
+        private static ChannelManager instance = null;
+
         private PeerServer peer_server = new PeerServer();
         private PeerClient peer_client = new PeerClient();
-        private SyncPool sync_pool = new SyncPool();
+        private SyncPool sync_pool = SyncPool.Instance;
 
         private CacheItemPolicy bad_peers_policy = new CacheItemPolicy();
         private CacheItemPolicy recently_disconnected_policy = new CacheItemPolicy();
-        private ObjectCache bad_peers = MemoryCache.Default;
-        private ObjectCache recently_disconnected = MemoryCache.Default;
+        private MemoryCache bad_peers = MemoryCache.Default;
+        private MemoryCache recently_disconnected = MemoryCache.Default;
 
         private ConcurrentDictionary<byte[], Channel> active_peers = new ConcurrentDictionary<byte[], Channel>();
         private ConcurrentDictionary<IPAddress, Node> trust_nodes = new ConcurrentDictionary<IPAddress, Node>();
@@ -32,9 +34,24 @@ namespace Mineral.Common.Overlay.Server
 
 
         #region Property
+        public static ChannelManager Instance
+        {
+            get { return instance ?? new ChannelManager(); }
+        }
+
         public ICollection<Channel> ActivePeer
         {
             get { return this.active_peers.Values; }
+        }
+
+        public ObjectCache BadPeers
+        {
+            get { return this.bad_peers; }
+        }
+
+        public ObjectCache RecentlyDisconnected
+        {
+            get { return this.recently_disconnected; }
         }
 
         public ConcurrentDictionary<IPAddress, Node> TrustNodes
@@ -55,6 +72,7 @@ namespace Mineral.Common.Overlay.Server
 
 
         #region Constructor
+        private ChannelManager() { }
         #endregion
 
 
@@ -104,7 +122,7 @@ namespace Mineral.Common.Overlay.Server
                               this.active_nodes.Count,
                               this.fast_forward_nodes.Count));
 
-            this.sync_pool.Init();
+            this.sync_pool.init();
             fastForward.init();
         }
 
@@ -155,6 +173,20 @@ namespace Mineral.Common.Overlay.Server
             activePeers.put(peer.getNodeIdWrapper(), peer);
             logger.info("Add active peer {}, total active peers: {}", peer, activePeers.size());
             return true;
+        }
+
+        public int GetConnectionNum(IPAddress address)
+        {
+            int count = 0;
+            
+            foreach (Channel channel in this.active_peers.Values)
+            {
+                if (channel.Address.Equals(address))
+                {
+                    count++;
+                }
+            }
+            return count;
         }
         #endregion
     }
