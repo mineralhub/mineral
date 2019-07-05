@@ -23,7 +23,7 @@ namespace Mineral.Core.Capsule
         private Transaction transaction = null;
         private bool is_verifyed = false;
         private long block_num = -1;
-        private TransactionTrace tx_trace;
+        private TransactionTrace transaction_trace = null;
         #endregion
 
 
@@ -62,6 +62,18 @@ namespace Mineral.Core.Capsule
         public contractResult ContractResult
         {
             get { return this.transaction.Ret.Count > 0 ? this.transaction.Ret[0].ContractRet : contractResult.Unknown; }
+        }
+
+        public TransactionTrace TransactionTrace
+        {
+            get { return this.transaction_trace; }
+            set { this.transaction_trace = value; }
+        }
+
+        public bool IsVerified
+        {
+            get { return this.is_verifyed; }
+            set { this.is_verifyed = value; }
         }
         #endregion
 
@@ -687,7 +699,7 @@ namespace Mineral.Core.Capsule
             return result;
         }
 
-        public static bool ValidateSignature(Transaction tx, byte[] hash, Manager db_manager)
+        public static bool ValidateSignature(Transaction tx, byte[] hash, DataBaseManager db_manager)
         {
             Permission permission = null;
             AccountStore account_store = db_manager.Account;
@@ -724,7 +736,7 @@ namespace Mineral.Core.Capsule
             return CheckWeight(permission, new List<ByteString>(tx.Signature), hash, null) >= permission.Threshold;
         }
 
-        public bool ValidateSignature(Manager db_manager)
+        public bool ValidateSignature(DataBaseManager db_manager)
         {
             if (this.is_verifyed)
                 return true;

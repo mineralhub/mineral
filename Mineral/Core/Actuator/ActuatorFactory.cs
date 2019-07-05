@@ -39,7 +39,7 @@ namespace Mineral.Core.Actuator
 
 
         #region Internal Method
-        private static IActuator GetActuatorByContract(Contract contract, Manager db_manager)
+        private static IActuator GetActuatorByContract(Contract contract, DataBaseManager db_manager)
         {
             switch (contract.Type)
             {
@@ -106,7 +106,7 @@ namespace Mineral.Core.Actuator
 
 
         #region External Method
-        public static List<IActuator> CreateActuator(TransactionCapsule transaction, Manager db_manager)
+        public static List<IActuator> CreateActuator(TransactionCapsule transaction, DataBaseManager db_manager)
         {
             List<IActuator> actuators = new List<IActuator>();
             if (transaction == null || transaction.Instance == null)

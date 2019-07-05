@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Text;
 
@@ -34,6 +35,27 @@ namespace Mineral.Utils
             }
 
             return result;
+        }
+
+        public static bool Contains<T>(this ConcurrentQueue<T> queue, T value)
+        {
+            bool result = false;
+
+            foreach (T t in queue)
+            {
+                if (t.Equals(value))
+                {
+                    result = true;
+                    break;
+                }
+            }
+
+            return result;
+        }
+
+        public static void Clear<T>(this BlockingCollection<T> collection)
+        {
+            while (collection.TryTake(out _)) ;
         }
     }
 }

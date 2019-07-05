@@ -16,7 +16,7 @@ namespace Mineral.Common.Overlay.Messages
         #region Field
         protected byte[] data = null;
         protected byte type = 0x00;
-        private static Manager db_manager;
+        private static DataBaseManager db_manager;
         #endregion
 
 

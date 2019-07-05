@@ -7,6 +7,8 @@ using System.Threading;
 using DotNetty.Transport.Channels;
 using Mineral.Common.Overlay.Messages;
 using Mineral.Core.Net.Messages;
+using Mineral.Utils;
+using static Mineral.Utils.ScheduledExecutorService;
 using static Protocol.Inventory.Types;
 
 namespace Mineral.Common.Overlay.Server
@@ -23,9 +25,8 @@ namespace Mineral.Common.Overlay.Server
         private IChannelHandlerContext context;
         private Queue<MessageRoundTrip> request_queue = new Queue<MessageRoundTrip>();
         private ConcurrentQueue<Message> message_queue = new ConcurrentQueue<Message>();
-
-        private Timer timer_task = null;
-        private Stopwatch stopwatch = Stopwatch.StartNew();
+        private ScheduledExecutorService executor = new ScheduledExecutorService();
+        private ScheduledExecutorHandle executor_handler = null;
         #endregion
 
 
@@ -58,7 +59,7 @@ namespace Mineral.Common.Overlay.Server
 
             if (round_trip.RetryTime > 0)
             {
-                this.channel.Node.NodeDisconnectedLocal(Protocol.ReasonCode.PingTimeout);
+                this.channel.NodeStatistics.NodeDisconnectedLocal(Protocol.ReasonCode.PingTimeout);
                 Logger.Warning(
                     string.Format("Wait {0} timeout. close channel {1}.",
                                   round_trip.Message.AnswerMessage,
@@ -108,7 +109,7 @@ namespace Mineral.Common.Overlay.Server
             this.context = context;
             this.send_message_flag = true;
 
-            this.timer_task = new Timer((object state) =>
+            this.executor_handler = this.executor.Scheduled(() =>
             {
                 try
                 {
@@ -121,8 +122,7 @@ namespace Mineral.Common.Overlay.Server
                 {
                     Logger.Error("Unhandled exception" + e.Message);
                 }
-                this.timer_task.Change(10, 0);
-            }, this, 10, 0);
+            }, 10, 10);
 
             this.thread_send_message = new Thread(new ThreadStart(() =>
             {
@@ -160,14 +160,14 @@ namespace Mineral.Common.Overlay.Server
 
         public bool SendMessage(Message msg)
         {
-            if (msg is PingMessage && this.send_time > DateTime.Now.Ticks - 10_000)
+            if (msg is PingMessage && this.send_time > Helper.CurrentTimeMillis() - 10_000)
                 return false;
 
             if (NeedToLog(msg))
                 Logger.Info(string.Format("Send to {0}, {1} ", this.context.Channel.RemoteAddress, msg));
 
-            this.channel.Node.Message.AddTcpOutMessage(msg);
-            this.send_time = DateTime.Now.Ticks;
+            this.channel.NodeStatistics.MessageStatistics.AddTcpOutMessage(msg);
+            this.send_time = Helper.CurrentTimeMillis();
 
             if (msg.AnswerMessage != null)
             {
@@ -188,7 +188,7 @@ namespace Mineral.Common.Overlay.Server
                     string.Format("Receive from {0}, {1}", this.context.Channel.RemoteAddress, msg));
             }
 
-            this.channel.Node.Message.AddTcpInMessage(msg);
+            this.channel.NodeStatistics.MessageStatistics.AddTcpInMessage(msg);
 
             MessageRoundTrip round_trip = this.request_queue.Peek();
             if (round_trip != null && round_trip.Message.AnswerMessage == msg.GetType())
@@ -201,11 +201,10 @@ namespace Mineral.Common.Overlay.Server
         {
             this.send_message_flag = false;
 
-            if (this.timer_task != null)
+            if (this.executor_handler != null && !this.executor_handler.IsCanceled)
             {
-                this.timer_task.Change(Timeout.Infinite, Timeout.Infinite);
-                this.timer_task.Dispose();
-                this.timer_task = null;
+                this.executor_handler.Cancel();
+                this.executor_handler = null;
             }
 
             if (this.thread_send_message != null)

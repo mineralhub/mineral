@@ -23,7 +23,7 @@ namespace Mineral.Core.Actuator
 
 
         #region Contructor
-        public WitnessUpdateActuator(Any contract, Manager db_manager) : base(contract, db_manager) { }
+        public WitnessUpdateActuator(Any contract, DataBaseManager db_manager) : base(contract, db_manager) { }
         #endregion
 
 

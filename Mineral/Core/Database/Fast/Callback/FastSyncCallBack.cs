@@ -33,7 +33,7 @@ namespace Mineral.Core.Database.Fast.Callback
         private volatile bool allow_generate_root = false;
         private Trie trie = null;
 
-        private Manager db_manager;
+        private DataBaseManager db_manager;
         private AccountStateStoreTrie db = new AccountStateStoreTrie();
         private List<TrieEntry> entry_list = new List<TrieEntry>();
         #endregion
@@ -44,7 +44,7 @@ namespace Mineral.Core.Database.Fast.Callback
 
 
         #region Constructor
-        public FastSyncCallBack(Manager db_manager)
+        public FastSyncCallBack(DataBaseManager db_manager)
         {
             this.db_manager = db_manager;
         }

@@ -24,7 +24,7 @@ namespace Mineral.Core.Actuator
 
 
         #region Contructor
-        public AccountPermissionUpdateActuator(Any contract, Manager db_manager) : base(contract, db_manager) { }
+        public AccountPermissionUpdateActuator(Any contract, DataBaseManager db_manager) : base(contract, db_manager) { }
         #endregion
 
 

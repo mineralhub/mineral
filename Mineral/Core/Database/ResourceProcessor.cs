@@ -9,7 +9,7 @@ namespace Mineral.Core.Database
     public abstract class ResourceProcessor
     {
         #region Field
-        protected Manager db_manager;
+        protected DataBaseManager db_manager;
         protected long percision;
         protected long window_size;
         protected long average_window_size;
@@ -21,7 +21,7 @@ namespace Mineral.Core.Database
 
 
         #region Constructor
-        public ResourceProcessor(Manager db_manager)
+        public ResourceProcessor(DataBaseManager db_manager)
         {
             this.db_manager = db_manager;
             this.percision = Parameter.ChainParameters.PRECISION;

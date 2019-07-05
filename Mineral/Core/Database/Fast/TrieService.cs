@@ -12,12 +12,12 @@ namespace Mineral.Core.Database.Fast
     public class TrieService
     {
         #region Field
-        private Manager db_manager;
+        private DataBaseManager db_manager;
         #endregion
 
 
         #region Property
-        public Manager DBManager
+        public DataBaseManager DBManager
         {
             get { return this.db_manager; }
             set { this.db_manager = value; }

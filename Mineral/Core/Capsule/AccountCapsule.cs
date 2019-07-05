@@ -307,7 +307,7 @@ namespace Mineral.Core.Capsule
             this.account.Balance = balance;
         }
 
-        public AccountCapsule(ByteString address, AccountType account_type, long create_time, bool default_permission, Manager db_manager)
+        public AccountCapsule(ByteString address, AccountType account_type, long create_time, bool default_permission, DataBaseManager db_manager)
         {
             if (default_permission)
             {
@@ -330,7 +330,7 @@ namespace Mineral.Core.Capsule
             }
         }
 
-        public AccountCapsule(AccountCreateContract contract, long create_time, bool default_permission, Manager db_manager)
+        public AccountCapsule(AccountCreateContract contract, long create_time, bool default_permission, DataBaseManager db_manager)
         {
             if (default_permission)
             {
@@ -360,7 +360,7 @@ namespace Mineral.Core.Capsule
 
 
         #region Internal Method
-        private static ByteString GetActiveDefaultOperations(Manager db_manager)
+        private static ByteString GetActiveDefaultOperations(DataBaseManager db_manager)
         {
             return ByteString.CopyFrom(db_manager.DynamicProperties.GetActiveDefaultOperations());
         }
@@ -430,7 +430,7 @@ namespace Mineral.Core.Capsule
             return owner;
         }
 
-        public static Permission CreateDefaultActivePermission(ByteString address, Manager db_manager)
+        public static Permission CreateDefaultActivePermission(ByteString address, DataBaseManager db_manager)
         {
             Key key = new Key();
             key.Address = address;
@@ -465,7 +465,7 @@ namespace Mineral.Core.Capsule
             return witness;
         }
 
-        public void SetDefaultWitnessPermission(Manager db_manager)
+        public void SetDefaultWitnessPermission(DataBaseManager db_manager)
         {
             Account account = this.account;
 
@@ -549,7 +549,7 @@ namespace Mineral.Core.Capsule
             return amount > 0 && amount <= current_amount;
         }
 
-        public bool AssetBalanceEnoughV2(byte[] key, long amount, Manager db_manager)
+        public bool AssetBalanceEnoughV2(byte[] key, long amount, DataBaseManager db_manager)
         {
             Dictionary<string, long> assets;
             string key_name;
@@ -581,7 +581,7 @@ namespace Mineral.Core.Capsule
             return false;
         }
 
-        public bool ReduceAssetAmountV2(byte[] key, long amount, Manager db_manager)
+        public bool ReduceAssetAmountV2(byte[] key, long amount, DataBaseManager db_manager)
         {
             if (db_manager.DynamicProperties.GetAllowSameTokenName() == 0)
             {
@@ -626,7 +626,7 @@ namespace Mineral.Core.Capsule
             return true;
         }
 
-        public bool AddAssetAmountV2(byte[] key, long amount, Manager db_manager)
+        public bool AddAssetAmountV2(byte[] key, long amount, DataBaseManager db_manager)
         {
             if (db_manager.DynamicProperties.GetAllowSameTokenName() == 0)
             {

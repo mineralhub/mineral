@@ -72,14 +72,14 @@ namespace Mineral.Common.Overlay.Discover.Node
             }
         }
 
-
         #region Field
+        private static NodeManager instance = null;
+
         private static readonly long LISTENER_REFRESH_RATE = 1000L;
         private static readonly long DB_COMMIT_RATE = 1 * 60 * 1000L;
         private static readonly int MAX_NODES = 2000;
         private static readonly int NODES_TRIM_THRESHOLD = 3000;
 
-        private Manager db_manager = null;
         private Action<UdpEvent> message_sender = null;
         private NodeTable table = null;
         private Node node = null;
@@ -97,6 +97,11 @@ namespace Mineral.Common.Overlay.Discover.Node
 
 
         #region Property
+        public static NodeManager Instance
+        {
+            get { return instance ?? new NodeManager(); }
+        }
+
         public Action<UdpEvent> MessageSender
         {
             get { return this.message_sender; }
@@ -121,9 +126,8 @@ namespace Mineral.Common.Overlay.Discover.Node
 
 
         #region Contructor
-        public NodeManager(Manager db_manager)
+        private NodeManager()
         {
-            this.db_manager = db_manager;
             this.is_enable_discovery = Args.Instance.Node.Discovery.Enable ?? false;
 
             this.home_node = new Node(RefreshTask.GetNodeId(),
@@ -177,7 +181,7 @@ namespace Mineral.Common.Overlay.Discover.Node
 
         private void DBRead()
         {
-            HashSet<Node> nodes = this.db_manager.ReadNeighbours();
+            HashSet<Node> nodes = DataBaseManager.Instance.ReadNeighbours();
 
             Logger.Info(
                 "Reading Node statistics from PeersStore : " + nodes.Count + " nodes.");
@@ -203,7 +207,7 @@ namespace Mineral.Common.Overlay.Discover.Node
             }
 
             Logger.Info("Write Node statistics to PeersStore: " + batch.Count + " nodes.");
-            this.db_manager.ClearAndWriteNeighbours(batch);
+            DataBaseManager.Instance.ClearAndWriteNeighbours(batch);
         }
 
         [MethodImpl(MethodImplOptions.Synchronized)]
@@ -329,7 +333,7 @@ namespace Mineral.Common.Overlay.Discover.Node
             return result;
         }
 
-        public List<NodeHandler> GetNodes(Predicate<NodeHandler> predicate, int limit)
+        public List<NodeHandler> GetNodes(Func<NodeHandler, HashSet<string>, bool> predicate, HashSet<string> nodes_use, int limit)
         {
             List<NodeHandler> result = new List<NodeHandler>();
 
@@ -337,7 +341,7 @@ namespace Mineral.Common.Overlay.Discover.Node
             {
                 foreach (NodeHandler handler in this.node_handlers.Values)
                 {
-                    if (predicate(handler))
+                    if (predicate(handler, nodes_use))
                     {
                         result.Add(handler);
                     }

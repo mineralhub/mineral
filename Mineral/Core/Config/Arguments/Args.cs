@@ -30,6 +30,8 @@ namespace Mineral.Core.Config.Arguments
             public class P2PArgs : P2PConfig { }
             public class HttpArgs : HttpConfig { }
             public class RPCArgs : RPCConfig { }
+            public class P2pArgs : P2PConfig { }
+            public class BackupArgs : BackupConfig { }
 
             public string TrustNode { get; set; }
             public int ConnectionTimeout { get; set; }
@@ -55,7 +57,7 @@ namespace Mineral.Core.Config.Arguments
             public List<Node> Passive { get; set; } = new List<Node>();
             public List<Node> FastForward { get; set; } = new List<Node>();
             public DiscoveryArgs Discovery { get; set; }
-            public BackupConfig Backup { get; set; }
+            public BackupArgs Backup { get; set; }
             public P2PArgs P2P { get; set; }
             public HttpArgs HTTP { get; set; }
             public RPCArgs RPC { get; set; }
