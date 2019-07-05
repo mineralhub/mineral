@@ -123,7 +123,7 @@ namespace Mineral.Core.Capsule
             this.delegated_resource.ExpireTimeForBandwidth = expire_time;
         }
 
-        public long GetExpireTimeForEnergy(Manager manager)
+        public long GetExpireTimeForEnergy(DataBaseManager manager)
         {
             long result = 0;
             if (manager.DynamicProperties.GetAllowMultiSign() == 0)

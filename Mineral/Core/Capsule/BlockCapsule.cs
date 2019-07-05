@@ -44,6 +44,11 @@ namespace Mineral.Core.Capsule
                 return this.Hash.SequenceEqual(((SHA256Hash)obj).Hash);
             }
 
+            public string GetString()
+            {
+                return "Num : " + this.num + ", Id : " + base.ToString();
+            }
+
             public override string ToString()
             {
                 return base.ToString();
@@ -110,6 +115,7 @@ namespace Mineral.Core.Capsule
         public bool IsGenerateMyself
         {
             get { return this.generate_by_myself; }
+            set { this.generate_by_myself = value; }
         }
 
         public List<TransactionCapsule> Transactions
@@ -210,7 +216,7 @@ namespace Mineral.Core.Capsule
             this.block.BlockHeader.WitnessSignature = ByteString.CopyFrom(signature.ToDER());
         }
 
-        public bool ValidateSignature(Manager db_manager)
+        public bool ValidateSignature(DataBaseManager db_manager)
         {
             try
             {

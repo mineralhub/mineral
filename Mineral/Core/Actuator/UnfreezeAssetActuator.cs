@@ -23,7 +23,7 @@ namespace Mineral.Core.Actuator
 
 
         #region Contructor
-        public UnfreezeAssetActuator(Any contract, Manager manager) : base(contract, manager) { }
+        public UnfreezeAssetActuator(Any contract, DataBaseManager manager) : base(contract, manager) { }
         #endregion
 
 

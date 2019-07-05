@@ -23,7 +23,7 @@ namespace Mineral.Core.Actuator
 
 
         #region Contructor
-        public UpdateAssetActuator(Any contract, Manager db_manager) : base(contract, db_manager) { }
+        public UpdateAssetActuator(Any contract, DataBaseManager db_manager) : base(contract, db_manager) { }
         #endregion
 
 

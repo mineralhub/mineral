@@ -146,7 +146,7 @@ namespace Mineral.Common.Overlay.Discover.Table
             if (obj != null && this.GetType() == obj.GetType())
             {
                 NodeEntry e = (NodeEntry)obj;
-                ret = this.entry_id.Equals(e.entry_id));
+                ret = this.entry_id.Equals(e.entry_id);
             }
 
             return ret;

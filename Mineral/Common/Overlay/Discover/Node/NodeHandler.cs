@@ -234,7 +234,7 @@ namespace Mineral.Common.Overlay.Discover.Node
             if (!this.wait_neighbors)
             {
                 Logger.Warning(
-                    string.Format("Receive neighbors from {0} without send find nodes.", node.Host);
+                    string.Format("Receive neighbors from {0} without send find nodes.", node.Host));
 
                 return;
             }

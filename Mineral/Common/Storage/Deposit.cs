@@ -24,7 +24,7 @@ namespace Mineral.Common.Storage
         private static readonly byte[] MAINTENANCE_TIME_INTERVAL = Encoding.UTF8.GetBytes("MAINTENANCE_TIME_INTERVAL");
         private static readonly byte[] NEXT_MAINTENANCE_TIME = Encoding.UTF8.GetBytes("NEXT_MAINTENANCE_TIME");
 
-        private Manager db_manager = null;
+        private DataBaseManager db_manager = null;
         private Deposit parent = null;
 
         private Dictionary<Key, Value> account_cache = new Dictionary<Key, Value>();
@@ -43,7 +43,7 @@ namespace Mineral.Common.Storage
 
 
         #region Property
-        public Manager DBManager => this.db_manager;
+        public DataBaseManager DBManager => this.db_manager;
 
         public Deposit Parent
         {
@@ -54,7 +54,7 @@ namespace Mineral.Common.Storage
 
 
         #region Contructor
-        protected Deposit(Manager db_manager, Deposit parent)
+        protected Deposit(DataBaseManager db_manager, Deposit parent)
         {
             this.db_manager = db_manager;
             this.parent = parent;
@@ -247,7 +247,7 @@ namespace Mineral.Common.Storage
 
 
         #region External Method
-        public static Deposit CreateRoot(Manager db_manager)
+        public static Deposit CreateRoot(DataBaseManager db_manager)
         {
             return new Deposit(db_manager, null);
         }

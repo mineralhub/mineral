@@ -6,6 +6,7 @@ using DotNetty.Transport.Bootstrapping;
 using DotNetty.Transport.Channels;
 using DotNetty.Transport.Channels.Sockets;
 using DotNetty.Transport.Libuv;
+using Mineral.Common.Overlay.Discover.Node;
 using Mineral.Common.Overlay.Server;
 using Mineral.Core.Config.Arguments;
 
@@ -53,7 +54,7 @@ namespace Mineral.Common.Overlay.Client
 
             bootstrap.Handler(new ActionChannelInitializer<TcpSocketChannel>(channel =>
             {
-                Channel.Instance.Init()
+                Channel.Instance.Init();
 
                 channel.Allocator.Buffer(256 * 1024);
                 channel.Configuration.SetOption(ChannelOption.SoRcvbuf, 256 * 1024);
@@ -81,7 +82,7 @@ namespace Mineral.Common.Overlay.Client
             }
         }
 
-        public Task<IChannel> ConnectAsync(NodeHandler nodeHandler, boolean discoveryMode)
+        public Task<IChannel> ConnectAsync(NodeHandler handler, bool discovery_mode)
         {
             Node node = nodeHandler.getNode();
             return connectAsync(node.getHost(), node.getPort(), node.getHexId(), discoveryMode)

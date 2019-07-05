@@ -22,7 +22,7 @@ namespace Mineral.Core.Actuator
 
 
         #region Contructor
-        public ProposalApproveActuator(Any contract, Manager db_manager) : base(contract, db_manager) { }
+        public ProposalApproveActuator(Any contract, DataBaseManager db_manager) : base(contract, db_manager) { }
         #endregion
 
 

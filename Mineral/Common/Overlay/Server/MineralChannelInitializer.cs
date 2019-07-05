@@ -31,7 +31,7 @@ namespace Mineral.Common.Overlay.Server
         {
             try
             {
-                IChannel channel = 
+                Channel lchannel = 
             }
             catch (Exception e)
             {
