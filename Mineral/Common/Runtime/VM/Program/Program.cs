@@ -704,7 +704,6 @@ namespace Mineral.Common.Runtime.VM.Program
             }
 
             byte[] data = MemoryChunk(msg.InDataOffset.ToInt(), msg.InDataSize.ToInt());
-
             byte[] code_address = Wallet.ToMineralAddress(msg.CodeAddress.GetLast20Bytes());
             byte[] sender_address = Wallet.ToMineralAddress(ContractAddress.GetLast20Bytes());
             byte[] context_address = OpCodeUtil.ContainStateless(msg.Type) ? sender_address : code_address;

@@ -49,7 +49,6 @@ namespace Mineral.Core.Database
         public List<ByteString> GetData(byte[] species)
         {
             List<ByteString> witness_address = new List<ByteString>();
-
             BytesCapsule data = GetUnchecked(species);
 
             int length = data.Data.Length / ADDRESS_BYTE_ARRAY_LENGTH;
