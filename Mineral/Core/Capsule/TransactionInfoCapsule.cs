@@ -192,14 +192,14 @@ namespace Mineral.Core.Capsule
                         internal_transaction.CallValueInfo.Add(call_value_info);
                     }
 
-                internal_transaction.Note = ByteString.CopyFrom(Encoding.UTF8.GetBytes(tx.Note));
-                internal_transaction.Rejected = tx.IsReject;
-                result.InternalTransactions.Add(internal_transaction);
+                    internal_transaction.Note = ByteString.CopyFrom(Encoding.UTF8.GetBytes(tx.Note));
+                    internal_transaction.Rejected = tx.IsReject;
+                    result.InternalTransactions.Add(internal_transaction);
+                }
             }
-        }
 
-    return new TransactionInfoCapsule(result);
+            return new TransactionInfoCapsule(result);
+        }
+        #endregion
     }
-    #endregion
-}
 }
