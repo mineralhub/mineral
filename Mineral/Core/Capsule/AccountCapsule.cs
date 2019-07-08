@@ -403,12 +403,12 @@ namespace Mineral.Core.Capsule
             this.account.AccountResource.DelegatedFrozenBalanceForEnergy += balance;
         }
 
-        public void AddLatestAssetOperationTimeV2(Dictionary<string, long> assets)
+        public void PutLatestAssetOperationTimeV2(Dictionary<string, long> assets)
         {
             this.account.LatestAssetOperationTimeV2.Add(assets);
         }
 
-        public void AddAllFreeAssetNetUsageV2(Dictionary<string, long> assets)
+        public void PutAllFreeAssetNetUsageV2(Dictionary<string, long> assets)
         {
             this.account.FreeAssetNetUsageV2.Add(assets);
         }
@@ -702,9 +702,9 @@ namespace Mineral.Core.Capsule
             return this.LatestAssetOperationTime.ContainsKey(asset_name) ? this.LatestAssetOperationTime[asset_name] : 0;
         }
 
-        public void SetLatestAssetOperationTime(string asset_name, long value)
+        public void PutLatestAssetOperationTime(string asset_name, long value)
         {
-            this.LatestAssetOperationTime.Add(asset_name, value);
+            this.Instance.LatestAssetOperationTime.Add(asset_name, value);
         }
 
         public long GetLatestAssetOperationTimeV2(string asset_name)
@@ -712,9 +712,9 @@ namespace Mineral.Core.Capsule
             return this.LatestAssetOperationTimeV2.ContainsKey(asset_name) ? this.LatestAssetOperationTimeV2[asset_name] : 0;
         }
 
-        public void SetLatestAssetOperationTimeV2(string asset_name, long value)
+        public void PutLatestAssetOperationTimeV2(string asset_name, long value)
         {
-            this.LatestAssetOperationTimeV2.Add(asset_name, value);
+            this.Instance.LatestAssetOperationTimeV2.Add(asset_name, value);
         }
 
         public void SetFrozen(long frozen_balance, long expire_time)
@@ -757,12 +757,12 @@ namespace Mineral.Core.Capsule
             return this.account.FreeAssetNetUsageV2.ContainsKey(asset_name) ? this.account.FreeAssetNetUsageV2[asset_name] : 0;
         }
 
-        public void AddFreeAssetNetUsage(string asset_name, long free_asset)
+        public void PutFreeAssetNetUsage(string asset_name, long free_asset)
         {
             this.account.FreeAssetNetUsage.Add(asset_name, free_asset);
         }
 
-        public void AddFreeAssetNetUsageV2(string asset_name, long free_asset)
+        public void PutFreeAssetNetUsageV2(string asset_name, long free_asset)
         {
             this.account.FreeAssetNetUsageV2.Add(asset_name, free_asset);
         }
