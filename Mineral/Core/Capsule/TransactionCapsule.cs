@@ -31,6 +31,25 @@ namespace Mineral.Core.Capsule
         public Transaction Instance { get { return this.transaction; } }
         public byte[] Data { get { return this.transaction.ToByteArray(); } }
 
+        public long Size
+        {
+            get { return this.transaction.CalculateSize(); }
+        }
+
+        public long ResultSize
+        {
+            get
+            {
+                long size = 0;
+                foreach (Transaction.Types.Result result in this.transaction.Ret)
+                {
+                    size += result.CalculateSize();
+                }
+
+                return size;
+            }
+        }
+
         public SHA256Hash Id
         {
             get { return this.GetRawHash(); }
