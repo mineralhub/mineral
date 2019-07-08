@@ -10,7 +10,7 @@ using static Protocol.Transaction.Types.Contract.Types;
 
 namespace Mineral.Core.Database
 {
-    public class BandWidthProcessor : ResourceProcessor
+    public class BandwidthProcessor : ResourceProcessor
     {
         #region Field
         #endregion
@@ -21,7 +21,7 @@ namespace Mineral.Core.Database
 
 
         #region Contructor
-        public BandWidthProcessor(DataBaseManager db_manager) : base(db_manager) { }
+        public BandwidthProcessor(DataBaseManager db_manager) : base(db_manager) { }
         #endregion
 
 

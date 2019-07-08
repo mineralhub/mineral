@@ -162,7 +162,7 @@ namespace Mineral.Core.Actuator
                     AssetIssueCapsule asset_issue = this.db_manager.GetAssetIssueStoreFinal().Get(asset_name);
                     if (asset_issue == null)
                     {
-                        throw new ContractValidateException("No asset named " + asset_name.ToString());
+                        throw new ContractValidateException("No asset named " + Encoding.UTF8.GetString(asset_name));
                     }
 
                     if (!to_address.SequenceEqual(asset_issue.OwnerAddress.ToByteArray()))

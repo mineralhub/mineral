@@ -279,7 +279,7 @@ namespace Mineral.Common.Storage
             byte[] id = ByteUtil.StripLeadingZeroes(token_id);
             AccountCapsule account = GetAccount(address) ?? CreateAccount(address, Protocol.AccountType.Normal);
 
-            account.AssetV2.TryGetValue(id.ToString(), out long balance);
+            account.AssetV2.TryGetValue(Encoding.UTF8.GetString(id), out long balance);
             if (value == 0)
                 return balance;
 
@@ -295,7 +295,7 @@ namespace Mineral.Common.Storage
                 new Key(address),
                 Value.Create(account.Data, ValueType.VALUE_TYPE_DIRTY | this.account_cache[new Key(address)].Type.Type));
 
-            account.AssetV2.TryGetValue(id.ToString(), out long result);
+            account.AssetV2.TryGetValue(Encoding.UTF8.GetString(id), out long result);
 
             return result;
 
@@ -633,7 +633,7 @@ namespace Mineral.Common.Storage
 
             if (account != null)
             {
-                string token = ByteUtil.StripLeadingZeroes(token_id).ToString();
+                string token = Encoding.UTF8.GetString(ByteUtil.StripLeadingZeroes(token_id));
                 account.AssetV2.TryGetValue(token, out result);
             }
 

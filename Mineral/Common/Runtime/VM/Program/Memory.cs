@@ -216,7 +216,7 @@ namespace Mineral.Common.Runtime.VM.Program
 
                 if ((i + 1) % 8 == 0)
                 {
-                    string tmp = string.Format("%4s", Helper.ToHexString((byte)(i - 7))).Replace(" ", "0");
+                    string tmp = string.Format("{0:4}", Helper.ToHexString((byte)(i - 7))).Replace(" ", "0");
                     memory_data.Append("")
                                .Append(tmp)
                                .Append(" ");

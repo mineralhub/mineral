@@ -45,13 +45,9 @@ namespace Mineral.Core.Database
         #region Property
         public TransactionCapsule Transaction => this.transaction;
 
-        public bool IsNeedVM
+        public ReceiptCapsule Receipt
         {
-            get
-            {
-                return this.transaction_type == InternalTransaction.TransactionType.TX_CONTRACT_CALL_TYPE ||
-                    this.transaction_type == InternalTransaction.TransactionType.TX_CONTRACT_CREATION_TYPE;
-            }
+            get { return this.receipt; }
         }
 
         public IRunTime Runtime
@@ -73,6 +69,15 @@ namespace Mineral.Core.Database
         {
             get { return this.time_result_type; }
             set { this.time_result_type = value; }
+        }
+
+        public bool IsNeedVM
+        {
+            get
+            {
+                return this.transaction_type == InternalTransaction.TransactionType.TX_CONTRACT_CALL_TYPE ||
+                    this.transaction_type == InternalTransaction.TransactionType.TX_CONTRACT_CREATION_TYPE;
+            }
         }
         #endregion
 
@@ -275,7 +280,7 @@ namespace Mineral.Core.Database
                                        this.db_manager.WitnessController.GetHeadSlot());
         }
 
-        public void setResult()
+        public void SetResult()
         {
             if (!IsNeedVM)
                 return;

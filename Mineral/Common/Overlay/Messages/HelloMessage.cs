@@ -32,7 +32,7 @@ namespace Mineral.Common.Overlay.Messages
             get
             {
                 Endpoint from = this.message.From;
-                return new Node(from.NodeId.ToByteArray(), from.Address.ToByteArray().ToString(), from.Port);
+                return new Node(from.NodeId.ToByteArray(), Encoding.UTF8.GetString(from.Address.ToByteArray()), from.Port);
             }
         }
 

@@ -38,7 +38,7 @@ namespace Mineral.Common.Net.Udp.Message.Discover
                 foreach (var neighbour in this.message.Neighbours_)
                 {
                     nodes.Add(new Node(neighbour.NodeId.ToByteArray(),
-                                       neighbour.Address.ToByteArray().ToString(),
+                                       Encoding.UTF8.GetString(neighbour.Address.ToByteArray()),
                                        neighbour.Port));
                 }
 

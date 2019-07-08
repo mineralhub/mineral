@@ -158,6 +158,8 @@ namespace Mineral.Core.Database
         {
             get { return this.session; }
         }
+
+        public bool IsEventPluginLoaded { get; set; }
         #endregion
 
 
@@ -872,47 +874,47 @@ namespace Mineral.Core.Database
             TransactionTrace trace = new TransactionTrace(transaction, this);
             transaction.TransactionTrace = trace;
 
-            consumeBandwidth(transaction, trace);
-            consumeMultiSignFee(transaction, trace);
+            ConsumeBandwidth(transaction, trace);
+            ConsumeMultiSignFee(transaction, trace);
 
-            VMConfig.initVmHardFork();
-            VMConfig.initAllowMultiSign(dynamicPropertiesStore.getAllowMultiSign());
-            VMConfig.initAllowTvmTransferTrc10(dynamicPropertiesStore.getAllowTvmTransferTrc10());
-            VMConfig.initAllowTvmConstantinople(dynamicPropertiesStore.getAllowTvmConstantinople());
-            trace.init(block, eventPluginLoaded);
-            trace.checkIsConstant();
-            trace.exec();
+            Common.Runtime.Config.VMConfig.InitVmHardFork();
+            Common.Runtime.Config.VMConfig.InitAllowMultiSign(this.dynamic_properties_store.GetAllowMultiSign());
+            Common.Runtime.Config.VMConfig.InitAllowTvmTransferTrc10(this.dynamic_properties_store.GetAllowTvmTransferTrc10());
+            Common.Runtime.Config.VMConfig.InitAllowTvmConstantinople(this.dynamic_properties_store.GetAllowTvmConstantinople());
+            trace.Init(block, IsEventPluginLoaded);
+            trace.CheckIsConstant();
+            trace.Execute();
 
-            if (Objects.nonNull(block))
+            if (block != null)
             {
-                trace.setResult();
-                if (!block.getInstance().getBlockHeader().getWitnessSignature().isEmpty())
+                trace.SetResult();
+                if (!block.Instance.BlockHeader.WitnessSignature.IsEmpty)
                 {
-                    if (trace.checkNeedRetry())
+                    if (trace.CheckNeedRetry())
                     {
-                        String txId = Hex.toHexString(transaction.getTransactionId().getBytes());
-                        logger.info("Retry for tx id: {}", txId);
-                        trace.init(block, eventPluginLoaded);
-                        trace.checkIsConstant();
-                        trace.exec();
-                        trace.setResult();
-                        logger.info("Retry result for tx id: {}, tx resultCode in receipt: {}",
-                            txId, trace.getReceipt().getResult());
+                        string tx_id = transaction.Id.Hash.ToHexString();
+                        Logger.Info("Retry for tx id : " + tx_id);
+                        trace.Init(block, IsEventPluginLoaded);
+                        trace.CheckIsConstant();
+                        trace.Execute();
+                        trace.SetResult();
+                        Logger.Info(
+                            string.Format("Retry result for tx id: {0}, tx resultCode in receipt: {1}",
+                                          tx_id,
+                                          trace.Receipt.Result));
                     }
-                    trace.check();
+                    trace.Check();
                 }
             }
 
-            trace.finalization();
-            if (Objects.nonNull(block) && getDynamicPropertiesStore().supportVM())
+            trace.Finalization();
+            if (block != null && this.dynamic_properties_store.SupportVM())
             {
-                transaction.setResultCode(trace.getReceipt().getResult());
+                transaction.SetResultCode(trace.Receipt.Result);
             }
-            transactionStore.put(transaction.getTransactionId().getBytes(), transaction);
 
-            Optional.ofNullable(transactionCache)
-                .ifPresent(t->t.put(transaction.getTransactionId().getBytes(),
-                    new BytesCapsule(ByteArray.fromLong(transaction.getBlockNum()))));
+            this.transaction_store.Put(transaction.Id.Hash, transaction);
+            this.transaction_cache?.Put(transaction.Id.Hash, new BytesCapsule(BitConverter.GetBytes(transaction.BlockNum)));
 
             TransactionInfoCapsule transactionInfo = TransactionInfoCapsule
                 .buildInstance(transaction, block, trace);
@@ -993,33 +995,32 @@ namespace Mineral.Core.Database
         public void ConsumeBandwidth(TransactionCapsule transaction, TransactionTrace trace)
         {
             BandwidthProcessor processor = new BandwidthProcessor(this);
-            processor.consume(transaction, trace);
+            processor.Consume(transaction, trace);
         }
 
         public void ConsumeMultiSignFee(TransactionCapsule transaction, TransactionTrace trace)
         {
-            if (transaction.getInstance().getSignatureCount() > 1)
+            if (transaction.Instance.Signature.Count > 1)
             {
-                long fee = getDynamicPropertiesStore().getMultiSignFee();
+                long fee = this.dynamic_properties_store.GetMultiSignFee();
 
-                List<Contract> contracts = transaction.getInstance().getRawData().getContractList();
-                for (Contract contract : contracts)
+                foreach (Contract contract in transaction.Instance.RawData.Contract)
                 {
-                    byte[] address = TransactionCapsule.getOwner(contract);
-                    AccountCapsule accountCapsule = getAccountStore().get(address);
+                    byte[] address = TransactionCapsule.GetOwner(contract);
+                    AccountCapsule account = this.account_store.Get(address);
                     try
                     {
-                        adjustBalance(accountCapsule, -fee);
-                        adjustBalance(this.getAccountStore().getBlackhole().createDbKey(), +fee);
+                        AdjustBalance(account, -fee);
+                        AdjustBalance(this.account_store.GetBlackHole().CreateDatabaseKey(), +fee);
                     }
-                    catch (BalanceInsufficientException e)
+                    catch (BalanceInsufficientException)
                     {
                         throw new AccountResourceInsufficientException(
                             "Account Insufficient  balance[" + fee + "] to MultiSign");
                     }
                 }
 
-                trace.getReceipt().setMultiSignFee(fee);
+                trace.Receipt.MultiSignFee = fee;
             }
         }
         #endregion
