@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
+using Mineral.Common.Utils;
 using Mineral.Core.Capsule;
 using Mineral.Core.Net.Messages;
 
@@ -19,9 +20,9 @@ namespace Mineral.Core.Net.Messages
             get { return this.block; }
         }
 
-        public override byte[] MessageId
+        public override SHA256Hash MessageId
         {
-            get { return this.block.Id.Hash; }
+            get { return this.block.Id; }
         }
 
         public override Type AnswerMessage

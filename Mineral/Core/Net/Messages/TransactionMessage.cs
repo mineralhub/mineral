@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Text;
 using Google.Protobuf;
 using Mineral.Common.Overlay.Messages;
+using Mineral.Common.Utils;
 using Mineral.Core.Capsule;
 using Mineral.Core.Net.Messages;
 
@@ -21,9 +22,9 @@ namespace Mineral.Core.Net.Messages
             get { return this.transaction; }
         }
 
-        public override byte[] MessageId
+        public override SHA256Hash MessageId
         {
-            get { return this.transaction.Id.Hash; }
+            get { return this.transaction.Id; }
         }
 
         public override Type AnswerMessage

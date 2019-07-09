@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Text;
 using DotNetty.Buffers;
 using Google.Protobuf;
+using Mineral.Common.Utils;
 using Mineral.Core.Database;
 using Mineral.Core.Exception;
 using Mineral.Core.Net.Messages;
@@ -36,9 +37,9 @@ namespace Mineral.Common.Overlay.Messages
             get { return db_manager.DynamicProperties.GetAllowProtoFilterNum() == 1; }
         }
 
-        public virtual byte[] MessageId
+        public virtual SHA256Hash MessageId
         {
-            get { return this.data.SHA256(); }
+            get { return SHA256Hash.Of(this.data); }
         }
 
         public abstract Type AnswerMessage { get; }
