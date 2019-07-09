@@ -21,6 +21,11 @@ namespace Mineral.Core.Database
 
 
         #region Property
+        public int Size
+        {
+            get { return this.khaosblock_hashes.Count; }
+        }
+
         public int MaxCapacity
         {
             get { return this.max_capacity; }
@@ -33,7 +38,10 @@ namespace Mineral.Core.Database
             set { this.head = value; }
         }
 
-        public bool IsEmpty => this.khaosblock_hashes.IsNullOrEmpty();
+        public bool IsEmpty
+        {
+            get { return this.khaosblock_hashes.IsNullOrEmpty(); }
+        }
         #endregion
 
 
