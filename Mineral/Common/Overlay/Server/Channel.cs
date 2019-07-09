@@ -18,6 +18,16 @@ namespace Mineral.Common.Overlay.Server
 {
     public class Channel
     {
+        public enum MineralState
+        {
+            INIT,
+            HANDSHAKE_FINISHED,
+            START_TO_SYNC,
+            SYNCING,
+            SYNC_COMPLETED,
+            SYNC_FAILED
+        }
+
         #region Field
         private static Channel instance = null;
 
@@ -26,7 +36,7 @@ namespace Mineral.Common.Overlay.Server
         private HandShakeHandler handshake_handler = new HandShakeHandler();
         //private StaticMessages static_messages;
         private ChannelManager channel_manager = null;
-        //private TronState tronState = TronState.INIT;
+        private MineralState state = MineralState.INIT;
 
 
         // completed
@@ -58,6 +68,11 @@ namespace Mineral.Common.Overlay.Server
             get { return instance ?? new Channel(); }
         }
 
+        public Node Node
+        {
+            get { return this.node; }
+        }
+
         public NodeStatistics NodeStatistics
         {
             get { return this.node_statistics; }
@@ -66,6 +81,12 @@ namespace Mineral.Common.Overlay.Server
         public PeerStatistics PeerStatistics
         {
             get { return this.peer_statistics; }
+        }
+
+        public MineralState State
+        {
+            get { return this.state; }
+            set { this.state = value; }
         }
 
         public bool IsDisconnect
@@ -96,6 +117,11 @@ namespace Mineral.Common.Overlay.Server
         public IPAddress Address
         {
             get { return this.context == null ? null : ((IPEndPoint)(context.Channel.RemoteAddress)).Address; }
+        }
+
+        public bool IsFastForwardPeer
+        {
+            get { return this.is_fast_forward_peer; }
         }
         #endregion
 
