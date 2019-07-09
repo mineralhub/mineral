@@ -169,6 +169,11 @@ namespace Mineral.Core.Database.Fast.Callback
             this.execute = false;
         }
 
+        public void ExceptionFinish()
+        {
+            this.execute = false;
+        }
+
         public void DeleteAccount(byte[] key)
         {
             if (!Execute())
