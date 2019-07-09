@@ -76,6 +76,9 @@ namespace Mineral.Core.Config.Arguments
         [Parameter("-v", "--version", Description = "Version")]
         private bool version = false;
 
+        [Parameter("--fast-forward")]
+        private bool fast_forward = false;
+
         [Parameter("--long-running-time")]
         private int long_running_time = 10;
 
@@ -175,6 +178,11 @@ namespace Mineral.Core.Config.Arguments
         {
             get { return this.is_solidity_node; }
             set { this.is_solidity_node = value; }
+        }
+
+        public bool IsFastForward
+        {
+            get { return this.fast_forward; }
         }
         #endregion
 
