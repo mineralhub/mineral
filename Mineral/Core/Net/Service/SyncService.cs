@@ -37,6 +37,11 @@ namespace Mineral.Core.Net.Service
 
 
         #region Property
+        public bool IsFetch
+        {
+            get { return this.is_fetch; }
+            set { this.is_fetch = value; }
+        }
         #endregion
 
 
@@ -308,7 +313,7 @@ namespace Mineral.Core.Net.Service
         {
             try
             {
-                if (!peer.SyncBlockChainRequest.Equals(default(KeyValuePair<BlockingCollection<BlockId>, long>)))
+                if (!peer.SyncChainRequest.Equals(default(KeyValuePair<BlockingCollection<BlockId>, long>)))
                 {
                     Logger.Warning(
                         string.Format("Peer {0} is in sync.",
@@ -317,7 +322,7 @@ namespace Mineral.Core.Net.Service
                 }
 
                 List<BlockId> chain_summary = GetBlockChainSummary(peer);
-                peer.SyncBlockChainRequest = new KeyValuePair<Deque<BlockId>, long>(new Deque<BlockId>(chain_summary), Helper.CurrentTimeMillis());
+                peer.SyncChainRequest = new KeyValuePair<Deque<BlockId>, long>(new Deque<BlockId>(chain_summary), Helper.CurrentTimeMillis());
                 peer.SendMessage(new SyncBlockChainMessage(chain_summary));
             }
             catch (System.Exception e)
