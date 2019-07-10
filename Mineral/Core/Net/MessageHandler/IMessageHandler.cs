@@ -8,6 +8,6 @@ namespace Mineral.Core.Net.MessageHandler
 {
     public interface IMessageHandler
     {
-        void ProcessMessage(PeerConnection peer, MineralMessage msg);
+        void ProcessMessage(PeerConnection peer, MineralMessage message);
     }
 }

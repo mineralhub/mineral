@@ -27,7 +27,7 @@ namespace Mineral.Core.Net.Messages
             get { return this.inventory.Ids.Select(id => new BlockCapsule.BlockId(id.Hash, id.Number)).ToList(); }
         }
 
-        public long RemainNumber
+        public long RemainNum
         {
             get { return this.inventory.RemainNum; }
         }

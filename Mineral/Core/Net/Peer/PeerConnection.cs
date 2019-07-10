@@ -5,11 +5,13 @@ using System.Net;
 using System.Runtime.Caching;
 using System.Text;
 using System.Threading.Tasks;
+using DequeNet;
 using DotNetty.Buffers;
 using DotNetty.Common.Utilities;
 using DotNetty.Transport.Channels;
 using Mineral.Common.Overlay.Messages;
 using Mineral.Common.Overlay.Server;
+using Mineral.Common.Utils;
 using Mineral.Core.Net.Service;
 using static Mineral.Core.Capsule.BlockCapsule;
 
@@ -20,7 +22,7 @@ namespace Mineral.Core.Net.Peer
         #region Field
         private MineralNetDelegate net_delegate = null;
         private SyncService sync_service = null;
-        private AdvService advance_service = null;
+        private AdvanceService advance_service = null;
         private HelloMessage hello_message = null;
 
         private BlockId singup_error_id = null;
@@ -30,14 +32,14 @@ namespace Mineral.Core.Net.Peer
         private MemoryCache inventory_spread = MemoryCache.Default;
         private MemoryCache sync_block_id = MemoryCache.Default;
 
-        private KeyValuePair<BlockingCollection<BlockId>, long> sync_chain_request = default(KeyValuePair<BlockingCollection<BlockId>, long>);
+        private KeyValuePair<Deque<BlockId>, long> sync_chain_request = default(KeyValuePair<Deque<BlockId>, long>);
         private HashSet<BlockId> sync_block_process = new HashSet<BlockId>();
-        private BlockingCollection<BlockId> sync_block_fetch = new BlockingCollection<BlockId>();
+        private ConcurrentDeque<BlockId> sync_block_fetch = new ConcurrentDeque<BlockId>();
         private ConcurrentDictionary<BlockId, long> sync_block_request = new ConcurrentDictionary<BlockId, long>();
         private ConcurrentDictionary<Item, long> inventory_request = new ConcurrentDictionary<Item, long>();
 
         private int inventory_cache_size = 100_000;
-        private long block_both_have_timestamp = 0;
+        private long block_both_have_timestamp = Helper.CurrentTimeMillis();
         private long remain_num = 0;
         private bool need_sync_peer = false;
         private bool ndeed_sync_us = false;
@@ -73,25 +75,25 @@ namespace Mineral.Core.Net.Peer
             set { this.last_sync_id = value; }
         }
 
-        public MemoryCache InventoryReceive
-        {
-            get { return this.inventory_receive; }
-            set { this.inventory_receive = value; }
-        }
+        //public MemoryCache InventoryReceive
+        //{
+        //    get { return this.inventory_receive; }
+        //    set { this.inventory_receive = value; }
+        //}
 
-        public MemoryCache InventorySpread
-        {
-            get { return this.inventory_spread; }
-            set { this.inventory_spread = value; }
-        }
+        //public MemoryCache InventorySpread
+        //{
+        //    get { return this.inventory_spread; }
+        //    set { this.inventory_spread = value; }
+        //}
 
-        public MemoryCache SyncBlockId
-        {
-            get { return this.sync_block_id; }
-            set { this.sync_block_id = value; }
-        }
+        //public MemoryCache SyncBlockId
+        //{
+        //    get { return this.sync_block_id; }
+        //    set { this.sync_block_id = value; }
+        //}
 
-        public KeyValuePair<BlockingCollection<BlockId>, long> SyncBlockChainRequest
+        public KeyValuePair<Deque<BlockId>, long> SyncChainRequest
         {
             get { return this.sync_chain_request; }
             set { this.sync_chain_request = value; }
@@ -103,7 +105,7 @@ namespace Mineral.Core.Net.Peer
             set { this.sync_block_process = value; }
         }
 
-        public BlockingCollection<BlockId> SyncBlockFetch
+        public ConcurrentDeque<BlockId> SyncBlockFetch
         {
             get { return this.sync_block_fetch; }
             set { this.sync_block_fetch = value; }
@@ -169,6 +171,59 @@ namespace Mineral.Core.Net.Peer
 
 
         #region External Method
+        public void AddInventoryReceive(Item key, long value)
+        {
+            CacheItemPolicy policy = new CacheItemPolicy();
+            policy.AbsoluteExpiration = DateTime.UtcNow.AddHours(1);
+
+            this.inventory_receive.Add(key.ToString(), value, policy);
+        }
+
+        public void AddInventorySpread(Item key, long value)
+        {
+            CacheItemPolicy policy = new CacheItemPolicy();
+            policy.AbsoluteExpiration = DateTime.UtcNow.AddHours(1);
+
+            this.inventory_spread.Add(key.ToString(), value, policy);
+        }
+
+        public void AddSyncBlockId(SHA256Hash key, long value)
+        {
+            CacheItemPolicy policy = new CacheItemPolicy();
+
+            this.sync_block_id.Add(key.Hash.ToHexString(), value, policy);
+        }
+
+        public object GetInventoryReceive(Item key)
+        {
+            return this.inventory_receive.Get(key.ToString());
+        }
+
+        public object GetInventorySpread(Item key)
+        {
+            return this.inventory_spread.Get(key.ToString());
+        }
+
+        public object GetSyncBlockId(SHA256Hash key)
+        {
+            return this.sync_block_id.Get(key.ToString());
+        }
+
+        public void RemoveInventoryReceive(Item key)
+        {
+            this.inventory_receive.Remove(key.ToString());
+        }
+
+        public void RemoveInventorySpread(Item key)
+        {
+            this.inventory_spread.Remove(key.ToString());
+        }
+
+        public void RemoveSyncBlockId(SHA256Hash key)
+        {
+            this.sync_block_id.Remove(key.ToString());
+        }
+
         public void SendMessage(Message message)
         {
             this.message_queue.SendMessage(message);
@@ -201,7 +256,7 @@ namespace Mineral.Core.Net.Peer
             this.syncBlockInProcess.clear();
         }
 
-        public String log()
+        public string Log()
         {
             long now = System.currentTimeMillis();
  

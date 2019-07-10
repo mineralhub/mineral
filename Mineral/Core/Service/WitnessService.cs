@@ -11,6 +11,7 @@ using Mineral.Core.Config;
 using Mineral.Core.Config.Arguments;
 using Mineral.Core.Database;
 using Mineral.Core.Net;
+using Mineral.Core.Net.Messages;
 using Mineral.Core.Witness;
 
 namespace Mineral.Core.Service
@@ -193,13 +194,11 @@ namespace Mineral.Core.Service
                                   this.controller.GetActiveWitnesses().Select(witness => Wallet.Encode58Check(witness.ToByteArray()))
                                                                       .ToList()
                                                                       .ToString()));
-
                 return BlockProductionCondition.UNELECTED;
             }
 
             try
             {
-
                 BlockCapsule block = null;
 
                 lock (this.db_manager)
@@ -257,36 +256,43 @@ namespace Mineral.Core.Service
 
                     if (block == null)
                     {
-                        logger.warn("exception when generate block");
+                        Logger.Warning("exception when generate block");
                         return BlockProductionCondition.EXCEPTION_PRODUCING_BLOCK;
                     }
 
-                    int blockProducedTimeOut = Args.getInstance().getBlockProducedTimeOut();
+                    int block_produce_timeout = Args.Instance.Node.BlockProducedTimeout;
 
-                    long timeout = Math
-                        .min(ChainConstant.BLOCK_PRODUCED_INTERVAL * blockProducedTimeOut / 100 + 500,
-                            ChainConstant.BLOCK_PRODUCED_INTERVAL);
-                    if (DateTime.now().getMillis() - now > timeout)
+                    long timeout = Math.Min(Parameter.ChainParameters.BLOCK_PRODUCED_INTERVAL * block_produce_timeout / 100 + 500,
+                                            Parameter.ChainParameters.BLOCK_PRODUCED_INTERVAL);
+
+                    if (DateTime.Now.Millisecond - now > timeout)
                     {
-                        logger.warn("Task timeout ( > {}ms)，startTime:{},endTime:{}", timeout, new DateTime(now),
-                            DateTime.now());
-                        tronApp.getDbManager().eraseBlock();
+                        Logger.Warning(
+                            string.Format("Task timeout ( > {0}ms)，startTime:{1}, endTime:{2}",
+                                          timeout,
+                                          new DateTime(now),
+                                          DateTime.Now));
+
+                        this.db_manager.EraseBlock();
                         return BlockProductionCondition.TIME_OUT;
                     }
                 }
 
-                logger.info(
-                    "Produce block successfully, blockNumber:{}, abSlot[{}], blockId:{}, transactionSize:{}, blockTime:{}, parentBlockId:{}",
-                    block.getNum(), controller.getAbSlotAtTime(now), block.getBlockId(),
-                    block.getTransactions().size(),
-                    new DateTime(block.getTimeStamp()),
-                    block.getParentHash());
+                Logger.Info(
+                    string.Format(
+                        "Produce block successfully, blockNumber:{0}, abSlot[{1}], blockId:{2}, transactionSize:{3}, blockTime:{4}, parentBlockId:{5}",
+                        block.Num,
+                        controller.GetAbsSlotAtTime(now),
+                        block.Id,
+                        block.Transactions.Count,
+                        new DateTime(block.Timestamp),
+                        block.ParentId));
 
-                broadcastBlock(block);
+                BroadcastBlock(block);
 
                 return BlockProductionCondition.PRODUCED;
             }
-            catch (TronException e)
+            catch (System.Exception e)
             {
                 Logger.Error(e.getMessage(), e);
                 return BlockProductionCondition.EXCEPTION_PRODUCING_BLOCK;
@@ -320,6 +326,18 @@ namespace Mineral.Core.Service
             this.privatekeys.TryGetValue(witness_address, out byte[] privatekey);
 
             return this.db_manager.GenerateBlock(witness, when, privatekey, is_mainternance, true);
+        }
+
+        private void BroadcastBlock(BlockCapsule block)
+        {
+            try
+            {
+                this.net_service.Broadcast(new BlockMessage(block.Data));
+            }
+            catch (System.Exception)
+            {
+                throw new System.Exception("BroadcastBlock error");
+            }
         }
         #endregion
 
@@ -361,6 +379,33 @@ namespace Mineral.Core.Service
             }
 
             return true;
+        }
+
+        public void CheckDupWitness(BlockCapsule block)
+        {
+            if (block.IsGenerateMyself)
+                return;
+
+            if (need_sync_check)
+                return;
+
+            if (Helper.CurrentTimeMillis() - block.Timestamp > Parameter.ChainParameters.BLOCK_PRODUCED_INTERVAL)
+                return;
+
+            if (!this.privatekeys.ContainsKey(block.WitnessAddress))
+                return;
+
+            if (this.backup_manager.Status != BackupManager.BackupStatus.MASTER)
+                return;
+
+            if (this.block_count == 0)
+                Interlocked.Exchange(ref this.block_count, new Random().Next(10));
+            else
+                Interlocked.Exchange(ref this.block_count, 10);
+
+            Interlocked.Exchange(ref this.block_time, Helper.CurrentTimeMillis());
+
+            Logger.Warning("Dup block produced : " + block.ToString());
         }
         #endregion
     }

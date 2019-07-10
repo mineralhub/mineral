@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
+using Mineral.Common.Overlay.Messages;
 using Mineral.Common.Utils;
 using Mineral.Core.Capsule;
 using Mineral.Core.Net.Messages;
