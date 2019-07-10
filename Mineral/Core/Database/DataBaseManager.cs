@@ -1166,6 +1166,51 @@ namespace Mineral.Core.Database
                               block.Transactions.Count));
         }
 
+        public bool PushTransaction(TransactionCapsule transaction)
+        {
+
+            lock (this.push_transactions)
+            {
+                this.push_transactions.Enqueue(transaction);
+            }
+
+            try
+            {
+                if (!transaction.ValidateSignature(this))
+                {
+                    throw new ValidateSignatureException("trans sig validate failed");
+                }
+
+                lock (this)
+                {
+                    if (!session.IsValid())
+                    {
+                        session.SetValue(this.revoking_store.BuildSession());
+                    }
+
+                    try
+                    {
+                        using (ISession temp_session = this.revoking_store.BuildSession())
+                        {
+                            ProcessTransaction(transaction, null);
+                            this.pending_transactions.Add(transaction);
+                            temp_session.Merge();
+                        }
+                    }
+                    catch (System.Exception e)
+                    {
+                        Logger.Error(e.Message);
+                    }
+                }
+            }
+            finally
+            {
+                this.push_transactions.Remove(transaction);
+            }
+
+            return true;
+        }
+
         [MethodImpl(MethodImplOptions.Synchronized)]
         public void EraseBlock()
         {
