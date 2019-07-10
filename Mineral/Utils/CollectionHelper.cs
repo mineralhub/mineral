@@ -57,5 +57,20 @@ namespace Mineral.Utils
         {
             while (collection.TryTake(out _)) ;
         }
+
+        public static void Remove<T>(this ConcurrentQueue<T> collection, T item)
+        {
+            ConcurrentQueue<T> temp = new ConcurrentQueue<T>();
+            
+            foreach (T value in collection)
+            {
+                if (!value.Equals(item))
+                {
+                    temp.Enqueue(value);
+                }
+            }
+
+            collection = new ConcurrentQueue<T>(temp);
+        }
     }
 }
