@@ -231,61 +231,64 @@ namespace Mineral.Core.Net.Peer
 
         public void OnConnect()
         {
-            if (this.hello_message.HeadBlockId.Num > this.net_delegate.getHeadBlockId().getNum())
+            if (this.hello_message.HeadBlockId.Num > this.net_delegate.HeadBlockId.Num)
             {
-                setTronState(TronState.SYNCING);
-                syncService.startSync(this);
+                State = MineralState.SYNCING;
+                this.sync_service.StartSync(this);
             }
             else
             {
-                setTronState(TronState.SYNC_COMPLETED);
+                State = MineralState.SYNC_COMPLETED;
             }
         }
 
-        public void onDisconnect()
+        public void OnDisconnect()
         {
-            this.syncService.onDisconnect(this);
-            this.advService.onDisconnect(this);
-            this.advInvReceive.cleanUp();
-            this.advInvSpread.cleanUp();
-            this.advInvRequest.clear();
-            this.syncBlockIdCache.cleanUp();
-            this.syncBlockToFetch.clear();
-            this.syncBlockRequested.clear();
-            this.syncBlockInProcess.clear();
-            this.syncBlockInProcess.clear();
+            this.sync_service.OnDisconnect(this);
+            this.advance_service.OnDisconnect(this);
+
+            this.inventory_receive = MemoryCache.Default;
+            this.inventory_spread = MemoryCache.Default;
+            this.inventory_request.Clear();
+
+            this.sync_block_id = MemoryCache.Default;
+            this.sync_block_fetch.Clear();
+            this.sync_block_request.Clear();
+            this.sync_block_process.Clear();
         }
 
         public string Log()
         {
-            long now = System.currentTimeMillis();
- 
-            return String.format(
-                "Peer %s: [ %18s, ping %6s ms]-----------\n"
-                    + "connect time: %ds\n"
-                    + "last know block num: %s\n"
-                    + "needSyncFromPeer:%b\n"
-                    + "needSyncFromUs:%b\n"
-                    + "syncToFetchSize:%d\n"
-                    + "syncToFetchSizePeekNum:%d\n"
-                    + "syncBlockRequestedSize:%d\n"
-                    + "remainNum:%d\n"
-                    + "syncChainRequested:%d\n"
-                    + "blockInProcess:%d\n",
-                this.getNode().getHost() + ":" + this.getNode().getPort(),
-                this.getNode().getHexIdShort(),
-                (int)this.getPeerStats().getAvgLatency(),
-                (now - super.getStartTime()) / 1000,
-                blockBothHave.getNum(),
-                isNeedSyncFromPeer(),
-                isNeedSyncFromUs(),
-                syncBlockToFetch.size(),
-                syncBlockToFetch.size() > 0 ? syncBlockToFetch.peek().getNum() : -1,
-                syncBlockRequested.size(),
-                remainNum,
-                syncChainRequested == null ? 0 : (now - syncChainRequested.getValue()) / 1000,
-                syncBlockInProcess.size())
-                + nodeStatistics.toString() + "\n";
+            long now = Helper.CurrentTimeMillis();
+
+            this.sync_block_fetch.TryPeekLeft(out BlockId id);
+
+            return string.Format(
+                "Peer {0} : [ {1:18}, ping {2:6} ms]-----------\n"
+                    + "connect time : {3}s\n"
+                    + "last know block num : {4}\n"
+                    + "needSyncFromPeer : {5}\n"
+                    + "needSyncFromUs : {6}\n"
+                    + "syncToFetchSize : {7}\n"
+                    + "syncToFetchSizePeekNum : {8}\n"
+                    + "syncBlockRequestedSize : {9}\n"
+                    + "remainNum : {10}\n"
+                    + "syncChainRequested : {11}\n"
+                    + "blockInProcess : {12}\n",
+                base.Node.Host + ":" + base.Node.Port,
+                base.Node.Id.ToHexString(),
+                (int)base.PeerStatistics.AverageLatency,
+                (now - base.StartTime) / 1000,
+                this.block_both_have.Num,
+                IsNeedSyncPeer,
+                IsNeedSyncUs,
+                this.sync_block_fetch.Count,
+                this.sync_block_fetch.Count > 0 ? id.Num : -1,
+                this.sync_block_request.Count,
+                this.remain_num,
+                this.sync_chain_request.Equals(default(KeyValuePair<Deque<BlockId>, long>)) ?
+                            0 : (now - this.sync_chain_request.Value) / 1000,
+                this.sync_block_process.Count + this.node_statistics.ToString() + "\n");
         }
         #endregion
     }
