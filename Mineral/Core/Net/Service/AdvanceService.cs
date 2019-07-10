@@ -33,11 +33,15 @@ namespace Mineral.Core.Net.Service
         private ScheduledExecutorHandle handle_fetch = null;
 
         private MessageCount tx_count = new MessageCount();
-        private int max_spread_size = 1_000;
+        private int max_spread_size = 1000;
         #endregion
 
 
         #region Property
+        public MessageCount TxCount
+        {
+            get { return this.tx_count; }
+        }
         #endregion
 
 
