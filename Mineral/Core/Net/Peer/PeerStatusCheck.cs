@@ -11,7 +11,6 @@ namespace Mineral.Core.Net.Peer
     public class PeerStatusCheck
     {
         #region Field
-        private MineralNetDelegate net_delegate = null;
         private ScheduledExecutorHandle handler_peer_status = null;
         private int block_update_timeout = 20000;
         #endregion
@@ -53,7 +52,7 @@ namespace Mineral.Core.Net.Peer
         {
             long now = Helper.CurrentTimeMillis();
 
-            this.net_delegate.ActivePeers.ForEach(peer =>
+            Manager.Instance.NetDelegate.ActivePeers.ForEach(peer =>
             {
                 bool is_disconnected = false;
 

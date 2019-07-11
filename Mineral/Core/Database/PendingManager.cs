@@ -11,7 +11,7 @@ namespace Mineral.Core.Database
     public class PendingManager : IDisposable
     {
         #region Field
-        private DataBaseManager db_manager = null;
+        private DatabaseManager db_manager = null;
         private List<TransactionCapsule> transactions = new List<TransactionCapsule>();
         #endregion
 
@@ -21,7 +21,7 @@ namespace Mineral.Core.Database
 
 
         #region Contructor
-        public PendingManager(DataBaseManager db_manager)
+        public PendingManager(DatabaseManager db_manager)
         {
             this.db_manager = db_manager;
             this.transactions.AddRange(db_manager.PendingTransactions);

@@ -53,9 +53,40 @@ namespace Mineral.Utils
             return result;
         }
 
+        public static bool Contains<T>(this ConcurrentBag<T> bag, T value)
+        {
+            bool result = false;
+
+            foreach (T t in bag)
+            {
+                if (t.Equals(value))
+                {
+                    result = true;
+                    break;
+                }
+            }
+
+            return result;
+        }
+
         public static void Clear<T>(this BlockingCollection<T> collection)
         {
             while (collection.TryTake(out _)) ;
+        }
+
+        public static void Remove<T>(this BlockingCollection<T> collection, T item)
+        {
+            BlockingCollection<T> temp = new BlockingCollection<T>();
+
+            foreach (T value in collection)
+            {
+                if (!value.Equals(item))
+                {
+                    temp.Add(value);
+                }
+            }
+
+            collection = temp;
         }
 
         public static void Remove<T>(this ConcurrentQueue<T> collection, T item)

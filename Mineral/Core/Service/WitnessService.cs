@@ -24,19 +24,16 @@ namespace Mineral.Core.Service
         private static volatile bool need_sync_check = (bool)Args.Instance.Block.NeedSyncCheck;
 
         private Thread thread_generate = null;
-        private IApplication app = null;
-        private DataBaseManager db_manager = null;
+        private DatabaseManager db_manager = null;
+        private BackupManager backup_manager = null;
+        private MineralNetService net_service = null;
+        private BackupServer backup_server = null;
 
         private Dictionary<ByteString, byte[]> privatekeys = new Dictionary<ByteString, byte[]>();
         private Dictionary<byte[], byte[]> privatekey_address = new Dictionary<byte[], byte[]>();
         protected Dictionary<ByteString, WitnessCapsule> local_witness_state = new Dictionary<ByteString, WitnessCapsule>();
 
         private WitnessController controller;
-
-        private BackupManager backup_manager = BackupManager.Instance;
-        private BackupServer backup_server = BackupServer.Instance;
-        private MineralNetService net_service = MineralNetService.Instance;
-
         private volatile bool is_running = false;
         private int block_count = 0;
         private long block_time = 0;
@@ -55,11 +52,15 @@ namespace Mineral.Core.Service
 
 
         #region Constructor
-        public WitnessService(Application application)
+        public WitnessService(Manager manager)
         {
-            this.app = application;
-            this.db_manager = application.Manager;
+            this.db_manager = manager.DBManager;
+            this.backup_manager = manager.BackupManager;
+            this.net_service = manager.NetService;
+            this.backup_server = manager.BackupServer;
+
             this.controller = this.db_manager.WitnessController;
+            this.db_manager.WitnessService = this;
             this.thread_generate = new Thread(new ThreadStart(ScheduleProductionLoop));
 
             new Thread(new ThreadStart(() =>

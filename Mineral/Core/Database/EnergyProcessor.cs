@@ -18,7 +18,7 @@ namespace Mineral.Core.Database
 
 
         #region Constructor
-        public EnergyProcessor(DataBaseManager db_manager) : base(db_manager) { }
+        public EnergyProcessor(DatabaseManager db_manager) : base(db_manager) { }
         #endregion
 
 

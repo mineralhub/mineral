@@ -11,7 +11,7 @@ namespace Mineral.Core.Config.Arguments
     {
         #region Field
         private List<string> privatekeys = new List<string>();
-        private UInt160 witness_account_address = null;
+        private byte[] witness_account_address = null;
         #endregion
 
 
@@ -63,16 +63,16 @@ namespace Mineral.Core.Config.Arguments
         {
             if (this.witness_account_address == null)
             {
-                this.witness_account_address = AccountHelper.ToAddressHash(new ECKey(GetPrivateKey().HexToBytes(), true).PublicKey.ToByteArray());
+                this.witness_account_address = new ECKey(GetPrivateKey().HexToBytes(), true).GetPublicAddress();
             }
         }
 
-        public void SetWitnessAccountAddress(UInt160 address)
+        public void SetWitnessAccountAddress(byte[] address)
         {
             this.witness_account_address = address;
         }
 
-        public UInt160 GetWitnessAccountAddress()
+        public byte[] GetWitnessAccountAddress()
         {
             if (this.witness_account_address == null)
             {
@@ -80,7 +80,7 @@ namespace Mineral.Core.Config.Arguments
                 if (!privatekey.IsNullOrEmpty())
                 {
                     ECKey key = new ECKey(privatekey.HexToBytes(), true);
-                    this.witness_account_address = AccountHelper.ToAddressHash(key.PublicKey.ToByteArray());
+                    this.witness_account_address = key.GetPublicAddress();
                     return this.witness_account_address;
                 }
             }

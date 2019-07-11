@@ -10,7 +10,7 @@ namespace Mineral.Core.Witness
     public class ProposalController
     {
         #region Field
-        private DataBaseManager db_manager = null;
+        private DatabaseManager db_manager = null;
         #endregion
 
 
@@ -19,7 +19,7 @@ namespace Mineral.Core.Witness
 
 
         #region Contructor
-        public ProposalController(DataBaseManager db_manager)
+        public ProposalController(DatabaseManager db_manager)
         {
             this.db_manager = db_manager;
         }

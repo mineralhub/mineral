@@ -27,11 +27,9 @@ using static Protocol.Transaction.Types.Contract.Types;
 
 namespace Mineral.Core.Database
 {
-    public class DataBaseManager
+    public class DatabaseManager
     {
         #region Field
-        private static DataBaseManager instance = null;
-
         private IRevokingDatabase revoking_store = null;
         private KhaosDatabase khaos_database = null;
         private BlockStore block_store = null;
@@ -65,7 +63,6 @@ namespace Mineral.Core.Database
         private WitnessService witness_service = null;
         private BlockCapsule genesis_block = null;
 
-        private FastSyncCallBack fast_sync_call_back = null;
         private SessionOptional session = SessionOptional.Instance;
         private BlockingCollection<TransactionCapsule> pending_transactions = new BlockingCollection<TransactionCapsule>();
         private BlockingCollection<TransactionCapsule> pop_transactions = new BlockingCollection<TransactionCapsule>();
@@ -79,11 +76,6 @@ namespace Mineral.Core.Database
 
 
         #region Property
-        public static DataBaseManager Instance
-        {
-            get { return Instance ?? new DataBaseManager(); }
-        }
-
         public BlockStore Block => this.block_store;
         public BlockIndexStore BlockIndex => this.block_index_store;
         public TransactionStore Transaction => this.transaction_store;
@@ -149,6 +141,12 @@ namespace Mineral.Core.Database
             set { this.witness_controller = value; }
         }
 
+        public WitnessService WitnessService
+        {
+            get { return this.witness_service; }
+            set { this.witness_service = value; }
+        }
+
         public BlockingCollection<TransactionCapsule> PendingTransactions
         {
             get { return this.pending_transactions; }
@@ -174,7 +172,7 @@ namespace Mineral.Core.Database
 
 
         #region Constructor
-        private DataBaseManager()
+        public DatabaseManager()
         {
             this.khaos_database = new KhaosDatabase("block_KDB");
 
@@ -182,7 +180,7 @@ namespace Mineral.Core.Database
             this.block_index_store = new BlockIndexStore("block-index");
             this.transaction_store = new TransactionStore(this.block_store, this.khaos_database, "transaction");
             this.transaction_history_store = new TransactionHistoryStore("transaction_history_store");
-            this.account_store = new AccountStore(this, "account");
+            this.account_store = new AccountStore(this, Manager.Instance.AccountStateTrie, Manager.Instance.FastSyncCallback, "account");
             this.witness_store = new WitnessStore("witness");
             this.witness_schedule_store = new WitnessScheduleStore("siwtness_schedule");
             this.votes_store = new VotesStore("votes");
@@ -280,9 +278,9 @@ namespace Mineral.Core.Database
             {
                 ISession temp_session = this.revoking_store.BuildSession();
 
-                this.fast_sync_call_back.PreExecuteTrans();
+                this.Manager.Instance.FastSyncCallback.PreExecuteTrans();
                 ProcessTransaction(transaction, block);
-                this.fast_sync_call_back.ExecuteTransFinish();
+                this.Manager.Instance.FastSyncCallback.ExecuteTransFinish();
 
                 temp_session.Merge();
                 block.AddTransaction(transaction);
@@ -913,7 +911,7 @@ namespace Mineral.Core.Database
             this.session.Reset();
             this.session.SetValue(this.revoking_store.BuildSession());
 
-            this.fast_sync_call_back.PreExecute(block);
+            this.Manager.Instance.FastSyncCallback.PreExecute(block);
 
             if (need_check_witness_permission
                 && !this.witness_service.ValidateWitnessPermission(witness.Address))
@@ -952,7 +950,7 @@ namespace Mineral.Core.Database
                 }
             }
 
-            this.fast_sync_call_back.ExecuteGenerateFinish();
+            this.Manager.Instance.FastSyncCallback.ExecuteGenerateFinish();
             this.session.Reset();
 
             if (postponed_tx_count > 0)
@@ -1264,7 +1262,7 @@ namespace Mineral.Core.Database
 
             try
             {
-                this.fast_sync_call_back.PreExecute(block);
+                this.Manager.Instance.FastSyncCallback.PreExecute(block);
 
                 foreach (TransactionCapsule tx in block.Transactions)
                 {
@@ -1274,15 +1272,15 @@ namespace Mineral.Core.Database
                         tx.IsVerified = true;
                     }
 
-                    this.fast_sync_call_back.PreExecuteTrans();
+                    this.Manager.Instance.FastSyncCallback.PreExecuteTrans();
                     ProcessTransaction(tx, block);
-                    this.fast_sync_call_back.ExecuteTransFinish();
+                    this.Manager.Instance.FastSyncCallback.ExecuteTransFinish();
                 }
-                this.fast_sync_call_back.ExecutePushFinish();
+                this.Manager.Instance.FastSyncCallback.ExecutePushFinish();
             }
             finally
             {
-                this.fast_sync_call_back.ExceptionFinish();
+                this.Manager.Instance.FastSyncCallback.ExceptionFinish();
             }
 
             bool need_maintenance = IsNeedMaintenance(block.Timestamp);

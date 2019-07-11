@@ -13,7 +13,7 @@ namespace Mineral.Core.Actuator
     {
         #region Field
         protected Any contract = null;
-        protected DataBaseManager db_manager = null;
+        protected DatabaseManager db_manager = null;
         protected IDeposit deposit = null;
         #endregion
 
@@ -28,7 +28,7 @@ namespace Mineral.Core.Actuator
 
 
         #region Contructor
-        public AbstractActuator(Any contract, DataBaseManager db_manager)
+        public AbstractActuator(Any contract, DatabaseManager db_manager)
         {
             this.contract = contract;
             this.db_manager = db_manager;

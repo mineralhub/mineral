@@ -11,7 +11,7 @@ namespace Mineral.Common.Storage
 
     public interface IDeposit
     {
-        DataBaseManager DBManager { get; }
+        DatabaseManager DBManager { get; }
 
         AccountCapsule CreateAccount(byte[] address, Protocol.AccountType type);
         AccountCapsule CreateAccount(byte[] address, string account_name, Protocol.AccountType type);

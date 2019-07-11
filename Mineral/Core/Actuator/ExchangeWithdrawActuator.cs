@@ -31,7 +31,7 @@ namespace Mineral.Core.Actuator
 
 
         #region Contructor
-        public ExchangeWithdrawActuator(Any contract, DataBaseManager db_manager) : base(contract, db_manager) { }
+        public ExchangeWithdrawActuator(Any contract, DatabaseManager db_manager) : base(contract, db_manager) { }
         #endregion
 
 

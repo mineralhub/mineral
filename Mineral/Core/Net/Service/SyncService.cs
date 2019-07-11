@@ -23,7 +23,6 @@ namespace Mineral.Core.Net.Service
     public class SyncService
     {
         #region Field
-        private MineralNetDelegate net_delegate = null;
         private ConcurrentDictionary<BlockMessage, PeerConnection> block_wait_process = new ConcurrentDictionary<BlockMessage, PeerConnection>();
         private ConcurrentDictionary<BlockMessage, PeerConnection> block_just_receive = new ConcurrentDictionary<BlockMessage, PeerConnection>();
         private MemoryCache request_ids = MemoryCache.Default;
@@ -66,7 +65,7 @@ namespace Mineral.Core.Net.Service
         {
             Dictionary<PeerConnection, List<BlockId>> send = new Dictionary<PeerConnection, List<BlockId>>();
 
-            foreach  (PeerConnection peer in this.net_delegate.ActivePeers.Where(peer => peer.IsNeedSyncPeer && peer.IsIdle))
+            foreach  (PeerConnection peer in Manager.Instance.NetDelegate.ActivePeers.Where(peer => peer.IsNeedSyncPeer && peer.IsIdle))
             {
                 if (!send.ContainsKey(peer))
                 {
@@ -133,7 +132,7 @@ namespace Mineral.Core.Net.Service
                     }
 
                     bool is_found = false;
-                    var peers = this.net_delegate.ActivePeers.Where(p => message.Block.Id.Equals(p.SyncBlockFetch.FirstOrDefault()));
+                    var peers = Manager.Instance.NetDelegate.ActivePeers.Where(p => message.Block.Id.Equals(p.SyncBlockFetch.FirstOrDefault()));
 
                     foreach (PeerConnection p in peers)
                     {
@@ -180,7 +179,7 @@ namespace Mineral.Core.Net.Service
 
             try
             {
-                this.net_delegate.ProcessBlock(block);
+                Manager.Instance.NetDelegate.ProcessBlock(block);
             }
             catch (System.Exception e)
             {
@@ -189,7 +188,7 @@ namespace Mineral.Core.Net.Service
                 exception = e;
             }
 
-            foreach (PeerConnection peer in this.net_delegate.ActivePeers)
+            foreach (PeerConnection peer in Manager.Instance.NetDelegate.ActivePeers)
             {
                 if (peer.SyncBlockProcess.Remove(block.Id))
                 {
@@ -216,24 +215,24 @@ namespace Mineral.Core.Net.Service
             List<BlockId> forks = new List<BlockId>();
             List<BlockId> summary = new List<BlockId>();
 
-            long sync_begin = this.net_delegate.SyncBeginNumber;
+            long sync_begin = Manager.Instance.NetDelegate.SyncBeginNumber;
             long low = sync_begin < 0 ? 0 : sync_begin;
             long hight_no_fork = 0; ;
             long high = 0;
 
             if (begin_id.Num == 0)
             {
-                hight_no_fork = high = this.net_delegate.HeadBlockId.Num;
+                hight_no_fork = high = Manager.Instance.NetDelegate.HeadBlockId.Num;
             }
             else
             {
-                if (this.net_delegate.ContainBlockInMainChain(begin_id))
+                if (Manager.Instance.NetDelegate.ContainBlockInMainChain(begin_id))
                 {
                     hight_no_fork = high = begin_id.Num;
                 }
                 else
                 {
-                    forks = this.net_delegate.GetBlockChainHashesOnFork(begin_id);
+                    forks = Manager.Instance.NetDelegate.GetBlockChainHashesOnFork(begin_id);
                     if (forks.IsNullOrEmpty())
                     {
                         throw new P2pException(
@@ -266,7 +265,7 @@ namespace Mineral.Core.Net.Service
             {
                 if (low <= hight_no_fork)
                 {
-                    summary.Add(this.net_delegate.GetBlockIdByNum(low));
+                    summary.Add(Manager.Instance.NetDelegate.GetBlockIdByNum(low));
                 }
                 else if (low <= high)
                 {
@@ -327,7 +326,7 @@ namespace Mineral.Core.Net.Service
             peer.IsNeedSyncPeer = true;
             peer.SyncBlockFetch.Clear();
             peer.RemainNum = 0;
-            peer.BlockBothHave = this.net_delegate.GenesisBlockId;
+            peer.BlockBothHave = Manager.Instance.NetDelegate.GenesisBlockId;
             SyncNext(peer);
         }
 

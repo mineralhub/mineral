@@ -12,16 +12,10 @@ namespace Mineral.Core.Database.Fast
     public class TrieService
     {
         #region Field
-        private DataBaseManager db_manager;
         #endregion
 
 
         #region Property
-        public DataBaseManager DBManager
-        {
-            get { return this.db_manager; }
-            set { this.db_manager = value; }
-        }
         #endregion
 
 
@@ -40,13 +34,13 @@ namespace Mineral.Core.Database.Fast
         #region External Method
         public byte[] GetFullAccountStateRootHash()
         {
-            long latest_number = this.db_manager.DynamicProperties.GetLatestBlockHeaderNumber();
+            long latest_number = Manager.Instance.DBManager.DynamicProperties.GetLatestBlockHeaderNumber();
             return GetAccountStateRootHash(latest_number);
         }
 
         public byte[] GetSolidityAccountStateRootHash()
         {
-            long latest_number = this.db_manager.DynamicProperties.GetLatestSolidifiedBlockNum();
+            long latest_number = Manager.Instance.DBManager.DynamicProperties.GetLatestSolidifiedBlockNum();
             return GetAccountStateRootHash(latest_number);
         }
 
@@ -55,7 +49,7 @@ namespace Mineral.Core.Database.Fast
             byte[] root_hash = null;
             try
             {
-                BlockCapsule block = this.db_manager.GetBlockByNum(latest_number);
+                BlockCapsule block = Manager.Instance.DBManager.GetBlockByNum(latest_number);
                 ByteString value = block.Instance.BlockHeader.RawData.AccountStateRoot;
 
                 root_hash = value == null ? null : value.ToByteArray();

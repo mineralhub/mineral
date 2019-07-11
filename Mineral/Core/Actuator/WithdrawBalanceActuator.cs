@@ -24,7 +24,7 @@ namespace Mineral.Core.Actuator
 
 
         #region Contructor
-        public WithdrawBalanceActuator(Any contract, DataBaseManager db_manager) : base(contract, db_manager) { }
+        public WithdrawBalanceActuator(Any contract, DatabaseManager db_manager) : base(contract, db_manager) { }
         #endregion
 
 

@@ -21,7 +21,6 @@ namespace Mineral.Core.Net.Service
     public class AdvanceService
     {
         #region Field
-        private MineralNetDelegate net_delegate = null;
         private ConcurrentDictionary<Item, long> inventory_fetch = new ConcurrentDictionary<Item, long>();
         private ConcurrentDictionary<Item, long> inventory_spread = new ConcurrentDictionary<Item, long>();
 
@@ -57,8 +56,8 @@ namespace Mineral.Core.Net.Service
         [MethodImpl(MethodImplOptions.Synchronized)]
         private void ConsumerInventoryToSpread()
         {
-            List<PeerConnection> peers = this.net_delegate.ActivePeers.Where(peer => !peer.IsNeedSyncPeer && !peer.IsNeedSyncUs)
-                                                                      .ToList();
+            List<PeerConnection> peers = 
+                Manager.Instance.NetDelegate.ActivePeers.Where(peer => !peer.IsNeedSyncPeer && !peer.IsNeedSyncUs).ToList();
 
             if (this.inventory_spread.IsEmpty || peers.IsNullOrEmpty())
             {
@@ -88,8 +87,8 @@ namespace Mineral.Core.Net.Service
         [MethodImpl(MethodImplOptions.Synchronized)]
         private void ConsumerInventoryToFetch()
         {
-            List<PeerConnection> peers = this.net_delegate.ActivePeers.Where(peer => peer.IsIdle)
-                                                                      .ToList();
+            List<PeerConnection> peers =
+                Manager.Instance.NetDelegate.ActivePeers.Where(peer => peer.IsIdle).ToList();
 
             if (this.inventory_fetch.IsEmpty || peers.IsNullOrEmpty())
             {
@@ -335,7 +334,7 @@ namespace Mineral.Core.Net.Service
             {
                 foreach (Item item in peer.InventoryRequest.Keys)
                 {
-                    if (this.net_delegate.ActivePeers.First(p => p != peer && p.GetInventoryReceive(item) != null) != null)
+                    if (Manager.Instance.NetDelegate.ActivePeers.First(p => p != peer && p.GetInventoryReceive(item) != null) != null)
                     {
                         this.inventory_fetch.TryAdd(item, Helper.CurrentTimeMillis());
                     }

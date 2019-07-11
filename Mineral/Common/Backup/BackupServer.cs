@@ -10,6 +10,7 @@ using DotNetty.Transport.Channels.Sockets;
 using DotNetty.Transport.Libuv;
 using Mineral.Common.Net.Udp.Handler;
 using Mineral.Common.Overlay.Server;
+using Mineral.Core;
 using Mineral.Core.Config.Arguments;
 
 namespace Mineral.Common.Backup
@@ -17,26 +18,17 @@ namespace Mineral.Common.Backup
     public class BackupServer
     {
         #region Field
-        private static BackupServer instance = null;
-
-        private int port = (int)Args.Instance.Node.Backup.Port;
-        private BackupManager backup_manager = BackupManager.Instance;
         private IChannel channel = null;
-        private WireTrafficStats stats = new WireTrafficStats();
+        private int port = (int)Args.Instance.Node.Backup.Port;
         private volatile bool is_shutdown = false;
         #endregion
 
 
         #region Property
-        public static BackupServer Instance
-        {
-            get { return instance ?? new BackupServer(); }
-        }
         #endregion
 
 
         #region Contructor
-        private BackupServer() { }
         #endregion
 
 
@@ -60,12 +52,13 @@ namespace Mineral.Common.Backup
                         bootstrap.Channel<SocketDatagramChannel>();
                         bootstrap.Handler(new ActionChannelInitializer<SocketDatagramChannel>(channel =>
                         {
-                            channel.Pipeline.AddLast(this.stats.UDP);
+                            channel.Pipeline.AddLast(Manager.Instance.TrafficStats.UDP);
                             channel.Pipeline.AddLast(new ProtobufVarint32LengthFieldPrepender());
                             channel.Pipeline.AddLast(new ProtobufVarint32FrameDecoder());
                             channel.Pipeline.AddLast(new PacketDecoder());
-                            MessageHandler handler = new MessageHandler(channel, this.backup_manager);
-                            this.backup_manager.MessageHandler = handler;
+                            
+                            MessageHandler handler = new MessageHandler(channel, Manager.Instance.BackupManager);
+                            Manager.Instance.BackupManager.MessageHandler = handler;
                             channel.Pipeline.AddLast(handler);
                         }));
 
@@ -81,7 +74,7 @@ namespace Mineral.Common.Backup
 
                 await this.channel.CloseAsync();
             }
-            catch (System.Exception e)
+            catch (System.Exception)
             {
                 Logger.Error(
                     string.Format("Start backup server with port {0} failed", this.port));

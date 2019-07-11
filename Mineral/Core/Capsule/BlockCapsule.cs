@@ -216,7 +216,7 @@ namespace Mineral.Core.Capsule
             this.block.BlockHeader.WitnessSignature = ByteString.CopyFrom(signature.ToDER());
         }
 
-        public bool ValidateSignature(DataBaseManager db_manager)
+        public bool ValidateSignature(DatabaseManager db_manager)
         {
             try
             {

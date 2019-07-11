@@ -15,7 +15,7 @@ namespace Mineral.Core.Witness
     public class WitnessController
     {
         #region Field
-        private DataBaseManager db_manager = null;
+        private DatabaseManager db_manager = null;
         private bool is_generating_block = false;
         #endregion
 
@@ -30,7 +30,7 @@ namespace Mineral.Core.Witness
 
 
         #region Contructor
-        public WitnessController(DataBaseManager db_manager)
+        public WitnessController(DatabaseManager db_manager)
         {
             this.db_manager = db_manager;
         }

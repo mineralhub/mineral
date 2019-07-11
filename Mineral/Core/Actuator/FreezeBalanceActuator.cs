@@ -24,7 +24,7 @@ namespace Mineral.Core.Actuator
 
 
         #region Contructor
-        public FreezeBalanceActuator(Any contract, DataBaseManager db_manager) : base(contract, db_manager) { }
+        public FreezeBalanceActuator(Any contract, DatabaseManager db_manager) : base(contract, db_manager) { }
         #endregion
 
 

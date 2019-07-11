@@ -20,7 +20,7 @@ namespace Mineral.Common.Runtime.VM.Program
 
 
         #region Property
-        public DataBaseManager DBManager
+        public DatabaseManager DBManager
         {
             get { return this.deposit?.DBManager; }
         }

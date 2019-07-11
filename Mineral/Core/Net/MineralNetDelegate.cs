@@ -19,8 +19,6 @@ namespace Mineral.Core.Net
     public class MineralNetDelegate
     {
         #region Field
-        private SyncPool sync_pool;
-        private DataBaseManager db_manager;
         private object locker_block = new object();
         private int block_id_cache_size = 100;
 
@@ -31,37 +29,37 @@ namespace Mineral.Core.Net
         #region Property
         public List<PeerConnection> ActivePeers
         {
-            get { return this.sync_pool.ActivePeers; }
+            get { return Manager.Instance.SyncPool.ActivePeers; }
         }
 
         public long SyncBeginNumber
         {
-            get { return this.db_manager.GetSyncBeginNumber(); }
+            get { return Manager.Instance.DBManager.GetSyncBeginNumber(); }
         }
 
         public BlockId GenesisBlockId
         {
-            get { return this.db_manager.GenesisBlockId; }
+            get { return Manager.Instance.DBManager.GenesisBlockId; }
         }
 
         public BlockId SolidBlockId
         {
-            get { return this.db_manager.SolidBlockId; }
+            get { return Manager.Instance.DBManager.SolidBlockId; }
         }
 
         public BlockId HeadBlockId
         {
-            get { return this.db_manager.HeadBlockId; }
+            get { return Manager.Instance.DBManager.HeadBlockId; }
         }
 
         public BlockCapsule GenesisBlock
         {
-            get { return this.db_manager.GenesisBlock; }
+            get { return Manager.Instance.DBManager.GenesisBlock; }
         }
 
         public long HeadBlockTimeStamp
         {
-            get { return this.db_manager.GetHeadBlockTimestamp(); }
+            get { return Manager.Instance.DBManager.GetHeadBlockTimestamp(); }
         }
 
         public object LockBlock
@@ -86,30 +84,30 @@ namespace Mineral.Core.Net
         #region External Method
         public bool CanChainRevoke(long num)
         {
-            return num >= this.db_manager.GetSyncBeginNumber();
+            return num >= Manager.Instance.DBManager.GetSyncBeginNumber();
         }
 
         public bool Contain(SHA256Hash hash, MessageTypes type)
         {
             if (type.Equals(MessageTypes.MsgType.BLOCK))
             {
-                return this.db_manager.ContainBlock(hash);
+                return Manager.Instance.DBManager.ContainBlock(hash);
             }
             else if (type.Equals(MessageTypes.MsgType.TX))
             {
-                return this.db_manager.Transaction.Contains(hash.Hash);
+                return Manager.Instance.DBManager.Transaction.Contains(hash.Hash);
             }
             return false;
         }
 
         public bool ContainBlock(BlockId id)
         {
-            return this.db_manager.ContainBlock(id);
+            return Manager.Instance.DBManager.ContainBlock(id);
         }
 
         public bool ContainBlockInMainChain(BlockId id)
         {
-            return this.db_manager.ContainBlockInMainChain(id);
+            return Manager.Instance.DBManager.ContainBlockInMainChain(id);
         }
 
         public Message GetData(SHA256Hash hash, InventoryType type)
@@ -121,12 +119,12 @@ namespace Mineral.Core.Net
                 {
                     case InventoryType.Block:
                         {
-                            result = new BlockMessage(this.db_manager.GetBlockById(hash));
+                            result = new BlockMessage(Manager.Instance.DBManager.GetBlockById(hash));
                         }
                         break;
                     case InventoryType.Trx:
                         {
-                            TransactionCapsule tx = this.db_manager.Transaction.Get(hash.Hash);
+                            TransactionCapsule tx = Manager.Instance.DBManager.Transaction.Get(hash.Hash);
                             if (tx == null)
                                 throw new StoreException();
 
@@ -152,7 +150,7 @@ namespace Mineral.Core.Net
         {
             try
             {
-                return this.db_manager.GetBlockById(id).Timestamp;
+                return Manager.Instance.DBManager.GetBlockById(id).Timestamp;
             }
             catch (ArgumentException)
             {
@@ -168,7 +166,7 @@ namespace Mineral.Core.Net
         {
             try
             {
-                return this.db_manager.GetBlockIdByNum(num);
+                return Manager.Instance.DBManager.GetBlockIdByNum(num);
             }
             catch (ItemNotFoundException)
             {
@@ -180,7 +178,7 @@ namespace Mineral.Core.Net
         {
             try
             {
-                return this.db_manager.GetBlockChainHashesOnFork(fork_hash);
+                return Manager.Instance.DBManager.GetBlockChainHashesOnFork(fork_hash);
             }
             catch (NonCommonBlockException)
             {
@@ -206,7 +204,7 @@ namespace Mineral.Core.Net
                 {
                     if (!this.fresh_block_id.Contains(block.Id))
                     {
-                        this.db_manager.PushBlock(block);
+                        Manager.Instance.DBManager.PushBlock(block);
                         this.fresh_block_id.Enqueue(block.Id);
                         Logger.Info("Success process block " + block.Id.GetString());
                     }
@@ -242,7 +240,7 @@ namespace Mineral.Core.Net
         {
             try
             {
-                this.db_manager.PushTransaction(trx);
+                Manager.Instance.DBManager.PushTransaction(trx);
             }
             catch (System.Exception e)
             {
@@ -274,12 +272,12 @@ namespace Mineral.Core.Net
 
             try
             {
-                if (!block.ValidateSignature(this.db_manager))
+                if (!block.ValidateSignature(Manager.Instance.DBManager))
                 {
                     return result;
                 }
 
-                foreach (WitnessCapsule witness in this.db_manager.Witness.GetAllWitnesses())
+                foreach (WitnessCapsule witness in Manager.Instance.DBManager.Witness.GetAllWitnesses())
                 {
                     if (witness.Address.Equals(block.WitnessAddress))
                     {

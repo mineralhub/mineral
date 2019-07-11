@@ -9,7 +9,7 @@ namespace Mineral.Common.Application
     public class Application : IApplication
     {
         #region Field
-        private DataBaseManager db_manager;
+        private DatabaseManager db_manager;
         private BlockStore block_store = null;
         private ServiceContainer services = null;
         private bool is_producer = false;
@@ -17,7 +17,7 @@ namespace Mineral.Common.Application
 
 
         #region Property
-        public DataBaseManager Manager { get { return this.db_manager; } }
+        public DatabaseManager Manager { get { return this.db_manager; } }
         public BlockStore BlockStore { get { return this.block_store; } }
         #endregion
 

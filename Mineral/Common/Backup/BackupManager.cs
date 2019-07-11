@@ -24,8 +24,6 @@ namespace Mineral.Common.Backup
         }
 
         #region Field
-        private static BackupManager instance = null;
-
         private int priority = (int)Args.Instance.Node.Backup.Priority;
         private int port = (int)Args.Instance.Node.Backup.Port;
         private string local_ip = "";
@@ -40,11 +38,6 @@ namespace Mineral.Common.Backup
 
 
         #region Property
-        public static BackupManager Instance
-        {
-            get { return instance ?? new BackupManager(); }
-        }
-
         public MessageHandler MessageHandler
         {
             private get { return this.message_handler; }
@@ -64,7 +57,6 @@ namespace Mineral.Common.Backup
 
 
         #region Contructor
-        private BackupManager() { }
         #endregion
 
 

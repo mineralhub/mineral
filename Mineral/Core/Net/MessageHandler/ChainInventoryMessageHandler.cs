@@ -16,8 +16,6 @@ namespace Mineral.Core.Net.MessageHandler
     public class ChainInventoryMessageHandler : IMessageHandler
     {
         #region Field
-        private MineralNetDelegate net_delegate = null;
-        private SyncService sync_service = null;
         #endregion
 
 
@@ -80,13 +78,13 @@ namespace Mineral.Core.Net.MessageHandler
                     + ", peer: " + ids[0].GetString());
             }
 
-            if (this.net_delegate.HeadBlockId.Num > 0)
+            if (Manager.Instance.NetDelegate.HeadBlockId.Num > 0)
             {
                 long max_remain_time = Parameter.ChainParameters.CLOCK_MAX_DELAY
                                         + Helper.CurrentTimeMillis()
-                                        - this.net_delegate.GetBlockTime(this.net_delegate.SolidBlockId);
+                                        - Manager.Instance.NetDelegate.GetBlockTime(Manager.Instance.NetDelegate.SolidBlockId);
                 long max_future_num =
-                    max_remain_time / Parameter.ChainParameters.BLOCK_PRODUCED_INTERVAL + this.net_delegate.SolidBlockId.Num;
+                    max_remain_time / Parameter.ChainParameters.BLOCK_PRODUCED_INTERVAL + Manager.Instance.NetDelegate.SolidBlockId.Num;
                 long last_num = ids[ids.Count - 1].Num;
 
                 if (last_num + message.RemainNum > max_future_num)
@@ -110,7 +108,7 @@ namespace Mineral.Core.Net.MessageHandler
 
             Deque<BlockId> block_id = new Deque<BlockId>(chain_inventory_message.Ids);
 
-            if (block_id.Count == 1 && this.net_delegate.ContainBlock(block_id.FirstOrDefault()))
+            if (block_id.Count == 1 && Manager.Instance.NetDelegate.ContainBlock(block_id.FirstOrDefault()))
             {
                 peer.IsNeedSyncPeer = false;
                 return;
@@ -134,10 +132,10 @@ namespace Mineral.Core.Net.MessageHandler
                 peer.SyncBlockFetch.PushLeft(id);
             }
 
-            lock (this.net_delegate.LockBlock)
+            lock (Manager.Instance.NetDelegate.LockBlock)
             {
                 while (!peer.SyncBlockFetch.IsEmpty
-                    && this.net_delegate.ContainBlock(peer.SyncBlockFetch.First()))
+                    && Manager.Instance.NetDelegate.ContainBlock(peer.SyncBlockFetch.First()))
                 {
                     peer.SyncBlockFetch.TryPopLeft(out BlockId id);
                     peer.BlockBothHave = id;
@@ -149,11 +147,11 @@ namespace Mineral.Core.Net.MessageHandler
             if ((chain_inventory_message.RemainNum == 0 && !peer.SyncBlockFetch.IsEmpty)
                 || (chain_inventory_message.RemainNum != 0&& peer.SyncBlockFetch.Count > Parameter.NodeParameters.SYNC_FETCH_BATCH_NUM))
             {
-                this.sync_service.IsFetch = true;
+                Manager.Instance.SyncService.IsFetch = true;
             }
             else
             {
-                this.sync_service.SyncNext(peer);
+                Manager.Instance.SyncService.SyncNext(peer);
             }
         }
         #endregion

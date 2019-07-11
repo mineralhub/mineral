@@ -718,7 +718,7 @@ namespace Mineral.Core.Capsule
             return result;
         }
 
-        public static bool ValidateSignature(Transaction tx, byte[] hash, DataBaseManager db_manager)
+        public static bool ValidateSignature(Transaction tx, byte[] hash, DatabaseManager db_manager)
         {
             Permission permission = null;
             AccountStore account_store = db_manager.Account;
@@ -755,7 +755,7 @@ namespace Mineral.Core.Capsule
             return CheckWeight(permission, new List<ByteString>(tx.Signature), hash, null) >= permission.Threshold;
         }
 
-        public bool ValidateSignature(DataBaseManager db_manager)
+        public bool ValidateSignature(DatabaseManager db_manager)
         {
             if (this.is_verifyed)
                 return true;

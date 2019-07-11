@@ -12,7 +12,6 @@ namespace Mineral.Core.Database.Fast.Callback.StoreTrie
     public class AccountStateStoreTrie : MineralStoreWithRevoking<BytesCapsule, object>, IBaseDB<byte[], BytesCapsule>
     {
         #region Field
-        private TrieService trie_service = new TrieService();
         #endregion
 
 
@@ -23,7 +22,10 @@ namespace Mineral.Core.Database.Fast.Callback.StoreTrie
 
 
         #region Contructor
-        public AccountStateStoreTrie(string db_name = "accountTrie") : base(db_name) { }
+        public AccountStateStoreTrie(string db_name = "accountTrie")
+            : base(db_name)
+        {
+        }
         #endregion
 
 
@@ -38,12 +40,12 @@ namespace Mineral.Core.Database.Fast.Callback.StoreTrie
         #region External Method
         public AccountStateEntity GetAccount(byte[] key)
         {
-            return GetAccount(key, this.trie_service.GetFullAccountStateRootHash());
+            return GetAccount(key, Manager.Instance.TrieService.GetFullAccountStateRootHash());
         }
 
         public AccountStateEntity GetSolidityAccount(byte[] key)
         {
-            return GetAccount(key, this.trie_service.GetSolidityAccountStateRootHash());
+            return GetAccount(key, Manager.Instance.TrieService.GetSolidityAccountStateRootHash());
         }
 
         public AccountStateEntity GetAccount(byte[] key, byte[] root_hash)

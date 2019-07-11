@@ -12,9 +12,6 @@ namespace Mineral.Core.Net.MessageHandler
     public class InventoryMessageHandler : IMessageHandler
     {
         #region Field
-        private MineralNetDelegate net_delegate = null;
-        private AdvanceService advance_service = null;
-        private TransactionMessageHandler handler_transaction = null;
         private int max_count = 10000;
         #endregion
 
@@ -65,7 +62,7 @@ namespace Mineral.Core.Net.MessageHandler
                     return false;
                 }
 
-                if (this.handler_transaction.IsBusy)
+                if (Manager.Instance.TransactionHandler.IsBusy)
                 {
                     Logger.Warning(
                         string.Format("Drop inv: {0} size: {1} from Peer {2}, transactionsMsgHandler is busy.",
@@ -97,7 +94,7 @@ namespace Mineral.Core.Net.MessageHandler
             {
                 Item item = new Item(id, type);
                 peer.AddInventoryReceive(item, Helper.CurrentTimeMillis());
-                this.advance_service.AddInventory(item);
+                Manager.Instance.AdvanceService.AddInventory(item);
             }
         }
         #endregion

@@ -3,11 +3,13 @@ using System.Collections.Generic;
 using System.Text;
 using DotNetty.Codecs;
 using DotNetty.Handlers.Logging;
+using DotNetty.Handlers.Timeout;
 using DotNetty.Transport.Bootstrapping;
 using DotNetty.Transport.Channels;
 using DotNetty.Transport.Channels.Sockets;
 using DotNetty.Transport.Libuv;
 using Mineral.Core.Config.Arguments;
+using Mineral.Core.Net.Peer;
 
 namespace Mineral.Common.Overlay.Server
 {
@@ -42,7 +44,7 @@ namespace Mineral.Common.Overlay.Server
 
             try
             {
-                var bootstrap = new ServerBootstrap();
+                ServerBootstrap bootstrap = new ServerBootstrap();
 
                 bootstrap.Group(boos_group, worker_group);
                 bootstrap.Channel<TcpServerSocketChannel>();
@@ -54,16 +56,34 @@ namespace Mineral.Common.Overlay.Server
                     .Handler(new LoggingHandler())
                     .ChildHandler(new ActionChannelInitializer<IChannel>(channel =>
                     {
-                        IChannelPipeline pipeline = channel.Pipeline;
-                        pipeline.AddLast(new LoggingHandler("SRV-CONN"));
-                        pipeline.AddLast("framing-enc", new LengthFieldPrepender(2));
-                        pipeline.AddLast("framing-dec", new LengthFieldBasedFrameDecoder(ushort.MaxValue, 0, 2, 0, 2));
+                        channel.Pipeline.AddLast("readTimeoutHandler", new ReadTimeoutHandler(60));
 
-                        pipeline.AddLast("echo", new PeerServerHandler());
+                        //IChannelPipeline pipeline = channel.Pipeline;
+                        //pipeline.AddLast(new LoggingHandler("SRV-CONN"));
+                        //pipeline.AddLast("framing-enc", new LengthFieldPrepender(2));
+                        //pipeline.AddLast("framing-dec", new LengthFieldBasedFrameDecoder(ushort.MaxValue, 0, 2, 0, 2));
+
+                        //pipeline.AddLast("echo", new PeerServerHandler());
                     }));
             }
             finally
             {
+            }
+        }
+
+        public void Close()
+        {
+            if (listening && channelFuture != null && channelFuture.channel().isOpen())
+            {
+                try
+                {
+                    logger.info("Closing TCP server...");
+                    channelFuture.channel().close().sync();
+                }
+                catch (Exception e)
+                {
+                    logger.warn("Closing TCP server failed.", e);
+                }
             }
         }
         #endregion

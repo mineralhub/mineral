@@ -8,21 +8,15 @@ using System.Text;
 using System.Threading;
 using Mineral.Common.Overlay.Client;
 using Mineral.Common.Overlay.Discover.Node;
+using Mineral.Core;
 using Mineral.Core.Config.Arguments;
+using Protocol;
 
 namespace Mineral.Common.Overlay.Server
 {
     public class ChannelManager
     {
         #region Field
-        private static ChannelManager instance = null;
-
-        private PeerServer peer_server = new PeerServer();
-        private PeerClient peer_client = new PeerClient();
-        private SyncPool sync_pool = SyncPool.Instance;
-
-        private CacheItemPolicy bad_peers_policy = new CacheItemPolicy();
-        private CacheItemPolicy recently_disconnected_policy = new CacheItemPolicy();
         private MemoryCache bad_peers = MemoryCache.Default;
         private MemoryCache recently_disconnected = MemoryCache.Default;
 
@@ -34,11 +28,6 @@ namespace Mineral.Common.Overlay.Server
 
 
         #region Property
-        public static ChannelManager Instance
-        {
-            get { return instance ?? new ChannelManager(); }
-        }
-
         public ICollection<Channel> ActivePeer
         {
             get { return this.active_peers.Values; }
@@ -72,7 +61,6 @@ namespace Mineral.Common.Overlay.Server
 
 
         #region Constructor
-        private ChannelManager() { }
         #endregion
 
 
@@ -91,7 +79,7 @@ namespace Mineral.Common.Overlay.Server
             {
                 new Thread(new ThreadStart(() =>
                 {
-                    this.peer_server.Start(Args.Instance.Node.ListenPort);
+                    Manager.Instance.PeerServer.Start(Args.Instance.Node.ListenPort);
                 })).Start();
             }
 
@@ -122,8 +110,25 @@ namespace Mineral.Common.Overlay.Server
                               this.active_nodes.Count,
                               this.fast_forward_nodes.Count));
 
-            this.sync_pool.init();
-            fastForward.init();
+            Manager.Instance.SyncPool.Init();
+            Manager.Instance.FastForward.Init();
+        }
+
+        public void NotifyDisconnect(Channel channel)
+        {
+            Manager.Instance.SyncPool.OnDisconnect(channel);
+            this.active_peers.Values.Remove(channel);
+
+            if (channel != null)
+            {
+                channel.NodeStatistics?.NodifyDisconnect();
+
+                if (channel.Address != null
+                    && GetRecentlyDisconnected(channel.Address) == null)
+                {
+                    AddRecentlyDisconnected(channel.Address, ReasonCode.Unknown);
+                }
+            }
         }
 
         [MethodImpl(MethodImplOptions.Synchronized)]
@@ -131,48 +136,99 @@ namespace Mineral.Common.Overlay.Server
         {
             if (!this.trust_nodes.ContainsKey(peer.SocketAddress))
             {
-                if (this.recentlyDisconnected.getIfPresent(peer) != null)
+                if (GetRecentlyDisconnected(peer.Address) != null)
                 {
-                    logger.info("Peer {} recently disconnected.", peer.getInetAddress());
+                    Logger.Info(
+                        string.Format("Peer {0} recently disconnected.", peer.Address));
+
                     return false;
                 }
 
-                if (badPeers.getIfPresent(peer) != null)
+                if (GetBadPeer(peer.Address) != null)
                 {
-                    peer.disconnect(peer.getNodeStatistics().getDisconnectReason());
+                    peer.Disconnect((ReasonCode)peer.NodeStatistics.GetDisconnectReason());
                     return false;
                 }
 
-                if (!peer.isActive() && activePeers.size() >= maxActivePeers)
+                if (!peer.IsActive && this.active_peers.Count >= Args.Instance.Node.MaxActiveNodes)
                 {
-                    peer.disconnect(TOO_MANY_PEERS);
+                    peer.Disconnect(ReasonCode.TooManyPeers);
                     return false;
                 }
 
-                if (getConnectionNum(peer.getInetAddress()) >= getMaxActivePeersWithSameIp)
+                if (GetConnectionNum(peer.Address) >= Args.Instance.Node.MaxActiveNodeSameIP)
                 {
-                    peer.disconnect(TOO_MANY_PEERS_WITH_SAME_IP);
+                    peer.Disconnect(ReasonCode.TooManyPeersWithSameIp);
                     return false;
                 }
             }
 
-            Channel channel = activePeers.get(peer.getNodeIdWrapper());
+            this.active_peers.TryGetValue(peer.Node.Id, out Channel channel);
             if (channel != null)
             {
-                if (channel.getStartTime() > peer.getStartTime())
+                if (channel.StartTime > peer.StartTime)
                 {
-                    logger.info("Disconnect connection established later, {}", channel.getNode());
-                    channel.disconnect(DUPLICATE_PEER);
+                    Logger.Info("Disconnect connection established later, " + channel.Node.ToString());
+                    channel.Disconnect(ReasonCode.DuplicatePeer);
                 }
                 else
                 {
-                    peer.disconnect(DUPLICATE_PEER);
+                    peer.Disconnect(ReasonCode.DuplicatePeer);
                     return false;
                 }
             }
-            activePeers.put(peer.getNodeIdWrapper(), peer);
-            logger.info("Add active peer {}, total active peers: {}", peer, activePeers.size());
+
+            this.active_peers.TryAdd(peer.Node.Id, peer);
+            Logger.Info(
+                string.Format("Add active peer {0}, total active peers: {1}", peer, this.active_peers.Count));
+
             return true;
+        }
+
+        public void ProcessDisconnect(Channel channel, ReasonCode reason)
+        {
+            if (channel.Address == null)
+            {
+                return;
+            }
+
+            switch (reason)
+            {
+                case ReasonCode.BadProtocol:
+                case ReasonCode.BadBlock:
+                case ReasonCode.BadTx:
+                    AddBadPeer(channel.Address, reason);
+                    break;
+                default:
+                    AddRecentlyDisconnected(channel.Address, reason);
+                    break;
+            }
+        }
+
+        public void AddBadPeer(IPAddress key, ReasonCode value)
+        {
+            CacheItemPolicy policy = new CacheItemPolicy();
+            policy.AbsoluteExpiration = DateTime.UtcNow.AddHours(1);
+
+            this.bad_peers.Add(key.ToString(), value, policy);
+        }
+
+        public void AddRecentlyDisconnected(IPAddress key, ReasonCode value)
+        {
+            CacheItemPolicy policy = new CacheItemPolicy();
+            policy.AbsoluteExpiration = DateTime.UtcNow.AddMinutes(30);
+
+            this.recently_disconnected.Add(key.ToString(), value, policy);
+        }
+
+        public object GetBadPeer(IPAddress key)
+        {
+            return this.bad_peers.Get(key.ToString());
+        }
+
+        public object GetRecentlyDisconnected(IPAddress key)
+        {
+            return this.recently_disconnected.Get(key.ToString());
         }
 
         public int GetConnectionNum(IPAddress address)
@@ -187,6 +243,13 @@ namespace Mineral.Common.Overlay.Server
                 }
             }
             return count;
+        }
+
+        public void Close()
+        {
+            Manager.Instance.PeerServer.Close();
+            Manager.Instance.PeerClient.Close();
+            Manager.Instance.SyncPool.Close();
         }
         #endregion
     }

@@ -152,7 +152,7 @@ namespace Mineral.Core.Capsule
             return buy_quantity;
         }
 
-        public void ResetTokenWithID(DataBaseManager manager)
+        public void ResetTokenWithID(DatabaseManager manager)
         {
             if (manager.DynamicProperties.GetAllowSameTokenName() == 0)
             {

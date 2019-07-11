@@ -40,9 +40,6 @@ namespace Mineral.Core.Net.MessageHandler
         private static readonly int MAX_TX_SIZE = 50000;
         private static readonly int MAX_SMART_CONTRACT_SUBMIT_SIZE = 100;
 
-        private MineralNetDelegate net_delegate = null;
-        private AdvanceService advance_service = null;
-
         private ConcurrentQueue<TxEvent> contract_queue = new ConcurrentQueue<TxEvent>();
         private ConcurrentQueue<TxEvent> wait_queue = new ConcurrentQueue<TxEvent>();
 
@@ -128,15 +125,15 @@ namespace Mineral.Core.Net.MessageHandler
                 return;
             }
 
-            if (this.advance_service.GetMessage(new Item(message.MessageId, InventoryType.Trx)) != null)
+            if (Manager.Instance.AdvanceService.GetMessage(new Item(message.MessageId, InventoryType.Trx)) != null)
             {
                 return;
             }
 
             try
             {
-                this.net_delegate.PushTransaction(message.Transaction);
-                this.advance_service.Broadcast(message);
+                Manager.Instance.NetDelegate.PushTransaction(message.Transaction);
+                Manager.Instance.AdvanceService.Broadcast(message);
             }
             catch (P2pException e)
             {

@@ -21,7 +21,7 @@ namespace Mineral.Core.Database
 
 
         #region Contructor
-        public BandwidthProcessor(DataBaseManager db_manager) : base(db_manager) { }
+        public BandwidthProcessor(DatabaseManager db_manager) : base(db_manager) { }
         #endregion
 
 

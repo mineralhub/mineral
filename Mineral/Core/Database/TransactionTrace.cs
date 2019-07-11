@@ -31,9 +31,9 @@ namespace Mineral.Core.Database
         }
 
         #region Field
+        private DatabaseManager db_manager = null;
         private TransactionCapsule transaction = null;
         private ReceiptCapsule receipt = null;
-        private DataBaseManager db_manager = null;
         private IRunTime runtime = null;
         private EnergyProcessor energy_processor = null;
         private InternalTransaction.TransactionType transaction_type = InternalTransaction.TransactionType.TX_UNKNOWN_TYPE;
@@ -83,7 +83,7 @@ namespace Mineral.Core.Database
 
 
         #region Constructor
-        public TransactionTrace(TransactionCapsule tx, DataBaseManager db_manager)
+        public TransactionTrace(TransactionCapsule tx, DatabaseManager db_manager)
         {
             this.transaction = tx;
             this.db_manager = db_manager;

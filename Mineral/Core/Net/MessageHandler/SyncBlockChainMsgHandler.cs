@@ -15,7 +15,6 @@ namespace Mineral.Core.Net.MessageHandler
     public class SyncBlockChainMessageHandler : IMessageHandler
     {
         #region Field
-        private MineralNetDelegate net_delegate = null;
         #endregion
 
 
@@ -42,13 +41,13 @@ namespace Mineral.Core.Net.MessageHandler
             }
 
             BlockId first_id = ids.First();
-            if (!this.net_delegate.ContainBlockInMainChain(first_id))
+            if (!Manager.Instance.NetDelegate.ContainBlockInMainChain(first_id))
             {
                 throw new P2pException(
                     P2pException.ErrorType.BAD_MESSAGE, "No first block:" + first_id.GetString());
             }
 
-            long head_num = this.net_delegate.HeadBlockId.Num;
+            long head_num = Manager.Instance.NetDelegate.HeadBlockId.Num;
             if (first_id.Num > head_num)
             {
                 throw new P2pException(
@@ -74,7 +73,7 @@ namespace Mineral.Core.Net.MessageHandler
 
             for (int i = block_ids.Count - 1; i >= 0; i--)
             {
-                if (this.net_delegate.ContainBlockInMainChain(block_ids[i]))
+                if (Manager.Instance.NetDelegate.ContainBlockInMainChain(block_ids[i]))
                 {
                     unfork_id = block_ids[i];
                     break;
@@ -87,12 +86,12 @@ namespace Mineral.Core.Net.MessageHandler
                     P2pException.ErrorType.SYNC_FAILED, "unForkId is null");
             }
 
-            long len = Math.Min(this.net_delegate.HeadBlockId.Num, unfork_id.Num + Parameter.NodeParameters.SYNC_FETCH_BATCH_NUM);
+            long len = Math.Min(Manager.Instance.NetDelegate.HeadBlockId.Num, unfork_id.Num + Parameter.NodeParameters.SYNC_FETCH_BATCH_NUM);
 
             List<BlockId> ids = new List<BlockId>();
             for (long i = unfork_id.Num; i <= len; i++)
             {
-                BlockId id = this.net_delegate.GetBlockIdByNum(i);
+                BlockId id = Manager.Instance.NetDelegate.GetBlockIdByNum(i);
                 ids.Add(id);
             }
 
@@ -117,7 +116,7 @@ namespace Mineral.Core.Net.MessageHandler
             else
             {
                 peer.IsNeedSyncUs = true;
-                remain_num = this.net_delegate.HeadBlockId.Num - ids.Last().Num;
+                remain_num = Manager.Instance.NetDelegate.HeadBlockId.Num - ids.Last().Num;
             }
 
             peer.LastSyncBlockId = ids.Last();

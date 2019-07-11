@@ -8,6 +8,9 @@ namespace Mineral.Common.Overlay.Server
     public class MineralChannelInitializer : ChannelInitializer<IChannel>
     {
         #region Field
+        private ChannelManager channel_manager = null;
+        private string remote_id = "";
+        private bool peer_discovery_mode = false;
         #endregion
 
 
@@ -16,8 +19,10 @@ namespace Mineral.Common.Overlay.Server
 
 
         #region Constructor
-        public MineralChannelInitializer()
+        public MineralChannelInitializer(ChannelManager channel_manager, string remote_id)
         {
+            this.channel_manager = channel_manager;
+            this.remote_id = remote_id;
         }
         #endregion
 
@@ -27,20 +32,20 @@ namespace Mineral.Common.Overlay.Server
 
 
         #region Internal Method
-        protected override void InitChannel(IChannel channel)
-        {
-            try
-            {
-                Channel lchannel = 
-            }
-            catch (Exception e)
-            {
-            }
-        }
         #endregion
 
 
         #region External Method
+        protected override void InitChannel(IChannel channel)
+        {
+            try
+            {
+            }
+            catch (System.Exception e)
+            {
+                Logger.Error(e.Message);
+            }
+        }
         #endregion
     }
 }

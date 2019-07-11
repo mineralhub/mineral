@@ -106,7 +106,7 @@ namespace Mineral.Core.Capsule
 
 
         #region Internal Method
-        private long GetOriginUsage(DataBaseManager manager,
+        private long GetOriginUsage(DatabaseManager manager,
                                     AccountCapsule origin,
                                     long origin_energy_limit,
                                     EnergyProcessor energy_processor,
@@ -121,7 +121,7 @@ namespace Mineral.Core.Capsule
             return Math.Min(origin_usage, energy_processor.GetAccountLeftEnergyFromFreeze(origin));
         }
 
-        private void PayEnergyBill(DataBaseManager manager,
+        private void PayEnergyBill(DatabaseManager manager,
                                    AccountCapsule account,
                                    long usage,
                                    EnergyProcessor energy_processor,
@@ -170,7 +170,7 @@ namespace Mineral.Core.Capsule
             this.receipt.NetFee += fee;
         }
 
-        public void PayEnergyBill(DataBaseManager manager,
+        public void PayEnergyBill(DatabaseManager manager,
                                   AccountCapsule origin,
                                   AccountCapsule caller,
                                   long percent,

@@ -13,7 +13,6 @@ namespace Mineral.Core.Net
         #region Field
         protected PeerConnection peer = null;
         private MessageQueue message_queue = null;
-        private MineralNetService net_service = new MineralNetService();
         #endregion
 
 
@@ -44,7 +43,7 @@ namespace Mineral.Core.Net
         protected override void ChannelRead0(IChannelHandlerContext ctx, MineralMessage msg)
         {
             this.message_queue.ReceivedMessage(msg);
-            this.net_service.OnMessage(this.peer, msg);
+            Manager.Instance.NetService.OnMessage(this.peer, msg);
         }
         #endregion
 

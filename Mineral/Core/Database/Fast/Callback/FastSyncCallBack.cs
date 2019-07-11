@@ -32,9 +32,6 @@ namespace Mineral.Core.Database.Fast.Callback
         private volatile bool execute = false;
         private volatile bool allow_generate_root = false;
         private Trie trie = null;
-
-        private DataBaseManager db_manager;
-        private AccountStateStoreTrie db = new AccountStateStoreTrie();
         private List<TrieEntry> entry_list = new List<TrieEntry>();
         #endregion
 
@@ -44,10 +41,6 @@ namespace Mineral.Core.Database.Fast.Callback
 
 
         #region Constructor
-        public FastSyncCallBack(DataBaseManager db_manager)
-        {
-            this.db_manager = db_manager;
-        }
         #endregion
 
 
@@ -90,7 +83,7 @@ namespace Mineral.Core.Database.Fast.Callback
         {
             this.block = block;
             this.execute = true;
-            this.allow_generate_root = this.db_manager.DynamicProperties.AllowAccountStateRoot();
+            this.allow_generate_root = Manager.Instance.DBManager.DynamicProperties.AllowAccountStateRoot();
 
             if (!Execute())
                 return;
@@ -98,7 +91,7 @@ namespace Mineral.Core.Database.Fast.Callback
             byte[] root_hash = null;
             try
             {
-                BlockCapsule parent_block = this.db_manager.GetBlockById(this.block.ParentId);
+                BlockCapsule parent_block = Manager.Instance.DBManager.GetBlockById(this.block.ParentId);
                 root_hash = parent_block.Instance.BlockHeader.RawData.AccountStateRoot.ToByteArray();
             }
             catch (System.Exception e)
@@ -111,7 +104,7 @@ namespace Mineral.Core.Database.Fast.Callback
                 root_hash = Hash.EMPTY_TRIE_HASH;
             }
 
-            trie = new Trie(this.db, root_hash);
+            trie = new Trie(Manager.Instance.AccountStateTrie, root_hash);
         }
 
         public void PreExecuteTrans()

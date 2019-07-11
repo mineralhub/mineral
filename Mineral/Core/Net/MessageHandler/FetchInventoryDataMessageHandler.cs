@@ -18,9 +18,6 @@ namespace Mineral.Core.Net.MessageHandler
     public class FetchInventoryDataMessageHandler : IMessageHandler
     {
         #region Field
-        private MineralNetDelegate net_delegate = null;
-        private SyncService sync_service = null;
-        private AdvanceService advance_service = null;
         private int MAX_SIZE = 1000000;
         #endregion
 
@@ -53,7 +50,7 @@ namespace Mineral.Core.Net.MessageHandler
                 }
 
                 int fetch_count = peer.NodeStatistics.MessageStatistics.MineralInTrxFetchInvDataElement.GetCount(10);
-                int max_count = this.advance_service.TxCount.GetCount(60);
+                int max_count = Manager.Instance.AdvanceService.TxCount.GetCount(60);
                 if (fetch_count > max_count)
                 {
                     throw new P2pException(
@@ -135,12 +132,12 @@ namespace Mineral.Core.Net.MessageHandler
             {
                 Item item = new Item(hash, type);
 
-                Message msg = this.advance_service.GetMessage(item);
+                Message msg = Manager.Instance.AdvanceService.GetMessage(item);
                 if (msg == null)
                 {
                     try
                     {
-                        msg = this.net_delegate.GetData(hash, type);
+                        msg = Manager.Instance.NetDelegate.GetData(hash, type);
                     }
                     catch (System.Exception e)
                     {

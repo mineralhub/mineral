@@ -15,32 +15,14 @@ namespace Mineral.Core.Net
     public class MineralNetService
     {
         #region Field
-        private static MineralNetService instance = null;
-
-        private ChannelManager channel_manager = null;
-        private AdvanceService advance_service = null;
-        private SyncService sync_service = null;
-        private PeerStatusCheck peer_status = null;
-
-        private SyncBlockChainMessageHandler handler_sync_block = null;
-        private ChainInventoryMessageHandler handler_chain_inventory = null;
-        private InventoryMessageHandler handler_inventory = null;
-        private FetchInventoryDataMessageHandler handler_fetch_inventory = null;
-        private BlockMessageHandler handler_block = null;
-        private TransactionMessageHandler handler_transaction = null;
         #endregion
 
 
         #region Property
-        public static MineralNetService Instance
-        {
-            get { return instance ?? new MineralNetService(); }
-        }
         #endregion
 
 
         #region Constructor
-        private MineralNetService() { }
         #endregion
 
 
@@ -56,25 +38,39 @@ namespace Mineral.Core.Net
                 switch (msg.Type)
                 {
                     case MessageTypes.MsgType.SYNC_BLOCK_CHAIN:
-                        this.handler_sync_block.ProcessMessage(peer, msg);
+                        {
+                            Manager.Instance.SyncBlockHandler.ProcessMessage(peer, msg);
+                        }
                         break;
                     case MessageTypes.MsgType.BLOCK_CHAIN_INVENTORY:
-                        this.handler_chain_inventory.ProcessMessage(peer, msg);
+                        {
+                            Manager.Instance.ChainInventoryHandler.ProcessMessage(peer, msg);
+                        }
                         break;
                     case MessageTypes.MsgType.INVENTORY:
-                        this.handler_inventory.ProcessMessage(peer, msg);
+                        {
+                            Manager.Instance.InventoryHandler.ProcessMessage(peer, msg);
+                        }
                         break;
                     case MessageTypes.MsgType.FETCH_INV_DATA:
-                        this.handler_fetch_inventory.ProcessMessage(peer, msg);
+                        {
+                            Manager.Instance.FetchInventoryHandler.ProcessMessage(peer, msg);
+                        }
                         break;
                     case MessageTypes.MsgType.BLOCK:
-                        this.handler_block.ProcessMessage(peer, msg);
+                        {
+                            Manager.Instance.BlockHandler.ProcessMessage(peer, msg);
+                        }
                         break;
                     case MessageTypes.MsgType.TXS:
-                        this.handler_transaction.ProcessMessage(peer, msg);
+                        {
+                            Manager.Instance.TransactionHandler.ProcessMessage(peer, msg);
+                        }
                         break;
                     default:
-                        throw new P2pException(P2pException.ErrorType.NO_SUCH_MESSAGE, msg.Type.ToString());
+                        {
+                            throw new P2pException(P2pException.ErrorType.NO_SUCH_MESSAGE, msg.Type.ToString());
+                        }
                 }
             }
             catch (System.Exception e)
@@ -134,29 +130,29 @@ namespace Mineral.Core.Net
         #region External Method
         public void Start()
         {
-            this.channel_manager.Init();
-            this.advance_service.Init();
-            this.sync_service.Init();
-            this.peer_status.Init();
-            this.handler_transaction.Init();
+            Manager.Instance.ChannelManager.Init();
+            Manager.Instance.AdvanceService.Init();
+            Manager.Instance.SyncService.Init();
+            Manager.Instance.PeerStatusCheck.Init();
+            Manager.Instance.TransactionHandler.Init();
 
             Logger.Info("TronNetService start successfully.");
         }
 
         public void Close()
         {
-            this.channel_manager.Close();
-            this.advance_service.Close();
-            this.sync_service.Close();
-            this.peer_status.Close();
-            this.handler_transaction.Close();
+            Manager.Instance.ChannelManager.Close();
+            Manager.Instance.AdvanceService.Close();
+            Manager.Instance.SyncService.Close();
+            Manager.Instance.PeerStatusCheck.Close();
+            Manager.Instance.TransactionHandler.Close();
 
             Logger.Info("TronNetService closed successfully.");
         }
 
         public void Broadcast(Message message)
         {
-            this.advance_service.Broadcast(message);
+            Manager.Instance.AdvanceService.Broadcast(message);
         }
         #endregion
     }

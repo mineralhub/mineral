@@ -21,7 +21,7 @@ namespace Mineral.Common.Utils
         private static readonly byte[] check = null;
 
         private static ForkController instance = null;
-        private DataBaseManager db_manager;
+        private DatabaseManager db_manager;
         #endregion
 
 
@@ -37,7 +37,7 @@ namespace Mineral.Common.Utils
             }
         }
 
-        public DataBaseManager DBManager => this.db_manager;
+        public DatabaseManager DBManager => this.db_manager;
         #endregion
 
 
@@ -114,7 +114,7 @@ namespace Mineral.Common.Utils
 
 
         #region External Method
-        public void Init(DataBaseManager db_manager)
+        public void Init(DatabaseManager db_manager)
         {
             this.db_manager = db_manager;
         }

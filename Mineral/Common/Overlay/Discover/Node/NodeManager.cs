@@ -73,8 +73,6 @@ namespace Mineral.Common.Overlay.Discover.Node
         }
 
         #region Field
-        private static NodeManager instance = null;
-
         private static readonly long LISTENER_REFRESH_RATE = 1000L;
         private static readonly long DB_COMMIT_RATE = 1 * 60 * 1000L;
         private static readonly int MAX_NODES = 2000;
@@ -97,11 +95,6 @@ namespace Mineral.Common.Overlay.Discover.Node
 
 
         #region Property
-        public static NodeManager Instance
-        {
-            get { return instance ?? new NodeManager(); }
-        }
-
         public Action<UdpEvent> MessageSender
         {
             get { return this.message_sender; }
@@ -126,7 +119,7 @@ namespace Mineral.Common.Overlay.Discover.Node
 
 
         #region Contructor
-        private NodeManager()
+        public NodeManager()
         {
             this.is_enable_discovery = Args.Instance.Node.Discovery.Enable ?? false;
 
@@ -181,7 +174,7 @@ namespace Mineral.Common.Overlay.Discover.Node
 
         private void DBRead()
         {
-            HashSet<Node> nodes = DataBaseManager.Instance.ReadNeighbours();
+            HashSet<Node> nodes = DatabaseManager.Instance.ReadNeighbours();
 
             Logger.Info(
                 "Reading Node statistics from PeersStore : " + nodes.Count + " nodes.");
@@ -207,7 +200,7 @@ namespace Mineral.Common.Overlay.Discover.Node
             }
 
             Logger.Info("Write Node statistics to PeersStore: " + batch.Count + " nodes.");
-            DataBaseManager.Instance.ClearAndWriteNeighbours(batch);
+            DatabaseManager.Instance.ClearAndWriteNeighbours(batch);
         }
 
         [MethodImpl(MethodImplOptions.Synchronized)]

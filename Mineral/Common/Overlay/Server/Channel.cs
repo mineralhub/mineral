@@ -9,6 +9,8 @@ using DotNetty.Transport.Channels;
 using Mineral.Common.Overlay.Discover.Node;
 using Mineral.Common.Overlay.Discover.Node.Statistics;
 using Mineral.Common.Overlay.Messages;
+using Mineral.Core;
+using Mineral.Core.Database;
 using Mineral.Core.Exception;
 using Mineral.Core.Net;
 using Mineral.Core.Net.Peer;
@@ -29,22 +31,19 @@ namespace Mineral.Common.Overlay.Server
         }
 
         #region Field
-        private static Channel instance = null;
-
         // working
-        private NodeManager node_manager = NodeManager.Instance;
-        private HandShakeHandler handshake_handler = new HandShakeHandler();
-        //private StaticMessages static_messages;
-        private ChannelManager channel_manager = null;
+        private NodeManager node_manager = Manager.Instance.NodeManager;
+        private ChannelManager channel_manager = Manager.Instance.ChannelManager;
+        private HandShakeHandler handshake_handler = null;
         private MineralState state = MineralState.INIT;
 
 
         // completed
-        protected MessageQueue message_queue = new MessageQueue();
-        private MessageCodec message_codec = new MessageCodec();
-        private WireTrafficStats stats;
-        private P2pHandler p2p_handler = new P2pHandler();
-        private MineralNetHandler net_handler = new MineralNetHandler();
+        protected MessageQueue message_queue = Manager.Instance.MessageQueue;
+        private MessageCodec message_codec = Manager.Instance.MessageCodec;
+        private WireTrafficStats stats = Manager.Instance.TrafficStats;
+        private P2pHandler p2p_handler = Manager.Instance.P2pHandler;
+        private MineralNetHandler net_handler = Manager.Instance.NetHandler;
         protected NodeStatistics node_statistics;
         private PeerStatistics peer_statistics = new PeerStatistics();
 
@@ -63,11 +62,6 @@ namespace Mineral.Common.Overlay.Server
 
 
         #region Property
-        public static Channel Instance
-        {
-            get { return instance ?? new Channel(); }
-        }
-
         public Node Node
         {
             get { return this.node; }
@@ -119,6 +113,16 @@ namespace Mineral.Common.Overlay.Server
             get { return this.context == null ? null : ((IPEndPoint)(context.Channel.RemoteAddress)).Address; }
         }
 
+        public long StartTime
+        {
+            get { return this.start_time; }
+        }
+
+        public bool IsActive
+        {
+            get { return this.is_active; }
+        }
+
         public bool IsFastForwardPeer
         {
             get { return this.is_fast_forward_peer; }
@@ -127,7 +131,13 @@ namespace Mineral.Common.Overlay.Server
 
 
         #region Constructor
-        private Channel() { }
+        public Channel()
+        {
+            this.handshake_handler = new HandShakeHandler(Manager.Instance.DBManager,
+                                                          Manager.Instance.NodeManager,
+                                                          Manager.Instance.ChannelManager,
+                                                          Manager.Instance.SyncPool);
+        }
         #endregion
 
 
@@ -140,9 +150,8 @@ namespace Mineral.Common.Overlay.Server
 
 
         #region External Method
-        public void Init(IChannelPipeline pipe_line, string remote_id, bool dicovery_mode, ChannelManager channel_manager)
+        public void Init(IChannelPipeline pipe_line, string remote_id, bool dicovery_mode)
         {
-            this.channel_manager = channel_manager;
             this.remote_id = remote_id;
             this.is_active = this.remote_id != null && this.remote_id.Length > 0;
             this.start_time = Helper.CurrentTimeMillis();
@@ -181,10 +190,12 @@ namespace Mineral.Common.Overlay.Server
             context.Channel.Pipeline.AddLast("messageCodec", this.message_codec);
             context.Channel.Pipeline.AddLast("p2p", this.p2p_handler);
             context.Channel.Pipeline.AddLast("data", this.net_handler);
-            setStartTime(message.getTimestamp());
-            setTronState(TronState.HANDSHAKE_FINISHED);
-            getNodeStatistics().p2pHandShake.add();
-            logger.info("Finish handshake with {}.", context.channel().remoteAddress());
+
+            this.start_time = message.Timestamp;
+            this.state = MineralState.HANDSHAKE_FINISHED;
+            this.node_statistics.P2pHandshake.Add();
+
+            Logger.Info("Finish handshake with " + this.context.Channel.RemoteAddress);
         }
 
         public void ProcessException(System.Exception exception)
@@ -214,7 +225,7 @@ namespace Mineral.Common.Overlay.Server
         public void Disconnect(ReasonCode reason)
         {
             this.is_disconnect = true;
-            this.channel_manager.processDisconnect(this, reason);
+            this.channel_manager.ProcessDisconnect(this, reason);
             DisconnectMessage msg = new DisconnectMessage(reason);
             logger.info("Send to {} online-time {}s, {}",
                 ctx.channel().remoteAddress(),

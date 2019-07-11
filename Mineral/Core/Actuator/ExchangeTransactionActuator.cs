@@ -25,7 +25,7 @@ namespace Mineral.Core.Actuator
 
 
         #region Contructor
-        public ExchangeTransactionActuator(Any contract, DataBaseManager db_manager) : base(contract, db_manager) { }
+        public ExchangeTransactionActuator(Any contract, DatabaseManager db_manager) : base(contract, db_manager) { }
         #endregion
 
 

@@ -16,11 +16,6 @@ namespace Mineral.Core.Net.MessageHandler
     public class BlockMessageHandler : IMessageHandler
     {
         #region Field
-        private MineralNetDelegate net_delegate = null;
-        private SyncService sync_service = null;
-        private AdvanceService advance_service = null;
-        private WitnessProductBlockService witness_block_service = null;
-
         private int max_block_size = Parameter.ChainParameters.BLOCK_SIZE + 1000;
         #endregion
 
@@ -65,26 +60,26 @@ namespace Mineral.Core.Net.MessageHandler
         private void ProcessBlock(PeerConnection peer, BlockCapsule block)
         {
             BlockId block_id = block.Id;
-            if (!this.net_delegate.ContainBlock(block.ParentId))
+            if (!Manager.Instance.NetDelegate.ContainBlock(block.ParentId))
             {
                 Logger.Warning(
                     string.Format("Get unlink block {0} from {1}, head is {2}.",
                                   block.Id.GetString(),
-                                  peer.Address.ToString(), 
-                                  this.net_delegate.HeadBlockId.GetString()));
+                                  peer.Address.ToString(),
+                                  Manager.Instance.NetDelegate.HeadBlockId.GetString()));
 
-                this.sync_service.StartSync(peer);
+                Manager.Instance.SyncService.StartSync(peer);
                 return;
             }
 
-            if (Args.Instance.IsFastForward && this.net_delegate.ValidBlock(block))
+            if (Args.Instance.IsFastForward && Manager.Instance.NetDelegate.ValidBlock(block))
             {
-                this.advance_service.Broadcast(new BlockMessage(block));
+                Manager.Instance.AdvanceService.Broadcast(new BlockMessage(block));
             }
 
-            this.net_delegate.ProcessBlock(block);
-            this.witness_block_service.ValidWitnessProductTwoBlock(block);
-            this.net_delegate.ActivePeers.ForEach(p =>
+            Manager.Instance.NetDelegate.ProcessBlock(block);
+            Manager.Instance.WitnessBlockService.ValidWitnessProductTwoBlock(block);
+            Manager.Instance.NetDelegate.ActivePeers.ForEach(p =>
             {
                 if (p.GetInventoryReceive(new Item(block.Id, InventoryType.Block)) != null)
                 {
@@ -94,7 +89,7 @@ namespace Mineral.Core.Net.MessageHandler
 
             if (!Args.Instance.IsFastForward)
             {
-                this.advance_service.Broadcast(new BlockMessage(block));
+                Manager.Instance.AdvanceService.Broadcast(new BlockMessage(block));
             }
         }
         #endregion
@@ -112,7 +107,7 @@ namespace Mineral.Core.Net.MessageHandler
             if (peer.SyncBlockRequest.ContainsKey(block_id))
             {
                 peer.RemoveSyncBlockId(block_id);
-                this.sync_service.ProcessBlock(peer, block_message);
+                Manager.Instance.SyncService.ProcessBlock(peer, block_message);
             }
             else
             {

@@ -20,6 +20,8 @@ namespace Mineral.Core.Net.Peer
     public class PeerConnection : Channel
     {
         #region Field
+        private static PeerConnection instance = null;
+
         private MineralNetDelegate net_delegate = null;
         private SyncService sync_service = null;
         private AdvanceService advance_service = null;
@@ -47,6 +49,11 @@ namespace Mineral.Core.Net.Peer
 
 
         #region Property
+        public static PeerConnection Instance
+        {
+            get { return instance ?? new PeerConnection(); }
+        }
+
         public HelloMessage HelloMessage
         {
             get { return this.hello_message; }
@@ -159,6 +166,7 @@ namespace Mineral.Core.Net.Peer
 
 
         #region Constructor
+        private PeerConnection() { }
         #endregion
 
 
