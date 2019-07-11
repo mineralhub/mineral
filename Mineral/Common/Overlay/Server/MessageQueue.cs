@@ -109,7 +109,7 @@ namespace Mineral.Common.Overlay.Server
             this.context = context;
             this.send_message_flag = true;
 
-            this.executor_handler = this.executor.Scheduled(() =>
+            this.executor_handler = ScheduledExecutorService.Scheduled(() =>
             {
                 try
                 {

@@ -53,7 +53,7 @@ namespace Mineral.Core.Database
                         node = new Node(s.Substring(0, pos));
                         try
                         {
-                            rept = int.Parse(s.Substring(pos + 1, s.Length);
+                            rept = int.Parse(s.Substring(pos + 1, s.Length));
                         }
                         catch
                         {

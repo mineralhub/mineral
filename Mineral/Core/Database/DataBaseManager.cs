@@ -278,9 +278,9 @@ namespace Mineral.Core.Database
             {
                 ISession temp_session = this.revoking_store.BuildSession();
 
-                this.Manager.Instance.FastSyncCallback.PreExecuteTrans();
+                Manager.Instance.FastSyncCallback.PreExecuteTrans();
                 ProcessTransaction(transaction, block);
-                this.Manager.Instance.FastSyncCallback.ExecuteTransFinish();
+                Manager.Instance.FastSyncCallback.ExecuteTransFinish();
 
                 temp_session.Merge();
                 block.AddTransaction(transaction);
@@ -911,7 +911,7 @@ namespace Mineral.Core.Database
             this.session.Reset();
             this.session.SetValue(this.revoking_store.BuildSession());
 
-            this.Manager.Instance.FastSyncCallback.PreExecute(block);
+            Manager.Instance.FastSyncCallback.PreExecute(block);
 
             if (need_check_witness_permission
                 && !this.witness_service.ValidateWitnessPermission(witness.Address))
@@ -950,7 +950,7 @@ namespace Mineral.Core.Database
                 }
             }
 
-            this.Manager.Instance.FastSyncCallback.ExecuteGenerateFinish();
+            Manager.Instance.FastSyncCallback.ExecuteGenerateFinish();
             this.session.Reset();
 
             if (postponed_tx_count > 0)
@@ -1262,7 +1262,7 @@ namespace Mineral.Core.Database
 
             try
             {
-                this.Manager.Instance.FastSyncCallback.PreExecute(block);
+                Manager.Instance.FastSyncCallback.PreExecute(block);
 
                 foreach (TransactionCapsule tx in block.Transactions)
                 {
@@ -1272,15 +1272,15 @@ namespace Mineral.Core.Database
                         tx.IsVerified = true;
                     }
 
-                    this.Manager.Instance.FastSyncCallback.PreExecuteTrans();
+                    Manager.Instance.FastSyncCallback.PreExecuteTrans();
                     ProcessTransaction(tx, block);
-                    this.Manager.Instance.FastSyncCallback.ExecuteTransFinish();
+                    Manager.Instance.FastSyncCallback.ExecuteTransFinish();
                 }
-                this.Manager.Instance.FastSyncCallback.ExecutePushFinish();
+                Manager.Instance.FastSyncCallback.ExecutePushFinish();
             }
             finally
             {
-                this.Manager.Instance.FastSyncCallback.ExceptionFinish();
+                Manager.Instance.FastSyncCallback.ExceptionFinish();
             }
 
             bool need_maintenance = IsNeedMaintenance(block.Timestamp);

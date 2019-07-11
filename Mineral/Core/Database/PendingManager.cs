@@ -83,5 +83,4 @@ namespace Mineral.Core.Database
         }
     }
         #endregion
-    }
 }

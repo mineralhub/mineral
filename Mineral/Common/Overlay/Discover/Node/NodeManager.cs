@@ -29,6 +29,7 @@ using Mineral.Common.Net.Udp.Message;
 using Mineral.Common.Net.Udp.Message.Discover;
 using Mineral.Common.Overlay.Discover.Node.Statistics;
 using Mineral.Common.Overlay.Discover.Table;
+using Mineral.Core;
 using Mineral.Core.Config.Arguments;
 using Mineral.Core.Database;
 using Mineral.Utils;
@@ -174,7 +175,7 @@ namespace Mineral.Common.Overlay.Discover.Node
 
         private void DBRead()
         {
-            HashSet<Node> nodes = DatabaseManager.Instance.ReadNeighbours();
+            HashSet<Node> nodes = Manager.Instance.DBManager.ReadNeighbours();
 
             Logger.Info(
                 "Reading Node statistics from PeersStore : " + nodes.Count + " nodes.");
@@ -200,7 +201,7 @@ namespace Mineral.Common.Overlay.Discover.Node
             }
 
             Logger.Info("Write Node statistics to PeersStore: " + batch.Count + " nodes.");
-            DatabaseManager.Instance.ClearAndWriteNeighbours(batch);
+            Manager.Instance.DBManager.ClearAndWriteNeighbours(batch);
         }
 
         [MethodImpl(MethodImplOptions.Synchronized)]

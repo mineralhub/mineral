@@ -37,7 +37,7 @@ namespace Mineral.Common.Application
         #region External Method
         public void Init(Args args)
         {
-            this.block_store = this.Manager.BlockStore;
+            this.block_store = this.db_manager.Block;
             this.services = new ServiceContainer();
         }
 

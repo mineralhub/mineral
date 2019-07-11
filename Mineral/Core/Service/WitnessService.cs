@@ -295,7 +295,7 @@ namespace Mineral.Core.Service
             }
             catch (System.Exception e)
             {
-                Logger.Error(e.getMessage(), e);
+                Logger.Error(e.Message);
                 return BlockProductionCondition.EXCEPTION_PRODUCING_BLOCK;
             }
             finally
