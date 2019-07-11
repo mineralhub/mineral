@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Net;
 using System.Text;
+using System.Threading.Tasks;
 using DotNetty.Codecs.Protobuf;
 using DotNetty.Handlers.Timeout;
 using DotNetty.Transport.Channels;
@@ -32,32 +33,28 @@ namespace Mineral.Common.Overlay.Server
 
         #region Field
         // working
+        private MineralNetHandler net_handler = Manager.Instance.NetHandler;
         private NodeManager node_manager = Manager.Instance.NodeManager;
         private ChannelManager channel_manager = Manager.Instance.ChannelManager;
         private HandShakeHandler handshake_handler = null;
-        private MineralState state = MineralState.INIT;
-
-
-        // completed
-        protected MessageQueue message_queue = Manager.Instance.MessageQueue;
-        private MessageCodec message_codec = Manager.Instance.MessageCodec;
         private WireTrafficStats stats = Manager.Instance.TrafficStats;
         private P2pHandler p2p_handler = Manager.Instance.P2pHandler;
-        private MineralNetHandler net_handler = Manager.Instance.NetHandler;
+        protected MessageQueue message_queue = Manager.Instance.MessageQueue;
+        private MessageCodec message_codec = Manager.Instance.MessageCodec;
+
         protected NodeStatistics node_statistics;
         private PeerStatistics peer_statistics = new PeerStatistics();
-
-
         private IChannelHandlerContext context = null;
-
         private IPEndPoint socket_address = null;
+        private MineralState state = MineralState.INIT;
         private Node node = null;
+
         private string remote_id = "";
         private long start_time = 0;
-        private volatile bool is_disconnect = true;
         private bool is_active = false;
         private bool is_trust_peer = false;
         private bool is_fast_forward_peer = false;
+        private volatile bool is_disconnect = true;
         #endregion
 
 
@@ -226,13 +223,19 @@ namespace Mineral.Common.Overlay.Server
         {
             this.is_disconnect = true;
             this.channel_manager.ProcessDisconnect(this, reason);
-            DisconnectMessage msg = new DisconnectMessage(reason);
-            logger.info("Send to {} online-time {}s, {}",
-                ctx.channel().remoteAddress(),
-                (System.currentTimeMillis() - startTime) / 1000,
-                msg);
-            getNodeStatistics().nodeDisconnectedLocal(reason);
-            ctx.writeAndFlush(msg.getSendData()).addListener(future->close());
+
+            Messages.DisconnectMessage msg = new Messages.DisconnectMessage(reason);
+            Logger.Info(
+                string.Format("Send to {0} online-time {1}s, {2}",
+                              this.context.Channel.RemoteAddress.ToString(),
+                              (Helper.CurrentTimeMillis() - this.start_time) / 1000,
+                              msg));
+
+            this.node_statistics.NodeDisconnectedLocal(reason);
+
+            Task task = this.context.WriteAndFlushAsync(msg.GetSendData());
+            task.Wait();
+            Close();
         }
 
         public void Close()
@@ -241,6 +244,34 @@ namespace Mineral.Common.Overlay.Server
             this.p2p_handler.Close();
             this.message_queue.Close();
             this.context.CloseAsync();
+        }
+
+        public override bool Equals(object obj)
+        {
+            if (this == obj)
+            {
+                return true;
+            }
+            if (obj == null || GetType() != obj.GetType())
+            {
+                return false;
+            }
+            Channel channel = (Channel)obj;
+            if (this.Address != null ? !this.Address.Equals(channel.Address) : channel.Address != null)
+            {
+                return false;
+            }
+            if (this.node != null ? !this.node.Equals(channel.node) : channel.node != null)
+            {
+                return false;
+            }
+
+            return this == channel;
+        }
+
+        public override string ToString()
+        {
+            return string.Format("{0} | {1}", Address.ToString(), PeerId);
         }
         #endregion
     }
