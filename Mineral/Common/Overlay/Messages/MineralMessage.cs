@@ -4,7 +4,7 @@ using System.Text;
 
 namespace Mineral.Common.Overlay.Messages
 {
-    public class MineralMessage : Message
+    public abstract class MineralMessage : Message
     {
         #region Field
         #endregion

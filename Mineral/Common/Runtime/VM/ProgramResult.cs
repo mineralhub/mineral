@@ -138,7 +138,7 @@ namespace Mineral.Common.Runtime.VM
 
         public void AddCallCreate(byte[] data, byte[] destination, byte[] energy_limit, byte[] value)
         {
-            this.call_create.Add(new VM.CallCreate(data, destination, energy_limit, value));
+            this.call_create.Add(new CallCreate(data, destination, energy_limit, value));
         }
 
         public InternalTransaction AddInternalTransaction(byte[] parent_hash,

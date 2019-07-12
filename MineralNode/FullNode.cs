@@ -40,7 +40,7 @@ namespace MineralNode
             Application app = new Application();
 
             if (Args.Instance.IsWitness)
-                app.AddService(new WitnessService(app));
+                app.AddService(new WitnessService(Manager.Instance));
 
             app.InitService(Args.Instance);
             app.StartService();

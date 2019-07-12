@@ -41,7 +41,7 @@ namespace Mineral.Core.Database
             if (value != null)
             {
                 string data = Encoding.UTF8.GetString(value);
-                string[] split = data.Split("||");
+                string[] split = data.Split(new string[] { "||" }, StringSplitOptions.None);
                 
                 foreach (string s in split)
                 {

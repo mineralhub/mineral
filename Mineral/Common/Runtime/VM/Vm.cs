@@ -86,7 +86,7 @@ namespace Mineral.Common.Runtime.VM
         {
             try
             {
-                if (program.ByTestingSuite())
+                if (program.IsTestingSuite())
                     return;
 
                 while (!program.IsStopped)
@@ -995,7 +995,7 @@ namespace Mineral.Common.Runtime.VM
                         break;
                     case OpCode.COINBASE:
                         {
-                            DataWord coinbase = program.CoinBase;
+                            DataWord coinbase = program.Coinbase;
 
                             hint = "coinbase: " + coinbase.GetLast20Bytes().ToHexString();
                             program.StackPush(coinbase);

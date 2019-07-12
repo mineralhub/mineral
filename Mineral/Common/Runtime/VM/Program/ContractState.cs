@@ -13,7 +13,7 @@ namespace Mineral.Common.Runtime.VM.Program
     public class ContractState : IDeposit, IProgramListenerAware
     {
         #region Field
-        private Deposit deposit = null;
+        private IDeposit deposit = null;
         private readonly DataWord address = null;
         private IProgramListener program_listener = null;
         #endregion
@@ -30,8 +30,8 @@ namespace Mineral.Common.Runtime.VM.Program
         #region Contructor
         public ContractState(IProgramInvoke invoke)
         {
-            this.address = invoke.GetContractAddress();
-            this.deposit = invoke.GetDeposit();
+            this.address = invoke.ContractAddress;
+            this.deposit = invoke.Deposit;
         }
         #endregion
 

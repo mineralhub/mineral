@@ -89,4 +89,3 @@ namespace Mineral.Common.Overlay.Client
         #endregion
     }
 }
-

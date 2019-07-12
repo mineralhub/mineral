@@ -207,7 +207,7 @@ namespace Mineral.Core.Tire
                 }
                 else
                 {
-                    this.hash = Hash.SHA3(ret);
+                    this.hash = ret.SHA3();
                     this.reference.AddHash(this.hash, ret);
                     return RLP.EncodeElement(hash);
                 }
@@ -271,7 +271,7 @@ namespace Mineral.Core.Tire
             {
                 return true;
             }
-            this.rlp = TrieGetHash?.Invoke(this.hash);
+            this.rlp = this.reference.GetHash(this.hash);
 
             return this.rlp != null;
         }
@@ -290,7 +290,7 @@ namespace Mineral.Core.Tire
             {
                 if (this.parsed_rlp.IsList(hex))
                 {
-                    child = new TrieNode(this.parsed_rlp.GetList(hex));
+                    child = new TrieNode(this.reference, this.parsed_rlp.GetList(hex));
                 }
                 else
                 {
@@ -301,7 +301,7 @@ namespace Mineral.Core.Tire
                     }
                     else
                     {
-                        child = new TrieNode(bytes);
+                        child = new TrieNode(this.reference, bytes);
                     }
                 }
                 this.children[hex] = child;
@@ -436,7 +436,7 @@ namespace Mineral.Core.Tire
         {
             if (this.hash != null)
             {
-                TrieDeleteHash?.Invoke(hash);
+                this.reference.DeleteHash(this.hash);
             }
         }
 

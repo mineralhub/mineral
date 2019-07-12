@@ -82,9 +82,9 @@ namespace Mineral.Common.Overlay.Discover.Node.Statistics
             public override int Calculate(int base_score)
             {
                 int reput = base_score;
-                reput += t.p2p_handshake.TotalCount > 0 ? 10 : 0;
-                reput += (int)Math.Min(t.tcp_flow.TotalCount / 10240, 20);
-                reput += t.message_statistics.P2pOutPing.TotalCount == t.message_statistics.P2pInPong.TotalCount ? 10 : 0;
+                reput += t.P2pHandshake.TotalCount > 0 ? 10 : 0;
+                reput += (int)Math.Min(t.TcpFlow.TotalCount / 10240, 20);
+                reput += t.MessageStatistics.P2pOutPing.TotalCount == t.MessageStatistics.P2pInPong.TotalCount ? 10 : 0;
                 return reput;
             }
         }
@@ -155,8 +155,8 @@ namespace Mineral.Common.Overlay.Discover.Node.Statistics
 
             public override int Calculate(int base_score)
             {
-                base_score += t.discovery_message_latency.GetAverage() == 0 ? 
-                        0 : (int)Math.Min(1000 / t.discovery_message_latency.GetAverage(), 20);
+                base_score += t.DiscoveryMessageLatency.GetAverage() == 0 ? 
+                        0 : (int)Math.Min(1000 / t.DiscoveryMessageLatency.GetAverage(), 20);
 
                 return base_score;
             }
@@ -169,7 +169,7 @@ namespace Mineral.Common.Overlay.Discover.Node.Statistics
 
         public Reputation(NodeStatistics nodeStatistics)
         {
-            Score<MessageStatistics> discover_score = new DiscoverScore(nodeStatistics.message_statistics);
+            Score<MessageStatistics> discover_score = new DiscoverScore(nodeStatistics.MessageStatistics);
             Score<NodeStatistics> other_score = new OtherScore(nodeStatistics);
             Score<NodeStatistics> tcp_score = new TcpScore(nodeStatistics);
             Score<NodeStatistics> disconnect_score = new DisConnectScore(nodeStatistics);

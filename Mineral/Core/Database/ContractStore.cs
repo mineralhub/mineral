@@ -8,7 +8,7 @@ using static Protocol.Transaction.Types;
 
 namespace Mineral.Core.Database
 {
-    public class ContractStore : MineralStoreWithRevoking<ContractCapsule, Contract>
+    public class ContractStore : MineralStoreWithRevoking<ContractCapsule, SmartContract>
     {
         #region Field
         #endregion

@@ -134,7 +134,7 @@ namespace Mineral.Core.Tire
             this.cache.Remove(hash);
         }
 
-        private byte[] GetHash(byte[] hash)
+        public byte[] GetHash(byte[] hash)
         {
             BytesCapsule bytes = this.cache.Get(hash);
             return bytes == null ? null : bytes.Data;

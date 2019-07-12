@@ -266,10 +266,10 @@ namespace Mineral.Core.Config.Arguments
                 instance.LocalWitness = new LocalWitness(instance.privatekey);
                 if (!string.IsNullOrEmpty(instance.witness_address))
                 {
-                    UInt160 address_hash = AccountHelper.ToAddressHash(instance.witness_address);
-                    if (!address_hash.IsNullOrEmpty())
+                    byte[] address = Wallet.DecodeFromBase58Check(instance.witness_address);
+                    if (address.IsNotNullOrEmpty())
                     {
-                        instance.LocalWitness.SetWitnessAccountAddress(address_hash);
+                        instance.LocalWitness.SetWitnessAccountAddress(address);
                         Logger.Debug("local witness account address from command.");
                     }
                     else
@@ -294,8 +294,8 @@ namespace Mineral.Core.Config.Arguments
 
                 if (StringHelper.IsNotNullOrEmpty(Config.Instance.Witness.LocalWitnessAccountAddress))
                 {
-                    UInt160 address = AccountHelper.ToAddressHash(Config.Instance.Witness.LocalWitnessAccountAddress);
-                    if (address != UInt160.Zero)
+                    byte[] address = Wallet.DecodeFromBase58Check(Config.Instance.Witness.LocalWitnessAccountAddress);
+                    if (address.IsNotNullOrEmpty())
                     {
                         instance.LocalWitness.SetWitnessAccountAddress(address);
                         Logger.Debug("local witness account address from \'config.conf\' file.");

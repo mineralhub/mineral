@@ -117,7 +117,7 @@ namespace Mineral.Common.Overlay.Server
 
                 return;
             }
-            if (pre_index == input.ReaderIndex())
+            if (pre_index == input.ReaderIndex)
             {
                 return;
             }

@@ -77,29 +77,44 @@ namespace Mineral.Core.Database
             this.db_source.Reset();
         }
 
+        public IEnumerator<KeyValuePair<byte[], T>> GetEnumerator()
+        {
+            throw new NotImplementedException();
+        }
+
         IEnumerator IEnumerable.GetEnumerator()
         {
-            return (IEnumerator<KeyValuePair<byte[], byte[]>>)GetEnumerator();
+            throw new NotImplementedException();
         }
 
-        public IEnumerator<KeyValuePair<byte[], byte[]>> GetEnumerator()
-        {
-            IEnumerator<KeyValuePair<byte[], byte[]>> result = null;
-            if (this.db_source.GetType().Equals(typeof(LevelDBDataSource)))
-            {
-                result = ((LevelDBDataSource)this.db_source).GetEnumerator();
-            }
-            else if (this.db_source.GetType().Equals(typeof(RocksDBDataSource)))
-            {
-                result = ((RocksDBDataSource)this.db_source).GetEnumerator();
-            }
-            else
-            {
-                result = null;
-            }
+        //IEnumerator IEnumerable.GetEnumerator()
+        //{
+        //    return (IEnumerator<KeyValuePair<byte[], byte[]>>)GetEnumerator();
+        //}
 
-            return result;
-        }
+        //IEnumerator<KeyValuePair<byte[], T>> IEnumerable<KeyValuePair<byte[], T>>.GetEnumerator()
+        //{
+        //    throw new NotImplementedException();
+        //}
+
+        //public IEnumerator<KeyValuePair<byte[], byte[]>> GetEnumerator()
+        //{
+        //    IEnumerator<KeyValuePair<byte[], byte[]>> result = null;
+        //    if (this.db_source.GetType().Equals(typeof(LevelDBDataSource)))
+        //    {
+        //        result = ((LevelDBDataSource)this.db_source).GetEnumerator();
+        //    }
+        //    else if (this.db_source.GetType().Equals(typeof(RocksDBDataSource)))
+        //    {
+        //        result = ((RocksDBDataSource)this.db_source).GetEnumerator();
+        //    }
+        //    else
+        //    {
+        //        result = null;
+        //    }
+
+        //    return result;
+        //}
 
         #region Abstract - IMineralChainBase
         public abstract bool Contains(byte[] key);
