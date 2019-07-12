@@ -15,6 +15,7 @@ namespace Mineral.Common.Overlay.Client
     public class PeerClient
     {
         #region Field
+        private IChannel channel = null;
         private IEventLoopGroup worker_group = null;
         #endregion
 
@@ -36,70 +37,53 @@ namespace Mineral.Common.Overlay.Client
 
 
         #region Internal Method
-        private Task<IChannel> ConnectAsync(string host, int port, string remoteId, bool discoveryMode)
+        private async Task<IChannel> ConnectAsync(string host, int port, string remote_id, bool discovery_mode)
         {
             Logger.Info(
-                string.Format("connect peer {0} {1} {2}", host, port, remoteId));
+                string.Format("connect peer {0} {1} {2}", host, port, remote_id));
 
-            //tronChannelInitializer.setPeerDiscoveryMode(discoveryMode);
+            NettyChannelInitializer initializer = new NettyChannelInitializer(remote_id, discovery_mode);
 
             Bootstrap bootstrap = new Bootstrap();
             bootstrap.Group(this.worker_group);
             bootstrap.Channel<TcpSocketChannel>();
-
             bootstrap.Option(ChannelOption.SoKeepalive, true);
             bootstrap.Option(ChannelOption.MessageSizeEstimator, DefaultMessageSizeEstimator.Default);
             bootstrap.Option(ChannelOption.ConnectTimeout, new TimeSpan(Args.Instance.Node.ConnectionTimeout));
             bootstrap.RemoteAddress(host, port);
+            bootstrap.Handler(initializer);
 
-            bootstrap.Handler(new ActionChannelInitializer<TcpSocketChannel>(channel =>
-            {
-                Channel.Instance.Init();
-
-                channel.Allocator.Buffer(256 * 1024);
-                channel.Configuration.SetOption(ChannelOption.SoRcvbuf, 256 * 1024);
-                channel.Configuration.SetOption(ChannelOption.SoBacklog, 1024);
-
-            }));
-
-            return bootstrap.ConnectAsync();
+            return await bootstrap.ConnectAsync();
         }
         #endregion
 
 
         #region External Method
-        public void Connect(String host, int port, String remoteId)
+        public void Connect(string host, int port, string remote_id)
         {
             try
             {
-                ChannelFuture f = connectAsync(host, port, remoteId, false);
-                f.sync().channel().closeFuture().sync();
+                this.channel = ConnectAsync(host, port, remote_id, false).Result;
             }
             catch (Exception e)
             {
-                logger
-                    .info("PeerClient: Can't connect to " + host + ":" + port + " (" + e.getMessage() + ")");
+                Logger.Info("PeerClient: Can't connect to " + host + ":" + port + " (" + e.Message + ")");
             }
         }
 
-        public Task<IChannel> ConnectAsync(NodeHandler handler, bool discovery_mode)
+        public IChannel ConnectAsync(NodeHandler handler, bool discovery_mode)
         {
-            Node node = nodeHandler.getNode();
-            return connectAsync(node.getHost(), node.getPort(), node.getHexId(), discoveryMode)
-                .addListener((ChannelFutureListener)future => {
-                if (!future.isSuccess())
-                {
-                    logger.warn("connect to {}:{} fail,cause:{}", node.getHost(), node.getPort(),
-                        future.cause().getMessage());
-                    nodeHandler.getNodeStatistics().nodeDisconnectedLocal(ReasonCode.CONNECT_FAIL);
-                    nodeHandler.getNodeStatistics().notifyDisconnect();
-                    future.channel().close();
-                }
-            });
+            Node node = handler.Node;
+            return ConnectAsync(node.Host, node.Port, node.Id.ToHexString(), discovery_mode).Result;
         }
 
         public void Close()
         {
+            if (this.channel != null || this.channel.Active)
+            {
+                this.channel.CloseAsync();
+            }
+
             this.worker_group.ShutdownGracefullyAsync();
         }
         #endregion
