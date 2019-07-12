@@ -16,7 +16,7 @@ namespace Mineral.Common.Overlay.Server
     public class PeerServer
     {
         #region Field
-        private bool listening = false;
+        private IChannel channel = null;
         #endregion
 
 
@@ -37,7 +37,7 @@ namespace Mineral.Common.Overlay.Server
 
 
         #region External Method
-        public void Start(int port)
+        public async void Start(int port)
         {
             IEventLoopGroup boos_group = new MultithreadEventLoopGroup(1);
             IEventLoopGroup worker_group = new MultithreadEventLoopGroup(Args.Instance.Node.TcpNettyWorkThreadNum);
@@ -54,35 +54,29 @@ namespace Mineral.Common.Overlay.Server
                     .Option(ChannelOption.MessageSizeEstimator, DefaultMessageSizeEstimator.Default)
                     .Option(ChannelOption.ConnectTimeout, TimeSpan.FromSeconds(Args.Instance.Node.ConnectionTimeout))
                     .Handler(new LoggingHandler())
-                    .ChildHandler(new ActionChannelInitializer<IChannel>(channel =>
-                    {
-                        channel.Pipeline.AddLast("readTimeoutHandler", new ReadTimeoutHandler(60));
+                    .ChildHandler(new NettyChannelInitializer("", false));
 
-                        //IChannelPipeline pipeline = channel.Pipeline;
-                        //pipeline.AddLast(new LoggingHandler("SRV-CONN"));
-                        //pipeline.AddLast("framing-enc", new LengthFieldPrepender(2));
-                        //pipeline.AddLast("framing-dec", new LengthFieldBasedFrameDecoder(ushort.MaxValue, 0, 2, 0, 2));
+                Logger.Info("Tcp listener started, bind port : " + port);
 
-                        //pipeline.AddLast("echo", new PeerServerHandler());
-                    }));
+                this.channel = await bootstrap.BindAsync(port);
             }
             finally
             {
             }
         }
 
-        public void Close()
+        public async void Close()
         {
-            if (listening && channelFuture != null && channelFuture.channel().isOpen())
+            if (this.channel != null && this.channel.Active)
             {
                 try
                 {
-                    logger.info("Closing TCP server...");
-                    channelFuture.channel().close().sync();
+                    Logger.Info("Closing TCP server...");
+                    await this.channel.CloseAsync();
                 }
                 catch (Exception e)
                 {
-                    logger.warn("Closing TCP server failed.", e);
+                    Logger.Warning("Closing TCP server failed." + e.Message);
                 }
             }
         }

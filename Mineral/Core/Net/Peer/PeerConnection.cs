@@ -20,11 +20,6 @@ namespace Mineral.Core.Net.Peer
     public class PeerConnection : Channel
     {
         #region Field
-        private static PeerConnection instance = null;
-
-        private MineralNetDelegate net_delegate = null;
-        private SyncService sync_service = null;
-        private AdvanceService advance_service = null;
         private HelloMessage hello_message = null;
 
         private BlockId singup_error_id = null;
@@ -49,11 +44,6 @@ namespace Mineral.Core.Net.Peer
 
 
         #region Property
-        public static PeerConnection Instance
-        {
-            get { return instance ?? new PeerConnection(); }
-        }
-
         public HelloMessage HelloMessage
         {
             get { return this.hello_message; }
@@ -166,7 +156,6 @@ namespace Mineral.Core.Net.Peer
 
 
         #region Constructor
-        private PeerConnection() { }
         #endregion
 
 
@@ -239,10 +228,10 @@ namespace Mineral.Core.Net.Peer
 
         public void OnConnect()
         {
-            if (this.hello_message.HeadBlockId.Num > this.net_delegate.HeadBlockId.Num)
+            if (this.hello_message.HeadBlockId.Num > Manager.Instance.NetDelegate.HeadBlockId.Num)
             {
                 State = MineralState.SYNCING;
-                this.sync_service.StartSync(this);
+                Manager.Instance.SyncService.StartSync(this);
             }
             else
             {
@@ -252,8 +241,8 @@ namespace Mineral.Core.Net.Peer
 
         public void OnDisconnect()
         {
-            this.sync_service.OnDisconnect(this);
-            this.advance_service.OnDisconnect(this);
+            Manager.Instance.SyncService.OnDisconnect(this);
+            Manager.Instance.AdvanceService.OnDisconnect(this);
 
             this.inventory_receive = MemoryCache.Default;
             this.inventory_spread = MemoryCache.Default;
