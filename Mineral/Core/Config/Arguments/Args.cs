@@ -16,6 +16,7 @@ using Newtonsoft.Json.Linq;
 namespace Mineral.Core.Config.Arguments
 {
     using Config = Mineral.Config;
+
     public class Args
     {
         public class GenesisBlockArgs : GenesisBlockConfig { }
@@ -70,7 +71,7 @@ namespace Mineral.Core.Config.Arguments
         public static readonly string Version = "1.0.0";
 
         #region Arguments
-        [Parameter("-p", "==private-key", Description = "Private key")]
+        [Parameter("-p", "--private-key", Description = "Private key")]
         private string privatekey = "";
 
         [Parameter("-v", "--version", Description = "Version")]
@@ -106,7 +107,7 @@ namespace Mineral.Core.Config.Arguments
         [Parameter("--contract-parse-switch", Description = "enable contract parses in java-tron or not.(true or flase)")]
         private string contract_parse_switch = "";
 
-        [Parameter("--d", "--output-directory", Description = "Directory")]
+        [Parameter("-d", "--output-directory", Description = "Directory")]
         private string output_directory = "";
 
         [Parameter("storage-index-directory", Description = "Storage index directory")]
@@ -247,7 +248,14 @@ namespace Mineral.Core.Config.Arguments
                 return;
             }
 
-            Config.Instance.Initialize(config_path);
+            if (!Config.Instance.Initialize(config_path))
+            {
+                Logger.Error(
+                    string.Format("Failed to initialize config. please check config : {0} file",
+                                  config_path));
+
+                return;
+            }
 
             #region Wallet prefix
             if (Config.Instance.Net.Type.Equals("mainnet"))
