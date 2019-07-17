@@ -210,7 +210,7 @@ namespace Mineral.Core.Capsule
 
         public void Sign(byte[] privatekey)
         {
-            ECKey ec_key = new ECKey(privatekey, true);
+            ECKey ec_key = ECKey.FromPrivateKey(privatekey);
             ECDSASignature signature = ec_key.Sign(this.GetRawHash().Hash);
 
             this.block.BlockHeader.WitnessSignature = ByteString.CopyFrom(signature.ToDER());
@@ -221,10 +221,10 @@ namespace Mineral.Core.Capsule
             try
             {
                 ECKey ec_key = ECKey.RecoverFromSignature(
-                                    ECDSASignatureFactory.ExtractECDSASignature(this.block.BlockHeader.WitnessSignature.ToByteArray()),
+                                    ECDSASignature.ExtractECDSASignature(this.block.BlockHeader.WitnessSignature.ToByteArray()),
                                     GetRawHash().Hash,
                                     false);
-                byte[] signature_address = Wallets.WalletAccount.ToAddressHash(ec_key.GetPubKey(false)).ToArray();
+                byte[] signature_address = Wallets.WalletAccount.ToAddressHash(ec_key.PublicKey).ToArray();
                 byte[] witness_address = this.block.BlockHeader.RawData.WitnessAddress.ToByteArray();
 
                 if (db_manager.DynamicProperties.GetAllowMultiSign() != 1)

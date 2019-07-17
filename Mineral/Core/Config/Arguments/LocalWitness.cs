@@ -63,7 +63,7 @@ namespace Mineral.Core.Config.Arguments
         {
             if (this.witness_account_address == null)
             {
-                this.witness_account_address = new ECKey(GetPrivateKey().HexToBytes(), true).GetPublicAddress();
+                this.witness_account_address = ECKey.FromPrivateKey(GetPrivateKey().HexToBytes()).Address;
             }
         }
 
@@ -79,8 +79,8 @@ namespace Mineral.Core.Config.Arguments
                 string privatekey = GetPrivateKey();
                 if (!privatekey.IsNullOrEmpty())
                 {
-                    ECKey key = new ECKey(privatekey.HexToBytes(), true);
-                    this.witness_account_address = key.GetPublicAddress();
+                    ECKey key = ECKey.FromPrivateKey(privatekey.HexToBytes());
+                    this.witness_account_address = key.Address;
                     return this.witness_account_address;
                 }
             }

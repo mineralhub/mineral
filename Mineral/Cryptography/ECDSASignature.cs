@@ -7,10 +7,31 @@ namespace Mineral.Cryptography
 {
     public class ECDSASignature
     {
-        private const string InvalidDERSignature = "Invalid DER signature";
+        #region Field
+        private const string INVALID_MESSAGE = "Invalid DER signature";
         public static readonly BigInteger SECP256K1N = new BigInteger("fffffffffffffffffffffffffffffffebaaedce6af48a03bbfd25e8cd0364141", 16);
 
+        #endregion
 
+
+        #region Property
+        public BigInteger R { get; }
+        public BigInteger S { get; }
+        public byte V { get; set; }
+
+        public bool IsLowS
+        {
+            get { return S.CompareTo(ECKey.HALF_CURVE_ORDER) <= 0; }
+        }
+
+        public bool IsValidComponents
+        {
+            get { return IsValidateComponents(R, S, V); }
+        }
+        #endregion
+
+
+        #region Contructor
         public ECDSASignature(BigInteger r, BigInteger s)
         {
             R = r;
@@ -23,34 +44,60 @@ namespace Mineral.Cryptography
             S = rs[1];
         }
 
-        public ECDSASignature(byte[] derSig)
+        public ECDSASignature(byte[] der_signature)
         {
             try
             {
-                var decoder = new Asn1InputStream(derSig);
+                var decoder = new Asn1InputStream(der_signature);
                 var seq = decoder.ReadObject() as DerSequence;
                 if (seq == null || seq.Count != 2)
-                    throw new FormatException(InvalidDERSignature);
+                    throw new FormatException(INVALID_MESSAGE);
                 R = ((DerInteger)seq[0]).Value;
                 S = ((DerInteger)seq[1]).Value;
             }
             catch (Exception ex)
             {
-                throw new FormatException(InvalidDERSignature, ex);
+                throw new FormatException(INVALID_MESSAGE, ex);
             }
         }
+        #endregion
 
-        public BigInteger R { get; }
 
-        public BigInteger S { get; }
+        #region Event Method
+        #endregion
 
-        public byte[] V { get; set; }
 
-        public bool IsLowS => S.CompareTo(ECKey.HALF_CURVE_ORDER) <= 0;
+        #region Internal Method
+        #endregion
 
-        public static ECDSASignature FromDER(byte[] sig)
+
+        #region External Method
+        public static bool IsLessThan(BigInteger value1, BigInteger value2)
         {
-            return new ECDSASignature(sig);
+            return value1.CompareTo(value2) < 0;
+        }
+
+        public static bool IsValidateComponents(BigInteger r, BigInteger s, byte v)
+        {
+            if (v != 27 && v != 28)
+            {
+                return false;
+            }
+
+            if (IsLessThan(r, BigInteger.One))
+            {
+                return false;
+            }
+            if (IsLessThan(s, BigInteger.One))
+            {
+                return false;
+            }
+
+            if (!IsLessThan(r, ECDSASignature.SECP256K1N))
+            {
+                return false;
+            }
+            return IsLessThan(s, ECDSASignature.SECP256K1N);
         }
 
         public static bool IsValidDER(byte[] bytes)
@@ -70,27 +117,77 @@ namespace Mineral.Cryptography
             }
         }
 
-        public bool ValidateComponents()
+        public static ECDSASignature FromComponents(byte[] r, byte[] s)
         {
-            return ECDSASignatureFactory.ValidateComponents(R, S, V[0]);
+            return new ECDSASignature(new BigInteger(1, r), new BigInteger(1, s));
         }
 
-        public ECDSASignature MakeCanonical()
+        public static ECDSASignature FromComponents(byte[] r, byte[] s, byte v)
+        {
+            ECDSASignature signature = FromComponents(r, s);
+            signature.V = v;
+
+            return signature;
+        }
+
+        public static ECDSASignature FromComponents(byte[] rs)
+        {
+            byte[] r = new byte[32];
+            byte[] s = new byte[32];
+
+            Array.Copy(rs, 0, r, 0, 32);
+            Array.Copy(rs, 32, s, 0, 32);
+
+            return FromComponents(r, s);
+        }
+
+        public static ECDSASignature ExtractECDSASignature(string signature)
+        {
+            var signatureArray = signature.HexToBytes();
+
+            return ExtractECDSASignature(signatureArray);
+        }
+
+        public static ECDSASignature ExtractECDSASignature(byte[] signature)
+        {
+            var v = signature[64];
+
+            if (v == 0 || v == 1)
+                v = (byte)(v + 27);
+
+            byte[] r = new byte[32];
+            Array.Copy(signature, r, 32);
+
+            byte[] s = new byte[32];
+            Array.Copy(signature, 32, s, 0, 32);
+
+            return FromComponents(r, s, v);
+        }
+
+        public static ECDSASignature FromDER(byte[] signatrue)
+        {
+            return new ECDSASignature(signatrue);
+        }
+
+        public ECDSASignature MakeCanonicalised()
         {
             if (!IsLowS)
                 return new ECDSASignature(R, ECKey.CURVE_ORDER.Subtract(S));
+
             return this;
         }
 
         public byte[] ToDER()
         {
-            // Usually 70-72 bytes.
             var bos = new MemoryStream(72);
             var seq = new DerSequenceGenerator(bos);
+
             seq.AddObject(new DerInteger(R));
             seq.AddObject(new DerInteger(S));
             seq.Close();
+
             return bos.ToArray();
         }
+        #endregion
     }
 }

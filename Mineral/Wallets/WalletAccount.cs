@@ -16,7 +16,7 @@ namespace Mineral.Wallets
         {
             try
             {
-                Key = new ECKey(prikey, true);
+                Key = ECKey.FromPrivateKey(prikey);
             }
             catch (Exception e)
             {
@@ -42,7 +42,7 @@ namespace Mineral.Wallets
 
         public static string ToAddress(ECKey key)
         {
-            return ToAddress(key.GetPubKey(false));
+            return ToAddress(key.PublicKey);
         }
 
         public static string ToAddress(byte[] pubkey)
@@ -50,7 +50,7 @@ namespace Mineral.Wallets
             byte[] data = new byte[21];
             data[0] = Config.Instance.AddressVersion;
             Buffer.BlockCopy(pubkey.SHA256().RIPEMD160(), 0, data, 1, 20);
-            return data.Base58CheckEncode();
+            return data.ToAddressEncodeBase58();
         }
 
         public static UInt160 ToAddressHash(byte[] pubkey)
@@ -90,7 +90,7 @@ namespace Mineral.Wallets
             byte[] data = new byte[21];
             data[0] = Config.Instance.AddressVersion;
             Buffer.BlockCopy(addressHash.ToArray(), 0, data, 1, 20);
-            return data.Base58CheckEncode();
+            return data.ToAddressEncodeBase58();
         }
 
         //public Fixed8 GetBalance()

@@ -10,7 +10,7 @@ namespace Mineral.Utils
     {
         public static string ToAddress(ECKey key)
         {
-            return ToAddress(key.GetPubKey(false).ToArray());
+            return ToAddress(key.PublicKey.ToArray());
         }
 
         public static string ToAddress(byte[] pubkey)
@@ -18,7 +18,7 @@ namespace Mineral.Utils
             byte[] data = new byte[21];
             data[0] = Config.Instance.AddressVersion;
             Buffer.BlockCopy(pubkey.SHA256().RIPEMD160(), 0, data, 1, 20);
-            return data.Base58CheckEncode();
+            return data.ToAddressEncodeBase58();
         }
 
         public static UInt160 ToAddressHash(byte[] pubkey)
@@ -58,7 +58,7 @@ namespace Mineral.Utils
             byte[] data = new byte[21];
             data[0] = Config.Instance.AddressVersion;
             Buffer.BlockCopy(addressHash.ToArray(), 0, data, 1, 20);
-            return data.Base58CheckEncode();
+            return data.ToAddressEncodeBase58();
         }
     }
 }

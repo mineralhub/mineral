@@ -230,7 +230,7 @@ namespace Mineral.Core.Capsule
 
         public void Signature(byte[] privatekey)
         {
-            ECKey ec_key = new ECKey(privatekey, true);
+            ECKey ec_key = ECKey.FromPrivateKey(privatekey);
             ECDSASignature signature = ec_key.Sign(GetRawHash().Hash);
             this.transaction.Signature.Add(ByteString.CopyFrom(signature.ToDER()));
         }
@@ -267,12 +267,12 @@ namespace Mineral.Core.Capsule
                     throw new SignatureFormatException("Signature size is" + sign.Length);
                 }
 
-                ECKey ec_key = ECKey.RecoverFromSignature(ECDSASignatureFactory.ExtractECDSASignature(sign.ToByteArray()),
+                ECKey ec_key = ECKey.RecoverFromSignature(ECDSASignature.ExtractECDSASignature(sign.ToByteArray()),
                                                           hash,
                                                           false);
 
-                byte[] publickey = ec_key.GetPubKey(false);
-                long weight = GetWeight(permission, ec_key.GetPublicAddress());
+                byte[] publickey = ec_key.PublicKey;
+                long weight = GetWeight(permission, ec_key.Address);
                 if (weight == 0)
                 {
                     throw new PermissionException(
@@ -326,8 +326,8 @@ namespace Mineral.Core.Capsule
             }
 
             List<ByteString> approves = new List<ByteString>();
-            ECKey ec_key = new ECKey(privatekey, true);
-            byte[] address = Wallets.WalletAccount.ToAddressHash((ec_key.GetPubKey(false))).ToArray();
+            ECKey ec_key = ECKey.FromPrivateKey(privatekey);
+            byte[] address = Wallets.WalletAccount.ToAddressHash((ec_key.PublicKey)).ToArray();
 
             if (this.transaction.Signature.Count > 0)
             {

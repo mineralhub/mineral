@@ -24,9 +24,6 @@ namespace MineralNode
 
             FullNode node = new FullNode();
             node.Run(args);
-            //MainService service = new MainService();
-            //if (service.Initialize(args))
-            //    service.Run();
         }
     }
 }

@@ -132,7 +132,7 @@ namespace Mineral.Core
         public static string Encode58Check(byte[] input)
         {
             byte[] hash0 = SHA256Hash.ToHash(input);
-            byte[] hash1 = SHA256Hash.ToHash(input);
+            byte[] hash1 = SHA256Hash.ToHash(hash0);
             byte[] input_check = new byte[input.Length + 4];
             Array.Copy(input, 0, input_check, 0, input.Length);
             Array.Copy(hash1, 0, input_check, input.Length, 4);
@@ -211,7 +211,7 @@ namespace Mineral.Core
             Array.Copy(tx_hash, 0, combined, 0, tx_hash.Length);
             Array.Copy(owner_address, 0, combined, tx_hash.Length, owner_address.Length);
 
-            return Hash.SHA3omit12(combined);
+            return Hash.ToAddressSHA3(combined);
         }
 
         public static byte[] GenerateContractAddress(byte[] owner_address, byte[] tx_hash)
@@ -220,7 +220,7 @@ namespace Mineral.Core
             Array.Copy(tx_hash, 0, combined, 0, tx_hash.Length);
             Array.Copy(owner_address, 0, combined, tx_hash.Length, owner_address.Length);
 
-            return Hash.SHA3omit12(combined);
+            return Hash.ToAddressSHA3(combined);
         }
 
         public static byte[] GenerateContractAddress(byte[] tx_root_id, long nonce)
@@ -230,13 +230,13 @@ namespace Mineral.Core
             Array.Copy(tx_root_id, 0, combined, 0, tx_root_id.Length);
             Array.Copy(nonce_bytes, 0, combined, tx_root_id.Length, nonce_bytes.Length);
 
-            return Hash.SHA3omit12(combined);
+            return Hash.ToAddressSHA3(combined);
         }
 
         public static byte[] GenerateContractAddress2(byte[] address, byte[] salt, byte[] code)
         {
             byte[] merge = address.Concat(salt).Concat(Hash.SHA3(code)).ToArray();
-            return Hash.SHA3omit12(merge);
+            return Hash.ToAddressSHA3(merge);
         }
 
         public static byte[] ToMineralAddress(byte[] address)

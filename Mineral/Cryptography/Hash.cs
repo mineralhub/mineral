@@ -19,20 +19,19 @@ namespace Mineral.Cryptography
 
         public static byte[] SHA3(this byte[] data)
         {
-            Sha3Digest sha3 = new Sha3Digest(256);
-            sha3.BlockUpdate(data, 0, data.Length);
+            KeccakDigest digest = new KeccakDigest(256);
+            byte[] output = new byte[digest.GetDigestSize()];
+            digest.BlockUpdate(data, 0, data.Length);
+            digest.DoFinal(output, 0);
 
-            byte[] result = new byte[sha3.GetDigestSize()];
-            sha3.DoFinal(result, 0);
-
-            return result;
+            return output;
         }
 
-        public static byte[] SHA3omit12(byte[] input)
+        public static byte[] ToAddressSHA3(byte[] input)
         {
             byte[] hash = SHA3(input);
-            byte[] address = ByteUtil.CopyRange(hash, 11, hash.Length);
-            address[0] = Wallet.ADDRESS_PREFIX_BYTES;
+            byte[] address = new byte[hash.Length - 12];
+            Array.Copy(hash, 12, address, 0, address.Length);
 
             return address;
         }

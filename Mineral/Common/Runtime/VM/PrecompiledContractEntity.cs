@@ -126,8 +126,8 @@ namespace Mineral.Common.Runtime.VM
                     int length = data.Length < 128 ? data.Length - 96 : 32;
                     Array.Copy(data, 96, s, 0, length);
 
-                    ECDSASignature signature = ECDSASignatureFactory.FromComponents(r, s, v[31]);
-                    if (ValidateV(v) && signature.ValidateComponents())
+                    ECDSASignature signature = ECDSASignature.FromComponents(r, s, v[31]);
+                    if (ValidateV(v) && signature.IsValidComponents)
                     {
                         out_val = new DataWord(ECKey.SignatureToAddress(h, signature));
                     }

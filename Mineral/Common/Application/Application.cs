@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.Text;
+using Mineral.Core;
 using Mineral.Core.Config.Arguments;
 using Mineral.Core.Database;
 
@@ -9,7 +11,7 @@ namespace Mineral.Common.Application
     public class Application : IApplication
     {
         #region Field
-        private DatabaseManager db_manager;
+        private DatabaseManager db_manager = Manager.Instance.DBManager;
         private BlockStore block_store = null;
         private ServiceContainer services = null;
         private bool is_producer = false;
@@ -17,10 +19,9 @@ namespace Mineral.Common.Application
 
 
         #region Property
-        public DatabaseManager Manager { get { return this.db_manager; } }
+        public DatabaseManager DBManager { get { return this.db_manager; } }
         public BlockStore BlockStore { get { return this.block_store; } }
         #endregion
-
 
         #region Constructor
         #endregion

@@ -78,10 +78,10 @@ namespace Mineral.Common.Overlay.Discover.Node
             }
 
             byte[] privatekey = Mineral.Cryptography.Helper.SHA256(address.GetBytes());
-            Cryptography.ECKey key = new Cryptography.ECKey(privatekey, true);
+            Cryptography.ECKey key = Cryptography.ECKey.FromPrivateKey(privatekey);
 
             byte[] node_id = new byte[privatekey.Length - 1];
-            Array.Copy(key.GetPubKey(false), 1, node_id, 0, node_id.Length);
+            Array.Copy(key.PublicKey, 1, node_id, 0, node_id.Length);
 
             string id = node_id.ToHexString();
             Node node = new Node("enode://" + id + "@" + address);

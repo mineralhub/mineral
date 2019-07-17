@@ -9,6 +9,7 @@ using Org.BouncyCastle.Security;
 using Org.BouncyCastle.Crypto.Parameters;
 using Mineral.Utils;
 using Org.BouncyCastle.Crypto.Digests;
+using Mineral.Core;
 
 namespace Mineral.Cryptography
 {
@@ -78,12 +79,15 @@ namespace Mineral.Cryptography
             }
         }
 
-        public static string Base58CheckEncode(this byte[] data)
+        public static string ToAddressEncodeBase58(this byte[] data)
         {
             byte[] checksum = data.DoubleSHA256();
-            byte[] buffer = new byte[data.Length + 4];
-            Buffer.BlockCopy(data, 0, buffer, 0, data.Length);
-            Buffer.BlockCopy(checksum, 0, buffer, data.Length, 4);
+            byte[] buffer = new byte[data.Length + 1 + 4];
+
+            buffer[0] = DefineParameter.ADD_PRE_FIX_BYTE_MAINNET;
+            Buffer.BlockCopy(data, 0, buffer, 1, data.Length);
+            Buffer.BlockCopy(checksum, 0, buffer, data.Length + 1, 4);
+
             return Base58.Encode(buffer);
         }
 
@@ -108,20 +112,20 @@ namespace Mineral.Cryptography
 
         public static byte[] Sign(byte[] message, byte[] prikey)
         {
-            return Sign(message, new ECKey(prikey, true));
+            return Sign(message, ECKey.FromPrivateKey(prikey));
         }
 
         public static byte[] Sign(byte[] message, ECKey key)
         {
             ISigner signer = SignerUtilities.GetSigner("NONEwithECDSA");
-            signer.Init(true, key.PrivateKey);
+            signer.Init(true, key.PrivateKeyParameter);
             signer.BlockUpdate(message, 0, message.Length);
             return signer.GenerateSignature();
         }
 
         public static bool VerifySignature(byte[] signature, byte[] message, byte[] pubkey)
         {
-            return VerifySignature(signature, message, new ECKey(pubkey, false));
+            return VerifySignature(signature, message, ECKey.FromPublicKey(pubkey));
         }
 
         //public static bool VerifySignature(MakerSignature makerSign, byte[] message)
@@ -132,7 +136,7 @@ namespace Mineral.Cryptography
         public static bool VerifySignature(byte[] signature, byte[] message, ECKey key)
         {
             ISigner signer = SignerUtilities.GetSigner("NONEwithECDSA");
-            signer.Init(false, key.GetPublicKeyParameters());
+            signer.Init(false, key.PublicKeyParameter);
             signer.BlockUpdate(message, 0, message.Length);
             return signer.VerifySignature(signature);
         }
