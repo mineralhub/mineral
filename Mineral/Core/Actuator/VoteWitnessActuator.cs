@@ -137,7 +137,7 @@ namespace Mineral.Core.Actuator
                     throw new ContractValidateException(e.Message);
                 }
 
-                if (!Wallet.AddressValid(witness_contract.OwnerAddress.ToByteArray()))
+                if (!Wallet.IsValidAddress(witness_contract.OwnerAddress.ToByteArray()))
                 {
                     throw new ContractValidateException("Invalid address");
                 }
@@ -161,7 +161,7 @@ namespace Mineral.Core.Actuator
                     foreach (VoteWitnessContract.Types.Vote vote in witness_contract.Votes)
                     {
                         byte[] witness_candidate = vote.VoteAddress.ToByteArray();
-                        if (!Wallet.AddressValid(witness_candidate))
+                        if (!Wallet.IsValidAddress(witness_candidate))
                             throw new ContractValidateException("Invalid vote address!");
 
                         if (vote.VoteCount <= 0)

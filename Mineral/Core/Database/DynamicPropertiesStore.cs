@@ -691,13 +691,13 @@ namespace Mineral.Core.Database
 
         public void PutBlockFilledSlots(int[] block_filled_slots)
         {
-            Logger.Debug("blockFilledSlots:" + block_filled_slots.GetString());
-            Put(BLOCK_FILLED_SLOTS, new BytesCapsule(block_filled_slots.GetString().GetBytes()));
+            Logger.Debug("blockFilledSlots:" + block_filled_slots.IntToString());
+            Put(BLOCK_FILLED_SLOTS, new BytesCapsule(block_filled_slots.IntToString().ToBytes()));
         }
 
         public int[] GetBlockFilledSlots()
         {
-            return GetUnchecked(BLOCK_FILLED_SLOTS).Data.GetString().ToIntArray();
+            return base.GetUnchecked(BLOCK_FILLED_SLOTS).Data.BytesToString().ToIntArray();
         }
 
         public int GetBlockFilledSlotsNumber()
@@ -919,25 +919,25 @@ namespace Mineral.Core.Database
 
         public void Forked()
         {
-            Put(FORK_CONTROLLER, new BytesCapsule(true.ToString().GetBytes()));
+            Put(FORK_CONTROLLER, new BytesCapsule(true.ToString().ToBytes()));
         }
 
         public void StatsByVersion(int version, byte[] stats)
         {
             string stats_key = FORK_PREFIX + version;
-            Put(stats_key.GetBytes(), new BytesCapsule(stats));
+            Put(stats_key.ToBytes(), new BytesCapsule(stats));
         }
 
         public byte[] StatsByVersion(int version)
         {
             string statsKey = FORK_PREFIX + version;
-            return this.revoking_db.GetUnchecked(statsKey.GetBytes());
+            return this.revoking_db.GetUnchecked(statsKey.ToBytes());
         }
 
         public bool GetForked()
         {
             byte[] value = this.revoking_db.GetUnchecked(FORK_CONTROLLER);
-            return value == null ? false : bool.Parse(value.GetString());
+            return value == null ? false : bool.Parse(value.BytesToString());
         }
     }
 }

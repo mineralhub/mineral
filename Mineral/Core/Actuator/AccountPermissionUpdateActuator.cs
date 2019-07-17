@@ -69,7 +69,7 @@ namespace Mineral.Core.Actuator
 
             foreach (Key key in permission.Keys)
             {
-                if (!Wallet.AddressValid(key.Address.ToByteArray()))
+                if (!Wallet.IsValidAddress(key.Address.ToByteArray()))
                 {
                     throw new ContractValidateException("key is not a validate address");
                 }
@@ -195,7 +195,7 @@ namespace Mineral.Core.Actuator
                 }
 
                 byte[] owner_address = apu_contract.OwnerAddress.ToByteArray();
-                if (!Wallet.AddressValid(owner_address))
+                if (!Wallet.IsValidAddress(owner_address))
                 {
                     throw new ContractValidateException("invalidate owner_address");
                 }

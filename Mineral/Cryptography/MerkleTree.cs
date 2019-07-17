@@ -7,15 +7,26 @@ namespace Mineral.Cryptography
 {
     public class MerkleTree
     {
-        private MerkleTreeNode _root;
-        public UInt256 RootHash => _root != null ? _root.Hash : UInt256.Zero;
+        #region Field
+        private MerkleNode root = null;
+        #endregion
 
-        public MerkleTree(UInt256[] hashes)
+
+        #region Property
+        public byte[] RootHash
+        {
+            get { return root != null ? root.Hash : new byte[0]; }
+        }
+        #endregion
+
+
+        #region Contructor
+        public MerkleTree(byte[][] hashes)
         {
             if (hashes.Length == 0)
                 return;
 
-            _root = Build(hashes.Select(p => new MerkleTreeNode { Hash = p }).ToArray());
+            root = Build(hashes.Select(p => new MerkleNode { Hash = p }).ToArray());
         }
 
         public MerkleTree(List<byte[]> hashes)
@@ -23,20 +34,27 @@ namespace Mineral.Cryptography
             if (hashes.Count == 0)
                 return;
 
-            _root = Build(hashes.Select(p => new MerkleTreeNode { Hash = new UInt256(p)}).ToArray());
+            root = Build(hashes.Select(p => new MerkleNode { Hash = p }).ToArray());
         }
+        #endregion
 
-        private static MerkleTreeNode Build(MerkleTreeNode[] leaves)
+
+        #region Event Method
+        #endregion
+
+
+        #region Internal Method
+        private static MerkleNode Build(MerkleNode[] leaves)
         {
             if (leaves.Length == 0)
                 throw new ArgumentException();
             if (leaves.Length == 1)
                 return leaves[0];
 
-            MerkleTreeNode[] parents = new MerkleTreeNode[(leaves.Length + 1) / 2];
+            MerkleNode[] parents = new MerkleNode[(leaves.Length + 1) / 2];
             for (int i = 0; i < parents.Length; ++i)
             {
-                parents[i] = new MerkleTreeNode();
+                parents[i] = new MerkleNode();
                 parents[i].LeftChild = leaves[i * 2];
                 leaves[i * 2].Parent = parents[i];
                 if (i * 2 + 1 == leaves.Length)
@@ -48,9 +66,15 @@ namespace Mineral.Cryptography
                     parents[i].RightChild = leaves[i * 2 + 1];
                     leaves[i * 2 + 1].Parent = parents[i];
                 }
-                parents[i].Hash = new UInt256(parents[i].LeftChild.Hash.Data.Concat(parents[i].RightChild.Hash.Data).ToArray().DoubleSHA256());
+                parents[i].Hash = parents[i].LeftChild.Hash.Concat(parents[i].RightChild.Hash).ToArray().DoubleSHA256();
             }
+
             return Build(parents);
         }
+        #endregion
+
+
+        #region External Method
+        #endregion
     }
 }

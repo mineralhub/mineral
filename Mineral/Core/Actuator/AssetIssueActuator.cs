@@ -155,7 +155,7 @@ namespace Mineral.Core.Actuator
                 }
 
                 byte[] owner_address = asset_issue_contract.OwnerAddress.ToByteArray();
-                if (!Wallet.AddressValid(owner_address))
+                if (!Wallet.IsValidAddress(owner_address))
                     throw new ContractValidateException("Invalid ownerAddress");
 
                 if (!TransactionUtil.ValidAssetName(asset_issue_contract.Name.ToByteArray()))

@@ -51,7 +51,7 @@ namespace Mineral.Core.Database
         {
             foreach (Config.Arguments.Account account in args.Assets)
             {
-                asserts_address.Add(account.Name, Wallet.DecodeFromBase58Check(account.Address));
+                asserts_address.Add(account.Name, Wallet.Base58ToAddress(account.Address));
             }
         }
 

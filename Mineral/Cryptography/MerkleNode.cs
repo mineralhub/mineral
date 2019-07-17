@@ -2,12 +2,12 @@
 
 namespace Mineral.Cryptography
 {
-    internal class MerkleTreeNode
+    internal class MerkleNode
     {
-        public UInt256 Hash;
-        public MerkleTreeNode Parent;
-        public MerkleTreeNode LeftChild;
-        public MerkleTreeNode RightChild;
+        public byte[] Hash;
+        public MerkleNode Parent;
+        public MerkleNode LeftChild;
+        public MerkleNode RightChild;
 
         public bool IsLeaf => LeftChild == null && RightChild == null;
         public bool IsRoot => Parent == null;

@@ -284,7 +284,7 @@ namespace Mineral.Common.Runtime.VM.Program
 
         private void CreateContract(DataWord value, byte[] program_code, byte[] new_address)
         {
-            byte[] sender_address = Wallet.ToMineralAddress(this.invoke.ContractAddress.GetLast20Bytes());
+            byte[] sender_address = Wallet.ToAddAddressPrefix(this.invoke.ContractAddress.GetLast20Bytes());
 
             Logger.Debug(string.Format("creating a new contract inside contract run: [{0}]", sender_address.ToHexString()));
 
@@ -447,7 +447,7 @@ namespace Mineral.Common.Runtime.VM.Program
 
         public void CreateContract2(DataWord value, DataWord mem_start, DataWord mem_size, DataWord salt)
         {
-            byte[] sender_address = Wallet.ToMineralAddress(this.invoke.CallerAddress.GetLast20Bytes());
+            byte[] sender_address = Wallet.ToAddAddressPrefix(this.invoke.CallerAddress.GetLast20Bytes());
             byte[] program_code = MemoryChunk(mem_start.ToInt(), mem_size.ToInt());
 
             byte[] contract_address = Wallet.GenerateContractAddress2(sender_address, salt.Data, program_code);
@@ -496,7 +496,7 @@ namespace Mineral.Common.Runtime.VM.Program
                 Logger.Debug(
                     string.Format(
                         "The remaining energy is refunded, account: [{0}], energy: [{1}] ",
-                        Wallet.ToMineralAddress(ContractAddress.GetLast20Bytes()).ToHexString(),
+                        Wallet.ToAddAddressPrefix(ContractAddress.GetLast20Bytes()).ToHexString(),
                         refund_energy));
             }
         }
@@ -596,8 +596,8 @@ namespace Mineral.Common.Runtime.VM.Program
 
             IDeposit deposit = this.contract_state.NewDepositChild();
 
-            byte[] sender_address = Wallet.ToMineralAddress(ContractAddress.GetLast20Bytes());
-            byte[] code_address = Wallet.ToMineralAddress(msg.CodeAddress.GetLast20Bytes());
+            byte[] sender_address = Wallet.ToAddAddressPrefix(ContractAddress.GetLast20Bytes());
+            byte[] code_address = Wallet.ToAddAddressPrefix(msg.CodeAddress.GetLast20Bytes());
             byte[] context_address = OpCodeUtil.ContainStateless(msg.Type) ? sender_address : code_address;
 
             long endowment = (long)msg.Endowment.ToBigInteger();
@@ -663,7 +663,7 @@ namespace Mineral.Common.Runtime.VM.Program
             }
             else
             {
-                contract.CallerAddress = Wallet.ToMineralAddress(OpCodeUtil.ContainDelegate(msg.Type) ?
+                contract.CallerAddress = Wallet.ToAddAddressPrefix(OpCodeUtil.ContainDelegate(msg.Type) ?
                     CallerAddress.GetLast20Bytes() : ContractAddress.GetLast20Bytes());
 
                 contract.Desposit = deposit;
@@ -704,8 +704,8 @@ namespace Mineral.Common.Runtime.VM.Program
             }
 
             byte[] data = MemoryChunk(msg.InDataOffset.ToInt(), msg.InDataSize.ToInt());
-            byte[] code_address = Wallet.ToMineralAddress(msg.CodeAddress.GetLast20Bytes());
-            byte[] sender_address = Wallet.ToMineralAddress(ContractAddress.GetLast20Bytes());
+            byte[] code_address = Wallet.ToAddAddressPrefix(msg.CodeAddress.GetLast20Bytes());
+            byte[] sender_address = Wallet.ToAddAddressPrefix(ContractAddress.GetLast20Bytes());
             byte[] context_address = OpCodeUtil.ContainStateless(msg.Type) ? sender_address : code_address;
 
             Logger.Debug(msg.Type.ToString()
@@ -956,7 +956,7 @@ namespace Mineral.Common.Runtime.VM.Program
                 Stop();
             }
 
-            byte[] data = ArrayUtils.SubArray(this.ops, pc, pc + n);
+            byte[] data = ArrayUtil.SubArray(this.ops, pc, pc + n);
             this.pc += n;
             if (this.pc >= this.ops.Length)
             {
@@ -1024,7 +1024,7 @@ namespace Mineral.Common.Runtime.VM.Program
             DataWord key = new DataWord(word1.Clone());
             DataWord value = new DataWord(word2.Clone());
 
-            this.contract_state.PutStorageValue(Wallet.ToMineralAddress(ContractAddress.GetLast20Bytes()), key, value);
+            this.contract_state.PutStorageValue(Wallet.ToAddAddressPrefix(ContractAddress.GetLast20Bytes()), key, value);
         }
 
         public void IncreaseNonce()
@@ -1039,8 +1039,8 @@ namespace Mineral.Common.Runtime.VM.Program
 
         public void Suicide(DataWord obtainer_address)
         {
-            byte[] owner = Wallet.ToMineralAddress(ContractAddress.GetLast20Bytes());
-            byte[] obtainer = Wallet.ToMineralAddress(obtainer_address.GetLast20Bytes());
+            byte[] owner = Wallet.ToAddAddressPrefix(ContractAddress.GetLast20Bytes());
+            byte[] obtainer = Wallet.ToAddAddressPrefix(obtainer_address.GetLast20Bytes());
             long balance = this.contract_state.GetBalance(owner);
 
             Logger.Debug(string.Format("Transfer to: [{0}] heritage: [{1}]", obtainer.ToHexString(), balance));
@@ -1228,7 +1228,7 @@ namespace Mineral.Common.Runtime.VM.Program
 
         public DataWord GetBalance(DataWord address)
         {
-            return new DataWord(this.contract_state.GetBalance(Wallet.ToMineralAddress(address.GetLast20Bytes())));
+            return new DataWord(this.contract_state.GetBalance(Wallet.ToAddAddressPrefix(address.GetLast20Bytes())));
         }
 
         public void CheckTokenIdInTokenBalance(DataWord token_id)
@@ -1247,7 +1247,7 @@ namespace Mineral.Common.Runtime.VM.Program
         {
             CheckTokenIdInTokenBalance(token_id);
             long result = this.contract_state.GetTokenBalance(
-                                            Wallet.ToMineralAddress(address.GetLast20Bytes()),
+                                            Wallet.ToAddAddressPrefix(address.GetLast20Bytes()),
                                             Encoding.UTF8.GetBytes(token_id.ToLong().ToString()));
 
             return result == 0 ? new DataWord(0) : new DataWord(result);
@@ -1256,7 +1256,7 @@ namespace Mineral.Common.Runtime.VM.Program
         public DataWord StorageLoad(DataWord key)
         {
             DataWord result = this.contract_state.GetStorageValue(
-                Wallet.ToMineralAddress(ContractAddress.GetLast20Bytes()), new DataWord(key.Clone()));
+                Wallet.ToAddAddressPrefix(ContractAddress.GetLast20Bytes()), new DataWord(key.Clone()));
 
             return result == null ? null : new DataWord(result.Clone());
         }
@@ -1303,13 +1303,13 @@ namespace Mineral.Common.Runtime.VM.Program
 
         public byte[] GetCodeAt(DataWord address)
         {
-            byte[] code = this.invoke.Deposit.GetCode(Wallet.ToMineralAddress(address.GetLast20Bytes()));
+            byte[] code = this.invoke.Deposit.GetCode(Wallet.ToAddAddressPrefix(address.GetLast20Bytes()));
             return code ?? new byte[0];
         }
 
         public byte[] GetCodeHashAt(DataWord address)
         {
-            byte[] mineral_address = Wallet.ToMineralAddress(address.GetLast20Bytes());
+            byte[] mineral_address = Wallet.ToAddAddressPrefix(address.GetLast20Bytes());
             AccountCapsule account = this.contract_state.GetAccount(mineral_address);
             if (account != null)
             {

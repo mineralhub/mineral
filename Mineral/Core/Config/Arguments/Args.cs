@@ -274,7 +274,7 @@ namespace Mineral.Core.Config.Arguments
                 instance.LocalWitness = new LocalWitness(instance.privatekey);
                 if (!string.IsNullOrEmpty(instance.witness_address))
                 {
-                    byte[] address = Wallet.DecodeFromBase58Check(instance.witness_address);
+                    byte[] address = Wallet.Base58ToAddress(instance.witness_address);
                     if (address.IsNotNullOrEmpty())
                     {
                         instance.LocalWitness.SetWitnessAccountAddress(address);
@@ -288,7 +288,14 @@ namespace Mineral.Core.Config.Arguments
                 }
                 instance.LocalWitness.InitWitnessAccountAddress();
             }
+
+/* Unmerged change from project 'Mineral(net472)'
+Before:
             else if (CollectionHelper.IsNotNullOrEmpty(Config.Instance.Witness.LocalWitness))
+After:
+            else if (CollectionExtensions.IsNotNullOrEmpty(Config.Instance.Witness.LocalWitness))
+*/
+            else if (Utils.CollectionUtil.IsNotNullOrEmpty(Config.Instance.Witness.LocalWitness))
             {
                 instance.LocalWitness = new LocalWitness();
 
@@ -300,9 +307,9 @@ namespace Mineral.Core.Config.Arguments
                 }
                 instance.LocalWitness.SetPrivateKeys(witness_list);
 
-                if (StringHelper.IsNotNullOrEmpty(Config.Instance.Witness.LocalWitnessAccountAddress))
+                if (Config.Instance.Witness.LocalWitnessAccountAddress.IsNotNullOrEmpty())
                 {
-                    byte[] address = Wallet.DecodeFromBase58Check(Config.Instance.Witness.LocalWitnessAccountAddress);
+                    byte[] address = Wallet.Base58ToAddress(Config.Instance.Witness.LocalWitnessAccountAddress);
                     if (address.IsNotNullOrEmpty())
                     {
                         instance.LocalWitness.SetWitnessAccountAddress(address);
@@ -315,7 +322,14 @@ namespace Mineral.Core.Config.Arguments
                 }
                 instance.LocalWitness.InitWitnessAccountAddress();
             }
+
+/* Unmerged change from project 'Mineral(net472)'
+Before:
             else if (CollectionHelper.IsNotNullOrEmpty(Config.Instance.Witness.LocalWitnessKeyStore))
+After:
+            else if (CollectionExtensions.IsNotNullOrEmpty(Config.Instance.Witness.LocalWitnessKeyStore))
+*/
+            else if (Utils.CollectionUtil.IsNotNullOrEmpty(Config.Instance.Witness.LocalWitnessKeyStore))
             {
                 List<string> privatekey_list = new List<string>();
 
@@ -359,7 +373,7 @@ namespace Mineral.Core.Config.Arguments
                 Logger.Debug("local witness account address from keystore file.");
             }
 
-            if (instance.witness && CollectionHelper.IsNullOrEmpty(instance.LocalWitness.GetPrivateKey()))
+            if (instance.witness && instance.LocalWitness.GetPrivateKey().IsNullOrEmpty())
             {
                 Logger.Warning("local witness null");
             }
@@ -368,10 +382,10 @@ namespace Mineral.Core.Config.Arguments
             #region Storage
             instance.Storage = new Storage();
 
-            instance.Storage.Version = StringHelper.IsNotNullOrEmpty(instance.storage_version) ?
+            instance.Storage.Version = CollectionUtil.IsNotNullOrEmpty(instance.storage_version) ?
                 int.Parse(instance.storage_version) : Storage.GetVersionFromConfig();
 
-            instance.Storage.Engine = StringHelper.IsNotNullOrEmpty(instance.storage_engine) ?
+            instance.Storage.Engine = CollectionUtil.IsNotNullOrEmpty(instance.storage_engine) ?
                 instance.storage_engine : Storage.GetEngineFromConfig();
 
             if (instance.Storage.Version == 1 &&
@@ -380,29 +394,36 @@ namespace Mineral.Core.Config.Arguments
                 throw new ConfigrationException("database version = 1 is not suppoerted ROCKSDB engine");
             }
 
-            instance.Storage.Sync = StringHelper.IsNotNullOrEmpty(instance.storage_sync) ?
+            instance.Storage.Sync = CollectionUtil.IsNotNullOrEmpty(instance.storage_sync) ?
                 bool.Parse(instance.storage_sync) : Storage.GetSyncFromConfig();
 
-            instance.Storage.ContractParseSwitch = StringHelper.IsNotNullOrEmpty(instance.contract_parse_switch) ?
+            instance.Storage.ContractParseSwitch = CollectionUtil.IsNotNullOrEmpty(instance.contract_parse_switch) ?
                 bool.Parse(instance.contract_parse_switch) : Storage.GetContractParseSwitchFromConfig();
 
-            instance.Storage.Directory = StringHelper.IsNotNullOrEmpty(instance.storage_directory) ?
+            instance.Storage.Directory = CollectionUtil.IsNotNullOrEmpty(instance.storage_directory) ?
                 instance.storage_directory : Storage.GetDirectoryFromConfig();
 
-            instance.Storage.IndexDirectory = StringHelper.IsNotNullOrEmpty(instance.storage_index_directory) ?
+            instance.Storage.IndexDirectory = CollectionUtil.IsNotNullOrEmpty(instance.storage_index_directory) ?
                 instance.storage_index_directory : Storage.GetIndexDirectoryFromConfig();
 
-            instance.Storage.IndexSwitch = StringHelper.IsNotNullOrEmpty(instance.storage_index_switch) ?
+            instance.Storage.IndexSwitch = CollectionUtil.IsNotNullOrEmpty(instance.storage_index_switch) ?
                 instance.storage_index_switch : Storage.GetIndexSwitchFromConfig();
 
-            instance.Storage.IndexDirectory = StringHelper.IsNotNullOrEmpty(instance.storage_transaction_history_switch) ?
+            instance.Storage.IndexDirectory = CollectionUtil.IsNotNullOrEmpty(instance.storage_transaction_history_switch) ?
                 instance.storage_transaction_history_switch : Storage.GetTransactionHistorySwitchFromConfig();
 
             instance.Storage.NeedToUpdateAsset = Config.Instance.Storage.NeedToUpdateAsset ?? true;
 
             instance.Storage.SetPropertyFromConfig();
 
+
+/* Unmerged change from project 'Mineral(net472)'
+Before:
             instance.Seed.IpList = CollectionHelper.IsNotNullOrEmpty(instance.seed_nodes) ?
+After:
+            instance.Seed.IpList = CollectionExtensions.IsNotNullOrEmpty(instance.seed_nodes) ?
+*/
+            instance.Seed.IpList = Utils.CollectionUtil.IsNotNullOrEmpty(instance.seed_nodes) ?
                 instance.seed_nodes : Config.Instance.SeedNode.IpList;
             #endregion
 
@@ -451,9 +472,9 @@ namespace Mineral.Core.Config.Arguments
             instance.Node.Discovery.Enable = Config.Instance.Node.Discovery.Enable ?? false;
             instance.Node.Discovery.Persist = Config.Instance.Node.Discovery.Persist ?? false;
 
-            instance.Node.Discovery.BindIP = StringHelper.IsNotNullOrEmpty(Config.Instance.Node.Discovery.BindIP) ?
+            instance.Node.Discovery.BindIP = CollectionUtil.IsNotNullOrEmpty(Config.Instance.Node.Discovery.BindIP) ?
                 Config.Instance.Node.Discovery.BindIP : "0.0.0.0";
-            instance.Node.Discovery.ExternalIP = StringHelper.IsNotNullOrEmpty(Config.Instance.Node.Discovery.ExternalIP) ?
+            instance.Node.Discovery.ExternalIP = CollectionUtil.IsNotNullOrEmpty(Config.Instance.Node.Discovery.ExternalIP) ?
                 Config.Instance.Node.Discovery.ExternalIP : "0.0.0.0";
 
             instance.Node.Discovery.HomeNode = Config.Instance.Node.Discovery.Persist ?? false;
@@ -500,7 +521,7 @@ namespace Mineral.Core.Config.Arguments
             #endregion
 
             #region Transaction
-            instance.Transaction.ReferenceBlock = StringHelper.IsNotNullOrEmpty(Config.Instance.Transaction.ReferenceBlock) ?
+            instance.Transaction.ReferenceBlock = CollectionUtil.IsNotNullOrEmpty(Config.Instance.Transaction.ReferenceBlock) ?
                 Config.Instance.Transaction.ReferenceBlock : "head";
             instance.Transaction.ExpireTimeInMillis =
                 Config.Instance.Transaction.ExpireTimeInMillis != null ?
@@ -522,7 +543,7 @@ namespace Mineral.Core.Config.Arguments
         public string GetOutputDirectoryByDBName(string db_name)
         {
             string path = Storage.GetPathByDbName(db_name);
-            if (StringHelper.IsNotNullOrEmpty(path))
+            if (CollectionUtil.IsNotNullOrEmpty(path))
                 return path;
             return GetOutputDirectory();
         }

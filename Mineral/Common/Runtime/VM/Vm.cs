@@ -71,7 +71,7 @@ namespace Mineral.Common.Runtime.VM
 
         private bool IsDeadAccount(VMProgram program, DataWord address)
         {
-            return program.ContractState.GetAccount(Wallet.ToMineralAddress(address.GetLast20Bytes())) == null;
+            return program.ContractState.GetAccount(Wallet.ToAddAddressPrefix(address.GetLast20Bytes())) == null;
         }
 
         private static BigInteger MemoryNeeded(DataWord offset, DataWord size)

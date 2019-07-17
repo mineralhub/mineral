@@ -1,66 +1,31 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
+using System.Text;
+using Mineral.Cryptography;
 
 namespace Mineral.Common.Stroage.LevelDB
 {
     internal static class Helper
     {
-        public static void Delete(this WriteBatch batch, byte prefix, ISerializable key)
+        public static uint Murmur32(this IEnumerable<byte> value, uint seed)
         {
-            batch.Delete(SliceBuilder.Begin(prefix).Add(key));
-        }
-
-        public static IEnumerable<T> Find<T>(this DB db, ReadOptions options, byte prefix) where T : class, ISerializable, new()
-        {
-            return Find(db, options, SliceBuilder.Begin(prefix), (k, v) => v.ToArray().Serializable<T>());
-        }
-
-        public static IEnumerable<T> Find<T>(this DB db, ReadOptions options, Slice prefix, Func<Slice, Slice, T> resultSelector)
-        {
-            using (Iterator it = db.NewIterator(options))
+            using (Murmur3 murmur = new Murmur3(seed))
             {
-                for (it.Seek(prefix); it.Valid(); it.Next())
-                {
-                    Slice key = it.Key();
-                    byte[] x = key.ToArray();
-                    byte[] y = prefix.ToArray();
-                    if (x.Length < y.Length) break;
-                    if (!x.Take(y.Length).SequenceEqual(y)) break;
-                    yield return resultSelector(key, it.Value());
-                }
+                return murmur.ComputeHash(value.ToArray()).ToUInt32(0);
             }
         }
 
-        public static T Get<T>(this DB db, ReadOptions options, byte prefix, ISerializable key) where T : class, ISerializable, new()
+        public static byte[] ToArray(this ISerializable value)
         {
-            return db.Get(options, SliceBuilder.Begin(prefix).Add(key)).ToArray().Serializable<T>();
-        }
-
-        public static T Get<T>(this DB db, ReadOptions options, byte prefix, ISerializable key, Func<Slice, T> resultSelector)
-        {
-            return resultSelector(db.Get(options, SliceBuilder.Begin(prefix).Add(key)));
-        }
-
-        public static void Put(this WriteBatch batch, byte prefix, ISerializable key, ISerializable value)
-        {
-            batch.Put(SliceBuilder.Begin(prefix).Add(key), value.ToArray());
-        }
-
-        public static T TryGet<T>(this DB db, ReadOptions options, byte prefix, ISerializable key) where T : class, ISerializable, new()
-        {
-            Slice slice;
-            if (!db.TryGet(options, SliceBuilder.Begin(prefix).Add(key), out slice))
-                return null;
-            return slice.ToArray().Serializable<T>();
-        }
-
-        public static T TryGet<T>(this DB db, ReadOptions options, byte prefix, ISerializable key, Func<Slice, T> resultSelector) where T : class
-        {
-            Slice slice;
-            if (!db.TryGet(options, SliceBuilder.Begin(prefix).Add(key), out slice))
-                return null;
-            return resultSelector(slice);
+            using (MemoryStream ms = new MemoryStream())
+            using (BinaryWriter writer = new BinaryWriter(ms, Encoding.UTF8))
+            {
+                value.Serialize(writer);
+                writer.Flush();
+                return ms.ToArray();
+            }
         }
     }
 }

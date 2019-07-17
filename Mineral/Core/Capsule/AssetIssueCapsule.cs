@@ -165,7 +165,7 @@ namespace Mineral.Core.Capsule
 
         public byte[] CreateDatabaseKeyV2()
         {
-            return StringHelper.GetBytes(this.asset_issue.Id);
+            return this.asset_issue.Id.ToBytes();
         }
 
         public byte[] CreateDatabaseKeyFinal(DatabaseManager db_manager)

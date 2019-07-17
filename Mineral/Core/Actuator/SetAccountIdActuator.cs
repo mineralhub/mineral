@@ -102,7 +102,7 @@ namespace Mineral.Core.Actuator
                 if (!TransactionUtil.ValidAccountId(account_id))
                     throw new ContractValidateException("Invalid accountId");
 
-                if (!Wallet.AddressValid(owner_address))
+                if (!Wallet.IsValidAddress(owner_address))
                     throw new ContractValidateException("Invalid owner_address");
 
                 AccountCapsule account = this.db_manager.Account.Get(owner_address);

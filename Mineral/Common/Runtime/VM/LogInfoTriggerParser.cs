@@ -32,7 +32,7 @@ namespace Mineral.Common.Runtime.VM
             this.block_num = block_num;
             this.block_timestamp = block_timestamp;
             this.transaction_id = tx_id.IsNotNullOrEmpty() ? tx_id.ToHexString() : ""; 
-            this.origin_address = origin_address.IsNotNullOrEmpty() ? Wallet.Encode58Check(origin_address) : "";
+            this.origin_address = origin_address.IsNotNullOrEmpty() ? Wallet.AddressToBase58(origin_address) : "";
 
         }
         #endregion
@@ -61,9 +61,9 @@ namespace Mineral.Common.Runtime.VM
             foreach (LogInfo info in log_infos)
             {
 
-                byte[] contract_address = Wallet.ToMineralAddress(info.Address);
+                byte[] contract_address = Wallet.ToAddAddressPrefix(info.Address);
                 string contract_address_str = contract_address.IsNotNullOrEmpty() ?
-                    Wallet.Encode58Check(contract_address) : "";
+                    Wallet.AddressToBase58(contract_address) : "";
 
 
                 if (signs.TryGetValue(contract_address_str, out _) == false)
@@ -78,7 +78,7 @@ namespace Mineral.Common.Runtime.VM
                 }
 
                 ABI abi = contract.Instance.Abi;
-                string creator_address = Wallet.Encode58Check(Wallet.ToMineralAddress(contract.Instance.OriginAddress.ToByteArray()));
+                string creator_address = Wallet.AddressToBase58(Wallet.ToAddAddressPrefix(contract.Instance.OriginAddress.ToByteArray()));
                 signs.Add(contract_address_str, creator_address);
 
                 if (abi != null && abi.Entrys.Count > 0)
@@ -94,8 +94,8 @@ namespace Mineral.Common.Runtime.VM
             int index = 1;
             foreach (LogInfo info in log_infos)
             {
-                byte[] contract_address = Wallet.ToMineralAddress(info.Address);
-                string contract_address_str = contract_address.IsNotNullOrEmpty() ? Wallet.Encode58Check(contract_address) : "";
+                byte[] contract_address = Wallet.ToAddAddressPrefix(info.Address);
+                string contract_address_str = contract_address.IsNotNullOrEmpty() ? Wallet.AddressToBase58(contract_address) : "";
 
                 string abi_value = abis[contract_address_str];
                 ContractTrigger trigger = new ContractTrigger();

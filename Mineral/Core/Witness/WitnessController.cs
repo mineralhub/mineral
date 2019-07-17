@@ -52,7 +52,7 @@ namespace Mineral.Core.Witness
 
         private static bool WitnessSetChanged(List<ByteString> list1, List<ByteString> list2)
         {
-            return ArrayUtils.IsEqualCollection(list1, list2);
+            return ArrayUtil.IsEqualCollection(list1, list2);
         }
 
         #endregion

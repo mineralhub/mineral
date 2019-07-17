@@ -123,7 +123,7 @@ namespace Mineral.Core.Actuator
                     throw new ContractValidateException(e.Message);
                 }
                 byte[] owner_address = unfreeze_asset_contract.OwnerAddress.ToByteArray();
-                if (!Wallet.AddressValid(owner_address))
+                if (!Wallet.IsValidAddress(owner_address))
                 {
                     throw new ContractValidateException("Invalid address");
                 }

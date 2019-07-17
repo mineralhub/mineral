@@ -80,7 +80,7 @@ namespace Mineral.Common.Net.Udp.Message
         public static Message Parse(byte[] encode)
         {
             byte type = encode[0];
-            byte[] data = ArrayUtils.SubArray(encode, 1, encode.Length);
+            byte[] data = ArrayUtil.SubArray(encode, 1, encode.Length);
 
             if (Enum.IsDefined(typeof(UdpMessageType), type))
             {

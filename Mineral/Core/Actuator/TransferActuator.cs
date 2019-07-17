@@ -129,10 +129,10 @@ namespace Mineral.Core.Actuator
                 byte[] owner_address = transfer_contract.OwnerAddress.ToByteArray();
                 long amount = transfer_contract.Amount;
 
-                if (!Wallet.AddressValid(owner_address))
+                if (!Wallet.IsValidAddress(owner_address))
                     throw new ContractValidateException("Invalid ownerAddress");
 
-                if (!Wallet.AddressValid(to_address))
+                if (!Wallet.IsValidAddress(to_address))
                     throw new ContractValidateException("Invalid toAddress");
 
                 if (to_address.SequenceEqual(owner_address))
@@ -178,10 +178,10 @@ namespace Mineral.Core.Actuator
 
         public static bool ValidateForSmartContract(IDeposit deposit, byte[] owner_address, byte[] to_address, long amount)
         {
-            if (!Wallet.AddressValid(owner_address))
+            if (!Wallet.IsValidAddress(owner_address))
                 throw new ContractValidateException("Invalid ownerAddress");
 
-            if (!Wallet.AddressValid(to_address))
+            if (!Wallet.IsValidAddress(to_address))
                 throw new ContractValidateException("Invalid toAddress");
 
             if (to_address.SequenceEqual(owner_address))

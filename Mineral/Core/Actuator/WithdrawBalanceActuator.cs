@@ -108,7 +108,7 @@ namespace Mineral.Core.Actuator
                 }
 
                 byte[] owner_address = withdraw_contract.OwnerAddress.ToByteArray();
-                if (!Wallet.AddressValid(owner_address))
+                if (!Wallet.IsValidAddress(owner_address))
                     throw new ContractValidateException("Invalid address");
 
                 AccountCapsule account = Deposit == null ?

@@ -175,10 +175,10 @@ namespace Mineral.Core.Database
                 if (contract == null)
                 {
                     Logger.Info(string.Format("contract: {0} is not in contract store",
-                                              Wallet.Encode58Check(trigger_contract.ContractAddress.ToByteArray())));
+                                              Wallet.AddressToBase58(trigger_contract.ContractAddress.ToByteArray())));
 
                     throw new ContractValidateException("contract: "
-                                                        + Wallet.Encode58Check(trigger_contract.ContractAddress.ToByteArray())
+                                                        + Wallet.AddressToBase58(trigger_contract.ContractAddress.ToByteArray())
                                                         + " is not in contract store");
                 }
                 ABI abi = contract.Instance.Abi;

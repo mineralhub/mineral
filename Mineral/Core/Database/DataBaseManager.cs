@@ -648,8 +648,8 @@ namespace Mineral.Core.Database
 
         private void UpdateRecentBlock(BlockCapsule block)
         {
-            this.recent_block_store.Put(ArrayUtils.SubArray(BitConverter.GetBytes(block.Num), 6, 8),
-                                        new BytesCapsule(ArrayUtils.SubArray(block.Id.Hash, 8, 16)));
+            this.recent_block_store.Put(ArrayUtil.SubArray(BitConverter.GetBytes(block.Num), 6, 8),
+                                        new BytesCapsule(ArrayUtil.SubArray(block.Id.Hash, 8, 16)));
         }
 
         private void UpdateDynamicProperties(BlockCapsule block)

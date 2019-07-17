@@ -543,7 +543,7 @@ namespace Mineral.Core.Capsule
         public bool AssetBalanceEnough(byte[] key, long amount)
         {
             Dictionary<string, long> assets = new Dictionary<string, long>(this.account.Asset);
-            string key_name = StringHelper.GetString(key);
+            string key_name = key.BytesToString();
             long current_amount = assets.ContainsKey(key_name) ? assets[key_name] : 0;
 
             return amount > 0 && amount <= current_amount;
@@ -560,7 +560,7 @@ namespace Mineral.Core.Capsule
             else
                 assets = new Dictionary<string, long>(this.account.AssetV2);
 
-            key_name = StringHelper.GetString(key);
+            key_name = key.BytesToString();
             current_amount = assets.ContainsKey(key_name) ? assets[key_name] : 0;
 
             return amount > 0 && amount <= current_amount;
@@ -569,7 +569,7 @@ namespace Mineral.Core.Capsule
         public bool ReduceAssetAmount(byte[] key, long amount)
         {
             Dictionary<string, long> assets = new Dictionary<string, long>(this.account.Asset);
-            string key_name = StringHelper.GetString(key);
+            string key_name = key.BytesToString();
             long current_amount = assets.ContainsKey(key_name) ? assets[key_name] : 0;
 
             if (amount > 0 && amount <= current_amount)
@@ -588,7 +588,7 @@ namespace Mineral.Core.Capsule
                 Dictionary<string, long> assets = new Dictionary<string, long>(this.account.Asset);
                 AssetIssueCapsule asset_issue = db_manager.AssetIssue.Get(key);
                 string token_id = asset_issue.Id;
-                string key_name = StringHelper.GetString(key);
+                string key_name = key.BytesToString();
                 long current_amount = assets.ContainsKey(key_name) ? assets[key_name] : 0;
 
                 if (amount > 0 && amount <= current_amount)
@@ -602,7 +602,7 @@ namespace Mineral.Core.Capsule
             if (db_manager.DynamicProperties.GetAllowSameTokenName() == 1)
             {
                 Dictionary<string, long> assets = new Dictionary<string, long>(this.account.AssetV2);
-                string key_name = StringHelper.GetString(key);
+                string key_name = key.BytesToString();
                 long current_amount = assets.ContainsKey(key_name) ? assets[key_name] : 0;
 
                 if (amount > 0 && amount <= current_amount)
@@ -618,7 +618,7 @@ namespace Mineral.Core.Capsule
         public bool AddAssetAmount(byte[] key, long amount)
         {
             Dictionary<string, long> assets = new Dictionary<string, long>(this.account.Asset);
-            string key_name = StringHelper.GetString(key);
+            string key_name = key.BytesToString();
             long current_amount = assets.ContainsKey(key_name) ? assets[key_name] : 0;
 
             this.account.Asset.Add(key_name, current_amount - amount);
@@ -633,7 +633,7 @@ namespace Mineral.Core.Capsule
                 Dictionary<string, long> assets = new Dictionary<string, long>(this.account.Asset);
                 AssetIssueCapsule asset_issue = db_manager.AssetIssue.Get(key);
                 string token_id = asset_issue.Id;
-                string key_name = StringHelper.GetString(key);
+                string key_name = key.BytesToString();
                 long current_amount = assets.ContainsKey(key_name) ? assets[key_name] : 0;
 
                 this.account.Asset.Add(key_name, current_amount - amount);
@@ -643,7 +643,7 @@ namespace Mineral.Core.Capsule
             if (db_manager.DynamicProperties.GetAllowSameTokenName() == 1)
             {
                 Dictionary<string, long> assets = new Dictionary<string, long>(this.account.AssetV2);
-                string key_name = StringHelper.GetString(key);
+                string key_name = key.BytesToString();
                 long current_amount = assets.ContainsKey(key_name) ? assets[key_name] : 0;
 
                 this.account.AssetV2.Add(key_name, current_amount - amount);
@@ -655,7 +655,7 @@ namespace Mineral.Core.Capsule
         public bool AddAsset(byte[] key, long value)
         {
             Dictionary<string, long> assets = new Dictionary<string, long>(this.account.Asset);
-            string key_name = StringHelper.GetString(key);
+            string key_name = key.BytesToString();
 
             if (assets.IsNotNullOrEmpty() && assets.ContainsKey(key_name))
                 return false;
@@ -668,7 +668,7 @@ namespace Mineral.Core.Capsule
         public bool AddAssetV2(byte[] key, long value)
         {
             Dictionary<string, long> assets = new Dictionary<string, long>(this.account.AssetV2);
-            string key_name = StringHelper.GetString(key);
+            string key_name = key.BytesToString();
 
             if (assets.IsNotNullOrEmpty() && assets.ContainsKey(key_name))
                 return false;

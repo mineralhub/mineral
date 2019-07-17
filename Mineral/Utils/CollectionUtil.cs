@@ -2,19 +2,64 @@
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Text;
+using Google.Protobuf;
 
 namespace Mineral.Utils
 {
-    public static class CollectionHelper
+    public static class CollectionUtil
     {
-        public static bool IsNullOrEmpty<T>(this IEnumerable<T> collection)
+        public static bool IsNullOrEmpty(this string value)
         {
-            return collection.IsNullOrEmpty();
+            return value == null || value.Length == 0;
         }
 
-        public static bool IsNotNullOrEmpty<T>(this IEnumerable<T> collection)
+        public static bool IsNotNullOrEmpty(this string value)
         {
-            return !collection.IsNullOrEmpty();
+            return value != null && value.Length > 0;
+        }
+
+        public static bool IsNullOrEmpty(this ByteString str)
+        {
+            return str == null || str.Length == 0;
+        }
+
+        public static bool IsNotNullOrEmpty(this ByteString str)
+        {
+            return str != null && str.Length > 0;
+        }
+
+        public static bool IsNullOrEmpty<T>(this ICollection<T> list)
+        {
+            return list == null || list.Count == 0;
+        }
+
+        public static bool IsNotNullOrEmpty<T>(this ICollection<T> list)
+        {
+            return list != null && list.Count > 0;
+        }
+
+        public static void Put<Key, Value>(this Dictionary<Key, Value> dictionary, Key key, Value value)
+        {
+            if (dictionary.ContainsKey(key))
+                dictionary[key] = value;
+            else
+                dictionary.Add(key, value);
+        }
+
+        public static void Put<Key, Value>(this ConcurrentDictionary<Key, Value> dictionary, Key key, Value value)
+        {
+            if (dictionary.ContainsKey(key))
+                dictionary[key] = value;
+            else
+                dictionary.TryAdd(key, value);
+        }
+
+        public static void PutAll<Key, Value>(this Dictionary<Key, Value> dictionary, Dictionary<Key, Value> other)
+        {
+            foreach (var item in other)
+            {
+                dictionary.Put(item.Key, item.Value);
+            }
         }
 
         public static List<T> Truncate<T>(this List<T> collection, int limit)

@@ -15,12 +15,12 @@ namespace Mineral.Converter
 
         public override object ReadJson(JsonReader reader, Type objectType, object existingValue, JsonSerializer serializer)
         {
-            return Wallet.DecodeFromBase58Check(existingValue.ToString());
+            return Wallet.Base58ToAddress(existingValue.ToString());
         }
 
         public override void WriteJson(JsonWriter writer, object value, JsonSerializer serializer)
         {
-            writer.WriteValue(Wallet.Encode58Check((byte[])value));
+            writer.WriteValue(Wallet.AddressToBase58((byte[])value));
         }
     }
 }

@@ -102,7 +102,7 @@ namespace Mineral.Core.Actuator
                 }
 
                 byte[] owner_address = account_create_contract.OwnerAddress.ToByteArray();
-                if (!Wallet.AddressValid(owner_address))
+                if (!Wallet.IsValidAddress(owner_address))
                     throw new ContractValidateException("Invalid ownerAddress");
 
                 AccountCapsule account = this.db_manager.Account.Get(owner_address);
@@ -120,7 +120,7 @@ namespace Mineral.Core.Actuator
                 }
 
                 byte[] account_address = account_create_contract.AccountAddress.ToByteArray();
-                if (!Wallet.AddressValid(account_address))
+                if (!Wallet.IsValidAddress(account_address))
                     throw new ContractValidateException("Invalid account address");
 
                 if (this.db_manager.Account.Contains(account_address))

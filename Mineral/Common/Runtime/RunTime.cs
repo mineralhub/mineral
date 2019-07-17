@@ -201,7 +201,7 @@ namespace Mineral.Common.Runtime
             if (this.deposit.GetAccount(contract_address) != null)
             {
                 throw new ContractValidateException(
-                    "Trying to create a contract with existing contract address: " + Wallet.Encode58Check(contract_address));
+                    "Trying to create a contract with existing contract address: " + Wallet.AddressToBase58(contract_address));
             }
 
             new_contract.ContractAddress = ByteString.CopyFrom(contract_address);
@@ -621,7 +621,7 @@ namespace Mineral.Common.Runtime
             {
                 foreach (DataWord contract in this.result.DeleteAccount)
                 {
-                    this.deposit.DeleteContract(Wallet.ToMineralAddress(contract.GetLast20Bytes()));
+                    this.deposit.DeleteContract(Wallet.ToAddAddressPrefix(contract.GetLast20Bytes()));
                 }
             }
 

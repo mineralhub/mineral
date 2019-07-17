@@ -148,7 +148,7 @@ namespace Mineral.Core.Capsule
             {
                 List<ByteString> not_contains = new List<ByteString>(this.proposal.Approvals.Where(witness => !active_witness.Contains(witness)));
 
-                List<string> addresses = not_contains.Select(witness => Wallet.Encode58Check(witness.ToByteArray())).ToList();
+                List<string> addresses = not_contains.Select(witness => Wallet.AddressToBase58(witness.ToByteArray())).ToList();
                 Logger.Info("Invalid approval list : " + addresses.ToString());
             }
 

@@ -224,8 +224,8 @@ namespace Mineral.Core.Capsule
         public void SetReference(long block_num, byte[] block_hash)
         {
             byte[] ref_block_num = BitConverter.GetBytes(block_num);
-            this.transaction.RawData.RefBlockHash = ByteString.CopyFrom(ArrayUtils.SubArray(block_hash, 8, 16));
-            this.transaction.RawData.RefBlockBytes = ByteString.CopyFrom(ArrayUtils.SubArray(ref_block_num, 6, 8));
+            this.transaction.RawData.RefBlockHash = ByteString.CopyFrom(ArrayUtil.SubArray(block_hash, 8, 16));
+            this.transaction.RawData.RefBlockBytes = ByteString.CopyFrom(ArrayUtil.SubArray(ref_block_num, 6, 8));
         }
 
         public void Signature(byte[] privatekey)
@@ -272,17 +272,21 @@ namespace Mineral.Core.Capsule
                                                           false);
 
                 byte[] publickey = ec_key.PublicKey;
-                long weight = GetWeight(permission, ec_key.Address);
+                byte[] address = Wallet.PublickKeyToAddress(ec_key.PublicKey);
+
+                long weight = GetWeight(permission, address);
                 if (weight == 0)
                 {
                     throw new PermissionException(
-                        sign.ToByteArray().ToHexString() + "is signed by" +
-                        Wallets.WalletAccount.ToAddress(publickey) + "but it is not contained of permission.");
+                        sign.ToByteArray().ToHexString()
+                        + "is signed by"
+                        + Wallet.AddressToBase58(address)
+                        + "but it is not contained of permission.");
                 }
 
                 if (signature_weight.ContainsKey(sign))
                 {
-                    throw new PermissionException(Wallets.WalletAccount.ToAddress(publickey) + " has signed twice");
+                    throw new PermissionException(Wallet.AddressToBase58(address) + " has signed twice");
                 }
 
                 signature_weight.Add(sign, weight);
@@ -327,14 +331,14 @@ namespace Mineral.Core.Capsule
 
             List<ByteString> approves = new List<ByteString>();
             ECKey ec_key = ECKey.FromPrivateKey(privatekey);
-            byte[] address = Wallets.WalletAccount.ToAddressHash((ec_key.PublicKey)).ToArray();
+            byte[] address = Wallet.PublickKeyToAddress(ec_key.PublicKey);
 
             if (this.transaction.Signature.Count > 0)
             {
                 CheckWeight(permission, new List<ByteString>(this.transaction.Signature), this.GetRawHash().Hash, approves);
                 if (approves.Contains(ByteString.CopyFrom(address)))
                 {
-                    throw new PermissionException(Wallets.WalletAccount.ToAddress(address) + "had signed!");
+                    throw new PermissionException(Wallet.AddressToBase58(address) + "had signed!");
                 }
             }
 
@@ -343,7 +347,7 @@ namespace Mineral.Core.Capsule
             {
                 throw new PermissionException(
                     privatekey.ToHexString() + " address is " +
-                    Wallet.Encode58Check(address) + "but it is not contained of permission.");
+                    Wallet.AddressToBase58(address) + "but it is not contained of permission.");
             }
 
             ECDSASignature signature = ec_key.Sign(this.GetRawHash().Hash);

@@ -123,7 +123,7 @@ namespace Mineral.Core.Actuator
                 ByteString new_url = update_asset_contract.Url;
                 ByteString new_description = update_asset_contract.Description;
 
-                if (!Wallet.AddressValid(owner_address))
+                if (!Wallet.IsValidAddress(owner_address))
                 {
                     throw new ContractValidateException("Invalid owner_address");
                 }

@@ -220,11 +220,9 @@ namespace Mineral.Core.Capsule
         {
             try
             {
-                ECKey ec_key = ECKey.RecoverFromSignature(
-                                    ECDSASignature.ExtractECDSASignature(this.block.BlockHeader.WitnessSignature.ToByteArray()),
-                                    GetRawHash().Hash,
-                                    false);
-                byte[] signature_address = Wallets.WalletAccount.ToAddressHash(ec_key.PublicKey).ToArray();
+                ECDSASignature signature = ECDSASignature.ExtractECDSASignature(this.block.BlockHeader.WitnessSignature.ToByteArray());
+
+                byte[] signature_address = ECKey.SignatureToAddress(GetRawHash().Hash, signature);
                 byte[] witness_address = this.block.BlockHeader.RawData.WitnessAddress.ToByteArray();
 
                 if (db_manager.DynamicProperties.GetAllowMultiSign() != 1)
@@ -265,7 +263,7 @@ namespace Mineral.Core.Capsule
 
         public void SetWitness(string witness)
         {
-            this.block.BlockHeader.RawData.WitnessAddress = ByteString.CopyFrom(witness.GetBytes());
+            this.block.BlockHeader.RawData.WitnessAddress = ByteString.CopyFrom(witness.ToBytes());
         }
 
         public SHA256Hash GetRawHash()

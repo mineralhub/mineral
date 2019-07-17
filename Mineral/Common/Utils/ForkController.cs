@@ -178,7 +178,7 @@ namespace Mineral.Common.Utils
                                     })
                                 .Select(pair =>
                                 {
-                                    string address = Wallet.Encode58Check(pair.Key.ToByteArray());
+                                    string address = Wallet.AddressToBase58(pair.Key.ToByteArray());
                                     address = address.Substring(address.Length - 4);
                                     return new KeyValuePair<string, byte>(address, pair.Value);
                                 })
@@ -186,7 +186,7 @@ namespace Mineral.Common.Utils
                                 .ToString(),
                     witnesses.Count,
                     slot,
-                    Wallet.Encode58Check(witness.ToByteArray()),
+                    Wallet.AddressToBase58(witness.ToByteArray()),
                     version));
         }
 

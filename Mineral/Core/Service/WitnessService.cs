@@ -192,7 +192,7 @@ namespace Mineral.Core.Service
             {
                 Logger.Info(
                     string.Format("Unelected. Elected Witnesses: {0}",
-                                  this.controller.GetActiveWitnesses().Select(witness => Wallet.Encode58Check(witness.ToByteArray()))
+                                  this.controller.GetActiveWitnesses().Select(witness => Wallet.AddressToBase58(witness.ToByteArray()))
                                                                       .ToList()
                                                                       .ToString()));
                 return BlockProductionCondition.UNELECTED;

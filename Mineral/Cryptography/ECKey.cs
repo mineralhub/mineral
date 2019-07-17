@@ -106,14 +106,6 @@ namespace Mineral.Cryptography
                 return Secp256k1.Curve.CreatePoint(q.XCoord.ToBigInteger(), q.YCoord.ToBigInteger()).GetEncoded(true);
             }
         }
-
-        public byte[] Address
-        {
-            get
-            {
-                return ComputeAddress(PublicKey);
-            }
-        }
         #endregion
 
 
@@ -303,14 +295,9 @@ namespace Mineral.Cryptography
             return new ECKey(q.GetEncoded(), false);
         }
 
-
-        #endregion
-
-
-
         public static byte[] ComputeAddress(byte[] publickey)
         {
-            return Hash.ToAddressSHA3(ByteUtil.CopyRange(publickey, 1, publickey.Length));
+            return Hash.ToAddress(ByteUtil.CopyRange(publickey, 1, publickey.Length));
         }
 
         public static byte[] SignatureToAddress(byte[] hash, ECDSASignature signature)
@@ -341,5 +328,6 @@ namespace Mineral.Cryptography
             }
             return key;
         }
+        #endregion
     }
 }

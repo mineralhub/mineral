@@ -62,7 +62,7 @@ namespace Mineral.Core.Database.Fast
 
         public override string ToString()
         {
-            return "Address" + Wallet.Encode58Check(this.account?.Address.ToByteArray()) + "; " + this.account?.ToString();
+            return "Address" + Wallet.AddressToBase58(this.account?.Address.ToByteArray()) + "; " + this.account?.ToString();
         }
         #endregion
     }

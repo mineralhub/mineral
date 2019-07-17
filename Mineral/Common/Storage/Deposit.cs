@@ -608,7 +608,7 @@ namespace Mineral.Common.Storage
         public DataWord GetStorageValue(byte[] address, DataWord key)
         {
             DataWord result = null;
-            address = Wallet.ToMineralAddress(address);
+            address = Wallet.ToAddAddressPrefix(address);
             if (GetAccount(address) != null)
             {
                 Key address_key = new Key(address);
@@ -808,7 +808,7 @@ namespace Mineral.Common.Storage
         [MethodImpl(MethodImplOptions.Synchronized)]
         public void PutStorageValue(byte[] address, DataWord key, DataWord value)
         {
-            address = Wallet.ToMineralAddress(address);
+            address = Wallet.ToAddAddressPrefix(address);
             if (GetAccount(address) != null)
             {
                 Key address_key = new Key(address);

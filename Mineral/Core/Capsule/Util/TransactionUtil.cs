@@ -12,7 +12,7 @@ namespace Mineral.Core.Capsule.Util
         public static Transaction NewGenesisTransaction(byte[] key, long value)
         {
 
-            if (!Wallet.AddressValid(key))
+            if (!Wallet.IsValidAddress(key))
             {
                 throw new ArgumentException("Invalid address");
             }

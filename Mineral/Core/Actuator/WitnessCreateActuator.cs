@@ -124,7 +124,7 @@ namespace Mineral.Core.Actuator
                 byte[] owner_address = witness_create_contract.OwnerAddress.ToByteArray();
                 string owner_address_str = owner_address.ToHexString();
 
-                if (!Wallet.AddressValid(owner_address))
+                if (!Wallet.IsValidAddress(owner_address))
                 {
                     throw new ContractValidateException("Invalid address");
                 }

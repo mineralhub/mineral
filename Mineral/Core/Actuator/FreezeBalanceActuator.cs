@@ -212,7 +212,7 @@ namespace Mineral.Core.Actuator
                     throw new ContractValidateException(e.Message);
                 }
                 byte[] owner_address = freeze_balance_contract.OwnerAddress.ToByteArray();
-                if (!Wallet.AddressValid(owner_address))
+                if (!Wallet.IsValidAddress(owner_address))
                 {
                     throw new ContractValidateException("Invalid address");
                 }
@@ -273,7 +273,7 @@ namespace Mineral.Core.Actuator
                             "receiverAddress must not be the same as owner_address");
                     }
 
-                    if (!Wallet.AddressValid(receiver_address))
+                    if (!Wallet.IsValidAddress(receiver_address))
                     {
                         throw new ContractValidateException("Invalid receiverAddress");
                     }

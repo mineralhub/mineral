@@ -18,6 +18,12 @@ namespace Mineral
     {
         private static readonly DateTime unixEpoch = new DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc);
 
+        public static void IsNotNull(object obj, string message)
+        {
+            if (obj == null)
+                throw new ArgumentNullException(message);
+        }
+
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         unsafe internal static int ToInt32(this byte[] value, int startIndex)
         {
@@ -439,24 +445,6 @@ namespace Mineral
             }
         }
 
-        public static Fixed8 Sum<T>(this IEnumerable<T> source, Func<T, Fixed8> selector)
-        {
-            return source.Select(selector).Sum();
-        }
-
-        public static Fixed8 Sum(this IEnumerable<Fixed8> source)
-        {
-            long sum = 0;
-            checked
-            {
-                foreach (Fixed8 item in source)
-                {
-                    sum += item.Value;
-                }
-            }
-            return new Fixed8(sum);
-        }
-
         public unsafe static uint InterlockedExchange(ref uint location, uint value)
         {
             fixed (uint* ptr = &location)
@@ -471,12 +459,6 @@ namespace Mineral
             {
                 return (uint)System.Threading.Interlocked.CompareExchange(ref *(int*)ptr, (int)value, (int)comparand);
             }
-        }
-
-        public static void IsNotNull(object obj, string message)
-        {
-            if (obj == null)
-                throw new ArgumentNullException(message);
         }
     }
 }

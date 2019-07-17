@@ -8,40 +8,6 @@ namespace Mineral.Utils
 {
     public static class ByteUtil
     {
-        public static byte[] Copy(byte[] source)
-        {
-            if (source == null)
-                throw new ArgumentException("Source is null");
-
-            byte[] result = new byte[source.Length];
-            Array.Copy(source, 0, result, 0, source.Length);
-
-            return result;
-        }
-
-        public static byte[] CopyRange(byte[] input, int start, int end)
-        {
-            int length = end - start;
-            if (length < 0)
-                throw new ArgumentException("from > to");
-
-            byte[] result = new byte[length];
-            Array.Copy(input, start, result, 0, length);
-
-            return result;
-        }
-
-        public static byte[] GetRange(byte[] input, int offset, int length)
-        {
-            if (offset >= input.Length || length == 0)
-                return null;
-
-            byte[] result = new byte[length];
-            Array.Copy(input, 0, result, 0, length);
-
-            return result;
-        }
-
         public static int Compare(byte[] bytes1, byte[] bytes2)
         {
             if (bytes1 == null || bytes2 == null || bytes1.Length != bytes2.Length)
@@ -49,7 +15,7 @@ namespace Mineral.Utils
 
             for (int i = 0; i < bytes1.Length; i++)
             {
-                int ret = ToInt(bytes1[i]) - ToInt(bytes2[i]);
+                int ret = (int)bytes1[i] - (int)bytes2[i];
                 if (ret != 0)
                 {
                     return ret;
@@ -82,16 +48,6 @@ namespace Mineral.Utils
             }
 
             return length1 - length2;
-        }
-
-        public static int ToInt(byte value)
-        {
-            return value;
-        }
-
-        public static ByteString ToByteString(this byte[] bytes)
-        {
-            return ByteString.CopyFrom(bytes);
         }
 
         public static int FirstNonZeroByte(byte[] data)

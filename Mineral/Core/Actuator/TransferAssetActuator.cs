@@ -137,10 +137,10 @@ namespace Mineral.Core.Actuator
                 byte[] asset_name = transfer_asset_contract.AssetName.ToByteArray();
                 long amount = transfer_asset_contract.Amount;
 
-                if (!Wallet.AddressValid(owner_address))
+                if (!Wallet.IsValidAddress(owner_address))
                     throw new ContractValidateException("Invalid ownerAddress");
 
-                if (!Wallet.AddressValid(to_address))
+                if (!Wallet.IsValidAddress(to_address))
                     throw new ContractValidateException("Invalid toAddress");
 
                 if (amount <= 0)
@@ -216,10 +216,10 @@ namespace Mineral.Core.Actuator
             long fee = 0;
             byte[] token_id_leading_zero = ByteUtil.StripLeadingZeroes(token_id);
 
-            if (!Wallet.AddressValid(owner_address))
+            if (!Wallet.IsValidAddress(owner_address))
                 throw new ContractValidateException("Invalid ownerAddress");
 
-            if (!Wallet.AddressValid(to_address))
+            if (!Wallet.IsValidAddress(to_address))
                 throw new ContractValidateException("Invalid toAddress");
 
             if (amount <= 0)

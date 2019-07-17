@@ -76,8 +76,8 @@ namespace Mineral
         [JsonProperty("timestamp")]
         public uint Timestamp { get; set; }
         [JsonProperty("parent_hash")]
-        [JsonConverter(typeof(JsonUInt160Converter))]
-        public UInt256 ParentHash { get; set; }
+        [JsonConverter(typeof(JsonByteArrayConverter))]
+        public byte[] ParentHash { get; set; }
 
         public uint Height { get { return 0; } }
 
@@ -88,7 +88,7 @@ namespace Mineral
                 GenesisBlockConfig block = new GenesisBlockConfig();
                 block.Assets = new List<Account>();
                 block.Witnesses = new List<Witness>();
-                block.ParentHash = UInt256.Zero;
+                block.ParentHash = null;
                 block.Timestamp = 0;
                 return block;
             }
@@ -297,53 +297,6 @@ namespace Mineral
         public string[] SeedList { get; set; }
     }
 
-    //public class BlockConfig
-    //{
-    //    [JsonProperty("next_block_time_sec")]
-    //    public uint NextBlockTimeSec { get; set; }
-    //    [JsonProperty("cache_capacity")]
-    //    public uint CacheCapacity { get; set; }
-    //    [JsonProperty("payload_capacity")]
-    //    public uint PayloadCapacity { get; set; }
-    //    [JsonProperty("sync_check")]
-    //    public bool SyncCheck { get; set; } = true;
-    //}
-
-    //public class TransactionConfig
-    //{
-    //    [JsonProperty("payload_capacity")]
-    //    public uint PayloadCapacity { get; set; }
-    //}
-
-    //public class DelegateConfig
-    //{
-    //    [JsonProperty("name")]
-    //    public string Name { get; set; }
-    //    [JsonProperty("address")]
-    //    [JsonConverter(typeof(JsonUInt160Converter))]
-    //    public UInt160 Address { get; set; }
-    //}
-
-    //public class AccountConfig
-    //{
-    //    [JsonProperty("address")]
-    //    [JsonConverter(typeof(JsonUInt160Converter))]
-    //    public UInt160 Address { get; set; }
-    //    [JsonProperty("balance")]
-    //    [JsonConverter(typeof(JsonFixed8Converter))]
-    //    public Fixed8 Balance { get; set; }
-    //}
-
-    //public class GenesisBlockConfig
-    //{
-    //    [JsonProperty("account")]
-    //    public List<AccountConfig> Accounts { get; set; }
-    //    [JsonProperty("delegate")]
-    //    public List<DelegateConfig> Delegates { get; set; }
-    //    [JsonProperty("timestamp")]
-    //    public uint Timestamp { get; set; }
-    //}
-
     public class Config
     {
         private Config() { }
@@ -370,46 +323,6 @@ namespace Mineral
         public EventConfig Event { get; set; }
         [JsonProperty("vm")]
         public VMConfig VM { get; set; }
-
-
-
-
-        [JsonProperty("block_version")]
-        public short BlockVersion { get; set; }
-        public short TransactionVersion { get; set; }
-        [JsonProperty("address_version")]
-        public byte AddressVersion { get; set; }
-        [JsonProperty("state_version")]
-        public byte StateVersion { get; set; }
-
-        public uint TTLMinute;
-        public uint TTLHour;
-        public uint TTLDay;
-        public uint LockTTL;
-        public uint VoteTTL;
-
-        public readonly int ProtocolVersion = 0;
-        public readonly int ConnectPeerMax = 10;
-        public readonly int WaitPeerMax = 20;
-        public readonly uint MagicNumber = 16;
-        public readonly int MaxDelegate = 5;
-        public readonly uint RoundBlock = 100;
-        public readonly int DelegateNameMaxLength = 20;
-        public readonly int OtherSignMaxLength = 10;
-        public readonly int OtherSignToMaxLength = 10;
-        public readonly int TransferToMaxLength = 10;
-        public readonly int MaxTransactions = 2000;
-        public readonly int VoteMaxLength = 10;
-        public readonly int LockRedoTimes = 10;
-
-        [JsonConverter(typeof(JsonFixed8Converter))]
-        public Fixed8 DefaultFee = Fixed8.One;
-        [JsonConverter(typeof(JsonFixed8Converter))]
-        public Fixed8 RegisterDelegateFee = Fixed8.One * 10000;
-        [JsonConverter(typeof(JsonFixed8Converter))]
-        public Fixed8 VoteFee = Fixed8.One;
-        [JsonConverter(typeof(JsonFixed8Converter))]
-        public Fixed8 BlockReward = Fixed8.One * 250;
 
         [JsonProperty("log-level")]
         [JsonConverter(typeof(JsonLogLevelConverter))]

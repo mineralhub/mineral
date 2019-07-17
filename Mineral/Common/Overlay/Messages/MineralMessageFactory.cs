@@ -72,7 +72,7 @@ namespace Mineral.Common.Overlay.Messages
             try
             {
                 byte type = data[0];
-                byte[] raw_data = ArrayUtils.SubArray(data, 1, data.Length);
+                byte[] raw_data = ArrayUtil.SubArray(data, 1, data.Length);
 
                 return Create(type, raw_data);
             }

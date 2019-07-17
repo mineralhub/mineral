@@ -1,11 +1,51 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 
 namespace Mineral.Utils
 {
-    public static class ArrayUtils
+    public static class ArrayUtil
     {
+        public static T[] Copy<T>(T[] source)
+        {
+            if (source == null)
+                throw new ArgumentException("Source is null");
+
+            T[] result = new T[source.Length];
+            Array.Copy(source, 0, result, 0, source.Length);
+
+            return result;
+        }
+
+        public static T[] CopyRange<T>(T[] input, int start, int end)
+        {
+            int length = end - start;
+            if (length < 0)
+                throw new ArgumentException("from > to");
+
+            T[] result = new T[length];
+            Array.Copy(input, start, result, 0, length);
+
+            return result;
+        }
+
+        public static T[] GetRange<T>(T[] input, int offset, int length)
+        {
+            if (offset >= input.Length || length == 0)
+                return null;
+
+            T[] result = new T[length];
+            Array.Copy(input, 0, result, 0, length);
+
+            return result;
+        }
+
+        public static bool SequenceEqual<T>(T[] source1, T[] source2)
+        {
+            return source1.SequenceEqual(source2);
+        }
+
         public static int[] ToIntArray(this string value)
         {
             int length = value.Length;

@@ -104,7 +104,7 @@ namespace Mineral.Core.Actuator
                 {
                     throw new ContractValidateException("Invalid accountName");
                 }
-                if (!Wallet.AddressValid(owner_address))
+                if (!Wallet.IsValidAddress(owner_address))
                 {
                     throw new ContractValidateException("Invalid ownerAddress");
                 }

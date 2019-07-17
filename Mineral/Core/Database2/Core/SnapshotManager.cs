@@ -136,7 +136,7 @@ namespace Mineral.Core.Database2.Core
 
         private byte[] SimpleEncode(string name)
         {
-            byte[] bytes = name.GetBytes();
+            byte[] bytes = name.ToBytes();
             byte[] length = new byte[]
             {
                 (byte)(bytes.Length >> 24),
@@ -160,7 +160,8 @@ namespace Mineral.Core.Database2.Core
                         (length_bytes[2] & 0xFF) << 8 |
                         (length_bytes[3] & 0xFF) << 0);
             byte[] value = ByteUtil.CopyRange(bytes, 4, 4 + length);
-            return value.GetString();
+
+            return value.BytesToString();
         }
 
         private void CreateCheckPoint()
@@ -355,7 +356,7 @@ namespace Mineral.Core.Database2.Core
 
                     byte[] key = it.Current.Key;
                     byte[] value = it.Current.Value;
-                    byte[] db_bytes = db.GetBytes();
+                    byte[] db_bytes = db.ToBytes();
                     byte[] real_key = ByteUtil.CopyRange(key, db_bytes.Length + 4, key.Length);
                     byte[] real_value = value.Length == 1 ? null : ByteUtil.CopyRange(value, 1, value.Length);
 

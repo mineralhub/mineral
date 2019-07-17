@@ -50,7 +50,7 @@ namespace Mineral.Common.Runtime.VM.Trace
         {
             if (invoke != null && VMConfig.Instance.IsVmTrace)
             {
-                this.contract_address = Core.Wallet.ToMineralAddress(invoke.ContractAddress.GetLast20Bytes()).ToHexString();
+                this.contract_address = Core.Wallet.ToAddAddressPrefix(invoke.ContractAddress.GetLast20Bytes()).ToHexString();
             }
         }
         #endregion

@@ -97,7 +97,7 @@ namespace Mineral.Core.Actuator
                     Logger.Debug(e.Message);
                     throw new ContractValidateException(e.Message);
                 }
-                if (!Wallet.AddressValid(contract.OwnerAddress.ToByteArray()))
+                if (!Wallet.IsValidAddress(contract.OwnerAddress.ToByteArray()))
                 {
                     throw new ContractValidateException("Invalid address");
                 }

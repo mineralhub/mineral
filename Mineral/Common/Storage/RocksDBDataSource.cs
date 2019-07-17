@@ -239,9 +239,9 @@ namespace Mineral.Common.Storage
                 if (it.Key().Length >= precision)
                 {
                     if (ByteUtil.Compare(
-                        ByteUtil.GetRange(key, 0, precision),
-                        ByteUtil.GetRange(it.Key(), 0, precision))
-                        < 0)
+                            ArrayUtil.GetRange(key, 0, precision),
+                            ArrayUtil.GetRange(it.Key(), 0, precision))
+                            < 0)
                     {
                         break;
                     }

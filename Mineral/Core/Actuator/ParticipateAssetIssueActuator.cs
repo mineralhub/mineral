@@ -126,12 +126,12 @@ namespace Mineral.Core.Actuator
                 byte[] asset_name = asset_issue_contract.AssetName.ToByteArray();
                 long amount = asset_issue_contract.Amount;
 
-                if (!Wallet.AddressValid(owner_address))
+                if (!Wallet.IsValidAddress(owner_address))
                 {
                     throw new ContractValidateException("Invalid ownerAddress");
                 }
 
-                if (!Wallet.AddressValid(to_address))
+                if (!Wallet.IsValidAddress(to_address))
                 {
                     throw new ContractValidateException("Invalid toAddress");
                 }
