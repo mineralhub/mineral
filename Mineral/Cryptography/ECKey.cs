@@ -297,7 +297,7 @@ namespace Mineral.Cryptography
 
         public static byte[] ComputeAddress(byte[] publickey)
         {
-            return Hash.ToAddress(ByteUtil.CopyRange(publickey, 1, publickey.Length));
+            return Hash.ToAddress(ArrayUtil.CopyRange(publickey, 1, publickey.Length));
         }
 
         public static byte[] SignatureToAddress(byte[] hash, ECDSASignature signature)

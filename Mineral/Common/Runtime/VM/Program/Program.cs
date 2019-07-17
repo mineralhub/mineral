@@ -67,7 +67,7 @@ namespace Mineral.Common.Runtime.VM.Program
 
         public byte[] Code
         {
-            get { return ByteUtil.CopyRange(this.ops, 0, this.ops.Length); }
+            get { return ArrayUtil.CopyRange(this.ops, 0, this.ops.Length); }
         }
 
         public byte[] RootTransactionId
@@ -1298,7 +1298,7 @@ namespace Mineral.Common.Runtime.VM.Program
                 return null;
 
             return this.return_data == null ?
-                new byte[0] : ByteUtil.CopyRange(this.return_data, offset.ToIntSafety(), offset.ToIntSafety() + size.ToIntSafety());
+                new byte[0] : ArrayUtil.CopyRange(this.return_data, offset.ToIntSafety(), offset.ToIntSafety() + size.ToIntSafety());
         }
 
         public byte[] GetCodeAt(DataWord address)

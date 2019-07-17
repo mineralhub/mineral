@@ -236,7 +236,7 @@ namespace Mineral.Core.Database2.Core
 
             foreach (byte[] array in collection.Keys)
             {
-                if (ByteUtil.Compare(ByteUtil.GetRange(array, 0, precision), key) <= 0)
+                if (ByteUtil.Compare(ArrayUtil.GetRange(array, 0, precision), key) <= 0)
                 {
                     result.Add(array);
                     limit--;

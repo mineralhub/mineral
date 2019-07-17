@@ -159,7 +159,7 @@ namespace Mineral.Core.Database2.Core
                         (length_bytes[1] & 0xFF) << 16 |
                         (length_bytes[2] & 0xFF) << 8 |
                         (length_bytes[3] & 0xFF) << 0);
-            byte[] value = ByteUtil.CopyRange(bytes, 4, 4 + length);
+            byte[] value = ArrayUtil.CopyRange(bytes, 4, 4 + length);
 
             return value.BytesToString();
         }
@@ -357,8 +357,8 @@ namespace Mineral.Core.Database2.Core
                     byte[] key = it.Current.Key;
                     byte[] value = it.Current.Value;
                     byte[] db_bytes = db.ToBytes();
-                    byte[] real_key = ByteUtil.CopyRange(key, db_bytes.Length + 4, key.Length);
-                    byte[] real_value = value.Length == 1 ? null : ByteUtil.CopyRange(value, 1, value.Length);
+                    byte[] real_key = ArrayUtil.CopyRange(key, db_bytes.Length + 4, key.Length);
+                    byte[] real_value = value.Length == 1 ? null : ArrayUtil.CopyRange(value, 1, value.Length);
 
                     if (real_value != null)
                         revoking_db.GetHead().Put(real_key, real_value);

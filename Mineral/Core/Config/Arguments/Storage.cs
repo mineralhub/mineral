@@ -88,27 +88,27 @@ namespace Mineral.Core.Config.Arguments
 
         public static string GetEngineFromConfig()
         {
-            return StringHelper.IsNotNullOrEmpty(Config.Instance.Storage.Engine) ? Config.Instance.Storage.Engine : DEFAULT_DB_ENGINE;
+            return CollectionUtil.IsNotNullOrEmpty(Config.Instance.Storage.Engine) ? Config.Instance.Storage.Engine : DEFAULT_DB_ENGINE;
         }
 
         public static string GetDirectoryFromConfig()
         {
-            return StringHelper.IsNotNullOrEmpty(Config.Instance.Storage?.Directory) ? Config.Instance.Storage.Directory : DEFAULT_DB_DIRECTORY;
+            return CollectionUtil.IsNotNullOrEmpty(Config.Instance.Storage?.Directory) ? Config.Instance.Storage.Directory : DEFAULT_DB_DIRECTORY;
         }
 
         public static string GetIndexDirectoryFromConfig()
         {
-            return StringHelper.IsNotNullOrEmpty(Config.Instance.Storage?.IndexDirectory) ? Config.Instance.Storage.IndexDirectory : DEFAULT_INDEX_DIRECTORY;
+            return CollectionUtil.IsNotNullOrEmpty(Config.Instance.Storage?.IndexDirectory) ? Config.Instance.Storage.IndexDirectory : DEFAULT_INDEX_DIRECTORY;
         }
 
         public static string GetIndexSwitchFromConfig()
         {
-            return StringHelper.IsNotNullOrEmpty(Config.Instance.Storage?.IndexSwitch) ? Config.Instance.Storage.IndexSwitch : DEFAULT_INDEX_SWTICH;
+            return CollectionUtil.IsNotNullOrEmpty(Config.Instance.Storage?.IndexSwitch) ? Config.Instance.Storage.IndexSwitch : DEFAULT_INDEX_SWTICH;
         }
 
         public static string GetTransactionHistorySwitchFromConfig()
         {
-            return StringHelper.IsNotNullOrEmpty(Config.Instance.Storage?.TransactionHistorySwitch) ? Config.Instance.Storage.TransactionHistorySwitch : DEFAULT_TRANSACTION_HISTORY_SWITCH;
+            return CollectionUtil.IsNotNullOrEmpty(Config.Instance.Storage?.TransactionHistorySwitch) ? Config.Instance.Storage.TransactionHistorySwitch : DEFAULT_TRANSACTION_HISTORY_SWITCH;
         }
 
         public void SetPropertyFromConfig()
