@@ -7,14 +7,15 @@ namespace Mineral.Common.Storage
     public class WriteOptionWrapper
     {
         #region Field
-        private RocksDbSharp.WriteOptions rocks;
         private Stroage.LevelDB.WriteOptions level;
         #endregion
 
 
         #region Property
-        public RocksDbSharp.WriteOptions Rocks { get => this.rocks; }
-        public Stroage.LevelDB.WriteOptions Level { get => this.level; }
+        public Stroage.LevelDB.WriteOptions Level
+        {
+            get { return this.level; }
+        }
         #endregion
 
 
@@ -35,7 +36,6 @@ namespace Mineral.Common.Storage
         {
             WriteOptionWrapper wrapper = new WriteOptionWrapper();
             wrapper.level = new Stroage.LevelDB.WriteOptions();
-            wrapper.rocks = new RocksDbSharp.WriteOptions();
 
             return wrapper;
         }
@@ -43,7 +43,6 @@ namespace Mineral.Common.Storage
         public WriteOptionWrapper Sync(bool sync)
         {
             this.level.Sync = sync;
-            this.rocks.SetSync(sync);
 
             return this;
         }

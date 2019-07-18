@@ -11,8 +11,6 @@
 
     "storage": {
         "directory": "",
-        "version": 1,
-        "engine": "",
         "sync": false,
         "index_directory": "",
         "index_switch": "",

@@ -18,18 +18,11 @@ namespace Mineral.Core.Database2.Core
 
 
         #region Constructor
-        public SnapshotRoot(string parent, string name, Type db)
+        public SnapshotRoot(string parent, string name)
         {
             try
             {
-                if (db.Equals(typeof(LevelDB)) || db.Equals(typeof(RocksDB)))
-                {
-                    this.db = (IBaseDB<byte[], byte[]>)Activator.CreateInstance(db, parent, name);
-                }
-                else
-                {
-                    this.db = (IBaseDB<byte[], byte[]>)Activator.CreateInstance(db);
-                }
+                this.db = (IBaseDB<byte[], byte[]>)new LevelDB(parent, name);
             }
             catch (System.Exception e)
             {

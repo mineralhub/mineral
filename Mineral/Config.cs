@@ -41,10 +41,6 @@ namespace Mineral
     {
         [JsonProperty("directory")]
         public string Directory { get; set; }
-        [JsonProperty("version")]
-        public int? Version { get; set; }
-        [JsonProperty("engine")]
-        public string Engine { get; set; }
         [JsonProperty("sync")]
         public bool? Sync { get; set; }
         [JsonProperty("index_directory")]

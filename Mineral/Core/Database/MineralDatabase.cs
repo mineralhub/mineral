@@ -25,17 +25,7 @@ namespace Mineral.Core.Database
         protected MineralDatabase(string db_name)
         {
             this.db_name = db_name;
-
-            if (Args.Instance.Storage.Engine.ToUpper().Equals("LEVELDB"))
-            {
-                this.db_source = new LevelDBDataSource(Args.Instance.GetOutputDirectoryByDBName(this.db_name), this.db_name);
-            }
-            else if (Args.Instance.Storage.Engine.ToUpper().Equals("ROCKSDB"))
-            {
-                string parent = Args.Instance.GetOutputDirectoryByDBName(this.db_name) + @"\" + Args.Instance.Storage.Directory;
-                this.db_source = new RocksDBDataSource(parent, this.db_name);
-            }
-
+            this.db_source = new LevelDBDataSource(Args.Instance.GetOutputDirectoryByDBName(this.db_name), this.db_name);
             this.db_source.Init();
         }
 
@@ -86,35 +76,6 @@ namespace Mineral.Core.Database
         {
             throw new NotImplementedException();
         }
-
-        //IEnumerator IEnumerable.GetEnumerator()
-        //{
-        //    return (IEnumerator<KeyValuePair<byte[], byte[]>>)GetEnumerator();
-        //}
-
-        //IEnumerator<KeyValuePair<byte[], T>> IEnumerable<KeyValuePair<byte[], T>>.GetEnumerator()
-        //{
-        //    throw new NotImplementedException();
-        //}
-
-        //public IEnumerator<KeyValuePair<byte[], byte[]>> GetEnumerator()
-        //{
-        //    IEnumerator<KeyValuePair<byte[], byte[]>> result = null;
-        //    if (this.db_source.GetType().Equals(typeof(LevelDBDataSource)))
-        //    {
-        //        result = ((LevelDBDataSource)this.db_source).GetEnumerator();
-        //    }
-        //    else if (this.db_source.GetType().Equals(typeof(RocksDBDataSource)))
-        //    {
-        //        result = ((RocksDBDataSource)this.db_source).GetEnumerator();
-        //    }
-        //    else
-        //    {
-        //        result = null;
-        //    }
-
-        //    return result;
-        //}
 
         #region Abstract - IMineralChainBase
         public abstract bool Contains(byte[] key);

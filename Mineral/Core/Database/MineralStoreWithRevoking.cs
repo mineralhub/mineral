@@ -29,34 +29,7 @@ namespace Mineral.Core.Database
         protected MineralStoreWithRevoking(string db_name)
         {
             this.db_name = db_name;
-            int db_version = Args.Instance.Storage.Version;
-            string db_engine = Args.Instance.Storage.Engine;
-
-            if (Args.Instance.Storage.Version == 2)
-            {
-                if (db_engine.ToUpper().Equals("LEVELDB"))
-                    this.revoking_db = new RevokingDBWithCaching(this.db_name, typeof(LevelDB));
-                else if (db_engine.ToUpper().Equals("ROCKSDB"))
-                    this.revoking_db = new RevokingDBWithCaching(this.db_name, typeof(RocksDB));
-                else
-                    throw new System.Exception("Invalid database version");
-            }
-            else
-            {
-                throw new System.Exception("Invalid database version");
-            }
-        }
-
-        protected MineralStoreWithRevoking(string db_name, Type db_type)
-        {
-            this.db_name = db_name;
-            int db_version = Args.Instance.Storage.Version;
-            string db_engine = Args.Instance.Storage.Engine;
-
-            if (Args.Instance.Storage.Version == 2)
-                this.revoking_db = new RevokingDBWithCaching(this.db_name, db_type);
-            else
-                throw new System.Exception("Invalid database version");
+            this.revoking_db = new RevokingDBWithCaching(this.db_name);
         }
         #endregion
 

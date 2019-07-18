@@ -14,7 +14,6 @@ namespace Mineral.Core.Database2.Core
     public class RevokingDBWithCaching : IRevokingDB
     {
         #region Field
-        private Type db_type;
         private string db_name = "";
         private ISnapshot head = null;
         private ThreadLocal<bool> mode = new ThreadLocal<bool>();
@@ -28,11 +27,10 @@ namespace Mineral.Core.Database2.Core
 
 
         #region Constructor
-        public RevokingDBWithCaching(string db_name, Type db_type)
+        public RevokingDBWithCaching(string db_name)
         {
             this.db_name = db_name;
-            this.db_type = db_type;
-            this.head = new SnapshotRoot(Args.Instance.GetOutputDirectoryByDBName(this.db_name), this.db_name, this.db_type);
+            this.head = new SnapshotRoot(Args.Instance.GetOutputDirectoryByDBName(this.db_name), this.db_name);
             this.mode.Value = true;
         }
         #endregion
@@ -95,7 +93,7 @@ namespace Mineral.Core.Database2.Core
             {
                 Head().Reset();
                 Head().Close();
-                this.head = new SnapshotRoot(Args.Instance.GetOutputDirectoryByDBName(this.db_name), this.db_name, this.db_type);
+                this.head = new SnapshotRoot(Args.Instance.GetOutputDirectoryByDBName(this.db_name), this.db_name);
             }
         }
 
@@ -167,14 +165,7 @@ namespace Mineral.Core.Database2.Core
 
                 if (snapshot.GetPrevious() == null && temp != 0)
                 {
-                    if (((SnapshotRoot)(head.GetRoot())).DB.GetType() == typeof(LevelDB))
-                    {
-                        HashSet<byte[]> values = (((LevelDB)((SnapshotRoot)snapshot).DB)).DB.GetLatestValues(temp);
-                    }
-                    else if (((SnapshotRoot)(head.GetRoot())).DB.GetType() == typeof(RocksDB))
-                    {
-                        HashSet<byte[]> values = (((RocksDB)((SnapshotRoot)snapshot).DB)).DB.GetLatestValues(temp);
-                    }
+                    HashSet<byte[]> values = (((LevelDB)((SnapshotRoot)snapshot).DB)).DB.GetLatestValues(temp);
                 }
             }
 
@@ -199,15 +190,8 @@ namespace Mineral.Core.Database2.Core
                 ((Snapshot)(snapshot)).Collect(collection);
             }
 
-            Dictionary<byte[], byte[]> db_dictonary = null;
-            if (((SnapshotRoot)snapshot.GetRoot()).DB.GetType().Equals(typeof(LevelDB)))
-            {
-                db_dictonary = new Dictionary<byte[], byte[]>((((LevelDB)((SnapshotRoot)snapshot.GetRoot()).DB).DB.GetNext(key, limit)));
-            }
-            else if (((SnapshotRoot)snapshot.GetRoot()).DB.GetType().Equals(typeof(RocksDB)))
-            {
-                db_dictonary = new Dictionary<byte[], byte[]>((((RocksDB)((SnapshotRoot)snapshot.GetRoot()).DB).DB.GetNext(key, limit)));
-            }
+            Dictionary<byte[], byte[]> db_dictonary = 
+                new Dictionary<byte[], byte[]>((((LevelDB)((SnapshotRoot)snapshot.GetRoot()).DB).DB.GetNext(key, limit)));
 
             foreach (KeyValuePair<byte[], byte[]> pair in collection)
             {
@@ -246,15 +230,8 @@ namespace Mineral.Core.Database2.Core
             if (limit <= 0)
                 return result;
 
-            List<byte[]> list = null;
-            if (((SnapshotRoot)this.head.GetRoot()).DB.GetType().Equals(typeof(LevelDB)))
-            {
-                list = ((LevelDB)((SnapshotRoot)this.head.GetRoot()).DB).DB.GetPrevious(key, limit, precision).Values.ToList();
-            }
-            else if (((SnapshotRoot)this.head.GetRoot()).DB.GetType().Equals(typeof(RocksDB)))
-            {
-                list = ((RocksDB)((SnapshotRoot)this.head.GetRoot()).DB).DB.GetPrevious(key, limit, precision).Values.ToList();
-            }
+            List<byte[]> list =
+                ((LevelDB)((SnapshotRoot)this.head.GetRoot()).DB).DB.GetPrevious(key, limit, precision).Values.ToList(); ;
 
             foreach (byte[] array in list)
             {

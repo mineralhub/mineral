@@ -101,9 +101,6 @@ namespace Mineral.Core.Config.Arguments
         [Parameter("--storage-db-directory", Description = "Storage db directory")]
         private string storage_directory = "";
 
-        [Parameter("--storage-db-engine", Description = "Storage db engine.(leveldb or rocksdb)")]
-        private string storage_engine = "";
-
         [Parameter("--storage-db-synchronous", Description = "Storage db is synchronous or not.(true or flase)")]
         private string storage_sync = "";
 
@@ -221,9 +218,6 @@ namespace Mineral.Core.Config.Arguments
             Logger.Info(string.Format("Backup priority: {0}", instance.Node.Backup.Priority));
             Logger.Info(string.Format("************************ Code version *************************"));
             Logger.Info(string.Format("Code version : {0}", Version));
-            Logger.Info(string.Format("************************ DB config *************************"));
-            Logger.Info(string.Format("DB version : {0}", instance.Storage.Version));
-            Logger.Info(string.Format("DB engine : {0}", instance.Storage.Engine));
             Logger.Info(string.Format("***************************************************************"));
             Logger.Info(string.Format("\n"));
         }
@@ -371,18 +365,6 @@ namespace Mineral.Core.Config.Arguments
 
             #region Storage
             instance.Storage = new Storage();
-
-            instance.Storage.Version = CollectionUtil.IsNotNullOrEmpty(instance.storage_version) ?
-                int.Parse(instance.storage_version) : Storage.GetVersionFromConfig();
-
-            instance.Storage.Engine = CollectionUtil.IsNotNullOrEmpty(instance.storage_engine) ?
-                instance.storage_engine : Storage.GetEngineFromConfig();
-
-            if (instance.Storage.Version == 1 &&
-                instance.Storage.Engine.ToUpper().Equals("ROCKSDB"))
-            {
-                throw new ConfigrationException("database version = 1 is not suppoerted ROCKSDB engine");
-            }
 
             instance.Storage.Sync = CollectionUtil.IsNotNullOrEmpty(instance.storage_sync) ?
                 bool.Parse(instance.storage_sync) : Storage.GetSyncFromConfig();

@@ -11,8 +11,6 @@ namespace Mineral.Core.Config.Arguments
     public class Storage
     {
         #region Field
-        private static readonly int DEFAULT_DB_VERSION = 2;
-        private static readonly string DEFAULT_DB_ENGINE = "LEVELDB";
         private static readonly bool DEFAULT_DB_SYNC = false;
         private static readonly bool DEFAULT_EVENT_SUBSCRIB_CONTRACT_PARSE = true;
         private static readonly string DEFAULT_DB_DIRECTORY = "database";
@@ -31,11 +29,9 @@ namespace Mineral.Core.Config.Arguments
 
 
         #region Property
-        public int Version { get; set; } // this version only : 2
         public bool Sync { get; set; }
         public bool ContractParseSwitch { get; set; }
         public string Directory { get; set; }
-        public string Engine { get; set; }
         public string IndexDirectory { get; set; }
         public string IndexSwitch { get; set; }
         public string TransactionHistorySwitch { get; set; }
@@ -71,11 +67,6 @@ namespace Mineral.Core.Config.Arguments
 
 
         #region External Method
-        public static int GetVersionFromConfig()
-        {
-            return Config.Instance.Storage?.Version ?? DEFAULT_DB_VERSION;
-        }
-
         public static bool GetSyncFromConfig()
         {
             return Config.Instance.Storage?.Sync ?? DEFAULT_DB_SYNC;
@@ -84,11 +75,6 @@ namespace Mineral.Core.Config.Arguments
         public static bool GetContractParseSwitchFromConfig()
         {
             return Config.Instance.Event?.ContractParse ?? DEFAULT_EVENT_SUBSCRIB_CONTRACT_PARSE;
-        }
-
-        public static string GetEngineFromConfig()
-        {
-            return CollectionUtil.IsNotNullOrEmpty(Config.Instance.Storage?.Engine) ? Config.Instance.Storage.Engine : DEFAULT_DB_ENGINE;
         }
 
         public static string GetDirectoryFromConfig()
