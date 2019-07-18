@@ -30,7 +30,7 @@ namespace Mineral
     public static class Logger
     {
         public static bool WriteConsole { get; set; } = true;
-        public static LogLevel WriteLogLevel { get; set; } = LogLevel.INFO;
+        public static LogLevel WriteLogLevel { get; set; } = LogLevel.ERROR;
         private static ConcurrentQueue<TypedLog> _queue = new ConcurrentQueue<TypedLog>();
         private static Thread _thread;
 
@@ -61,9 +61,29 @@ namespace Mineral
             Log(log, LogLevel.WARNING);
         }
 
+        public static void Warning(string log, System.Exception exception)
+        {
+            Log(log, LogLevel.WARNING);
+            Log(exception.Message, LogLevel.WARNING);
+            Log(exception.StackTrace, LogLevel.WARNING);
+        }
+
         public static void Error(string log)
         {
             Log(log, LogLevel.ERROR);
+        }
+
+        public static void Error(System.Exception exception)
+        {
+            Log(exception.Message, LogLevel.ERROR);
+            Log(exception.StackTrace, LogLevel.ERROR);
+        }
+
+        public static void Error(string log, System.Exception exception)
+        {
+            Log(log, LogLevel.ERROR);
+            Log(exception.Message, LogLevel.ERROR);
+            Log(exception.StackTrace, LogLevel.ERROR);
         }
 
         public static void Debug(string log)
