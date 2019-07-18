@@ -26,7 +26,7 @@ namespace Mineral.Core.Config.Arguments
         private static readonly long DEFAULT_CACHE_SIZE = 10 * 1024 * 1024L;
         private static readonly int DEFAULT_MAX_OPEN_FILES = 100;
 
-        private Dictionary<string, Property> properties = null;
+        private Dictionary<string, Property> properties = new Dictionary<string, Property>();
         #endregion
 
 
@@ -88,7 +88,7 @@ namespace Mineral.Core.Config.Arguments
 
         public static string GetEngineFromConfig()
         {
-            return CollectionUtil.IsNotNullOrEmpty(Config.Instance.Storage.Engine) ? Config.Instance.Storage.Engine : DEFAULT_DB_ENGINE;
+            return CollectionUtil.IsNotNullOrEmpty(Config.Instance.Storage?.Engine) ? Config.Instance.Storage.Engine : DEFAULT_DB_ENGINE;
         }
 
         public static string GetDirectoryFromConfig()

@@ -16,7 +16,7 @@ namespace Mineral.Converter
 
         public override object ReadJson(JsonReader reader, Type objectType, object existingValue, JsonSerializer serializer)
         {
-            if (Enum.TryParse<AccountType>(reader.Value.ToString(), true, out AccountType type))
+            if (Enum.TryParse<AccountType>(reader.Value.ToString(), out AccountType type))
                 return type;
             throw new InvalidTypeException(existingValue.ToString() + "is Inavlid AccountType");
         }

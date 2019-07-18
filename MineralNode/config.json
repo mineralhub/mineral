@@ -32,34 +32,22 @@
     "genesis_block": {
         "assets": [
             {
-                "name": "1",
-                "Type": "AssetsIssue",
-                "Address": "12AKRNHpFhDSBDD9rSn74VAzZSL3774PxQ",
-                "blance": 100000
+                "name": "Zion",
+                "Type": "AssetIssue",
+                "Address": "TLLM21wteSPs4hKjbxgmH1L6poyMjeTbHm",
+                "blance": 99000000000000000
             },
             {
-                "name": "2",
-                "Type": "AssetsIssue",
-                "Address": "19mqdnsraLrBSHTupx9HcnmJrCryM5Jpjy",
-                "blance": 200000
+                "name": "Sun",
+                "Type": "AssetIssue",
+                "Address": "TXmVpin5vq5gdZsciyyjdZgKRUju4st1wM",
+                "blance": 0
             },
             {
-                "name": "3",
-                "Type": "AssetsIssue",
-                "Address": "1889nUYazT9MhsqE4fxutq1dpyspHZEiaM",
-                "blance": 300000
-            },
-            {
-                "name": "4",
-                "Type": "AssetsIssue",
-                "Address": "1CvKHaVAKsGGftTFZBdJRcxozxeQo7rXUk",
-                "blance": 400000
-            },
-            {
-                "name": "5",
-                "Type": "AssetsIssue",
-                "Address": "12iMNgciNRutMSeu18iaByKYBPnk88Hcm1",
-                "blance": 500000
+                "name": "Blackhole",
+                "Type": "AssetIssue",
+                "Address": "TLsV52sRDL79HXGGm9yzwKibb6BeruhUzy",
+                "blance": -9223372036854775808
             }
         ],
 
@@ -92,7 +80,7 @@
         ],
 
         "timestamp": 0,
-        "parent_hash": 0
+        "parent_hash": "e58f33f9baf9305dc6f82b9f1934ea8f0ade2defb951258d50167028c780351f"
     },
 
     "node": {

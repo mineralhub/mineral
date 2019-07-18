@@ -57,11 +57,11 @@ namespace Mineral.Core.Config.Arguments
             public List<Node> Active { get; set; } = new List<Node>();
             public List<Node> Passive { get; set; } = new List<Node>();
             public List<Node> FastForward { get; set; } = new List<Node>();
-            public DiscoveryArgs Discovery { get; set; }
-            public BackupArgs Backup { get; set; }
-            public P2PArgs P2P { get; set; }
-            public HttpArgs HTTP { get; set; }
-            public RPCArgs RPC { get; set; }
+            public DiscoveryArgs Discovery { get; set; } = new DiscoveryArgs();
+            public BackupArgs Backup { get; set; } = new BackupArgs();
+            public P2PArgs P2P { get; set; } = new P2PArgs();
+            public HttpArgs HTTP { get; set; } = new HttpArgs();
+            public RPCArgs RPC { get; set; } = new RPCArgs();
         }
 
 
@@ -76,6 +76,9 @@ namespace Mineral.Core.Config.Arguments
 
         [Parameter("-v", "--version", Description = "Version")]
         private bool version = false;
+
+        [Parameter("-c", "--config", Description = "Config file")]
+        private string config_file = "";
 
         [Parameter("--fast-forward")]
         private bool fast_forward = false;
@@ -228,7 +231,7 @@ namespace Mineral.Core.Config.Arguments
 
 
         #region External Method
-        public void SetParam(string[] args, string config_path)
+        public bool SetParam(string[] args, string config_path)
         {
             CommanderParser<Args> parser = new CommanderParser<Args>();
 
@@ -239,22 +242,23 @@ namespace Mineral.Core.Config.Arguments
             catch (System.Exception e)
             {
                 Logger.Error(e.Message);
-                return;
+                return false;
             }
 
             if (instance.version)
             {
                 Console.WriteLine(Version);
-                return;
+                return false;
             }
 
-            if (!Config.Instance.Initialize(config_path))
+            string config_filename = instance.config_file.IsNotNullOrEmpty() ? instance.config_file : config_path;
+            if (!Config.Instance.Initialize(config_filename))
             {
                 Logger.Error(
                     string.Format("Failed to initialize config. please check config : {0} file",
                                   config_path));
 
-                return;
+                return false;
             }
 
             #region Wallet prefix
@@ -288,13 +292,6 @@ namespace Mineral.Core.Config.Arguments
                 }
                 instance.LocalWitness.InitWitnessAccountAddress();
             }
-
-/* Unmerged change from project 'Mineral(net472)'
-Before:
-            else if (CollectionHelper.IsNotNullOrEmpty(Config.Instance.Witness.LocalWitness))
-After:
-            else if (CollectionExtensions.IsNotNullOrEmpty(Config.Instance.Witness.LocalWitness))
-*/
             else if (Utils.CollectionUtil.IsNotNullOrEmpty(Config.Instance.Witness.LocalWitness))
             {
                 instance.LocalWitness = new LocalWitness();
@@ -322,13 +319,6 @@ After:
                 }
                 instance.LocalWitness.InitWitnessAccountAddress();
             }
-
-/* Unmerged change from project 'Mineral(net472)'
-Before:
-            else if (CollectionHelper.IsNotNullOrEmpty(Config.Instance.Witness.LocalWitnessKeyStore))
-After:
-            else if (CollectionExtensions.IsNotNullOrEmpty(Config.Instance.Witness.LocalWitnessKeyStore))
-*/
             else if (Utils.CollectionUtil.IsNotNullOrEmpty(Config.Instance.Witness.LocalWitnessKeyStore))
             {
                 List<string> privatekey_list = new List<string>();
@@ -412,27 +402,21 @@ After:
             instance.Storage.IndexDirectory = CollectionUtil.IsNotNullOrEmpty(instance.storage_transaction_history_switch) ?
                 instance.storage_transaction_history_switch : Storage.GetTransactionHistorySwitchFromConfig();
 
-            instance.Storage.NeedToUpdateAsset = Config.Instance.Storage.NeedToUpdateAsset ?? true;
+            instance.Storage.NeedToUpdateAsset = Config.Instance.Storage?.NeedToUpdateAsset ?? true;
 
-            instance.Storage.SetPropertyFromConfig();
-
-
-/* Unmerged change from project 'Mineral(net472)'
-Before:
-            instance.Seed.IpList = CollectionHelper.IsNotNullOrEmpty(instance.seed_nodes) ?
-After:
-            instance.Seed.IpList = CollectionExtensions.IsNotNullOrEmpty(instance.seed_nodes) ?
-*/
             instance.Seed.IpList = Utils.CollectionUtil.IsNotNullOrEmpty(instance.seed_nodes) ?
                 instance.seed_nodes : Config.Instance.SeedNode.IpList;
+
+            instance.Storage.SetPropertyFromConfig();
             #endregion
+
 
             #region Genesis block
             if (Config.Instance.GenesisBlock != null)
             {
                 if (Config.Instance.GenesisBlock.Assets != null)
                 {
-                    AccountStore.SetAccount((GenesisBlockArgs)Config.Instance.GenesisBlock);
+                    AccountStore.SetAccount(Config.Instance.GenesisBlock);
                 }
             }
             else
@@ -469,36 +453,36 @@ After:
             instance.Node.Passive = Config.Instance.Node.Passive?.Select(uri => Mineral.Common.Overlay.Discover.Node.Node.InstanceOf(uri)).ToList();
             instance.Node.FastForward = Config.Instance.Node.FastForward?.Select(uri => Mineral.Common.Overlay.Discover.Node.Node.InstanceOf(uri)).ToList();
 
-            instance.Node.Discovery.Enable = Config.Instance.Node.Discovery.Enable ?? false;
-            instance.Node.Discovery.Persist = Config.Instance.Node.Discovery.Persist ?? false;
+            instance.Node.Discovery.Enable = Config.Instance.Node.Discovery?.Enable ?? false;
+            instance.Node.Discovery.Persist = Config.Instance.Node.Discovery?.Persist ?? false;
 
             instance.Node.Discovery.BindIP = CollectionUtil.IsNotNullOrEmpty(Config.Instance.Node.Discovery.BindIP) ?
                 Config.Instance.Node.Discovery.BindIP : "0.0.0.0";
             instance.Node.Discovery.ExternalIP = CollectionUtil.IsNotNullOrEmpty(Config.Instance.Node.Discovery.ExternalIP) ?
                 Config.Instance.Node.Discovery.ExternalIP : "0.0.0.0";
 
-            instance.Node.Discovery.HomeNode = Config.Instance.Node.Discovery.Persist ?? false;
+            instance.Node.Discovery.HomeNode = Config.Instance.Node.Discovery?.Persist ?? false;
 
-            instance.Node.Backup.Port = Config.Instance.Node.Backup.Port ?? 10001;
-            instance.Node.Backup.Priority = Config.Instance.Node.Backup.Priority ?? 0;
-            instance.Node.Backup.Members = Config.Instance.Node.Backup.Members?.Select(member => member).ToList();
+            instance.Node.Backup.Port = Config.Instance.Node.Backup?.Port ?? 10001;
+            instance.Node.Backup.Priority = Config.Instance.Node.Backup?.Priority ?? 0;
+            instance.Node.Backup.Members = Config.Instance.Node.Backup?.Members?.Select(member => member).ToList();
 
-            instance.Node.P2P.Version = Config.Instance.Node.P2P.Version ?? 0;
-            instance.Node.P2P.PingInterval = Config.Instance.Node.P2P.PingInterval ?? 0;
+            instance.Node.P2P.Version = Config.Instance.Node.P2P?.Version ?? 0;
+            instance.Node.P2P.PingInterval = Config.Instance.Node.P2P?.PingInterval ?? 0;
 
-            instance.Node.HTTP.FullNodePort = Config.Instance.Node.HTTP.FullNodePort ?? 11265;
-            instance.Node.HTTP.SolidityPort = Config.Instance.Node.HTTP.SolidityPort ?? 11256;
+            instance.Node.HTTP.FullNodePort = Config.Instance.Node.HTTP?.FullNodePort ?? 11265;
+            instance.Node.HTTP.SolidityPort = Config.Instance.Node.HTTP?.SolidityPort ?? 11256;
 
-            instance.Node.RPC.Port = Config.Instance.Node.RPC.Port ?? 11275;
-            instance.Node.RPC.SolidityPort = Config.Instance.Node.RPC.SolidityPort ?? 11276;
-            instance.Node.RPC.MaxConcurrentCallPerConnection = Config.Instance.Node.RPC.MaxConcurrentCallPerConnection ?? int.MaxValue;
-            instance.Node.RPC.FlowControlWindow = Config.Instance.Node.RPC.FlowControlWindow ?? 1048576;
-            instance.Node.RPC.MaxConnectionIdle = Config.Instance.Node.RPC.MaxConnectionIdle ?? long.MaxValue;
+            instance.Node.RPC.Port = Config.Instance.Node.RPC?.Port ?? 11275;
+            instance.Node.RPC.SolidityPort = Config.Instance.Node.RPC?.SolidityPort ?? 11276;
+            instance.Node.RPC.MaxConcurrentCallPerConnection = Config.Instance.Node.RPC?.MaxConcurrentCallPerConnection ?? int.MaxValue;
+            instance.Node.RPC.FlowControlWindow = Config.Instance.Node.RPC?.FlowControlWindow ?? 1048576;
+            instance.Node.RPC.MaxConnectionIdle = Config.Instance.Node.RPC?.MaxConnectionIdle ?? long.MaxValue;
 
-            instance.Node.RPC.MaxConnectionAge = Config.Instance.Node.RPC.MaxConnectionAge ?? long.MaxValue;
-            instance.Node.RPC.MaxMessageSize = Config.Instance.Node.RPC.MaxMessageSize ?? 4 * 1024 * 1024; // The default maximum uncompressed size (in bytes) for inbound messages. Defaults to 4 MiB.
-            instance.Node.RPC.MaxHeaderListSize = Config.Instance.Node.RPC.MaxHeaderListSize ?? 8192; //he default maximum size (in bytes) for inbound header/trailer.
-            instance.Node.RPC.MinEffectiveConnection = Config.Instance.Node.RPC.MinEffectiveConnection ?? 1;
+            instance.Node.RPC.MaxConnectionAge = Config.Instance.Node.RPC?.MaxConnectionAge ?? long.MaxValue;
+            instance.Node.RPC.MaxMessageSize = Config.Instance.Node.RPC?.MaxMessageSize ?? 4 * 1024 * 1024; // The default maximum uncompressed size (in bytes) for inbound messages. Defaults to 4 MiB.
+            instance.Node.RPC.MaxHeaderListSize = Config.Instance.Node.RPC?.MaxHeaderListSize ?? 8192; //he default maximum size (in bytes) for inbound header/trailer.
+            instance.Node.RPC.MinEffectiveConnection = Config.Instance.Node.RPC?.MinEffectiveConnection ?? 1;
             #endregion
 
             #region Block
@@ -509,15 +493,15 @@ After:
             #endregion
 
             #region Committee
-            instance.Committe.AllowCreationOfContracts = Config.Instance.Committe.AllowCreationOfContracts ?? 0;
-            instance.Committe.AllowMultiSign = Config.Instance.Committe.AllowMultiSign ?? 0;
-            instance.Committe.AllowAdaptiveEnergy = Config.Instance.Committe.AllowAdaptiveEnergy ?? 0;
-            instance.Committe.AllowDelegateResource = Config.Instance.Committe.AllowDelegateResource ?? 0;
-            instance.Committe.AllowSameTokenName = Config.Instance.Committe.AllowSameTokenName ?? 0;
-            instance.Committe.AllowVMTransferTC10 = Config.Instance.Committe.AllowVMTransferTC10 ?? 0;
-            instance.Committe.AllowVMConstantinople = Config.Instance.Committe.AllowVMConstantinople ?? 0;
-            instance.Committe.AllowProtoFilterNum = Config.Instance.Committe.AllowProtoFilterNum ?? 0;
-            instance.Committe.AllowAccountStateRoot = Config.Instance.Committe.AllowAccountStateRoot ?? 0;
+            instance.Committe.AllowCreationOfContracts = Config.Instance.Committe?.AllowCreationOfContracts ?? 0;
+            instance.Committe.AllowMultiSign = Config.Instance.Committe?.AllowMultiSign ?? 0;
+            instance.Committe.AllowAdaptiveEnergy = Config.Instance.Committe?.AllowAdaptiveEnergy ?? 0;
+            instance.Committe.AllowDelegateResource = Config.Instance.Committe?.AllowDelegateResource ?? 0;
+            instance.Committe.AllowSameTokenName = Config.Instance.Committe?.AllowSameTokenName ?? 0;
+            instance.Committe.AllowVMTransferTC10 = Config.Instance.Committe?.AllowVMTransferTC10 ?? 0;
+            instance.Committe.AllowVMConstantinople = Config.Instance.Committe?.AllowVMConstantinople ?? 0;
+            instance.Committe.AllowProtoFilterNum = Config.Instance.Committe?.AllowProtoFilterNum ?? 0;
+            instance.Committe.AllowAccountStateRoot = Config.Instance.Committe?.AllowAccountStateRoot ?? 0;
             #endregion
 
             #region Transaction
@@ -538,6 +522,8 @@ After:
             instance.VM.MinTimeRatio = Config.Instance.VM.MinTimeRatio ?? this.min_time_ratio;
             instance.VM.MaxTimeRatio = Config.Instance.VM.MaxTimeRatio ?? this.max_time_ratio;
             #endregion
+
+            return true;
         }
 
         public string GetOutputDirectoryByDBName(string db_name)

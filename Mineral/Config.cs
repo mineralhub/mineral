@@ -103,7 +103,7 @@ namespace Mineral
         public bool? Persist { get; set; }
         [JsonProperty("bind_ip")]
         public string BindIP { get; set; }
-        [JsonProperty("persist")]
+        [JsonProperty("external_ip")]
         public string ExternalIP { get; set; }
         [JsonProperty("home_node")]
         public bool? HomeNode { get; set; }
@@ -299,12 +299,21 @@ namespace Mineral
 
     public class Config
     {
-        private Config() { }
+        #region Field
+        private static Config instance = null;
+        #endregion
+
+
+        #region Property
+        public static Config Instance
+        {
+            get { return instance = instance ?? new Config(); }
+        }
 
         [JsonProperty("net")]
         public NetConfig Net { get; set; }
         [JsonProperty("witness")]
-        public WitnessConfig Witness { get; set;}
+        public WitnessConfig Witness { get; set; }
         [JsonProperty("stroage")]
         public StorageConfig Storage { get; set; }
         [JsonProperty("seed_node")]
@@ -326,18 +335,28 @@ namespace Mineral
 
         [JsonProperty("log-level")]
         [JsonConverter(typeof(JsonLogLevelConverter))]
-        public LogLevel WriteLogLevel = LogLevel.INFO;
-
+        public LogLevel WriteLogLevel { get; set; } = LogLevel.INFO;
         [JsonProperty("log-console")]
-        public bool WriteLogConsole = false;
-
-        public uint Nonce = (uint)(new Random().Next());
+        public bool WriteLogConsole { get; set; } = false;
 
         public HashSet<IPAddress> LocalAddresses { get; private set; }
+        #endregion
 
-        private static Config instance = null;
-        public static Config Instance { get { return instance = instance ?? new Config(); } }
 
+        #region Contructor
+        private Config() { }
+        #endregion
+
+
+        #region Event Method
+        #endregion
+
+
+        #region Internal Method
+        #endregion
+
+
+        #region External Method
         public bool Initialize(string path)
         {
             bool result = false;
@@ -349,16 +368,18 @@ namespace Mineral
                     using (var file = File.OpenText(path))
                     {
                         instance = JsonConvert.DeserializeObject<Config>(file.ReadToEnd());
+
+                        Logger.WriteConsole = Instance.WriteLogConsole;
+                        Logger.WriteLogLevel = Instance.WriteLogLevel;
                     }
                     result = true;
                 }
             }
             catch (Exception e)
             {
-                Console.WriteLine(e.Message);
+                Logger.Error(
+                    string.Format("Mineral configuration file is not invalid"), e);
             }
-            Logger.WriteConsole = Instance.WriteLogConsole;
-            Logger.WriteLogLevel = Instance.WriteLogLevel;
 
             return result;
         }
@@ -372,5 +393,6 @@ namespace Mineral
         {
             return JObject.Parse(this.ToString());
         }
+        #endregion
     }
 }

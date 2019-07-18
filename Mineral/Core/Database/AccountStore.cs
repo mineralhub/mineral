@@ -47,7 +47,7 @@ namespace Mineral.Core.Database
 
 
         #region External Method
-        public static void SetAccount(Config.Arguments.Args.GenesisBlockArgs args)
+        public static void SetAccount(GenesisBlockConfig args)
         {
             foreach (Config.Arguments.Account account in args.Assets)
             {

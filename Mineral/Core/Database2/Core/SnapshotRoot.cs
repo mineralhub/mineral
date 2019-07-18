@@ -31,9 +31,10 @@ namespace Mineral.Core.Database2.Core
                     this.db = (IBaseDB<byte[], byte[]>)Activator.CreateInstance(db);
                 }
             }
-            catch
+            catch (System.Exception e)
             {
-                throw new ArgumentException();
+                Logger.Error(e);
+                throw e;
             }
 
             this.solidity = this;

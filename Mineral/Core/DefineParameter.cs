@@ -10,8 +10,8 @@ namespace Mineral.Core
         public static readonly string DIFFICULTY = "2001";
         public static readonly string BLOCK_DB_NAME = "block_data";
         public static readonly string TRANSACTION_DB_NAME = "transaction_data";
-        public static readonly string CONF_FILE = "config.conf";
-        public static readonly string TEST_CONF = "config-test.conf";
+        public static readonly string CONF_FILE = "config.json";
+        public static readonly string TEST_CONF = "config-test.json";
         public static readonly string DATABASE_DIR = "storage.directory";
 
         public static readonly byte ADD_PRE_FIX_BYTE_MAINNET = (byte)0x32;   //41 + address
