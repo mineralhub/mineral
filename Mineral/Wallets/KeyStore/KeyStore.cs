@@ -73,5 +73,17 @@ namespace Mineral.Wallets.KeyStore
         [JsonProperty("crypto")]
         public KeyStoreCryptoInfo Crypto { get; set; }
 
+        public static KeyStore FromJson(string json)
+        {
+            try
+            {
+                return JsonConvert.DeserializeObject<KeyStore>(json);
+            }
+            catch (System.Exception e)
+            {
+                Logger.Error("Invalid keystore file format.");
+                return null;
+            }
+        }
     }
 }

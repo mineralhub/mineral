@@ -11,9 +11,29 @@ namespace Mineral.Wallets.KeyStore
 {
     public class KeyStoreService
     {
+        #region Field
         public static readonly string KDF_SCRYPT = "scrypt";
         public static readonly string AES128CTR = "aes-128-ctr";
+        #endregion
 
+
+        #region Property
+        #endregion
+
+
+        #region Contructor
+        #endregion
+
+
+        #region Event Method
+        #endregion
+
+
+        #region Internal Method
+        #endregion
+
+
+        #region External Method
         public static bool GenerateKeyStore(string path, string password, byte[] privatekey, string address)
         {
             KdfParam param = KdfParam.GetDefaultParam();
@@ -36,6 +56,7 @@ namespace Mineral.Wallets.KeyStore
             byte[] cipherkey = KeyStoreCrypto.GenerateCipherKey(derivedkey);
             byte[] iv = RandomGenerator.GenerateRandomBytes(16);
             byte[] ciphertext = new byte[32];
+
             using (var am = new Aes128CounterMode(iv.Clone() as byte[]))
             using (var ict = am.CreateEncryptor(cipherkey, null))
             {
@@ -119,5 +140,6 @@ namespace Mineral.Wallets.KeyStore
             }
             return true;
         }
+        #endregion
     }
 }
