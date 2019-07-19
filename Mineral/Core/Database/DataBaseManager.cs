@@ -180,7 +180,7 @@ namespace Mineral.Core.Database
             this.block_index_store = new BlockIndexStore("block-index");
             this.transaction_store = new TransactionStore(this.block_store, this.khaos_database, "transaction");
             this.transaction_history_store = new TransactionHistoryStore("transaction_history_store");
-            this.account_store = new AccountStore(this, Manager.Instance.AccountStateTrie, Manager.Instance.FastSyncCallback, "account");
+            this.account_store = new AccountStore("account");
             this.witness_store = new WitnessStore("witness");
             this.witness_schedule_store = new WitnessScheduleStore("siwtness_schedule");
             this.votes_store = new VotesStore("votes");

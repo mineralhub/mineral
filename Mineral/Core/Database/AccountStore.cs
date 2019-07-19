@@ -13,9 +13,6 @@ namespace Mineral.Core.Database
         : MineralStoreWithRevoking<AccountCapsule, Account>
     {
         #region Field
-        private DatabaseManager db_manager = null;
-        private FastSyncCallBack fast_sync_callback = null;
-        private AccountStateStoreTrie account_state_store = null;
         private static Dictionary<string, byte[]> asserts_address = new Dictionary<string, byte[]>();
         #endregion
 
@@ -25,15 +22,9 @@ namespace Mineral.Core.Database
 
 
         #region Constructor
-        public AccountStore(DatabaseManager db_manager,
-                            AccountStateStoreTrie account_state,
-                            FastSyncCallBack callback,
-                            string db_name = "account")
+        public AccountStore(string db_name = "account")
             : base(db_name)
         {
-            this.db_manager = db_manager;
-            this.fast_sync_callback = callback;
-            this.account_state_store = account_state;
         }
         #endregion
 
@@ -76,7 +67,7 @@ namespace Mineral.Core.Database
         public override void Put(byte[] key, AccountCapsule item)
         {
             base.Put(key, item);
-            fast_sync_callback.AccountCallBack(key, item);
+            Manager.Instance.FastSyncCallback.AccountCallBack(key, item);
         }
 
         public override AccountCapsule Get(byte[] key)
@@ -88,7 +79,7 @@ namespace Mineral.Core.Database
         public override void Close()
         {
             base.Close();
-            account_state_store.Close();
+            Manager.Instance.AccountStateTrie.Close();
         }
         #endregion
     }
