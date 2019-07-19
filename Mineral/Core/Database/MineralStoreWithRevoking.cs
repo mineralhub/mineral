@@ -48,11 +48,12 @@ namespace Mineral.Core.Database
         {
             try
             {
-                return (T)Activator.CreateInstance(typeof(T));
+                return (T)Activator.CreateInstance(typeof(T), new object[] { value });
             }
-            catch
+            catch (System.Exception e)
             {
-                throw new ArgumentException();
+                Logger.Error(e);
+                throw new NullReferenceException();
             }
         }
         #endregion

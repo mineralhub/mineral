@@ -335,7 +335,14 @@ namespace Mineral.Core.Database
 
         public long GetTotalEnergyLimit()
         {
-            return BitConverter.ToInt64(GetUnchecked(DynamicResourceProperties.TOTAL_ENERGY_LIMIT).Data, 0);
+            try
+            {
+                return BitConverter.ToInt64(GetUnchecked(DynamicResourceProperties.TOTAL_ENERGY_LIMIT).Data, 0);
+            }
+            catch (System.Exception e)
+            {
+                throw e;
+            }
         }
 
         public void PutTotalEnergyCurrentLimit(long total_energy_current_limit)
