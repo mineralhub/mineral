@@ -3,8 +3,8 @@ using System.Collections;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Text;
+using LevelDB;
 using Mineral.Common.Storage;
-using Mineral.Common.Stroage.LevelDB;
 using Mineral.Core.Config.Arguments;
 
 namespace Mineral.Core.Database2.Common
@@ -13,7 +13,7 @@ namespace Mineral.Core.Database2.Common
     {
         #region Field
         private LevelDBDataSource db = null;
-        private WriteOptionWrapper write_options = WriteOptionWrapper.GetInstance().Sync(Args.Instance.Storage.Sync);
+        private WriteOptions write_options = new WriteOptions() { Sync = Args.Instance.Storage.Sync };
         #endregion
 
 

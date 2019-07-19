@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
-using Mineral.Common.Stroage.LevelDB;
+using LevelDB;
 using Mineral.Utils;
 
 namespace Mineral.Core.Config.Arguments
@@ -18,7 +18,7 @@ namespace Mineral.Core.Config.Arguments
         private static readonly string DEFAULT_INDEX_SWTICH = "on";
         private static readonly string DEFAULT_TRANSACTION_HISTORY_SWITCH = "on";
 
-        private static readonly CompressionType DEFAULT_COMPRESSION_TYPE = CompressionType.kSnappyCompression;
+        private static readonly CompressionLevel DEFAULT_COMPRESSION_TYPE = CompressionLevel.SnappyCompression;
         private static readonly int DEFAULT_BLOCK_SIZE = 4 * 1024;
         private static readonly int DEFAULT_WRITE_BUFFER_SIZE = 10 * 1024 * 1024;
         private static readonly long DEFAULT_CACHE_SIZE = 10 * 1024 * 1024L;
@@ -55,10 +55,10 @@ namespace Mineral.Core.Config.Arguments
             options.CreateIfMissing = true;
             options.ParanoidChecks = true;
 
-            options.Compression = CompressionType.kSnappyCompression;
+            options.CompressionLevel = CompressionLevel.SnappyCompression;
             options.BlockSize = DEFAULT_BLOCK_SIZE;
             options.WriteBufferSize = DEFAULT_WRITE_BUFFER_SIZE;
-            options.CacheSize = DEFAULT_CACHE_SIZE;
+            options.Cache = new LevelDB.Cache((int)DEFAULT_CACHE_SIZE);
             options.MaxOpenFiles = DEFAULT_MAX_OPEN_FILES;
 
             return options;

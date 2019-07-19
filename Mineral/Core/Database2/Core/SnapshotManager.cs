@@ -5,6 +5,7 @@ using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using LevelDB;
 using Mineral.Common.Storage;
 using Mineral.Core.Config.Arguments;
 using Mineral.Core.Database;
@@ -191,7 +192,7 @@ namespace Mineral.Core.Database2.Core
                 }
             }
 
-            this.check_temp_store.DBSource.UpdateByBatch(batch, WriteOptionWrapper.GetInstance().Sync(Args.Instance.Storage.Sync));
+            this.check_temp_store.DBSource.UpdateByBatch(batch, new WriteOptions() { Sync = Args.Instance.Storage.Sync });
         }
 
         private void DeleteCheckPoint()
@@ -206,7 +207,7 @@ namespace Mineral.Core.Database2.Core
                 }
             }
 
-            this.check_temp_store.DBSource.UpdateByBatch(collection, WriteOptionWrapper.GetInstance().Sync(Args.Instance.Storage.Sync));
+            this.check_temp_store.DBSource.UpdateByBatch(collection, new WriteOptions() { Sync = Args.Instance.Storage.Sync });
         }
         #endregion
 

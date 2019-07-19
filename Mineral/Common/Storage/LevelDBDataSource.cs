@@ -3,7 +3,7 @@ using System.Collections;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Text;
-using Mineral.Common.Stroage.LevelDB;
+using LevelDB;
 using Mineral.Core.Config.Arguments;
 using Mineral.Utils;
 
@@ -12,8 +12,6 @@ namespace Mineral.Common.Storage
     public class LevelDBDataSource : IDBSourceInter<byte[]>, IEnumerable<KeyValuePair<byte[], byte[]>>
     {
         #region Field
-        private static readonly string ENGINE = "ENGINE";
-
         private string database_name;
         private string parent = "";
         private DB db;
@@ -50,7 +48,7 @@ namespace Mineral.Common.Storage
             if (IsAlive)
             {
                 Options options = Args.Instance.Storage.GetOptionsByDbName(DataBaseName);
-                this.db = DB.Open(DataBasePath, options);
+                this.db = new DB(options, DataBasePath);
                 IsAlive = this.db != null ? true : false;
             }
         }
@@ -74,11 +72,11 @@ namespace Mineral.Common.Storage
             if (!IsAlive) return null;
 
             HashSet<byte[]> result = new HashSet<byte[]>();
-            using (Iterator it = this.db.NewIterator(new ReadOptions()))
+            using (Iterator it = this.db.CreateIterator(new ReadOptions()))
             {
-                for (it.SeekToFirst(); it.Valid(); it.Next())
+                for (it.SeekToFirst(); it.IsValid(); it.Next())
                 {
-                    result.Add(it.Key().ToArray());
+                    result.Add(it.Key());
                 }
             }
 
@@ -90,11 +88,11 @@ namespace Mineral.Common.Storage
             if (!IsAlive) return null;
 
             HashSet<byte[]> result = new HashSet<byte[]>();
-            using (Iterator it = this.db.NewIterator(new ReadOptions()))
+            using (Iterator it = this.db.CreateIterator(new ReadOptions()))
             {
-                for (it.SeekToFirst(); it.Valid(); it.Next())
+                for (it.SeekToFirst(); it.IsValid(); it.Next())
                 {
-                    result.Add(it.Value().ToArray());
+                    result.Add(it.Value());
                 }
             }
 
@@ -105,15 +103,15 @@ namespace Mineral.Common.Storage
         {
             if (IsAlive)
             {
-                this.db.Delete(new WriteOptions(), key);
+                this.db.Delete(key, new WriteOptions());
             }
         }
 
-        public void DeleteData(byte[] key, WriteOptionWrapper options)
+        public void DeleteData(byte[] key, WriteOptions options)
         {
             if (IsAlive)
             {
-                this.db.Delete(options.Level, key);
+                this.db.Delete(key, options);
             }
         }
 
@@ -125,7 +123,7 @@ namespace Mineral.Common.Storage
         public byte[] GetData(byte[] key)
         {
             if (!IsAlive) return null;
-            return this.db.Get(new ReadOptions(), key).ToArray();
+            return this.db.Get(key, new ReadOptions());
         }
 
         public long GetTotal()
@@ -133,9 +131,9 @@ namespace Mineral.Common.Storage
             if (IsAlive) return 0;
 
             long result = 0L;
-            using (Iterator it = this.db.NewIterator(new ReadOptions()))
+            using (Iterator it = this.db.CreateIterator(new ReadOptions()))
             {
-                for (it.SeekToFirst(); it.Valid(); it.Next())
+                for (it.SeekToFirst(); it.IsValid(); it.Next())
                 {
                     result++;
                 }
@@ -148,15 +146,15 @@ namespace Mineral.Common.Storage
         {
             if (IsAlive)
             {
-                PutData(key, value, new WriteOptionWrapper());
+                PutData(key, value, new WriteOptions());
             }
         }
 
-        public void PutData(byte[] key, byte[] value, WriteOptionWrapper options)
+        public void PutData(byte[] key, byte[] value, WriteOptions options)
         {
             if (IsAlive)
             {
-                this.db.Put(options.Level, key, value);
+                this.db.Put(key, value, options);
             }
         }
 
@@ -164,20 +162,20 @@ namespace Mineral.Common.Storage
         {
             if (IsAlive)
             {
-                UpdateByBatch(rows, new WriteOptionWrapper());
+                UpdateByBatch(rows, new WriteOptions());
             }
         }
 
-        public void UpdateByBatch(Dictionary<byte[], byte[]> rows, WriteOptionWrapper options)
+        public void UpdateByBatch(Dictionary<byte[], byte[]> rows, WriteOptions options)
         {
             if (!IsAlive) return;
 
             WriteBatch batch = new WriteBatch();
             foreach (KeyValuePair<byte[], byte[]> row in rows)
             {
-                batch.Put(SliceBuilder.Begin().Add(row.Key), SliceBuilder.Begin().Add(row.Value));
+                batch.Put(row.Key, row.Value);
             }
-            this.db.Write(new WriteOptions(), batch);
+            this.db.Write(batch, new WriteOptions());
         }
 
         public HashSet<byte[]> GetLatestValues(long limit)
@@ -187,13 +185,13 @@ namespace Mineral.Common.Storage
             if (limit <= 0)
                 return result;
 
-            Iterator it = this.db.NewIterator(new ReadOptions());
+            Iterator it = this.db.CreateIterator(new ReadOptions());
             // TODO 빠진부분 확인해야함
 
             long i = 0;
-            for (it.SeekToLast(); it.Valid() && i++ < limit; it.Prev())
+            for (it.SeekToLast(); it.IsValid() && i++ < limit; it.Prev())
             {
-                result.Add(it.Value().ToArray());
+                result.Add(it.Value());
                 i++;
             }
 
@@ -206,11 +204,11 @@ namespace Mineral.Common.Storage
             if (limit <= 0)
                 return result;
 
-            Iterator it = this.db.NewIterator(new ReadOptions());
+            Iterator it = this.db.CreateIterator(new ReadOptions());
             long i = 0;
-            for (it.Seek(key); it.Valid() && i++ < limit; it.Next())
+            for (it.Seek(key); it.IsValid() && i++ < limit; it.Next())
             {
-                result.Add(it.Key().ToArray(), it.Value().ToArray());
+                result.Add(it.Key(), it.Value());
             }
 
             return result;
@@ -226,19 +224,19 @@ namespace Mineral.Common.Storage
             }
 
             long i = 0;
-            Iterator it = this.db.NewIterator(new ReadOptions());
-            for (it.SeekToFirst(); it.Valid() && i++ < limit; it.Next())
+            Iterator it = this.db.CreateIterator(new ReadOptions());
+            for (it.SeekToFirst(); it.IsValid() && i++ < limit; it.Next())
             {
-                if (it.Key().buffer.Length >= precision)
+                if (it.Key().Length >= precision)
                 {
                     if (ByteUtil.Compare(
                             ArrayUtil.GetRange(key, 0, precision),
-                            ArrayUtil.GetRange(it.Key().ToArray(), 0, precision))
+                            ArrayUtil.GetRange(it.Key(), 0, precision))
                             < 0)
                     {
                         break;
                     }
-                    result.Add(it.Key().ToArray(), it.Value().ToArray());
+                    result.Add(it.Key(), it.Value());
                 }
             }
 
@@ -249,10 +247,10 @@ namespace Mineral.Common.Storage
         {
             Dictionary<byte[], byte[]> result = new Dictionary<byte[], byte[]>();
 
-            Iterator it = this.db.NewIterator(new ReadOptions());
-            for (it.SeekToFirst(); it.Valid(); it.Next())
+            Iterator it = this.db.CreateIterator(new ReadOptions());
+            for (it.SeekToFirst(); it.IsValid(); it.Next())
             {
-                result.Add(it.Key().ToArray(), it.Value().ToArray());
+                result.Add(it.Key(), it.Value());
             }
 
             return result;
@@ -260,10 +258,10 @@ namespace Mineral.Common.Storage
 
         public IEnumerator<KeyValuePair<byte[], byte[]>> GetEnumerator()
         {
-            Iterator it = this.db.NewIterator(new ReadOptions());
-            for (; it.Valid(); it.Next())
+            Iterator it = this.db.CreateIterator(new ReadOptions());
+            for (; it.IsValid(); it.Next())
             {
-                yield return new KeyValuePair<byte[], byte[]>(it.Key().ToArray(), it.Value().ToArray());
+                yield return new KeyValuePair<byte[], byte[]>(it.Key(), it.Value());
             }
         }
 

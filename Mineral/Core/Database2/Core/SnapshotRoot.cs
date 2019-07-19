@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
-using Mineral.Common.Stroage.LevelDB;
 using Mineral.Core.Database2.Common;
 
 namespace Mineral.Core.Database2.Core
@@ -22,7 +21,7 @@ namespace Mineral.Core.Database2.Core
         {
             try
             {
-                this.db = (IBaseDB<byte[], byte[]>)new LevelDB(parent, name);
+                this.db = (IBaseDB<byte[], byte[]>)new Mineral.Core.Database2.Common.LevelDB(parent, name);
             }
             catch (System.Exception e)
             {

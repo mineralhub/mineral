@@ -165,7 +165,7 @@ namespace Mineral.Core.Database2.Core
 
                 if (snapshot.GetPrevious() == null && temp != 0)
                 {
-                    HashSet<byte[]> values = (((LevelDB)((SnapshotRoot)snapshot).DB)).DB.GetLatestValues(temp);
+                    HashSet<byte[]> values = (((Common.LevelDB)((SnapshotRoot)snapshot).DB)).DB.GetLatestValues(temp);
                 }
             }
 
@@ -191,7 +191,7 @@ namespace Mineral.Core.Database2.Core
             }
 
             Dictionary<byte[], byte[]> db_dictonary = 
-                new Dictionary<byte[], byte[]>((((LevelDB)((SnapshotRoot)snapshot.GetRoot()).DB).DB.GetNext(key, limit)));
+                new Dictionary<byte[], byte[]>((((Common.LevelDB)((SnapshotRoot)snapshot.GetRoot()).DB).DB.GetNext(key, limit)));
 
             foreach (KeyValuePair<byte[], byte[]> pair in collection)
             {
@@ -231,7 +231,7 @@ namespace Mineral.Core.Database2.Core
                 return result;
 
             List<byte[]> list =
-                ((LevelDB)((SnapshotRoot)this.head.GetRoot()).DB).DB.GetPrevious(key, limit, precision).Values.ToList(); ;
+                ((Common.LevelDB)((SnapshotRoot)this.head.GetRoot()).DB).DB.GetPrevious(key, limit, precision).Values.ToList(); ;
 
             foreach (byte[] array in list)
             {
@@ -249,7 +249,7 @@ namespace Mineral.Core.Database2.Core
                 ((Snapshot)this.head).Collect(collection);
             }
             
-            Dictionary<byte[], byte[]> result = ((LevelDB)((SnapshotRoot)this.head.GetRoot()).DB).DB.GetAll();
+            Dictionary<byte[], byte[]> result = ((Common.LevelDB)((SnapshotRoot)this.head.GetRoot()).DB).DB.GetAll();
             foreach (KeyValuePair<byte[], byte[]> pair in collection)
             {
                 result.Add(pair.Key, pair.Value);

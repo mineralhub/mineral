@@ -10,7 +10,7 @@ using System.Linq;
 using Mineral.Utils;
 using static Mineral.Core.Config.Arguments.Account;
 using Mineral.Core.Config.Arguments;
-using Mineral.Common.Stroage.LevelDB;
+using LevelDB;
 
 namespace Mineral
 {

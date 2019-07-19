@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Text;
-using Mineral.Common.Stroage.LevelDB;
 using Mineral.Core.Database2.Common;
 
 namespace Mineral.Core.Database2.Core
@@ -61,13 +60,13 @@ namespace Mineral.Core.Database2.Core
         {
             ISnapshot snapshot = head;
 
-            Slice slice;
+            byte[] result = null;
             while (IsRoot(snapshot))
             {
-                slice = ((Snapshot)(snapshot)).db.Get(key);
-                if (slice != default(Slice))
+                result = ((Snapshot)(snapshot)).db.Get(key);
+                if (result != null)
                 {
-                    return slice.ToArray();
+                    return result;
                 }
                 snapshot = snapshot.GetPrevious();
             }
