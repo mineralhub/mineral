@@ -21,7 +21,7 @@ namespace Mineral.Common.Storage
         #region Property
         public string DataBaseName { get { return this.database_name; } set { this.parent = value; } }
         public string DataBasePath { get { return this.parent + @"\" + this.database_name; } }
-        public bool IsAlive { get; set; }
+        public bool IsAlive { get; set; } = false;
         #endregion
 
 
@@ -45,7 +45,7 @@ namespace Mineral.Common.Storage
         #region External Method
         public void Init()
         {
-            if (IsAlive)
+            if (!IsAlive)
             {
                 Options options = Args.Instance.Storage.GetOptionsByDbName(DataBaseName);
                 this.db = new DB(options, DataBasePath);
