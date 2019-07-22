@@ -9,7 +9,6 @@ namespace Mineral.Common.Application
     public interface IApplication
     {
         void SetOption(Args args);
-        void Init(Args args);
         void InitService(Args args);
         void Startup();
         void Shutdown();

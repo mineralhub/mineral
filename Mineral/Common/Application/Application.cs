@@ -24,6 +24,11 @@ namespace Mineral.Common.Application
         #endregion
 
         #region Constructor
+        public Application()
+        {
+            this.block_store = this.db_manager.Block;
+            this.services = new ServiceContainer();
+        }
         #endregion
 
 
@@ -36,12 +41,6 @@ namespace Mineral.Common.Application
 
 
         #region External Method
-        public void Init(Args args)
-        {
-            this.block_store = this.db_manager.Block;
-            this.services = new ServiceContainer();
-        }
-
         public void SetOption(Args args)
         {
             throw new NotImplementedException();
@@ -49,12 +48,25 @@ namespace Mineral.Common.Application
 
         public void Startup()
         {
-            throw new NotImplementedException();
+            Manager.Instance.NetService.Start();
         }
 
         public void Shutdown()
         {
-            throw new NotImplementedException();
+            Logger.Info("------------------ Begin to shutdown ------------------");
+
+            Manager.Instance.NetService.Close();
+            lock(this.db_manager.RevokeStore)
+            {
+                this.db_manager.RevokeStore.Shutdown();
+                this.db_manager.CloseAll();
+            }
+            
+            dbManager.stopRepushThread();
+            dbManager.stopRepushTriggerThread();
+            EventPluginLoader.getInstance().stopPlugin();
+
+            Logger.Info("------------------ End to shutdown------------------");
         }
 
         public void InitService(Args args)
