@@ -133,6 +133,8 @@ namespace Mineral.Common.Storage
         public byte[] GetData(byte[] key)
         {
             if (!IsAlive) return null;
+            if (key == null) return null;
+
             return this.db.Get(key, new ReadOptions());
         }
 
@@ -154,18 +156,21 @@ namespace Mineral.Common.Storage
 
         public void PutData(byte[] key, byte[] value)
         {
-            if (IsAlive)
-            {
-                PutData(key, value, new WriteOptions());
-            }
+            if (!IsAlive)
+                return;
+
+            PutData(key, value, new WriteOptions());
         }
 
         public void PutData(byte[] key, byte[] value, WriteOptions options)
         {
-            if (IsAlive)
-            {
-                this.db.Put(key, value, options);
-            }
+            if (!IsAlive)
+                return;
+
+            Helper.IsNotNull(key, "Key must be not null.");
+            Helper.IsNotNull(value, "Key must be not null.");
+
+            this.db.Put(key, value, options);
         }
 
         public void UpdateByBatch(Dictionary<byte[], byte[]> rows)
