@@ -13,6 +13,8 @@ using Mineral.Core.Database;
 using Mineral.Core.Net;
 using Mineral.Core.Net.Messages;
 using Mineral.Core.Witness;
+using Mineral.Cryptography;
+using Mineral.Utils;
 
 namespace Mineral.Core.Service
 {
@@ -30,8 +32,8 @@ namespace Mineral.Core.Service
         private BackupServer backup_server = null;
 
         private Dictionary<ByteString, byte[]> privatekeys = new Dictionary<ByteString, byte[]>();
-        private Dictionary<byte[], byte[]> privatekey_address = new Dictionary<byte[], byte[]>();
-        protected Dictionary<ByteString, WitnessCapsule> local_witness_state = new Dictionary<ByteString, WitnessCapsule>();
+        private Dictionary<byte[], byte[]> privatekey_addresses = new Dictionary<byte[], byte[]>();
+        protected Dictionary<ByteString, WitnessCapsule> local_witness_states = new Dictionary<ByteString, WitnessCapsule>();
 
         private WitnessController controller;
         private volatile bool is_running = false;
@@ -83,9 +85,9 @@ namespace Mineral.Core.Service
         #region Internal Method
         private void ScheduleProductionLoop()
         {
-            if (this.local_witness_state == null
-                || this.local_witness_state.Keys == null
-                || this.local_witness_state.Keys.Count == 0)
+            if (this.local_witness_states == null
+                || this.local_witness_states.Keys == null
+                || this.local_witness_states.Keys.Count == 0)
             {
                 Logger.Error("LocalWitness is null.");
                 return;
@@ -188,7 +190,7 @@ namespace Mineral.Core.Service
                 return BlockProductionCondition.LOW_PARTICIPATION;
             }
 
-            if (!this.controller.ActiveWitnessesContain(this.local_witness_state.Keys.ToHashSet()))
+            if (!this.controller.ActiveWitnessesContain(this.local_witness_states.Keys.ToHashSet()))
             {
                 Logger.Info(
                     string.Format("Unelected. Elected Witnesses: {0}",
@@ -230,7 +232,7 @@ namespace Mineral.Core.Service
                     }
 
                     ByteString scheduled_witness = this.controller.GetScheduleWitness(slot);
-                    if (!this.local_witness_state.ContainsKey(scheduled_witness))
+                    if (!this.local_witness_states.ContainsKey(scheduled_witness))
                     {
                         Logger.Info(
                             string.Format("It's not my turn, ScheduledWitness[{0}],slot[{1}],abSlot[{2}],",
@@ -323,7 +325,7 @@ namespace Mineral.Core.Service
 
         private BlockCapsule GenerateBlock(long when, ByteString witness_address, bool is_mainternance)
         {
-            this.local_witness_state.TryGetValue(witness_address, out WitnessCapsule witness);
+            this.local_witness_states.TryGetValue(witness_address, out WitnessCapsule witness);
             this.privatekeys.TryGetValue(witness_address, out byte[] privatekey);
 
             return this.db_manager.GenerateBlock(witness, when, privatekey, is_mainternance, true);
@@ -346,22 +348,40 @@ namespace Mineral.Core.Service
         #region External Method
         public void Init()
         {
-            throw new NotImplementedException();
+            if (Args.Instance.LocalWitness.GetPrivateKey().IsNullOrEmpty())
+                return;
+
+            byte[] privatekey = Helper.HexToBytes(Args.Instance.LocalWitness.GetPrivateKey());
+            byte[] witness_address = Args.Instance.LocalWitness.GetWitnessAccountAddress();
+            byte[] privatekey_address = Wallet.PublickKeyToAddress(ECKey.FromPrivateKey(privatekey).PublicKey);
+
+            WitnessCapsule witness = Manager.Instance.DBManager.Witness.Get(witness_address);
+            if (witness == null)
+            {
+                Logger.Warning("WitnessCapsule[" + witness_address + "] is not in witnessStore");
+                witness = new WitnessCapsule(ByteString.CopyFrom(witness_address));
+            }
+
+            this.privatekeys.Add(witness.Address, privatekey);
+            this.local_witness_states.Add(witness.Address, witness);
+            this.privatekey_addresses.Add(privatekey, privatekey_address);
         }
 
         public void Init(Args args)
         {
-            throw new NotImplementedException();
+            Init();
         }
 
         public void Start()
         {
-            throw new NotImplementedException();
+            this.is_running = true;
+            this.thread_generate.Start();
         }
 
         public void Stop()
         {
-            throw new NotImplementedException();
+            this.is_running = false;
+            this.thread_generate.Interrupt();
         }
 
         public bool ValidateWitnessPermission(ByteString scheduled_witness)
@@ -369,7 +389,7 @@ namespace Mineral.Core.Service
             if (this.db_manager.DynamicProperties.GetAllowMultiSign() == 1)
             {
                 this.privatekeys.TryGetValue(scheduled_witness, out byte[] privatekey);
-                this.privatekey_address.TryGetValue(privatekey, out byte[] permission_address);
+                this.privatekey_addresses.TryGetValue(privatekey, out byte[] permission_address);
 
                 AccountCapsule witnessAccount = this.db_manager.Account.Get(scheduled_witness.ToByteArray());
 
