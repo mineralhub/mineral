@@ -61,7 +61,6 @@ namespace Mineral.Cryptography
             byte[] hash = Hash.SHA3(input);
             byte[] address = new byte[hash.Length - 11];
 
-
             address[0] = Wallet.ADDRESS_PREFIX_BYTES;
             Array.Copy(hash, 12, address, 1, address.Length - 1);
 
