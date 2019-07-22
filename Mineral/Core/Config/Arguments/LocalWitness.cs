@@ -82,11 +82,10 @@ namespace Mineral.Core.Config.Arguments
                 {
                     ECKey key = ECKey.FromPrivateKey(privatekey.HexToBytes());
                     this.witness_account_address = Wallet.PublickKeyToAddress(key.PublicKey);
-                    return this.witness_account_address;
                 }
             }
 
-            return null;
+            return this.witness_account_address;
         }
 
         public void AddPrivateKeys(string privatekey)
