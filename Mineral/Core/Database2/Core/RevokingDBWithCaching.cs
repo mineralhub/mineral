@@ -22,7 +22,15 @@ namespace Mineral.Core.Database2.Core
 
 
         #region Property
-        public string DBName { get { return this.db_name; } }
+        public string DBName
+        {
+            get { return this.db_name; }
+        }
+
+        public string Name
+        {
+            get { return GetType().Name; }
+        }
         #endregion
 
 

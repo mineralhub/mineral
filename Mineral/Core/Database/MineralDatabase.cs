@@ -4,11 +4,12 @@ using System.Collections.Generic;
 using System.Text;
 using Mineral.Common.Storage;
 using Mineral.Core.Config.Arguments;
+using Mineral.Core.Database2.Common;
 using Mineral.Core.Database2.Core;
 
 namespace Mineral.Core.Database
 {
-    public abstract class MineralDatabase<T> : IMineralChainBase<T>
+    public abstract class MineralDatabase<T> : IDatabase<T>
     {
         #region Field
         protected IDBSourceInter<byte[]> db_source = null;
@@ -17,7 +18,18 @@ namespace Mineral.Core.Database
 
 
         #region Property
-        public IDBSourceInter<byte[]> DBSource { get { return this.db_source; } }
+        public IDBSourceInter<byte[]> DBSource
+        {
+            get { return this.db_source; }
+        }
+        public string Name
+        {
+            get { return GetType().Name; }
+        }
+        public string DBName
+        {
+            get { return this.db_name; }
+        }
         #endregion
 
 
@@ -45,16 +57,6 @@ namespace Mineral.Core.Database
         public void Close()
         {
             this.db_source.Close();
-        }
-
-        public string GetDBName()
-        {
-            return this.db_name;
-        }
-
-        public string GetName()
-        {
-            return this.GetType().Name;
         }
 
         public T GetUnchecked(byte[] key)

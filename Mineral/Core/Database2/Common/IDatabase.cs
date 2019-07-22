@@ -4,10 +4,8 @@ using System.Text;
 
 namespace Mineral.Core.Database2.Common
 {
-    public interface IDatabase<T>
+    public interface IDatabase<T> : IDB, IEnumerable<KeyValuePair<byte[], T>>
     {
-        void Reset();
-        void Close();
         void Put(byte[] key, T value);
         void Delete(byte[] key);
 

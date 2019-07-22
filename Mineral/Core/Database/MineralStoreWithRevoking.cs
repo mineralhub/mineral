@@ -9,7 +9,7 @@ using Mineral.Core.Database2.Core;
 
 namespace Mineral.Core.Database
 {
-    public abstract class MineralStoreWithRevoking<T, U> : IMineralChainBase<T>
+    public abstract class MineralStoreWithRevoking<T, U> : IDatabase<T>
         where T : IProtoCapsule<U>
 
     {
@@ -21,7 +21,19 @@ namespace Mineral.Core.Database
 
 
         #region Property
-        public long Size => this.revoking_db.LongCount();
+        public long Size
+        {
+            get { return this.revoking_db.LongCount(); }
+        }
+
+        public string Name
+        {
+            get { return GetType().Name; }
+        }
+        public string DBName
+        {
+            get { return this.db_name; }
+        }
         #endregion
 
 
@@ -86,16 +98,6 @@ namespace Mineral.Core.Database
         public virtual void Close()
         {
             this.revoking_db.Close();
-        }
-
-        public string GetDBName()
-        {
-            return this.db_name;
-        }
-
-        public string GetName()
-        {
-            return this.GetType().Name;
         }
 
         public virtual T GetUnchecked(byte[] key)
