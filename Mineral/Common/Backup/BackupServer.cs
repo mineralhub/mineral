@@ -91,7 +91,9 @@ namespace Mineral.Common.Backup
         #region External Method
         public void InitServer()
         {
-            if (port > 0 && Args.Instance.Node.Backup.Members.Count > 0)
+            if (port > 0
+                && Args.Instance.Node.Backup.Members != null
+                && Args.Instance.Node.Backup.Members.Count > 0)
             {
                 new Thread(new ThreadStart(() =>
                 {
