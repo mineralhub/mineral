@@ -17,7 +17,7 @@ namespace Mineral.Common.Utils
         #region Property
         public static SessionOptional Instance
         {
-            get { return instance ?? new SessionOptional(); }
+            get { return instance = instance ?? new SessionOptional(); }
         }
         #endregion
 

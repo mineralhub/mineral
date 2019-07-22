@@ -223,7 +223,7 @@ namespace Mineral.Core.Net.Peer
 
         public void SendMessage(Message message)
         {
-            this.message_queue.SendMessage(message);
+            Manager.Instance.MessageQueue.SendMessage(message);
         }
 
         public void OnConnect()

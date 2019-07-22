@@ -31,7 +31,6 @@ namespace Mineral.Core.Database2.Core
         private bool is_unchecked = true;
         private volatile int max_flush_count = DEFAULT_MAX_FLUSH_COUNT;
         private volatile int flush_count = DEFAULT_MIN_FLUSH_COUNT;
-        private CheckTempStore check_temp_store = new CheckTempStore();
         #endregion
 
 
@@ -192,22 +191,22 @@ namespace Mineral.Core.Database2.Core
                 }
             }
 
-            this.check_temp_store.DBSource.UpdateByBatch(batch, new WriteOptions() { Sync = Args.Instance.Storage.Sync });
+            CheckTempStore.Instance.DBSource.UpdateByBatch(batch, new WriteOptions() { Sync = Args.Instance.Storage.Sync });
         }
 
         private void DeleteCheckPoint()
         {
             Dictionary<byte[], byte[]> collection = new Dictionary<byte[], byte[]>();
-            if (!(this.check_temp_store.DBSource.AllKeys().Count <= 0))
+            if (!(CheckTempStore.Instance.DBSource.AllKeys().Count <= 0))
             {
-                IEnumerator<KeyValuePair<byte[], byte[]>> it = this.check_temp_store.GetEnumerator();
+                IEnumerator<KeyValuePair<byte[], byte[]>> it = CheckTempStore.Instance.GetEnumerator();
                 while (it.MoveNext())
                 {
                     collection.Add(it.Current.Key, it.Current.Value);
                 }
             }
 
-            this.check_temp_store.DBSource.UpdateByBatch(collection, new WriteOptions() { Sync = Args.Instance.Storage.Sync });
+            CheckTempStore.Instance.DBSource.UpdateByBatch(collection, new WriteOptions() { Sync = Args.Instance.Storage.Sync });
         }
         #endregion
 
@@ -342,13 +341,13 @@ namespace Mineral.Core.Database2.Core
                 }
             }
 
-            if (this.check_temp_store.DBSource.AllKeys().Count > 0)
+            if (CheckTempStore.Instance.DBSource.AllKeys().Count > 0)
             {
                 Dictionary<string, RevokingDBWithCaching> dbs = this.databases.ToDictionary(db => db.DBName);
 
                 Advance();
 
-                IEnumerator<KeyValuePair<byte[], byte[]>> it = this.check_temp_store.GetEnumerator();
+                IEnumerator<KeyValuePair<byte[], byte[]>> it = CheckTempStore.Instance.GetEnumerator();
                 while (it.MoveNext())
                 {
                     string db = SimpleDecode(it.Current.Key);
@@ -393,7 +392,7 @@ namespace Mineral.Core.Database2.Core
                 Thread.CurrentThread.Interrupt();
             }
 
-            this.check_temp_store.DBSource.Close();
+            CheckTempStore.Instance.DBSource.Close();
             Logger.Info("end to pop revoking db");
         }
 

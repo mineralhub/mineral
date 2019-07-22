@@ -32,17 +32,16 @@ namespace Mineral.Common.Overlay.Server
         }
 
         #region Field
-        // working
-        private MineralNetHandler net_handler = Manager.Instance.NetHandler;
-        private NodeManager node_manager = Manager.Instance.NodeManager;
-        private ChannelManager channel_manager = Manager.Instance.ChannelManager;
-        private HandShakeHandler handshake_handler = null;
-        private WireTrafficStats stats = Manager.Instance.TrafficStats;
-        private P2pHandler p2p_handler = Manager.Instance.P2pHandler;
-        protected MessageQueue message_queue = Manager.Instance.MessageQueue;
-        private MessageCodec message_codec = Manager.Instance.MessageCodec;
+        //private MineralNetHandler net_handler = Manager.Instance.NetHandler;
+        //private NodeManager node_manager = Manager.Instance.NodeManager;
+        //private ChannelManager channel_manager = Manager.Instance.ChannelManager;
+        //private WireTrafficStats stats = Manager.Instance.TrafficStats;
+        //private P2pHandler p2p_handler = Manager.Instance.P2pHandler;
+        //private MessageQueue message_queue = Manager.Instance.MessageQueue;
+        //private MessageCodec message_codec = Manager.Instance.MessageCodec;
 
-        protected NodeStatistics node_statistics;
+        private HandShakeHandler handshake_handler = null;
+        protected NodeStatistics node_statistics = null;
         private PeerStatistics peer_statistics = new PeerStatistics();
         private IChannelHandlerContext context = null;
         private IPEndPoint socket_address = null;
@@ -130,10 +129,6 @@ namespace Mineral.Common.Overlay.Server
         #region Constructor
         public Channel()
         {
-            this.handshake_handler = new HandShakeHandler(Manager.Instance.DBManager,
-                                                          Manager.Instance.NodeManager,
-                                                          Manager.Instance.ChannelManager,
-                                                          Manager.Instance.SyncPool);
         }
         #endregion
 
@@ -149,44 +144,49 @@ namespace Mineral.Common.Overlay.Server
         #region External Method
         public void Init(IChannelPipeline pipe_line, string remote_id, bool dicovery_mode)
         {
+            this.handshake_handler = new HandShakeHandler(Manager.Instance.DBManager,
+                                              Manager.Instance.NodeManager,
+                                              Manager.Instance.ChannelManager,
+                                              Manager.Instance.SyncPool);
+
             this.remote_id = remote_id;
             this.is_active = this.remote_id != null && this.remote_id.Length > 0;
             this.start_time = Helper.CurrentTimeMillis();
 
             pipe_line.AddLast("readTimeoutHandler", new ReadTimeoutHandler(60));
-            pipe_line.AddLast(this.stats.TCP);
+            pipe_line.AddLast(Manager.Instance.TrafficStats.TCP);
             pipe_line.AddLast("protoPender", new ProtobufVarint32LengthFieldPrepender());
             pipe_line.AddLast("lengthDecode", new TxProtobufVarint32FrameDecoder(this));
             pipe_line.AddLast("handshakeHandler", this.handshake_handler);
 
-            this.message_codec.Channel = this;
-            this.message_queue.Channel = this;
+            Manager.Instance.MessageCodec.Channel = this;
+            Manager.Instance.MessageQueue.Channel = this;
             this.handshake_handler.Channel = this;
             this.handshake_handler.RemoteId = Encoding.UTF8.GetBytes(remote_id);
-            this.p2p_handler.Channel = this;
-            this.net_handler.Channel = this as PeerConnection;
+            Manager.Instance.P2pHandler.Channel = this;
+            Manager.Instance.NetHandler.Channel = this as PeerConnection;
 
-            this.p2p_handler.MessageQueue = this.message_queue;
-            this.net_handler.MessageQueue = this.message_queue;
+            Manager.Instance.P2pHandler.MessageQueue = Manager.Instance.MessageQueue;
+            Manager.Instance.NetHandler.MessageQueue = Manager.Instance.MessageQueue;
         }
 
         public void InitNode(byte[] node_id, int remote_port)
         {
             this.node = new Node(node_id, this.socket_address.Address.ToString(), remote_port);
-            this.node_statistics = this.node_manager.GetNodeStatistics(node);
-            this.node_manager.GetNodeHandler(node).Node = node;
+            this.node_statistics = Manager.Instance.NodeManager.GetNodeStatistics(node);
+            Manager.Instance.NodeManager.GetNodeHandler(node).Node = node;
         }
 
         public void PublicHandshakeFinished(IChannelHandlerContext context, Messages.HelloMessage message)
         {
-            this.is_trust_peer = this.channel_manager.TrustNodes.ContainsKey(this.socket_address?.Address);
-            this.is_fast_forward_peer = this.channel_manager.FastForwardNodes.ContainsKey(this.socket_address?.Address);
+            this.is_trust_peer = Manager.Instance.ChannelManager.TrustNodes.ContainsKey(this.socket_address?.Address);
+            this.is_fast_forward_peer = Manager.Instance.ChannelManager.FastForwardNodes.ContainsKey(this.socket_address?.Address);
             context.Channel.Pipeline.Remove(this.handshake_handler);
 
-            this.message_queue.Activate(context);
-            context.Channel.Pipeline.AddLast("messageCodec", this.message_codec);
-            context.Channel.Pipeline.AddLast("p2p", this.p2p_handler);
-            context.Channel.Pipeline.AddLast("data", this.net_handler);
+            Manager.Instance.MessageQueue.Activate(context);
+            context.Channel.Pipeline.AddLast("messageCodec", Manager.Instance.MessageCodec);
+            context.Channel.Pipeline.AddLast("p2p", Manager.Instance.P2pHandler);
+            context.Channel.Pipeline.AddLast("data", Manager.Instance.NetHandler);
 
             this.start_time = message.Timestamp;
             this.state = MineralState.HANDSHAKE_FINISHED;
@@ -222,7 +222,7 @@ namespace Mineral.Common.Overlay.Server
         public void Disconnect(ReasonCode reason)
         {
             this.is_disconnect = true;
-            this.channel_manager.ProcessDisconnect(this, reason);
+            Manager.Instance.ChannelManager.ProcessDisconnect(this, reason);
 
             Messages.DisconnectMessage msg = new Messages.DisconnectMessage(reason);
             Logger.Info(
@@ -241,8 +241,8 @@ namespace Mineral.Common.Overlay.Server
         public void Close()
         {
             this.is_disconnect = true;
-            this.p2p_handler.Close();
-            this.message_queue.Close();
+            Manager.Instance.P2pHandler.Close();
+            Manager.Instance.MessageQueue.Close();
             this.context.CloseAsync();
         }
 

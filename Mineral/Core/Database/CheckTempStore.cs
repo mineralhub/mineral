@@ -7,15 +7,20 @@ namespace Mineral.Core.Database
     public class CheckTempStore : MineralDatabase<byte[]>
     {
         #region Field
+        private static CheckTempStore instance = null;
         #endregion
 
 
         #region Property
+        public static CheckTempStore Instance
+        {
+            get { return instance = instance ?? new CheckTempStore(); }
+        }
         #endregion
 
 
         #region Constructor
-        public CheckTempStore() : base("tmp") {}
+        private CheckTempStore() : base("tmp") {}
         #endregion
 
 

@@ -518,7 +518,7 @@ namespace Mineral.Core.Config.Arguments
 
         public string GetOutputDirectory()
         {
-            if (this.output_directory.Equals("") || this.output_directory.EndsWith(Path.DirectorySeparatorChar.ToString()))
+            if (!this.output_directory.Equals("") && !this.output_directory.EndsWith(Path.DirectorySeparatorChar.ToString()))
             {
                 return this.output_directory + Path.DirectorySeparatorChar;
             }

@@ -2,6 +2,7 @@
 using System.Collections;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.IO;
 using System.Text;
 using LevelDB;
 using Mineral.Core.Config.Arguments;
@@ -20,7 +21,7 @@ namespace Mineral.Common.Storage
 
         #region Property
         public string DataBaseName { get { return this.database_name; } set { this.parent = value; } }
-        public string DataBasePath { get { return this.parent + @"\" + this.database_name; } }
+        public string DataBasePath { get { return this.parent + Path.DirectorySeparatorChar + this.database_name; } }
         public bool IsAlive { get; set; } = false;
         #endregion
 
@@ -29,7 +30,8 @@ namespace Mineral.Common.Storage
         public LevelDBDataSource(string parent, string name)
         {
             this.database_name = name;
-            this.parent = parent + @"\" + Args.Instance.Storage.Directory;
+            this.parent = parent.IsNullOrEmpty() ?
+                Args.Instance.Storage.Directory : parent + Path.DirectorySeparatorChar + Args.Instance.Storage.Directory;
         }
         #endregion
 
@@ -47,9 +49,17 @@ namespace Mineral.Common.Storage
         {
             if (!IsAlive)
             {
-                Options options = Args.Instance.Storage.GetOptionsByDbName(DataBaseName);
-                this.db = new DB(options, DataBasePath);
-                IsAlive = this.db != null ? true : false;
+                try
+                {
+                    Options options = Args.Instance.Storage.GetOptionsByDbName(DataBaseName);
+                    this.db = new DB(options, DataBasePath);
+                    IsAlive = this.db != null ? true : false;
+                }
+                catch (System.Exception e)
+                {
+                    Logger.Error("Can't initialize database source", e);
+                    throw e;
+                }
             }
         }
 

@@ -62,7 +62,7 @@ namespace Mineral.Core
         #region Property
         public static Manager Instance
         {
-            get { return instance ?? new Manager(); }
+            get { return instance = instance ?? new Manager(); }
         }
 
 
