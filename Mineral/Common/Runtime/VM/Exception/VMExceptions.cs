@@ -1,7 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Numerics;
-using System.Text;
+﻿
+using Org.BouncyCastle.Math;
 
 namespace Mineral.Common.Runtime.VM.Exception
 {
@@ -70,8 +68,8 @@ namespace Mineral.Common.Runtime.VM.Exception
             return new OutOfEnergyException(
                 string.Format(
                         "Energy value overflow: actual_energy[{0}], energy_limit[{1}]",
-                        (long)actual_energy,
-                        (long)energy_limit));
+                        actual_energy.LongValue,
+                        energy_limit.LongValue));
         }
 
         public static IllegalOperationException InvalidOpCode(byte code)

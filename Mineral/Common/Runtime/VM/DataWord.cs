@@ -2,10 +2,10 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Numerics;
 using System.Text;
 using Mineral.Core.Exception;
 using Mineral.Utils;
+using Org.BouncyCastle.Math;
 
 namespace Mineral.Common.Runtime.VM
 {
@@ -14,8 +14,8 @@ namespace Mineral.Common.Runtime.VM
         #region Field
         public static readonly int WORD_SIZE = 32;
         public static readonly int MAX_POW = 256;
-        public static readonly BigInteger _2_256 = BigInteger.Pow(2, MAX_POW);
-        public static readonly BigInteger MAX_VALUE = _2_256 - BigInteger.One;
+        public static readonly BigInteger _2_256 = BigInteger.ValueOf(2).Pow(256);
+        public static readonly BigInteger MAX_VALUE = _2_256.Subtract(BigInteger.One);
 
         private byte[] data = new byte[32];
         #endregion
@@ -127,7 +127,7 @@ namespace Mineral.Common.Runtime.VM
                 return;
             }
 
-            this.data = CopyTo(BigInteger.Subtract(MAX_VALUE, this.ToBigInteger()));
+            this.data = CopyTo(MAX_VALUE.Subtract(this.ToBigInteger()));
         }
 
         public DataWord AND(DataWord target)
@@ -156,7 +156,7 @@ namespace Mineral.Common.Runtime.VM
 
         public void Negate()
         {
-            if (this.IsZero)
+            if (IsZero)
                 return;
 
             BNot();
@@ -165,27 +165,27 @@ namespace Mineral.Common.Runtime.VM
 
         public DataWord ShiftLeft(DataWord value)
         {
-            if (value.ToBigInteger().CompareTo(new BigInteger(MAX_POW)) >= 0)
+            if (value.ToBigInteger().CompareTo(BigInteger.ValueOf(MAX_POW)) >= 0)
                 return DataWord.ZERO;
 
-            BigInteger result = ToBigInteger() << value.ToIntSafety();
+            BigInteger result = ToBigInteger().ShiftLeft(value.ToIntSafety());
 
-            return new DataWord(CopyTo(result & MAX_VALUE));
+            return new DataWord(CopyTo(result.And(MAX_VALUE)));
         }
 
         public DataWord ShiftRight(DataWord value)
         {
-            if (value.ToBigInteger().CompareTo(new BigInteger(MAX_POW)) >= 0)
+            if (value.ToBigInteger().CompareTo(BigInteger.ValueOf(MAX_POW)) >= 0)
                 return DataWord.ZERO;
 
-            BigInteger result = ToBigInteger() >> value.ToIntSafety();
+            BigInteger result = ToBigInteger().ShiftRight(value.ToIntSafety());
 
-            return new DataWord(CopyTo(result & MAX_VALUE));
+            return new DataWord(CopyTo(result.And(MAX_VALUE)));
         }
 
-        public DataWord shiftRightSigned(DataWord value)
+        public DataWord ShiftRightSigned(DataWord value)
         {
-            if (value.ToBigInteger().CompareTo(new BigInteger(MAX_POW)) >= 0)
+            if (value.ToBigInteger().CompareTo(BigInteger.ValueOf(MAX_POW)) >= 0)
             {
                 if (this.IsNegative)
                 {
@@ -204,20 +204,28 @@ namespace Mineral.Common.Runtime.VM
 
         public void Add(DataWord value)
         {
-            BigInteger result = BigInteger.Add(ToBigInteger(), value.ToBigInteger());
-            this.data = CopyTo(result & MAX_VALUE);
+            int overflow = 0;
+            byte[] result = new byte[32];
+
+            for (int i = 31; i >= 0; i--)
+            {
+                int v = (this.data[i] & 0xff) + (value.data[i] & 0xff) + overflow;
+                result[i] = (byte)v;
+                overflow = (int)((uint)v >> 8);
+            }
+            this.data = result;
         }
 
         public void Sub(DataWord value)
         {
-            BigInteger result = BigInteger.Subtract(ToBigInteger(), value.ToBigInteger());
-            this.data = CopyTo(result & MAX_VALUE);
+            BigInteger result = ToBigInteger().Subtract(value.ToBigInteger());
+            this.data = CopyTo(result.And(MAX_VALUE));
         }
 
         public void Multiply(DataWord value)
         {
-            BigInteger result = BigInteger.Multiply(ToBigInteger(), value.ToBigInteger());
-            this.data = CopyTo(result & MAX_VALUE);
+            BigInteger result = ToBigInteger().Multiply(value.ToBigInteger());
+            this.data = CopyTo(result.And(MAX_VALUE));
         }
 
         public void Divide(DataWord value)
@@ -228,8 +236,8 @@ namespace Mineral.Common.Runtime.VM
                 return;
             }
 
-            BigInteger result = BigInteger.Divide(ToBigInteger(), value.ToBigInteger());
-            this.data = CopyTo(result & MAX_VALUE);
+            BigInteger result = ToBigInteger().Divide(value.ToBigInteger());
+            this.data = CopyTo(result.And(MAX_VALUE));
         }
 
         public void Mod(DataWord value)
@@ -240,13 +248,13 @@ namespace Mineral.Common.Runtime.VM
                 return;
             }
 
-            BigInteger result = BigInteger.Remainder(ToBigInteger(), value.ToBigInteger());
-            this.data = CopyTo(result & MAX_VALUE);
+            BigInteger result = ToBigInteger().Mod(value.ToBigInteger());
+            this.data = CopyTo(result.And(MAX_VALUE));
         }
 
         public void ModPow(DataWord word)
         {
-            BigInteger result = BigInteger.ModPow(ToBigInteger(), word.ToBigInteger(), _2_256);
+            BigInteger result = ToBigInteger().ModPow(word.ToBigInteger(), _2_256);
             this.data = CopyTo(result);
         }
 
@@ -258,8 +266,8 @@ namespace Mineral.Common.Runtime.VM
                 return;
             }
 
-            BigInteger result = BigInteger.Add(ToBigInteger(), word1.ToBigInteger()).Mod(word2.ToBigInteger());
-            this.data = CopyTo(result & MAX_VALUE);
+            BigInteger result = ToBigInteger().Add(word1.ToBigInteger().Mod(word2.ToBigInteger()));
+            this.data = CopyTo(result.And(MAX_VALUE));
         }
 
         public void MultipyMod(DataWord word1, DataWord word2)
@@ -270,8 +278,8 @@ namespace Mineral.Common.Runtime.VM
                 return;
             }
 
-            BigInteger result = BigInteger.Multiply(ToBigInteger(), word1.ToBigInteger()).Mod(word2.ToBigInteger());
-            this.data = CopyTo(result & MAX_VALUE);
+            BigInteger result = ToBigInteger().Multiply(word1.ToBigInteger().Mod(word2.ToBigInteger()));
+            this.data = CopyTo(result.And(MAX_VALUE));
         }
 
         public int ToInt()

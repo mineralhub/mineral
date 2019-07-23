@@ -1,17 +1,17 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Numerics;
 using System.Text;
 using Mineral.Common.Storage;
 using Mineral.Core.Capsule;
+using Org.BouncyCastle.Math;
 
 namespace Mineral.Common.Runtime.VM.Program.Invoke
 {
     public class ProgramInvoke : IProgramInvoke
     {
         #region Field
-        private static readonly BigInteger MAX_MSG_DATA = new BigInteger(int.MaxValue);
+        private static readonly BigInteger MAX_MSG_DATA = BigInteger.ValueOf(int.MaxValue);
 
         private readonly DataWord address = null;
         private readonly DataWord origin = null;
@@ -278,7 +278,7 @@ namespace Mineral.Common.Runtime.VM.Program.Invoke
         public DataWord GetDataValue(DataWord index_data)
         {
             BigInteger temp_index = index_data.ToBigInteger();
-            int index = (int)temp_index;
+            int index = temp_index.IntValue;
             int size = 32; // maximum datavalue size
 
             if (msg == null || index >= msg.Length

@@ -56,15 +56,15 @@ namespace Mineral.Common.Application
             Logger.Info("------------------ Begin to shutdown ------------------");
 
             Manager.Instance.NetService.Close();
-            lock(this.db_manager.RevokeStore)
-            {
-                this.db_manager.RevokeStore.Shutdown();
-                this.db_manager.CloseAll();
-            }
+            //lock(this.db_manager.RevokeStore)
+            //{
+            //    this.db_manager.RevokeStore.Shutdown();
+            //    this.db_manager.CloseAll();
+            //}
             
-            dbManager.stopRepushThread();
-            dbManager.stopRepushTriggerThread();
-            EventPluginLoader.getInstance().stopPlugin();
+            //this.db_manager.stopRepushThread();
+            //this.db_manager.stopRepushTriggerThread();
+            //EventPluginLoader.getInstance().stopPlugin();
 
             Logger.Info("------------------ End to shutdown------------------");
         }

@@ -1,11 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Numerics;
 using Mineral.Common.Runtime.VM.Exception;
 using Mineral.Common.Runtime.VM.Program;
 using Mineral.Core;
 using Mineral.Core.Exception;
 using Mineral.Cryptography;
+using Org.BouncyCastle.Math;
 
 namespace Mineral.Common.Runtime.VM
 {
@@ -15,9 +15,9 @@ namespace Mineral.Common.Runtime.VM
     public class VM
     {
         #region Field
-        private static readonly BigInteger _32_ = new BigInteger(32);
+        private static readonly BigInteger _32_ = BigInteger.ValueOf(32);
         private static readonly string ENERGY_LOG_FORMATE = "{} Op:[{}]  Energy:[{}] Deep:[{}] Hint:[{}]";
-        private static readonly BigInteger MEM_LIMIT = new BigInteger(3L * 1024 * 1024);
+        private static readonly BigInteger MEM_LIMIT = BigInteger.ValueOf(3 * 1024 * 1024);
         public static readonly string ADDRESS_LOG = "address: ";
         #endregion
 
@@ -50,7 +50,7 @@ namespace Mineral.Common.Runtime.VM
 
             CheckMemorySize(op, new_mem_size);
 
-            long memory_usage = ((long)new_mem_size + 31) / 32 * 32;
+            long memory_usage = (new_mem_size.LongValue + 31) / 32 * 32;
             if (memory_usage > old_mem_size)
             {
                 long mem_words = (memory_usage / 32);
@@ -76,7 +76,7 @@ namespace Mineral.Common.Runtime.VM
 
         private static BigInteger MemoryNeeded(DataWord offset, DataWord size)
         {
-            return size.IsZero ? BigInteger.Zero : BigInteger.Add(offset.ToBigInteger(), size.ToBigInteger());
+            return size.IsZero ? BigInteger.Zero : offset.ToBigInteger().Add(size.ToBigInteger());
         }
         #endregion
 
@@ -323,11 +323,11 @@ namespace Mineral.Common.Runtime.VM
                             BigInteger out_size = MemoryNeeded(stack.Get(stack.Size - opOff - 2), stack.Get(stack.Size - opOff - 3));
 
                             energy_cost += CalcMemoryEnergy(old_mem_size,
-                                                            BigInteger.Max(in_size, out_size),
+                                                            in_size.Max(out_size),
                                                             0,
                                                             op);
 
-                            CheckMemorySize(op, BigInteger.Max(in_size, out_size));
+                            CheckMemorySize(op, in_size.Max(out_size));
 
                             if (energy_cost > program.EnergyLimitLeft.ToLongSafety())
                             {
@@ -375,14 +375,14 @@ namespace Mineral.Common.Runtime.VM
                         {
                             int topics = op - OpCode.LOG0;
                             BigInteger data_size = stack.Get(stack.Size - 2).ToBigInteger();
-                            BigInteger data_cost = BigInteger.Multiply(data_size, new BigInteger(EnergyCost.LOG_DATA_ENERGY));
+                            BigInteger data_cost = data_size.Multiply(BigInteger.ValueOf(EnergyCost.LOG_DATA_ENERGY));
                             if (program.EnergyLimitLeft.ToBigInteger().CompareTo(data_cost) < 0)
                             {
                                 throw new OutOfEnergyException(
                                     string.Format(
                                         "Not enough energy for '%s' operation executing: opEnergy[%d], programEnergy[%d]",
                                         op.ToString(),
-                                        (long)data_cost,
+                                        data_cost.LongValue,
                                         program.EnergyLimitLeft.
                                         ToLongSafety()));
                             }
@@ -519,7 +519,7 @@ namespace Mineral.Common.Runtime.VM
                                 DataWord word2 = program.StackPop();
 
                                 hint = word1 + "  " + word2.ToBigInteger();
-                                word2.SignExtend((byte)((int)k));
+                                word2.SignExtend((byte)(k.IntValue));
                                 program.StackPush(word2);
                             }
                             program.Step();
@@ -736,7 +736,7 @@ namespace Mineral.Common.Runtime.VM
                         {
                             DataWord word1 = program.StackPop();
                             DataWord word2 = program.StackPop();
-                            DataWord result = word2.shiftRightSigned(word1);
+                            DataWord result = word2.ShiftRightSigned(word1);
 
                             hint = "" + result.ToBigInteger();
                             program.StackPush(result);

@@ -1,5 +1,5 @@
-﻿using System;
-using System.Numerics;
+﻿using Org.BouncyCastle.Math;
+using System;
 using System.Text;
 
 namespace Mineral.Common.Runtime.VM.Trace

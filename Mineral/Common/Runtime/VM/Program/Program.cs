@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Numerics;
 using System.Text;
 using Google.Protobuf;
 using Mineral.Common.Runtime.VM.Exception;
@@ -17,6 +16,7 @@ using Mineral.Core.Config.Arguments;
 using Mineral.Core.Exception;
 using Mineral.Cryptography;
 using Mineral.Utils;
+using Org.BouncyCastle.Math;
 using Protocol;
 
 namespace Mineral.Common.Runtime.VM.Program
@@ -288,7 +288,7 @@ namespace Mineral.Common.Runtime.VM.Program
 
             Logger.Debug(string.Format("creating a new contract inside contract run: [{0}]", sender_address.ToHexString()));
 
-            long endowment = (long)value.ToBigInteger();
+            long endowment = value.ToBigInteger().LongValue;
             if (this.contract_state.GetBalance(sender_address) < endowment)
             {
                 StackPushZero();
@@ -530,7 +530,7 @@ namespace Mineral.Common.Runtime.VM.Program
         {
             if (VMConfig.AllowMultiSign)
             {
-                long token_id = (long)msg.TokenId.ToBigInteger();
+                long token_id = msg.TokenId.ToBigInteger().LongValue;
                 if ((token_id <= VMParameter.MIN_TOKEN_ID && token_id != 0)
                     || (token_id == 0 && msg.IsTokenTransfer))
                 {
@@ -600,7 +600,7 @@ namespace Mineral.Common.Runtime.VM.Program
             byte[] code_address = Wallet.ToAddAddressPrefix(msg.CodeAddress.GetLast20Bytes());
             byte[] context_address = OpCodeUtil.ContainStateless(msg.Type) ? sender_address : code_address;
 
-            long endowment = (long)msg.Endowment.ToBigInteger();
+            long endowment = msg.Endowment.ToBigInteger().LongValue;
             long sender_balance = 0;
             byte[] token_id = null;
 
@@ -627,13 +627,13 @@ namespace Mineral.Common.Runtime.VM.Program
             // Charge for endowment - is not reversible by rollback
             if (sender_address.IsNotNullOrEmpty()
                 && context_address.IsNotNullOrEmpty()
-                && sender_address != context_address && (long)msg.Endowment.ToBigInteger() > 0)
+                && sender_address != context_address && msg.Endowment.ToBigInteger().LongValue > 0)
             {
                 if (!is_token_transfer)
                 {
                     try
                     {
-                        MUtil.Transfer(deposit, sender_address, context_address, (long)msg.Endowment.ToBigInteger());
+                        MUtil.Transfer(deposit, sender_address, context_address, msg.Endowment.ToBigInteger().LongValue);
                     }
                     catch (ContractValidateException e)
                     {
@@ -717,7 +717,7 @@ namespace Mineral.Common.Runtime.VM.Program
 
             try
             {
-                endowment = (long)msg.Endowment.ToBigInteger();
+                endowment = msg.Endowment.ToBigInteger().LongValue;
             }
             catch (ArithmeticException e)
             {
@@ -897,10 +897,10 @@ namespace Mineral.Common.Runtime.VM.Program
 
             if (call_result != null)
             {
-                BigInteger refund_energy = BigInteger.Subtract(msg.Energy.ToBigInteger(), new BigInteger(call_result.EnergyUsed));
-                if (refund_energy.Sign > 0)
+                BigInteger refund_energy = msg.Energy.ToBigInteger().Subtract(BigInteger.ValueOf(call_result.EnergyUsed));
+                if (refund_energy.SignValue > 0)
                 {
-                    RefundEnergy((long)refund_energy, "remaining energy from the internal call");
+                    RefundEnergy(refund_energy.LongValue, "remaining energy from the internal call");
                     Logger.Debug(
                         string.Format("The remaining energy refunded, account: [{0}], energy: [{1}] ",
                                       sender_address.ToHexString(),
@@ -1235,7 +1235,7 @@ namespace Mineral.Common.Runtime.VM.Program
         {
             if (VMConfig.AllowMultiSign)
             {
-                long token_value = (long)token_id.ToBigInteger();
+                long token_value = token_id.ToBigInteger().LongValue;
                 if (token_value <= VMParameter.MIN_TOKEN_ID)
                 {
                     throw new ByteCodeExecutionException(VALIDATE_FOR_SMART_CONTRACT_FAILURE + ", not valid token id");
