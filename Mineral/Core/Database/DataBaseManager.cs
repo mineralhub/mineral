@@ -14,7 +14,9 @@ using Mineral.Common.Utils;
 using Mineral.Core.Capsule;
 using Mineral.Core.Config;
 using Mineral.Core.Config.Arguments;
+using Mineral.Core.Database.Api;
 using Mineral.Core.Database.Fast.Callback;
+using Mineral.Core.Database2.Common;
 using Mineral.Core.Database2.Core;
 using Mineral.Core.Exception;
 using Mineral.Core.Service;
@@ -76,6 +78,7 @@ namespace Mineral.Core.Database
 
 
         #region Property
+        public IRevokingDatabase RevokeStore => this.revoking_store;
         public BlockStore Block => this.block_store;
         public BlockIndexStore BlockIndex => this.block_index_store;
         public TransactionStore Transaction => this.transaction_store;
@@ -167,6 +170,22 @@ namespace Mineral.Core.Database
             get { return this.session; }
         }
 
+        public bool HasBlock
+        {
+            get { return this.block_store.GetEnumerator().MoveNext() || !this.khaos_database.IsEmpty; }
+        }
+
+        public bool IsNeedToUpdateAsset
+        {
+            get { return this.dynamic_properties_store.GetTokenUpdateDone() == 0; }
+        }
+
+        public bool IsGeneratingBlock
+        {
+            get { return Args.Instance.IsWitness ? this.witness_controller.IsGeneratingBlock : false; }
+        }
+
+        public bool IsRunRepushThread { get; set; } = true;
         public bool IsEventPluginLoaded { get; set; }
         #endregion
 
@@ -202,6 +221,234 @@ namespace Mineral.Core.Database
 
 
         #region Internal Method
+        private void InitGenesis()
+        {
+            this.genesis_block = BlockCapsule.GenerateGenesisBlock();
+
+            if (!ContainBlock(this.genesis_block.Id))
+            {
+                if (HasBlock)
+                {
+                    Logger.Error(
+                        string.Format(
+                            "Genesis block modify, please delete database directory({0}) and restart",
+                            Args.Instance.GetOutputDirectory()));
+
+                    Environment.Exit(0);
+                }
+                else
+                {
+                    Logger.Info("Create genesis block");
+
+                    this.block_store.Put(this.genesis_block.Id.Hash, this.genesis_block);
+                    this.block_index_store.Put(this.genesis_block.Id);
+
+                    Logger.Info("Save block: " + this.genesis_block.ToString());
+
+                    this.dynamic_properties_store.PutLatestBlockHeaderNumber(0);
+                    this.dynamic_properties_store.PutLatestBlockHeaderHash(ByteString.CopyFrom(this.genesis_block.Id.Hash));
+                    this.dynamic_properties_store.PutLatestBlockHeaderTimestamp(this.genesis_block.Timestamp);
+
+                    InitAccount();
+                    InitWitness();
+                    this.witness_controller.InitializeWitness();
+                    this.khaos_database.Start(this.genesis_block);
+                    UpdateRecentBlock(this.genesis_block);
+                }
+            }
+        }
+
+        private void InitAccount()
+        {
+            Args.Instance.GenesisBlock.Assets.ForEach(asset =>
+            {
+                byte[] name = Encoding.UTF8.GetBytes(asset.Name);
+                byte[] address = Wallet.Base58ToAddress(asset.Address);
+
+                asset.Type = AccountType.Normal;
+                AccountCapsule account = new AccountCapsule(ByteString.CopyFrom(name),
+                                                            ByteString.CopyFrom(address),
+                                                            asset.Type,
+                                                            asset.Balance);
+
+                this.account_store.Put(address, account);
+                this.account_id_index_store.Put(account);
+                this.account_index_store.Put(account);
+            });
+        }
+
+        private void InitWitness()
+        {
+            Args.Instance.GenesisBlock.Witnesses.ForEach(w =>
+            {
+                AccountCapsule account = null;
+                ByteString address = ByteString.CopyFrom(w.Address);
+
+                if (!this.account_store.Contains(w.Address))
+                {
+                    account = new AccountCapsule(ByteString.Empty, address, AccountType.AssetIssue, 0);
+                }
+                else
+                {
+                    account = this.account_store.GetUnchecked(w.Address);
+                }
+
+                account.IsWitness = true;
+                this.account_store.Put(w.Address, account);
+
+                WitnessCapsule witness = new WitnessCapsule(address, w.VoteCount, w.Url);
+                witness.IsJobs = true;
+                this.witness_store.Put(w.Address, witness);
+
+            });
+        }
+
+        private void InitCacheTransactions()
+        {
+            Logger.Info("Begin to init transactions cache.");
+
+            long start = Helper.CurrentTimeMillis();
+            long head_num = this.dynamic_properties_store.GetLatestBlockHeaderNumber();
+            long recent_block_count = this.recent_block_store.Count();
+
+            long block_count = 0;
+            long empty_block_count = 0;
+
+            for (long i = head_num - recent_block_count + 1; i < head_num; i++)
+            {
+                try
+                {
+                    Task.Run(() =>
+                    {
+                        try
+                        {
+                            Interlocked.Increment(ref block_count);
+                            BlockCapsule block = GetBlockByNum(i);
+                            if (block.Transactions.IsNullOrEmpty())
+                            {
+                                Interlocked.Increment(ref empty_block_count);
+                            }
+
+                            foreach (TransactionCapsule tx in block.Transactions)
+                            {
+                                this.transaction_cache.Put(tx.Id.Hash, new BytesCapsule(BitConverter.GetBytes(i)));
+                            }
+                        }
+                        catch (ItemNotFoundException e)
+                        {
+                            Logger.Info("initilaize transaction cache error.");
+                            throw new IllegalStateException("initilaize transaction cache error.");
+
+                        }
+                        catch (BadItemException e)
+                        {
+                            Logger.Info("initilaize transaction cache error.");
+                            throw new IllegalStateException("initilaize transaction cache error.");
+                        }
+
+                    }).Wait();
+                }
+                catch (System.Exception e)
+                {
+                    Logger.Info(e.Message);
+                }
+            }
+
+            Logger.Info(
+                string.Format(
+                    "end to init txs cache. trxids:{0}, block count:{1}, empty block count:{2}, cost:{3}",
+                    this.transaction_cache.Count(),
+                    Interlocked.Read(ref block_count),
+                    Interlocked.Read(ref empty_block_count),
+                    Helper.CurrentTimeMillis() - start
+            ));
+        }
+
+        private void RePushLoop()
+        {
+            TransactionCapsule transaction = null;
+
+            while (IsRunRepushThread)
+            {
+                try
+                {
+                    if (IsGeneratingBlock)
+                    {
+                        Thread.Sleep(10);
+                        continue;
+                    }
+
+                    this.repush_transactions.TryPeek(out transaction);
+                    if (transaction != null)
+                    {
+                        RePush(transaction);
+                    }
+                    else
+                    {
+                        Thread.Sleep(50);
+                    }
+                }
+                catch (System.Exception e)
+                {
+                    Logger.Error("unknown exception happened in repush loop", e);
+                }
+                finally
+                {
+
+                    if (transaction != null)
+                    {
+                        this.repush_transactions.Remove(transaction);
+                    }
+                }
+            }
+        }
+
+        public void RePush(TransactionCapsule transaction)
+        {
+            if (ContainsTransaction(transaction))
+                return;
+
+            try
+            {
+                PushTransaction(transaction);
+            }
+            catch (System.Exception e)
+            {
+                if (e is ValidateSignatureException
+                    || e is ContractValidateException
+                    || e is ContractExeException
+                    || e is AccountResourceInsufficientException
+                    || e is VMIllegalException)
+                {
+                    Logger.Debug(e.Message);
+                }
+                else if (e is DupTransactionException)
+                {
+                    Logger.Debug("pending manager: dup trans");
+                }
+                else if (e is TaposException)
+                {
+                    Logger.Debug("pending manager: tapos exception");
+                }
+                else if (e is TooBigTransactionException)
+                {
+                    Logger.Debug("too big transaction");
+                }
+                else if (e is TransactionExpirationException)
+                {
+                    Logger.Debug("expiration transaction");
+                }
+                else if (e is ReceiptCheckErrorException)
+                {
+                    Logger.Debug("outOfSlotTime transaction");
+                }
+                else if (e is TooBigTransactionResultException)
+                {
+                    Logger.Debug("too big transaction result");
+                }
+            }
+        }
+
         private bool IsMultSignTransaction(Transaction transaction)
         {
             bool result = false;
@@ -688,7 +935,7 @@ namespace Mineral.Core.Database
             this.dynamic_properties_store.PutLatestBlockHeaderTimestamp(block.Timestamp);
             this.revoking_store.MaxSize =
                 (int)(this.dynamic_properties_store.GetLatestBlockHeaderNumber()
-                        - this.dynamic_properties_store.GetLatestSolidifiedBlockNum()+ 1);
+                        - this.dynamic_properties_store.GetLatestSolidifiedBlockNum() + 1);
 
             this.khaos_database.SetMaxCapacity((int)
                 (this.dynamic_properties_store.GetLatestBlockHeaderNumber() - this.dynamic_properties_store.GetLatestSolidifiedBlockNum() + 1));
@@ -704,10 +951,87 @@ namespace Mineral.Core.Database
                 result.Add(owner_address);
             }
         }
+
+        private void CloseStore(IDB database)
+        {
+            Logger.Info("begin to close " + database.Name + " ********");
+            try
+            {
+                database.Close();
+            }
+            catch (System.Exception e)
+            {
+                Logger.Info("failed to close  " + database.Name + ". " + e);
+            }
+            finally
+            {
+                Logger.Info("******** end to close " + database.Name + " ********");
+            }
+        }
         #endregion
 
 
         #region External Method
+        public void Init()
+        {
+            this.revoking_store.Disable();
+            this.revoking_store.Check();
+
+            InitGenesis();
+
+            try
+            {
+                this.khaos_database.Start(GetBlockById(this.dynamic_properties_store.GetLatestBlockHeaderHash()));
+            }
+            catch (ItemNotFoundException e)
+            {
+                Logger.Error(
+                    string.Format(
+                            "Can not find Dynamic highest block from DB! \nnumber={0} \nhash={1}",
+                            this.dynamic_properties_store.GetLatestBlockHeaderNumber(),
+                            this.dynamic_properties_store.GetLatestBlockHeaderHash()));
+
+                Logger.Error(
+                    string.Format(
+                            "Please delete database directory({0}) and restart",
+                            Args.Instance.GetOutputDirectory()));
+
+                Environment.Exit(1);
+            }
+            catch (BadItemException e)
+            {
+                Logger.Error("DB data broken!");
+                Logger.Error(
+                    string.Format(
+                            "Please delete database directory({0}) and restart",
+                            Args.Instance.GetOutputDirectory()));
+
+                Environment.Exit(1);
+            }
+            this.fork_controller.Init(this);
+
+            if (Args.Instance.Storage.NeedToUpdateAsset && IsNeedToUpdateAsset)
+            {
+                new AssetUpdateHelper(this).DoWork();
+            }
+
+            //for test only
+            this.dynamic_properties_store.UpdateDynamicStoreByConfig();
+
+            InitCacheTransactions();
+            this.revoking_store.Enable();
+
+            new Thread(new ThreadStart(RePushLoop)).Start();
+
+            // TODO : EventPluginLoader is not Implementation
+            //if (Args.Instance.IsEventSubscribe)
+            //{
+            //    StartEventSubscribing();
+            //    Thread triggerCapsuleProcessThread = new Thread(triggerCapsuleProcessLoop);
+            //    triggerCapsuleProcessThread.start();
+            //}
+        }
+
         public bool IsNeedMaintenance(long block_time)
         {
             return this.dynamic_properties_store.GetNextMaintenanceTime() <= block_time;
@@ -1120,7 +1444,8 @@ namespace Mineral.Core.Database
                             tmpSession.Commit();
                             PostBlockTrigger(new_block);
                         }
-                    } catch (System.Exception e)
+                    }
+                    catch (System.Exception e)
                     {
                         Logger.Error(e.Message);
                         this.khaos_database.RemoveBlock(block.Id);
@@ -1523,6 +1848,35 @@ namespace Mineral.Core.Database
 
                 trace.Receipt.MultiSignFee = fee;
             }
+        }
+
+        public void CloseAll()
+        {
+            Logger.Info("------------------ Begin to close store ------------------");
+            CloseStore(this.account_store);
+            CloseStore(this.block_store);
+            CloseStore(this.block_index_store);
+            CloseStore(this.account_id_index_store);
+            CloseStore(this.account_index_store);
+            CloseStore(this.witness_store);
+            CloseStore(this.witness_schedule_store);
+            CloseStore(this.asset_issue_store);
+            CloseStore(this.dynamic_properties_store);
+            CloseStore(this.transaction_store);
+            CloseStore(this.code_store);
+            CloseStore(this.contract_store);
+            CloseStore(this.storage_row_store);
+            CloseStore(this.exchange_store);
+            CloseStore(this.peer_store);
+            CloseStore(this.proposal_store);
+            CloseStore(this.recent_block_store);
+            CloseStore(this.transaction_history_store);
+            CloseStore(this.votes_store);
+            CloseStore(this.delegated_resource_store);
+            CloseStore(this.delegate_resource_Account_index_store);
+            CloseStore(this.asset_issue_v2_store);
+            CloseStore(this.exchange_v2_store);
+            Logger.Info("------------------ End to close store ------------------");
         }
         #endregion
     }
