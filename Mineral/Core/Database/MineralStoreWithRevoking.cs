@@ -59,6 +59,9 @@ namespace Mineral.Core.Database
 
         private T Of(byte[] value)
         {
+            if (value == null)
+                return default(T);
+
             try
             {
                 return (T)Activator.CreateInstance(typeof(T), new object[] { value });

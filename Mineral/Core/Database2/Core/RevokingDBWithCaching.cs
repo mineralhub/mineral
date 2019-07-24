@@ -268,12 +268,12 @@ namespace Mineral.Core.Database2.Core
 
         public IEnumerator<KeyValuePair<byte[], byte[]>> GetEnumerator()
         {
-            throw new NotImplementedException();
+            return this.head.GetEnumerator();
         }
 
         IEnumerator IEnumerable.GetEnumerator()
         {
-            throw new NotImplementedException();
+            return this.head.GetEnumerator();
         }
         #endregion
     }

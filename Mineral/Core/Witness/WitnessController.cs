@@ -61,6 +61,9 @@ namespace Mineral.Core.Witness
         #region External Method
         public void InitializeWitness()
         {
+            var it = this.db_manager.Block.GetEnumerator();
+            bool reult = it.MoveNext();
+
             List<ByteString> witness_address = new List<ByteString>();
             this.db_manager.Witness.GetAllWitnesses().ForEach(witness =>
             {

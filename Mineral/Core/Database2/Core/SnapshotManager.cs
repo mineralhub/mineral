@@ -40,10 +40,7 @@ namespace Mineral.Core.Database2.Core
         {
             get
             {
-                lock (this)
-                {
-                    return this.MaxSize;
-                }
+                return this.MaxSize;
             }
             set
             {

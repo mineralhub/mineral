@@ -17,7 +17,7 @@ namespace Mineral.Core.Database
 
 
         #region Contructor
-        public DelegatedResourceStore(string db_name = "DelegatedResource") : base(db_name) { }
+        public DelegatedResourceStore(string db_name = "delegated-resource") : base(db_name) { }
         #endregion
 
 

@@ -231,6 +231,10 @@ namespace Mineral.Core
 
 
         #region External Method
+        public void Init()
+        {
+            this.db_manager.Init();
+        }
         #endregion
     }
 }

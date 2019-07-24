@@ -18,7 +18,7 @@ namespace Mineral.Core.Database
 
 
         #region Contructor
-        public DelegatedResourceAccountIndexStore(string db_name = "DelegatedResourceAccountIndex") : base(db_name) { }
+        public DelegatedResourceAccountIndexStore(string db_name = "delegate-resource-account-index") : base(db_name) { }
         #endregion
 
 

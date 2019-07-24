@@ -18,7 +18,7 @@ namespace Mineral.Core.Capsule.Util
             }
             TransferContract contract = new TransferContract();
             contract.Amount = value;
-            contract.OwnerAddress = ByteString.CopyFrom("0x000000000000000000000".HexToBytes());
+            contract.OwnerAddress = ByteString.CopyFrom(Encoding.UTF8.GetBytes("0x0000000000000000000"));
             contract.ToAddress = ByteString.CopyFrom(key);
 
             return new TransactionCapsule(contract, Contract.Types.ContractType.TransferContract).Instance;
