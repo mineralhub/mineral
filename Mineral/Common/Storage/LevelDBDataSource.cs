@@ -273,11 +273,7 @@ namespace Mineral.Common.Storage
 
         public IEnumerator<KeyValuePair<byte[], byte[]>> GetEnumerator()
         {
-            Iterator it = this.db.CreateIterator(new ReadOptions());
-            for (; it.IsValid(); it.Next())
-            {
-                yield return new KeyValuePair<byte[], byte[]>(it.Key(), it.Value());
-            }
+            return this.db.GetEnumerator();
         }
 
         IEnumerator IEnumerable.GetEnumerator()
