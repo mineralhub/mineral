@@ -98,7 +98,7 @@ namespace Mineral.UnitTests.Database
         }
 
         [TestMethod]
-        public void Find()
+        public void Enumerator()
         {
             IEnumerator<KeyValuePair<byte[], byte[]>> it = this.db.GetEnumerator();
 
