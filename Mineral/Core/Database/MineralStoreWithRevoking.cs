@@ -6,6 +6,7 @@ using Mineral.Core.Capsule;
 using Mineral.Core.Config.Arguments;
 using Mineral.Core.Database2.Common;
 using Mineral.Core.Database2.Core;
+using Mineral.Core.Exception;
 
 namespace Mineral.Core.Database
 {
@@ -14,7 +15,7 @@ namespace Mineral.Core.Database
 
     {
         #region Field
-        protected IRevokingDB revoking_db;
+        protected IRevokingDB revoking_db = null;
         private IRevokingDatabase revoking_database = new SnapshotManager();
         private string db_name = "";
         #endregion
@@ -64,8 +65,7 @@ namespace Mineral.Core.Database
             }
             catch (System.Exception e)
             {
-                Logger.Error(e);
-                throw new NullReferenceException();
+                throw new BadItemException(e.Message);
             }
         }
         #endregion

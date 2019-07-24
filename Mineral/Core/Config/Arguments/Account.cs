@@ -4,18 +4,12 @@ using System.Text;
 using Mineral.Converter;
 using Mineral.Utils;
 using Newtonsoft.Json;
+using Protocol;
 
 namespace Mineral.Core.Config.Arguments
 {
     public class Account
     {
-        public enum AccountType
-        {
-            Normal,
-            AssetIssue,
-            Contract,
-        }
-
         #region Field
         #endregion
 

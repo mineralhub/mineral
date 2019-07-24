@@ -75,7 +75,7 @@ namespace Mineral
         [JsonConverter(typeof(JsonByteArrayConverter))]
         public byte[] ParentHash { get; set; }
 
-        public uint Height { get { return 0; } }
+        public uint Number { get { return 0; } }
 
         public static GenesisBlockConfig DefaultGenesisBlock
         {

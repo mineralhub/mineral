@@ -27,6 +27,20 @@ namespace Mineral.Core.Database
 
 
         #region Property
+        public List<AssetIssueCapsule> AllAssetIssues
+        {
+            get
+            {
+                List<AssetIssueCapsule> result = new List<AssetIssueCapsule>();
+                IEnumerator<KeyValuePair<byte[], AssetIssueCapsule>> it = GetEnumerator();
+                while (it.MoveNext())
+                {
+                    result.Add(it.Current.Value);
+                }
+
+                return result;
+            }
+        }
         #endregion
 
 
@@ -47,18 +61,6 @@ namespace Mineral.Core.Database
         public AssetIssueCapsule Get(byte[] key)
         {
             return GetUnchecked(key);
-        }
-
-        public List<AssetIssueCapsule> AllAssetIssues()
-        {
-            List<AssetIssueCapsule> result = new List<AssetIssueCapsule>();
-            IEnumerator<KeyValuePair<byte[], AssetIssueCapsule>> it = GetEnumerator();
-            while (it.MoveNext())
-            {
-                result.Add(it.Current.Value);
-            }
-
-            return result;
         }
 
         public List<AssetIssueCapsule> GetAssetIssuesPaginated(List<AssetIssueCapsule> asset_issues, long offset, long limit)

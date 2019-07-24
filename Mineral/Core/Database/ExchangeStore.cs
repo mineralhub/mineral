@@ -21,6 +21,22 @@ namespace Mineral.Core.Database
 
 
         #region Property
+        public List<ExchangeCapsule> AllExchanges
+        {
+            get
+            {
+                List<ExchangeCapsule> result = new List<ExchangeCapsule>();
+                IEnumerator<KeyValuePair<byte[], ExchangeCapsule>> it = GetEnumerator();
+
+                while (it.MoveNext())
+                {
+                    result.Add(it.Current.Value);
+                }
+                result.Sort(new ExchangeSortCompare());
+
+                return result;
+            }
+        }
         #endregion
 
 
@@ -43,20 +59,6 @@ namespace Mineral.Core.Database
             byte[] value = this.revoking_db.Get(key);
 
             return new ExchangeCapsule(value);
-        }
-
-        public List<ExchangeCapsule> GetAllExchanges()
-        {
-            List<ExchangeCapsule> result = new List<ExchangeCapsule>();
-            IEnumerator<KeyValuePair<byte[], ExchangeCapsule>> it = GetEnumerator();
-
-            while (it.MoveNext())
-            {
-                result.Add(it.Current.Value);
-            }
-            result.Sort(new ExchangeSortCompare());
-
-            return result;
         }
         #endregion
     }

@@ -184,7 +184,7 @@ namespace Mineral.Core.Capsule
             get { return this.account.DelegatedFrozenBalanceForBandwidth; }
             set { this.account.DelegatedFrozenBalanceForBandwidth = value; }
         }
-
+        
         public long AllFrozenBalanceForEnergy
         {
             get { return EnergyFrozenBalance + AcquiredDelegatedFrozenBalanceForEnergy; }
@@ -678,23 +678,24 @@ namespace Mineral.Core.Capsule
             return true;
         }
 
-        public bool AddAssetV2(string key, long value)
+        public void AddAssetV2(string key, long value)
         {
-            Dictionary<string, long> assets = new Dictionary<string, long>(this.account.AssetV2);
-
-            if (assets.IsNotNullOrEmpty() && assets.ContainsKey(key))
-                return false;
-
             this.account.AssetV2.Add(key, value);
-
-            return true;
         }
 
-        public bool AddAssetV2(Dictionary<string, long> assets)
+        public void AddAssetV2(Dictionary<string, long> assets)
         {
             this.account.AssetV2.Add(assets);
+        }
 
-            return true;
+        public void AddAllFreeAssetNetUsageV2(Dictionary<string, long> assets)
+        {
+            this.account.FreeAssetNetUsageV2.Add(assets);
+        }
+
+        public void AddAllLatestAssetOperationTimeV2(Dictionary<string, long> assets)
+        {
+            this.account.LatestAssetOperationTimeV2.Add(assets);
         }
 
         public long GetLatestAssetOperationTime(string asset_name)
