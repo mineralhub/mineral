@@ -30,6 +30,8 @@ namespace MineralNode
 
             if (Args.Instance.SetParam(args, DefineParameter.CONF_FILE))
             {
+                Manager.Instance.Init();
+
                 Application app = new Application();
 
                 if (Args.Instance.IsWitness)
