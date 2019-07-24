@@ -263,7 +263,7 @@ namespace Mineral.Core.Witness
             {
                 WitnessStore witness_store = this.db_manager.Witness;
 
-                Args.Instance.Genesisblock.Witnesses.ForEach(witness =>
+                Args.Instance.GenesisBlock.Witnesses.ForEach(witness =>
                 {
                     WitnessCapsule witness_capsule = witness_store.Get(witness.Address);
                     witness_capsule.VoteCount = witness_capsule.VoteCount - witness.VoteCount;

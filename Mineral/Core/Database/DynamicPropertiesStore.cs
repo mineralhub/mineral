@@ -84,7 +84,7 @@ namespace Mineral.Core.Database
                 int[] block_filled_slots = Enumerable.Repeat(1, GetBlockFilledSlotsNumber()).ToArray();
                 PutBlockFilledSlots(block_filled_slots);
             }
-            try { GetNextMaintenanceTime(); } catch { PutNextMaintenanceTime((long)Args.Instance.Genesisblock.Timestamp); }
+            try { GetNextMaintenanceTime(); } catch { PutNextMaintenanceTime((long)Args.Instance.GenesisBlock.Timestamp); }
             try { GetTotalEnergyCurrentLimit(); } catch { PutTotalEnergyCurrentLimit(GetTotalEnergyLimit()); }
             try { GetTotalEnergyTargetLimit(); } catch { PutTotalEnergyTargetLimit(GetTotalEnergyLimit() / 14400); }
             try { GetTotalEnergyAverageUsage(); } catch { PutTotalEnergyAverageUsage(0); }

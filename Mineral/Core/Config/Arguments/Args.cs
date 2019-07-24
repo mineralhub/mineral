@@ -150,7 +150,7 @@ namespace Mineral.Core.Config.Arguments
 
         public SeedNode Seed { get; private set; } = new SeedNode();
         public Storage Storage { get; private set; } = new Storage();
-        public GenesisBlockArgs Genesisblock { get; private set; } = new GenesisBlockArgs();
+        public GenesisBlockArgs GenesisBlock { get; private set; } = new GenesisBlockArgs();
         public LocalWitness LocalWitness { get; private set; } = new LocalWitness();
         public NodeArgs Node { get; private set; } = new NodeArgs();
         public BlockArgs Block { get; private set; } = new BlockArgs();
@@ -403,7 +403,7 @@ namespace Mineral.Core.Config.Arguments
             }
             else
             {
-                instance.Genesisblock = (GenesisBlockArgs)GenesisBlockConfig.DefaultGenesisBlock;
+                instance.GenesisBlock = (GenesisBlockArgs)GenesisBlockConfig.DefaultGenesisBlock;
             }
             #endregion
 

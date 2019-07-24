@@ -126,7 +126,7 @@ namespace Mineral.Core.Actuator
                         ActuatorParameter.ACCOUNT_EXCEPTION_STR + owner_address.ToHexString() + "] is not a witnessAccount");
                 }
 
-                if (Args.Instance.Genesisblock.Witnesses.Where(witness => owner_address.SequenceEqual(witness.Address)).Count() > 0)
+                if (Args.Instance.GenesisBlock.Witnesses.Where(witness => owner_address.SequenceEqual(witness.Address)).Count() > 0)
                 {
                     throw new ContractValidateException(
                         ActuatorParameter.ACCOUNT_EXCEPTION_STR + owner_address.ToHexString()
