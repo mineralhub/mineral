@@ -211,7 +211,7 @@ namespace Mineral.Core.Capsule
 
             TransferContract contract = new TransferContract();
             contract.Amount = value;
-            contract.OwnerAddress = ByteString.CopyFrom(Helper.HexToBytes("0x000000000000000000000"));
+            contract.OwnerAddress = ByteString.CopyFrom(Encoding.UTF8.GetBytes("0x0000000000000000000"));
             contract.ToAddress = ByteString.CopyFrom(key);
 
             return new TransactionCapsule(contract, Contract.Types.ContractType.TransferContract).Instance;
@@ -219,7 +219,7 @@ namespace Mineral.Core.Capsule
 
         public void CreateTransaction(IMessage message, Transaction.Types.Contract.Types.ContractType contract_type)
         {
-            this.transaction = new Transaction();
+            this.transaction = new Transaction() { RawData = new raw() };
             this.transaction.RawData.Contract.Add(new Transaction.Types.Contract()
             {
                 Type = contract_type,

@@ -136,7 +136,7 @@ namespace Mineral.Core.Capsule
 
         public BlockCapsule(long number, SHA256Hash hash, long timestamp, ByteString witness_address)
         {
-            BlockHeader header = new BlockHeader();
+            BlockHeader header = new BlockHeader() { RawData = new BlockHeader.Types.raw() };
             header.RawData.Number = number;
             header.RawData.ParentHash = hash.Hash.ToByteString();
             header.RawData.Timestamp = timestamp;
@@ -151,7 +151,7 @@ namespace Mineral.Core.Capsule
 
         public BlockCapsule(long timestamp, ByteString parent_hash, long number, List<Transaction> transations)
         {
-            BlockHeader header = new BlockHeader();
+            BlockHeader header = new BlockHeader() { RawData = new BlockHeader.Types.raw() };
             header.RawData.Timestamp = timestamp;
             header.RawData.ParentHash = parent_hash;
             header.RawData.Number = number;
