@@ -15,7 +15,7 @@ namespace Mineral.Converter
 
         public override object ReadJson(JsonReader reader, Type objectType, object existingValue, JsonSerializer serializer)
         {
-            return Wallet.Base58ToAddress(existingValue.ToString());
+            return Wallet.Base58ToAddress(reader.Value.ToString());
         }
 
         public override void WriteJson(JsonWriter writer, object value, JsonSerializer serializer)

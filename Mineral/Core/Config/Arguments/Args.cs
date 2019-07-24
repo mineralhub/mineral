@@ -406,8 +406,25 @@ namespace Mineral.Core.Config.Arguments
             {
                 if (Config.Instance.GenesisBlock.Assets != null)
                 {
+                    instance.GenesisBlock.Assets = Config.Instance.GenesisBlock.Assets;
                     AccountStore.SetAccount(Config.Instance.GenesisBlock);
                 }
+                else
+                {
+                    throw new ArgumentNullException("Missed to assets in genesis_block");
+                }
+
+                if (Config.Instance.GenesisBlock.Witnesses != null)
+                {
+                    instance.GenesisBlock.Witnesses = Config.Instance.GenesisBlock.Witnesses;
+                }
+                else
+                {
+                    throw new ArgumentNullException("Missed to witness in genesis_block");
+                }
+
+                instance.GenesisBlock.Timestamp = Config.Instance.GenesisBlock.Timestamp;
+                instance.GenesisBlock.ParentHash = Config.Instance.GenesisBlock.ParentHash;
             }
             else
             {

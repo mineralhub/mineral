@@ -67,7 +67,7 @@ namespace Mineral
     {
         [JsonProperty("assets")]
         public List<Account> Assets { get; set; }
-        [JsonProperty("witness")]
+        [JsonProperty("Witnesses")]
         public List<Witness> Witnesses { get; set; }
         [JsonProperty("timestamp")]
         public uint Timestamp { get; set; }
