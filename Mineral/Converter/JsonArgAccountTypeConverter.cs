@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Text;
 using Mineral.Core.Exception;
 using Newtonsoft.Json;
-using static Mineral.Core.Config.Arguments.Account;
+using Protocol;
 
 namespace Mineral.Converter
 {
