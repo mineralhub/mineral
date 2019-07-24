@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 using Google.Protobuf;
+using Mineral.Core.Exception;
 using Protocol;
 
 namespace Mineral.Core.Capsule
@@ -86,9 +87,9 @@ namespace Mineral.Core.Capsule
             {
                 this.transaction_result = Transaction.Types.Result.Parser.ParseFrom(data);
             }
-            catch (System.Exception e)
+            catch (InvalidProtocolBufferException e)
             {
-                Logger.Debug(e.Message);
+                throw new BadItemException("TransactionResult proto data parse exception");
             }
         }
 

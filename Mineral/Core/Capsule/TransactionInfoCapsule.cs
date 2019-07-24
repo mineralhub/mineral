@@ -5,6 +5,7 @@ using Google.Protobuf;
 using Mineral.Common.Runtime.VM;
 using Mineral.Core.Config.Arguments;
 using Mineral.Core.Database;
+using Mineral.Core.Exception;
 using Mineral.Utils;
 using Protocol;
 using static Protocol.InternalTransaction.Types;
@@ -94,9 +95,9 @@ namespace Mineral.Core.Capsule
             {
                 this.transaction_info = TransactionInfo.Parser.ParseFrom(data);
             }
-            catch (InvalidProtocolBufferException e)
+            catch (InvalidProtocolBufferException)
             {
-                throw new ArgumentException("TransactionInfoCapsule proto data parse exception.");
+                throw new BadItemException("TransactionInfoCapsule proto data parse exception.");
             }
         }
         #endregion

@@ -5,6 +5,7 @@ using System.Text;
 using Google.Protobuf;
 using Mineral.Common.Utils;
 using Mineral.Core.Config;
+using Mineral.Core.Config.Arguments;
 using Mineral.Core.Database;
 using Mineral.Core.Exception;
 using Mineral.Cryptography;
@@ -203,6 +204,26 @@ namespace Mineral.Core.Capsule
 
 
         #region External Method
+        public static BlockCapsule GenerateGenesisBlock()
+        {
+            List<Transaction> transactions = Args.Instance.GenesisBlock.Assets.Select(asset =>
+            {
+                return TransactionCapsule.GenerateGenesisTransaction(Wallet.Base58ToAddress(asset.Address), asset.Balance);
+            }).ToList();
+
+            BlockCapsule result = new BlockCapsule((int)Args.Instance.GenesisBlock.Timestamp,
+                                                   ByteString.CopyFrom(Args.Instance.GenesisBlock.ParentHash),
+                                                   Args.Instance.GenesisBlock.Number,
+                                                   transactions);
+
+            result.SetMerkleTree();
+            result.SetWitness("A new system must allow existing systems to be linked together without "
+                              + "requiring any central control or coordination");
+            result.IsGenerateMyself = true;
+
+            return result;
+        }
+
         public void AddTransaction(TransactionCapsule tx)
         {
             this.block.Transactions.Add(tx.Instance);

@@ -12,6 +12,7 @@ using Mineral.Core.Exception;
 using Mineral.Cryptography;
 using Mineral.Utils;
 using Protocol;
+using static Protocol.Transaction.Types;
 using static Protocol.Transaction.Types.Contract.Types;
 using static Protocol.Transaction.Types.Result.Types;
 
@@ -111,7 +112,7 @@ namespace Mineral.Core.Capsule
             }
             catch
             {
-                throw new ArgumentException("Transaction proto data parse excepton");
+                throw new BadItemException("Transaction proto data parse excepton");
             }
         }
 
@@ -123,7 +124,7 @@ namespace Mineral.Core.Capsule
             }
             catch
             {
-                throw new ArgumentException("Transaction proto data parse excepton");
+                throw new BadItemException("Transaction proto data parse excepton");
             }
         }
 
@@ -201,6 +202,21 @@ namespace Mineral.Core.Capsule
 
 
         #region External Method
+        public static Transaction GenerateGenesisTransaction(byte[] key, long value)
+        {
+            if (!Wallet.IsValidAddress(key))
+            {
+                throw new ArgumentException("Invalid address");
+            }
+
+            TransferContract contract = new TransferContract();
+            contract.Amount = value;
+            contract.OwnerAddress = ByteString.CopyFrom(Helper.HexToBytes("0x000000000000000000000"));
+            contract.ToAddress = ByteString.CopyFrom(key);
+
+            return new TransactionCapsule(contract, Contract.Types.ContractType.TransferContract).Instance;
+        }
+
         public void CreateTransaction(IMessage message, Transaction.Types.Contract.Types.ContractType contract_type)
         {
             this.transaction = new Transaction();
