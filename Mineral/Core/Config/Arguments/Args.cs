@@ -80,6 +80,9 @@ namespace Mineral.Core.Config.Arguments
         [Parameter("-c", "--config", Description = "Config file")]
         private string config_file = "";
 
+        [Parameter("--es")]
+        private bool event_subscribe = false;
+
         [Parameter("--fast-forward")]
         private bool fast_forward = false;
 
@@ -167,6 +170,11 @@ namespace Mineral.Core.Config.Arguments
         public int LongRunningTime
         {
             get { return this.long_running_time; }
+        }
+
+        public bool IsEventSubscribe
+        {
+            get { return this.event_subscribe; }
         }
 
         public bool IsWitness
