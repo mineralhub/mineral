@@ -57,7 +57,7 @@ namespace Mineral.Core.Database
         private DelegatedResourceStore delegated_resource_store = null;
         private DelegatedResourceAccountIndexStore delegate_resource_Account_index_store;
         private DynamicPropertiesStore dynamic_properties_store = null;
-        private PeerStore peer_store = new PeerStore();
+        private PeerStore peer_store = null;
 
         private ForkController fork_controller = ForkController.Instance;
         private WitnessController witness_controller = null;
@@ -193,22 +193,33 @@ namespace Mineral.Core.Database
         #region Constructor
         public DatabaseManager()
         {
+            this.revoking_store = new SnapshotManager();
             this.khaos_database = new KhaosDatabase("block_KDB");
 
             this.block_store = new BlockStore("block");
             this.block_index_store = new BlockIndexStore("block-index");
+            this.recent_block_store = new RecentBlockStore("recent-block");
             this.transaction_store = new TransactionStore(this.block_store, this.khaos_database, "transaction");
+            this.transaction_cache = new TransactionCache("trans-cache");
             this.transaction_history_store = new TransactionHistoryStore("transaction_history_store");
             this.account_store = new AccountStore("account");
+            this.account_index_store = new AccountIndexStore("account-index");
+            this.account_id_index_store = new AccountIdIndexStore("accountid-index");
             this.witness_store = new WitnessStore("witness");
             this.witness_schedule_store = new WitnessScheduleStore("siwtness_schedule");
             this.votes_store = new VotesStore("votes");
             this.proposal_store = new ProposalStore("proposal");
             this.asset_issue_store = new AssetIssueStore("asset-issue");
+            this.asset_issue_v2_store = new AssetIssueV2Store("asset-issue-v2");
+            this.exchange_store = new ExchangeStore("exchange");
+            this.exchange_v2_store = new ExchangeV2Store("exchange-v2");
             this.code_store = new CodeStore("code");
             this.contract_store = new ContractStore("contract");
             this.storage_row_store = new StorageRowStore("storage-row");
+            this.delegated_resource_store = new DelegatedResourceStore("delegate-resource");
+            this.delegate_resource_Account_index_store = new DelegatedResourceAccountIndexStore("delegate-resource-account-index");
             this.dynamic_properties_store = new DynamicPropertiesStore("properties");
+            this.peer_store = new PeerStore();
 
             this.witness_controller = new WitnessController(this);
             this.proposal_controller = new ProposalController(this);
@@ -225,6 +236,7 @@ namespace Mineral.Core.Database
         {
             this.genesis_block = BlockCapsule.GenerateGenesisBlock();
 
+            // TODO : InitAccount, InitWitness 판단 추가해야함
             if (!ContainBlock(this.genesis_block.Id))
             {
                 if (HasBlock)
