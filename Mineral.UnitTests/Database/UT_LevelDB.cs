@@ -98,6 +98,17 @@ namespace Mineral.UnitTests.Database
         }
 
         [TestMethod]
+        public void CreateIterator()
+        {
+            using (Iterator it = this.db.CreateIterator(this.read_option))
+            {
+                it.SeekToFirst();
+                it.Key().SequenceEqual(this.default_key).Should().BeTrue();
+                it.Value().SequenceEqual(this.default_value).Should().BeTrue();
+            }
+        }
+
+        [TestMethod]
         public void Enumerator()
         {
             IEnumerator<KeyValuePair<byte[], byte[]>> it = this.db.GetEnumerator();
