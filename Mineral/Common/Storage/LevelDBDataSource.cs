@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Text;
 using System.Threading;
 using LevelDB;
@@ -23,8 +24,26 @@ namespace Mineral.Common.Storage
 
 
         #region Property
-        public string DataBaseName { get { return this.database_name; } set { this.parent = value; } }
-        public string DataBasePath { get { return this.parent + Path.DirectorySeparatorChar + this.database_name; } }
+        public string DataBaseName
+        {
+            get { return this.database_name; }
+            set { this.parent = value; }
+        }
+
+        public string DataBasePath
+        {
+            get
+            {
+                string result = parent;
+                if (!this.parent.Last().Equals(Path.DirectorySeparatorChar))
+                {
+                    result += Path.DirectorySeparatorChar;
+                }
+                result += this.database_name;
+
+                return result;
+            }
+        }
         public bool IsAlive { get; set; } = false;
         #endregion
 
@@ -143,99 +162,6 @@ namespace Mineral.Common.Storage
             return result;
         }
 
-        public void DeleteData(byte[] key)
-        {
-            Helper.IsNotNull(key, "Key must be not null.");
-            Monitor.Enter(this.lock_read);
-
-            try
-            {
-                this.db.Delete(key, new WriteOptions());
-            }
-            catch (System.Exception e)
-            {
-                throw e;
-            }
-            finally
-            {
-                Monitor.Exit(this.lock_read);
-            }
-        }
-
-        public void DeleteData(byte[] key, WriteOptions options)
-        {
-            Helper.IsNotNull(key, "Key must be not null.");
-            Monitor.Enter(this.lock_read);
-
-            try
-            {
-                this.db.Delete(key, options);
-            }
-            catch (System.Exception e)
-            {
-                throw e;
-            }
-            finally
-            {
-                Monitor.Exit(this.lock_read);
-            }
-        }
-
-        public bool Flush()
-        {
-            return false;
-        }
-
-        public byte[] GetData(byte[] key)
-        {
-            Helper.IsNotNull(key, "Key must be not null.");
-            Monitor.Enter(this.lock_read);
-            byte[] result = null;
-
-            try
-            {
-                result = this.db.Get(key, new ReadOptions());
-            }
-            catch (System.Exception e)
-            {
-                throw e;
-            }
-            finally
-            {
-                Monitor.Exit(this.lock_read);
-            }
-
-            return result;
-        }
-
-        public long GetTotal()
-        {
-            Monitor.Enter(this.lock_read);
-            long result = 0;
-
-            try
-            {
-                using (Iterator it = this.db.CreateIterator(new ReadOptions()))
-                {
-                    for (it.SeekToFirst(); it.IsValid(); it.Next())
-                    {
-                        result++;
-                    }
-                }
-
-            }
-            catch (System.Exception e)
-            {
-                throw e;
-            }
-            finally
-            {
-                Monitor.Exit(this.lock_read);
-            }
-            
-            return result;
-        }
-
         public void PutData(byte[] key, byte[] value)
         {
             Helper.IsNotNull(key, "Key must be not null.");
@@ -298,6 +224,94 @@ namespace Mineral.Common.Storage
             }
         }
 
+        public byte[] GetData(byte[] key)
+        {
+            Helper.IsNotNull(key, "Key must be not null.");
+            Monitor.Enter(this.lock_read);
+            byte[] result = null;
+
+            try
+            {
+                result = this.db.Get(key, new ReadOptions());
+            }
+            catch (System.Exception e)
+            {
+                throw e;
+            }
+            finally
+            {
+                Monitor.Exit(this.lock_read);
+            }
+
+            return result;
+        }
+
+        public void DeleteData(byte[] key)
+        {
+            Helper.IsNotNull(key, "Key must be not null.");
+            Monitor.Enter(this.lock_read);
+
+            try
+            {
+                this.db.Delete(key, new WriteOptions());
+            }
+            catch (System.Exception e)
+            {
+                throw e;
+            }
+            finally
+            {
+                Monitor.Exit(this.lock_read);
+            }
+        }
+
+        public void DeleteData(byte[] key, WriteOptions options)
+        {
+            Helper.IsNotNull(key, "Key must be not null.");
+            Monitor.Enter(this.lock_read);
+
+            try
+            {
+                this.db.Delete(key, options);
+            }
+            catch (System.Exception e)
+            {
+                throw e;
+            }
+            finally
+            {
+                Monitor.Exit(this.lock_read);
+            }
+        }
+
+        public long GetTotal()
+        {
+            Monitor.Enter(this.lock_read);
+            long result = 0;
+
+            try
+            {
+                using (Iterator it = this.db.CreateIterator(new ReadOptions()))
+                {
+                    for (it.SeekToFirst(); it.IsValid(); it.Next())
+                    {
+                        result++;
+                    }
+                }
+
+            }
+            catch (System.Exception e)
+            {
+                throw e;
+            }
+            finally
+            {
+                Monitor.Exit(this.lock_read);
+            }
+            
+            return result;
+        }
+
         public HashSet<byte[]> GetLatestValues(long limit)
         {
             HashSet<byte[]> result = new HashSet<byte[]>();
@@ -339,39 +353,7 @@ namespace Mineral.Common.Storage
             return result;
         }
 
-        public Dictionary<byte[], byte[]> GetNext(byte[] key, long limit)
-        {
-            Helper.IsNotNull(key, "Key must be not null.");
-            Dictionary<byte[], byte[]> result = new Dictionary<byte[], byte[]>();
-            Monitor.Enter(this.lock_read);
-
-            try
-            {
-                if (limit <= 0)
-                    return result;
-
-                using (Iterator it = this.db.CreateIterator(new ReadOptions()))
-                {
-                    long i = 0;
-                    for (it.Seek(key); it.IsValid() && i++ < limit; it.Next())
-                    {
-                        result.Add(it.Key(), it.Value());
-                    }
-                }
-            }
-            catch (System.Exception e)
-            {
-                throw e;
-            }
-            finally
-            {
-                Monitor.Exit(this.lock_read);
-            }
-
-            return result;
-        }
-
-        public Dictionary<byte[], byte[]> GetPrevious(byte[] key, long limit, int precision)
+        public Dictionary<byte[], byte[]> GetValuesPrevious(byte[] key, long limit, int precision)
         {
             Helper.IsNotNull(key, "Key must be not null.");
             Dictionary<byte[], byte[]> result = new Dictionary<byte[], byte[]>();
@@ -401,6 +383,76 @@ namespace Mineral.Common.Storage
                             }
                             result.Add(it.Key(), it.Value());
                         }
+                    }
+                }
+            }
+            catch (System.Exception e)
+            {
+                throw e;
+            }
+            finally
+            {
+                Monitor.Exit(this.lock_read);
+            }
+
+            return result;
+        }
+
+        public Dictionary<byte[], byte[]> GetPrevious(byte[] key, long limit)
+        {
+            Helper.IsNotNull(key, "Key must be not null.");
+            Dictionary<byte[], byte[]> result = new Dictionary<byte[], byte[]>();
+            Monitor.Enter(this.lock_read);
+
+            try
+            {
+                if (limit <= 0)
+                    return result;
+
+                using (Iterator it = this.db.CreateIterator(new ReadOptions()))
+                {
+                    long i = 0;
+
+                    it.Seek(key);
+                    it.Prev();
+                    for (; it.IsValid() && i++ < limit; it.Prev())
+                    {
+                        result.Add(it.Key(), it.Value());
+                    }
+                }
+            }
+            catch (System.Exception e)
+            {
+                throw e;
+            }
+            finally
+            {
+                Monitor.Exit(this.lock_read);
+            }
+
+            return result;
+        }
+
+        public Dictionary<byte[], byte[]> GetNext(byte[] key, long limit)
+        {
+            Helper.IsNotNull(key, "Key must be not null.");
+            Dictionary<byte[], byte[]> result = new Dictionary<byte[], byte[]>();
+            Monitor.Enter(this.lock_read);
+
+            try
+            {
+                if (limit <= 0)
+                    return result;
+
+                using (Iterator it = this.db.CreateIterator(new ReadOptions()))
+                {
+                    long i = 0;
+
+                    it.Seek(key);
+                    it.Next();
+                    for (; it.IsValid() && i++ < limit; it.Next())
+                    {
+                        result.Add(it.Key(), it.Value());
                     }
                 }
             }
@@ -451,6 +503,11 @@ namespace Mineral.Common.Storage
         IEnumerator IEnumerable.GetEnumerator()
         {
             return (IEnumerator<KeyValuePair<byte[], byte[]>>)GetEnumerator();
+        }
+
+        public bool Flush()
+        {
+            return false;
         }
         #endregion
     }
