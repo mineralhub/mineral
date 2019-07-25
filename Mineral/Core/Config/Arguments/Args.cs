@@ -2,6 +2,8 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Net;
+using System.Net.Sockets;
 using Commander.NET;
 using Commander.NET.Attributes;
 using Mineral.CommandLine;
@@ -205,6 +207,55 @@ namespace Mineral.Core.Config.Arguments
 
 
         #region Internal Method
+        private void BindIP()
+        {
+            if (Config.Instance.Node.Discovery.BindIP.IsNullOrEmpty())
+            {
+                Logger.Info("Bind address wasn't set, Punching to identify it...");
+
+                try
+                {
+                    IPAddress address = Dns.GetHostEntry(Dns.GetHostName()).AddressList.First(ip => ip.AddressFamily == AddressFamily.InterNetwork);
+                    instance.Node.Discovery.BindIP = address.ToString();
+                }
+                catch (IOException e)
+                {
+                    Logger.Warning("Can't get bind IP. Fall back to 0.0.0.0: " + e);
+                    instance.Node.Discovery.BindIP = "0.0.0.0";
+                }
+            }
+            else
+            {
+                instance.Node.Discovery.BindIP = Config.Instance.Node.Discovery.BindIP;
+            }
+        }
+
+        private void ExternalIP()
+        {
+            if (Config.Instance.Node.Discovery.ExternalIP.IsNullOrEmpty())
+            {
+                Logger.Info("External IP wasn't set, using checkip.amazonaws.com to identify it...");
+                try
+                {
+                    string ip = new WebClient().DownloadString(new Uri(@"http://checkip.amazonaws.com"));
+                    if (ip.EndsWith("\n"))
+                    {
+                        ip = ip.Remove(ip.Length - 1);
+                    }
+
+                    instance.Node.Discovery.ExternalIP = ip;
+                }
+                catch (System.Exception e)
+                {
+                    Logger.Debug(e.Message);
+                }
+            }
+            else
+            {
+                instance.Node.Discovery.ExternalIP = Config.Instance.Node.Discovery.ExternalIP;
+            }
+        }
+
         private static void OutputLogConfig()
         {
             Logger.Info(string.Format("\n"));
@@ -222,7 +273,7 @@ namespace Mineral.Core.Config.Arguments
             Logger.Info(string.Format("Solidity threads: {0}", instance.Node.SolidityThread));
             Logger.Info(string.Format("************************ Backup config ************************"));
             Logger.Info(string.Format("Backup listen port: {0}", instance.Node.Backup.Port));
-            Logger.Info(string.Format("Backup member size: {0}", instance.Node.Backup.Members.Count));
+            Logger.Info(string.Format("Backup member size: {0}", instance.Node.Backup.Members?.Count));
             Logger.Info(string.Format("Backup priority: {0}", instance.Node.Backup.Priority));
             Logger.Info(string.Format("************************ Code version *************************"));
             Logger.Info(string.Format("Code version : {0}", Version));
@@ -490,6 +541,9 @@ namespace Mineral.Core.Config.Arguments
             instance.Node.RPC.MaxMessageSize = Config.Instance.Node.RPC?.MaxMessageSize ?? 4 * 1024 * 1024; // The default maximum uncompressed size (in bytes) for inbound messages. Defaults to 4 MiB.
             instance.Node.RPC.MaxHeaderListSize = Config.Instance.Node.RPC?.MaxHeaderListSize ?? 8192; //he default maximum size (in bytes) for inbound header/trailer.
             instance.Node.RPC.MinEffectiveConnection = Config.Instance.Node.RPC?.MinEffectiveConnection ?? 1;
+
+            BindIP();
+            ExternalIP();
             #endregion
 
             #region Block
@@ -529,6 +583,8 @@ namespace Mineral.Core.Config.Arguments
             instance.VM.MinTimeRatio = Config.Instance.VM.MinTimeRatio ?? this.min_time_ratio;
             instance.VM.MaxTimeRatio = Config.Instance.VM.MaxTimeRatio ?? this.max_time_ratio;
             #endregion
+
+            OutputLogConfig();
 
             return true;
         }
