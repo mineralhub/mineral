@@ -192,11 +192,15 @@ namespace Mineral.Core.Service
 
             if (!this.controller.ActiveWitnessesContain(this.local_witness_states.Keys.ToHashSet()))
             {
+                string log_address = "";
+                foreach (var addr in this.controller.GetActiveWitnesses().Select(witness => Wallet.AddressToBase58(witness.ToByteArray())))
+                {
+                    log_address += "\n" + "[" + addr + "]";
+                }
+
                 Logger.Info(
-                    string.Format("Unelected. Elected Witnesses: {0}",
-                                  this.controller.GetActiveWitnesses().Select(witness => Wallet.AddressToBase58(witness.ToByteArray()))
-                                                                      .ToList()
-                                                                      .ToString()));
+                    string.Format("Unelected. Elected Witnesses: {0}", log_address));
+                                  
                 return BlockProductionCondition.UNELECTED;
             }
 
