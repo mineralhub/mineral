@@ -3,6 +3,7 @@ using LevelDB;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text;
 
@@ -12,9 +13,9 @@ namespace Mineral.UnitTests.Database
     public class UT_LevelDB
     {
         private DB db = null;
-        private string db_name = "UnitTest_LevelDB";
-        private byte[] default_key = Encoding.Default.GetBytes("mineral");
-        private byte[] default_value = Encoding.Default.GetBytes("mineral_value");
+        private string db_name = "UT_LevelDB";
+        private byte[] default_key = Encoding.Default.GetBytes("default_mineral");
+        private byte[] default_value = Encoding.Default.GetBytes("default_mineral_value");
         private byte[] key = Encoding.Default.GetBytes("mineral");
         private byte[] value = Encoding.Default.GetBytes("mineral_value");
         private WriteOptions write_option = new WriteOptions();
@@ -49,6 +50,10 @@ namespace Mineral.UnitTests.Database
         public void CleanUp()
         {
             this.db.Dispose();
+
+            DirectoryInfo di = new DirectoryInfo(this.db_name);
+            if (di.Exists)
+                di.Delete(true);
         }
 
         [TestMethod]
@@ -75,8 +80,9 @@ namespace Mineral.UnitTests.Database
             {
                 result = this.db.Get(this.default_key, this.read_option);
             }
-            catch
+            catch (System.Exception e)
             {
+                e.Should().BeNull();
             }
 
             result.Should().NotBeNull();
@@ -90,8 +96,9 @@ namespace Mineral.UnitTests.Database
             {
                 this.db.Delete(this.default_key, this.write_option);
             }
-            catch
+            catch (System.Exception e)
             {
+                e.Should().BeNull();
             }
 
             this.db.Get(this.default_key).Should().BeNull();
