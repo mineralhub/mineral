@@ -4,6 +4,7 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
 using System.Text;
+using System.Threading;
 using LevelDB;
 using Mineral.Core.Config.Arguments;
 using Mineral.Utils;
@@ -16,6 +17,8 @@ namespace Mineral.Common.Storage
         private string database_name;
         private string parent = "";
         private DB db;
+        private object lock_wirte = new object();
+        private object lock_read = new object();
         #endregion
 
 
@@ -51,23 +54,32 @@ namespace Mineral.Common.Storage
             {
                 try
                 {
+                    Monitor.Enter(this.lock_wirte);
+
                     Options options = Args.Instance.Storage.GetOptionsByDbName(DataBaseName);
                     this.db = new DB(options, DataBasePath);
                     IsAlive = this.db != null ? true : false;
                 }
                 catch (System.Exception e)
                 {
+                    IsAlive = false;
                     Logger.Error("Can't initialize database source", e);
                     throw e;
+                }
+                finally
+                {
+                    Monitor.Exit(this.lock_wirte);
                 }
             }
         }
 
         public void Close()
         {
+            Monitor.Enter(this.lock_wirte);
             this.db.Dispose();
             this.db = null;
             IsAlive = false;
+            Monitor.Exit(this.lock_wirte);
         }
 
         public void Reset()
@@ -79,15 +91,26 @@ namespace Mineral.Common.Storage
 
         public HashSet<byte[]> AllKeys()
         {
-            if (!IsAlive) return null;
-
+            Monitor.Enter(this.lock_read);
             HashSet<byte[]> result = new HashSet<byte[]>();
-            using (Iterator it = this.db.CreateIterator(new ReadOptions()))
+
+            try
             {
-                for (it.SeekToFirst(); it.IsValid(); it.Next())
+                using (Iterator it = this.db.CreateIterator(new ReadOptions()))
                 {
-                    result.Add(it.Key());
+                    for (it.SeekToFirst(); it.IsValid(); it.Next())
+                    {
+                        result.Add(it.Key());
+                    }
                 }
+            }
+            catch (System.Exception e)
+            {
+                throw e;
+            }
+            finally
+            {
+                Monitor.Exit(this.lock_read);
             }
 
             return result;
@@ -95,15 +118,26 @@ namespace Mineral.Common.Storage
 
         public HashSet<byte[]> AllValue()
         {
-            if (!IsAlive) return null;
-
+            Monitor.Enter(this.lock_read);
             HashSet<byte[]> result = new HashSet<byte[]>();
-            using (Iterator it = this.db.CreateIterator(new ReadOptions()))
+
+            try
             {
-                for (it.SeekToFirst(); it.IsValid(); it.Next())
+                using (Iterator it = this.db.CreateIterator(new ReadOptions()))
                 {
-                    result.Add(it.Value());
+                    for (it.SeekToFirst(); it.IsValid(); it.Next())
+                    {
+                        result.Add(it.Value());
+                    }
                 }
+            }
+            catch (System.Exception e)
+            {
+                throw e;
+            }
+            finally
+            {
+                Monitor.Exit(this.lock_read);
             }
 
             return result;
@@ -111,17 +145,39 @@ namespace Mineral.Common.Storage
 
         public void DeleteData(byte[] key)
         {
-            if (IsAlive)
+            Helper.IsNotNull(key, "Key must be not null.");
+            Monitor.Enter(this.lock_read);
+
+            try
             {
                 this.db.Delete(key, new WriteOptions());
+            }
+            catch (System.Exception e)
+            {
+                throw e;
+            }
+            finally
+            {
+                Monitor.Exit(this.lock_read);
             }
         }
 
         public void DeleteData(byte[] key, WriteOptions options)
         {
-            if (IsAlive)
+            Helper.IsNotNull(key, "Key must be not null.");
+            Monitor.Enter(this.lock_read);
+
+            try
             {
                 this.db.Delete(key, options);
+            }
+            catch (System.Exception e)
+            {
+                throw e;
+            }
+            finally
+            {
+                Monitor.Exit(this.lock_read);
             }
         }
 
@@ -132,65 +188,114 @@ namespace Mineral.Common.Storage
 
         public byte[] GetData(byte[] key)
         {
-            if (!IsAlive) return null;
-            if (key == null) return null;
+            Helper.IsNotNull(key, "Key must be not null.");
+            Monitor.Enter(this.lock_read);
+            byte[] result = null;
 
-            return this.db.Get(key, new ReadOptions());
-        }
-
-        public long GetTotal()
-        {
-            if (IsAlive) return 0;
-
-            long result = 0L;
-            using (Iterator it = this.db.CreateIterator(new ReadOptions()))
+            try
             {
-                for (it.SeekToFirst(); it.IsValid(); it.Next())
-                {
-                    result++;
-                }
+                result = this.db.Get(key, new ReadOptions());
+            }
+            catch (System.Exception e)
+            {
+                throw e;
+            }
+            finally
+            {
+                Monitor.Exit(this.lock_read);
             }
 
             return result;
         }
 
+        public long GetTotal()
+        {
+            Monitor.Enter(this.lock_read);
+            long result = 0;
+
+            try
+            {
+                using (Iterator it = this.db.CreateIterator(new ReadOptions()))
+                {
+                    for (it.SeekToFirst(); it.IsValid(); it.Next())
+                    {
+                        result++;
+                    }
+                }
+
+            }
+            catch (System.Exception e)
+            {
+                throw e;
+            }
+            finally
+            {
+                Monitor.Exit(this.lock_read);
+            }
+            
+            return result;
+        }
+
         public void PutData(byte[] key, byte[] value)
         {
-            if (!IsAlive)
-                return;
+            Helper.IsNotNull(key, "Key must be not null.");
+            Helper.IsNotNull(value, "Key must be not null.");
 
-            PutData(key, value, new WriteOptions());
+            Monitor.Enter(this.lock_read);
+            try
+            {
+                PutData(key, value, new WriteOptions());
+            }
+            catch (System.Exception e)
+            {
+                throw e;
+            }
+            finally
+            {
+                Monitor.Exit(this.lock_read);
+            }
         }
 
         public void PutData(byte[] key, byte[] value, WriteOptions options)
         {
-            if (!IsAlive)
-                return;
-
             Helper.IsNotNull(key, "Key must be not null.");
             Helper.IsNotNull(value, "Key must be not null.");
 
-            this.db.Put(key, value, options);
+            Monitor.Enter(this.lock_read);
+            try
+            {
+                this.db.Put(key, value, options);
+            }
+            catch (System.Exception e)
+            {
+                throw e;
+            }
+            finally
+            {
+                Monitor.Exit(this.lock_read);
+            }
         }
 
         public void UpdateByBatch(Dictionary<byte[], byte[]> rows)
         {
-            if (IsAlive)
-            {
-                UpdateByBatch(rows, new WriteOptions());
-            }
+            UpdateByBatch(rows, new WriteOptions());
         }
 
         public void UpdateByBatch(Dictionary<byte[], byte[]> rows, WriteOptions options)
         {
-            if (!IsAlive) return;
-
-            WriteBatch batch = new WriteBatch();
-            foreach (KeyValuePair<byte[], byte[]> row in rows)
+            try
             {
-                batch.Put(row.Key, row.Value);
+                WriteBatch batch = new WriteBatch();
+                foreach (KeyValuePair<byte[], byte[]> row in rows)
+                {
+                    batch.Put(row.Key, row.Value);
+                }
+                this.db.Write(batch, new WriteOptions());
             }
-            this.db.Write(batch, new WriteOptions());
+            catch (System.Exception e)
+            {
+                throw e;
+            }
         }
 
         public HashSet<byte[]> GetLatestValues(long limit)
@@ -200,14 +305,35 @@ namespace Mineral.Common.Storage
             if (limit <= 0)
                 return result;
 
-            Iterator it = this.db.CreateIterator(new ReadOptions());
-            // TODO 빠진부분 확인해야함
+            Monitor.Enter(this.lock_read);
 
-            long i = 0;
-            for (it.SeekToLast(); it.IsValid() && i++ < limit; it.Prev())
+            try
             {
-                result.Add(it.Value());
-                i++;
+                using (Iterator it = this.db.CreateIterator(new ReadOptions()))
+                {
+                    long i = 0;
+
+                    it.SeekToLast();
+                    it.Next();
+                    if (it.IsValid())
+                    {
+                        result.Add(it.Value());
+                        i++;
+                    }
+
+                    for (; it.IsValid() && i++ < limit; it.Prev())
+                    {
+                        result.Add(it.Value());
+                    }
+                }
+            }
+            catch (System.Exception e)
+            {
+                throw new System.Exception(e.Message, e);
+            }
+            finally
+            {
+                Monitor.Exit(this.lock_read);
             }
 
             return result;
@@ -215,15 +341,31 @@ namespace Mineral.Common.Storage
 
         public Dictionary<byte[], byte[]> GetNext(byte[] key, long limit)
         {
+            Helper.IsNotNull(key, "Key must be not null.");
             Dictionary<byte[], byte[]> result = new Dictionary<byte[], byte[]>();
-            if (limit <= 0)
-                return result;
+            Monitor.Enter(this.lock_read);
 
-            Iterator it = this.db.CreateIterator(new ReadOptions());
-            long i = 0;
-            for (it.Seek(key); it.IsValid() && i++ < limit; it.Next())
+            try
             {
-                result.Add(it.Key(), it.Value());
+                if (limit <= 0)
+                    return result;
+
+                using (Iterator it = this.db.CreateIterator(new ReadOptions()))
+                {
+                    long i = 0;
+                    for (it.Seek(key); it.IsValid() && i++ < limit; it.Next())
+                    {
+                        result.Add(it.Key(), it.Value());
+                    }
+                }
+            }
+            catch (System.Exception e)
+            {
+                throw e;
+            }
+            finally
+            {
+                Monitor.Exit(this.lock_read);
             }
 
             return result;
@@ -231,6 +373,7 @@ namespace Mineral.Common.Storage
 
         public Dictionary<byte[], byte[]> GetPrevious(byte[] key, long limit, int precision)
         {
+            Helper.IsNotNull(key, "Key must be not null.");
             Dictionary<byte[], byte[]> result = new Dictionary<byte[], byte[]>();
 
             if (limit <= 0 || key.Length < precision)
@@ -238,21 +381,36 @@ namespace Mineral.Common.Storage
                 return result;
             }
 
-            long i = 0;
-            Iterator it = this.db.CreateIterator(new ReadOptions());
-            for (it.SeekToFirst(); it.IsValid() && i++ < limit; it.Next())
+            Monitor.Enter(this.lock_read);
+
+            try
             {
-                if (it.Key().Length >= precision)
+                long i = 0;
+                using (Iterator it = this.db.CreateIterator(new ReadOptions()))
                 {
-                    if (ByteUtil.Compare(
-                            ArrayUtil.GetRange(key, 0, precision),
-                            ArrayUtil.GetRange(it.Key(), 0, precision))
-                            < 0)
+                    for (it.SeekToFirst(); it.IsValid() && i++ < limit; it.Next())
                     {
-                        break;
+                        if (it.Key().Length >= precision)
+                        {
+                            if (ByteUtil.Compare(
+                                    ArrayUtil.GetRange(key, 0, precision),
+                                    ArrayUtil.GetRange(it.Key(), 0, precision))
+                                    < 0)
+                            {
+                                break;
+                            }
+                            result.Add(it.Key(), it.Value());
+                        }
                     }
-                    result.Add(it.Key(), it.Value());
                 }
+            }
+            catch (System.Exception e)
+            {
+                throw e;
+            }
+            finally
+            {
+                Monitor.Exit(this.lock_read);
             }
 
             return result;
@@ -261,11 +419,25 @@ namespace Mineral.Common.Storage
         public Dictionary<byte[], byte[]> GetAll()
         {
             Dictionary<byte[], byte[]> result = new Dictionary<byte[], byte[]>();
+            Monitor.Enter(this.lock_read);
 
-            Iterator it = this.db.CreateIterator(new ReadOptions());
-            for (it.SeekToFirst(); it.IsValid(); it.Next())
+            try
             {
-                result.Add(it.Key(), it.Value());
+                using (Iterator it = this.db.CreateIterator(new ReadOptions()))
+                {
+                    for (it.SeekToFirst(); it.IsValid(); it.Next())
+                    {
+                        result.Add(it.Key(), it.Value());
+                    }
+                }
+            }
+            catch (System.Exception e)
+            {
+                throw e;
+            }
+            finally
+            {
+                Monitor.Exit(this.lock_read);
             }
 
             return result;
