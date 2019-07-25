@@ -239,7 +239,7 @@ namespace Mineral.Core.Database2.Core
                 return result;
 
             List<byte[]> list =
-                ((Common.LevelDB)((SnapshotRoot)this.head.GetRoot()).DB).DB.GetPrevious(key, limit, precision).Values.ToList(); ;
+                ((Common.LevelDB)((SnapshotRoot)this.head.GetRoot()).DB).DB.GetValuesPrevious(key, limit, precision).Values.ToList(); ;
 
             foreach (byte[] array in list)
             {
