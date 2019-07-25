@@ -91,6 +91,14 @@ namespace Mineral.Common.Overlay.Discover.Node
 
 
         #region Contructor
+        public NodeHandler(Node node, NodeManager node_manager)
+        {
+            this.node = node;
+            this.node_manager = node_manager;
+            this.socket_address = new IPEndPoint(new IPAddress(Encoding.UTF8.GetBytes(node.Host)), node.Port);
+            this.node_statistics = new NodeStatistics(node);
+            ChangeState(NodeHandlerState.Discovered);
+        }
         #endregion
 
 
@@ -114,15 +122,6 @@ namespace Mineral.Common.Overlay.Discover.Node
 
 
         #region External Method
-        public NodeHandler(Node node, NodeManager node_manager)
-        {
-            this.node = node;
-            this.node_manager = node_manager;
-            this.socket_address = new IPEndPoint(new IPAddress(Encoding.UTF8.GetBytes(node.Host)), node.Port);
-            this.node_statistics = new NodeStatistics(node);
-            ChangeState(NodeHandlerState.Discovered);
-        }
-
         public void ChangeState(NodeHandlerState new_state)
         {
             NodeHandlerState old_state = this.state;
