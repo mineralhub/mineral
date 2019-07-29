@@ -27,7 +27,7 @@ namespace Mineral.Common.Overlay.Client
         #region Contructor
         public PeerClient()
         {
-            this.worker_group = new EventLoopGroup(0);
+            this.worker_group = new MultithreadEventLoopGroup(0);
         }
         #endregion
 
