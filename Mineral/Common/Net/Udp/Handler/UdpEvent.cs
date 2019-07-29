@@ -21,6 +21,7 @@ namespace Mineral.Common.Net.Udp.Handler
         {
             this.Message = message;
             this.Address = address;
+            this.Address.Address = address.Address.MapToIPv4();
         }
         #endregion
 
