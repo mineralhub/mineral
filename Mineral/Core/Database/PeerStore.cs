@@ -41,7 +41,7 @@ namespace Mineral.Core.Database
             if (value != null)
             {
                 string data = Encoding.UTF8.GetString(value);
-                string[] split = data.Split(new string[] { "||" }, StringSplitOptions.None);
+                string[] split = data.Split(new string[] { "||" }, StringSplitOptions.RemoveEmptyEntries);
                 
                 foreach (string s in split)
                 {
@@ -81,8 +81,8 @@ namespace Mineral.Core.Database
             foreach (Node node in value)
             {
                 sb.Append(node.GetEncodeURL()).Append("&").Append(node.Reputation).Append("||");
-                this.db_source.PutData(key, Encoding.UTF8.GetBytes(sb.ToString()));
             }
+            this.db_source.PutData(key, Encoding.UTF8.GetBytes(sb.ToString()));
         }
 
         public override void Delete(byte[] key)
