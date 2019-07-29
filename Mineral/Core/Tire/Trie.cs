@@ -112,7 +112,7 @@ namespace Mineral.Core.Tire
                 {
                     TrieNode new_branch = new TrieNode(this);
                     TrieNode newKvNode = new TrieNode(this, common_prefix, new_branch);
-                    // TODO can be optimized
+
                     Insert(newKvNode, current_node_key, node.KVNodeGetValueOrNode());
                     Insert(newKvNode, key, node_or_value);
                     node.Dispose();

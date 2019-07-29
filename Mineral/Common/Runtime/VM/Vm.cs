@@ -537,7 +537,6 @@ namespace Mineral.Common.Runtime.VM
                         break;
                     case OpCode.LT:
                         {
-                            // TODO: can be improved by not using BigInteger
                             DataWord word1 = program.StackPop();
                             DataWord word2 = program.StackPop();
 
@@ -557,7 +556,6 @@ namespace Mineral.Common.Runtime.VM
                         break;
                     case OpCode.SLT:
                         {
-                            // TODO: can be improved by not using BigInteger
                             DataWord word1 = program.StackPop();
                             DataWord word2 = program.StackPop();
 
@@ -577,7 +575,6 @@ namespace Mineral.Common.Runtime.VM
                         break;
                     case OpCode.SGT:
                         {
-                            // TODO: can be improved by not using BigInteger
                             DataWord word1 = program.StackPop();
                             DataWord word2 = program.StackPop();
 
@@ -597,7 +594,6 @@ namespace Mineral.Common.Runtime.VM
                         break;
                     case OpCode.GT:
                         {
-                            // TODO: can be improved by not using BigInteger
                             DataWord word1 = program.StackPop();
                             DataWord word2 = program.StackPop();
 

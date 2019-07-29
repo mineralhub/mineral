@@ -347,7 +347,6 @@ namespace Mineral.Common.Overlay.Discover.Node
                               this.node_handlers.Count,
                               result.Count));
 
-            //TODO: here can use head num sort.
             result = result.OrderBy(handler => handler.NodeStatistics.Reputation).Reverse().ToList();
 
             return result.Truncate(limit);
