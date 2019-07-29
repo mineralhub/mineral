@@ -8,7 +8,7 @@ using DotNetty.Transport.Channels.Sockets;
 
 namespace Mineral.Common.Net.Udp.Handler
 {
-    public class MessageHandler : SimpleChannelInboundHandler<UdpEvent>
+    public class MessageHandler : SimpleChannelInboundHandler<UdpEvent>, IMessageHandler
     {
         #region Field
         private IChannel channel = null;

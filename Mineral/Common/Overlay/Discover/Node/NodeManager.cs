@@ -79,7 +79,7 @@ namespace Mineral.Common.Overlay.Discover.Node
         private static readonly int MAX_NODES = 2000;
         private static readonly int NODES_TRIM_THRESHOLD = 3000;
 
-        private Action<UdpEvent> message_sender = null;
+        private IMessageHandler message_sender = null;
         private NodeTable table = null;
         private Node node = null;
         private Node home_node = null;
@@ -96,9 +96,10 @@ namespace Mineral.Common.Overlay.Discover.Node
 
 
         #region Property
-        public Action<UdpEvent> MessageSender
+        public IMessageHandler MessageSender
         {
             get { return this.message_sender; }
+            set { this.message_sender = value;}
         }
 
         public NodeTable Table
@@ -308,7 +309,7 @@ namespace Mineral.Common.Overlay.Discover.Node
         {
             if (this.is_enable_discovery && this.message_sender != null)
             {
-                this.message_sender.Invoke(udp_event);
+                this.message_sender.Accept(udp_event);
             }
         }
 

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Text;
 using Mineral.Common.Backup;
 using Mineral.Common.Overlay.Client;
+using Mineral.Common.Overlay.Discover;
 using Mineral.Common.Overlay.Discover.Node;
 using Mineral.Common.Overlay.Messages;
 using Mineral.Common.Overlay.Server;
@@ -34,6 +35,7 @@ namespace Mineral.Core
 
         private MineralNetService net_service = new MineralNetService();
         private MineralNetDelegate net_delegate = new MineralNetDelegate();
+        private DiscoverServer discover_server = new DiscoverServer();
         private PeerServer peer_server = new PeerServer();
         private PeerClient peer_client = new PeerClient();
         private PeerStatusCheck peer_check = new PeerStatusCheck();
@@ -234,6 +236,7 @@ namespace Mineral.Core
         public void Init()
         {
             this.db_manager.Init();
+            this.discover_server.Init();
         }
         #endregion
     }
