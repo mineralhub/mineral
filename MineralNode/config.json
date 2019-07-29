@@ -24,7 +24,9 @@
     },
 
     "seed_node": {
-        "ip_list": []
+        "ip_list": [
+	    "127.0.0.1:11255"
+	]
     },
 
     "genesis_block": {
@@ -51,28 +53,28 @@
 
         "Witnesses": [
             {
-                "address": "12AKRNHpFhDSBDD9rSn74VAzZSL3774PxQ",
-                "url": [ "http://1.com" ],
+                "address": "MPxE5hTXRVk1j8awwmp7ZitfiuhSB7wXHZ",
+                "url": "http://1.com",
                 "vote_count": 0
             },
             {
-                "address": "19mqdnsraLrBSHTupx9HcnmJrCryM5Jpjy",
-                "url": [ "http://2.com" ],
+                "address": "MRXTbMN4s4VC38Zn5CwPvTFih6N59HSsUj",
+                "url": "http://2.com",
                 "vote_count": 0
             },
             {
-                "address": "1889nUYazT9MhsqE4fxutq1dpyspHZEiaM",
-                "url": [ "http://3.com" ],
+                "address": "MRPjVQhXjdh6zxudQbV8WcvwR5opSSQddq",
+                "url": "http://3.com",
                 "vote_count": 0
             },
             {
-                "address": "1CvKHaVAKsGGftTFZBdJRcxozxeQo7rXUk",
-                "url": [ "http://4.com" ],
+                "address": "MCpTBDcWtBmsTRFikX56M1xtbTkhV1XFn4",
+                "url": "http://4.com",
                 "vote_count": 0
             },
             {
-                "address": "12iMNgciNRutMSeu18iaByKYBPnk88Hcm1",
-                "url": [ "http://5.com" ],
+                "address": "MD6ooydoWM5CG1QT4rtCDVaNtwhLPRzjM5",
+                "url": "http://5.com",
                 "vote_count": 0
             }
         ],
@@ -142,22 +144,5 @@
         "support_constant": false,
         "min_time_ratio": 0.0,
         "max_time_ratio": 5.0
-    },
-
-
-    "block_version": 1,
-    "address_version": 0,
-    "state_version": 0,
-    "log-level": "DEBUG",
-    "log-console": true,
-    "network": {
-        "listen_address": "0.0.0.0",
-        "tcp_port": 11255,
-        "ws_port": 11256,
-        "rpc_port": 11257,
-        "seed_list": [ "127.0.0.1:11355", "127.0.0.1:11455" ]
-    },
-    "transaction": {
-        "payload_capacity": 2000
     }
 }
