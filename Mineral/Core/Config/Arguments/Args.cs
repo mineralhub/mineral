@@ -109,7 +109,7 @@ namespace Mineral.Core.Config.Arguments
         [Parameter("--storage-db-synchronous", Description = "Storage db is synchronous or not.(true or flase)")]
         private string storage_sync = "";
 
-        [Parameter("--contract-parse-switch", Description = "enable contract parses in java-tron or not.(true or flase)")]
+        [Parameter("--contract-parse-switch", Description = "enable contract parses in mineral or not.(true or flase)")]
         private string contract_parse_switch = "";
 
         [Parameter("-d", "--output-directory", Description = "Directory")]
