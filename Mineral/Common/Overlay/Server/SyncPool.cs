@@ -214,9 +214,9 @@ namespace Mineral.Common.Overlay.Server
                 {
                     FillUp();
                 }
-                catch
+                catch (System.Exception e)
                 {
-                    Logger.Error("Exception in sync worker");
+                    Logger.Error("Exception in sync worker", e);
                 }
             }, 30 * 1000, 3600);
 
