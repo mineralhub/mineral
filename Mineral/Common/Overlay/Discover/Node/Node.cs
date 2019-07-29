@@ -116,7 +116,11 @@ namespace Mineral.Common.Overlay.Discover.Node
 
             if (obj.GetType() == GetType())
             {
-                return string.Equals(Id.ToString(), ((Node)obj).Id.ToString());
+                Node n = ((Node)obj);
+
+                return string.Equals(Id.ToString(), n.Id.ToString())
+                    && string.Equals(Host, n.Host)
+                    && string.Equals(Port, n.Port);
             }
 
             return false;
