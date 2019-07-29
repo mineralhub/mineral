@@ -42,7 +42,7 @@ namespace Mineral.Common.Overlay.Server
         {
             this.nodes.ForEach(node =>
             {
-                IPAddress address = new IPEndPoint(new IPAddress(Encoding.UTF8.GetBytes(node.Host)), node.Port).Address;
+                IPAddress address = new IPEndPoint(IPAddress.Parse(node.Host), node.Port).Address;
                 Manager.Instance.ChannelManager.ActiveNodes.TryAdd(address, node);
             });
         }
@@ -51,7 +51,7 @@ namespace Mineral.Common.Overlay.Server
         {
             this.nodes.ForEach(node =>
             {
-                IPAddress address = new IPEndPoint(new IPAddress(Encoding.UTF8.GetBytes(node.Host)), node.Port).Address;
+                IPAddress address = new IPEndPoint(IPAddress.Parse(node.Host), node.Port).Address;
                 Manager.Instance.ChannelManager.ActiveNodes.TryRemove(address, out _);
 
                 foreach (Channel channel in Manager.Instance.ChannelManager.ActivePeer)

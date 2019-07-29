@@ -86,20 +86,20 @@ namespace Mineral.Common.Overlay.Server
             IPAddress address;
             foreach (Node node in Args.Instance.Node.Passive)
             {
-                address = new IPEndPoint(new IPAddress(Encoding.UTF8.GetBytes(node.Host)), node.Port).Address;
+                address = new IPEndPoint(IPAddress.Parse(node.Host), node.Port).Address;
                 this.trust_nodes.TryAdd(address, node);
             }
 
             foreach (Node node in Args.Instance.Node.Active)
             {
-                address = new IPEndPoint(new IPAddress(Encoding.UTF8.GetBytes(node.Host)), node.Port).Address;
+                address = new IPEndPoint(IPAddress.Parse(node.Host), node.Port).Address;
                 this.trust_nodes.TryAdd(address, node);
                 this.active_nodes.TryAdd(address, node);
             }
 
             foreach (Node node in Args.Instance.Node.FastForward)
             {
-                address = new IPEndPoint(new IPAddress(Encoding.UTF8.GetBytes(node.Host)), node.Port).Address;
+                address = new IPEndPoint(IPAddress.Parse(node.Host), node.Port).Address;
                 this.trust_nodes.TryAdd(address, node);
                 this.fast_forward_nodes.TryAdd(address, node);
             }

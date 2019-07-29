@@ -95,7 +95,7 @@ namespace Mineral.Common.Overlay.Discover.Node
         {
             this.node = node;
             this.node_manager = node_manager;
-            this.socket_address = new IPEndPoint(new IPAddress(Encoding.UTF8.GetBytes(node.Host)), node.Port);
+            this.socket_address = new IPEndPoint(IPAddress.Parse(node.Host), node.Port);
             this.node_statistics = new NodeStatistics(node);
             ChangeState(NodeHandlerState.Discovered);
         }

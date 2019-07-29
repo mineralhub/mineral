@@ -149,7 +149,7 @@ namespace Mineral.Common.Overlay.Discover.Node
         #region Internal Method
         private string GetKey(Node node)
         {
-            return GetKey(new IPEndPoint(new IPAddress(Encoding.UTF8.GetBytes(node.Host)), node.Port));
+            return GetKey(new IPEndPoint(IPAddress.Parse(node.Host), node.Port));
         }
 
         private string GetKey(IPEndPoint address)

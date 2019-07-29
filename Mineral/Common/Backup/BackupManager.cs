@@ -132,7 +132,7 @@ namespace Mineral.Common.Backup
                     {
                         this.message_handler.Accept(
                             new UdpEvent(new KeepAliveMessage(this.status.Equals(BackupStatus.MASTER), priority),
-                                         new IPEndPoint(new IPAddress(Encoding.UTF8.GetBytes(member)), port)));
+                                         new IPEndPoint(IPAddress.Parse(member), port)));
                     }
                 }
                 catch (System.Exception e)
