@@ -40,7 +40,7 @@ namespace Mineral.Common.Net.Udp.Message
                 {
                     result = new byte[this.data.Length + 1];
                     result[0] = (byte)this.type;
-                    result.CopyTo(this.data, 1);
+                    Array.Copy(this.data, 0, result, 1, this.data.Length);
                 }
 
                 return result;
