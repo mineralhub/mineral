@@ -210,7 +210,7 @@ namespace Mineral.Core.Actuator
                     if (sum > power)
                     {
                         throw new ContractValidateException(
-                            "The total number of votes[" + sum + "] is greater than the tronPower[" + power + "]");
+                            "The total number of votes[" + sum + "] is greater than the mineral power[" + power + "]");
                     }
                 }
                 catch (ArithmeticException e)

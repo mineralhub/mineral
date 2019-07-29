@@ -136,7 +136,7 @@ namespace Mineral.Core.Net
             Manager.Instance.PeerStatusCheck.Init();
             Manager.Instance.TransactionHandler.Init();
 
-            Logger.Info("TronNetService start successfully.");
+            Logger.Info("NetService start successfully.");
         }
 
         public void Close()
@@ -147,7 +147,7 @@ namespace Mineral.Core.Net
             Manager.Instance.PeerStatusCheck.Close();
             Manager.Instance.TransactionHandler.Close();
 
-            Logger.Info("TronNetService closed successfully.");
+            Logger.Info("NetService closed successfully.");
         }
 
         public void Broadcast(Message message)

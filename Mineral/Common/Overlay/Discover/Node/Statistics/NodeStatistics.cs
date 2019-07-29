@@ -228,7 +228,7 @@ namespace Mineral.Common.Overlay.Discover.Node.Statistics
                 + ((int)discovery_message_latency.GetAverage()) + "ms"
                 + ", p2p: " + this.p2p_handshake + "/" + this.message_statistics.P2pInHello + "/"
                 + this.message_statistics.P2pOutHello + " "
-                + ", tron: " + this.message_statistics.MineralInMessage + "/" + this.message_statistics.MineralOutMessage
+                + ", mineral: " + this.message_statistics.MineralInMessage + "/" + this.message_statistics.MineralOutMessage
                 + " "
                 + (WasDisconnected ? "X " + this.disconnect_times : "")
                 + (this.last_local_disconnect != null ? ("<=" + this.last_local_disconnect) : " ")
