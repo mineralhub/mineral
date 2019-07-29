@@ -1,4 +1,9 @@
 {
+    "log": {
+        "level": "DEBUG",
+        "console": true
+    },
+
     "net": {
         "type": "tesetnet"
     },
@@ -25,8 +30,8 @@
 
     "seed_node": {
         "ip_list": [
-	    "127.0.0.1:11255"
-	]
+            "127.0.0.1:11255"
+        ]
     },
 
     "genesis_block": {

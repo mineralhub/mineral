@@ -21,6 +21,15 @@ namespace Mineral
         public Options Option { get; set; }
     }
 
+    public class LogConfig
+    {
+        [JsonProperty("console")]
+        public bool WriteConsole { get; set; }
+        [JsonProperty("level")]
+        [JsonConverter(typeof(JsonLogLevelConverter))]
+        public LogLevel Level { get; set; } = LogLevel.INFO;
+    }
+
     public class NetConfig
     {
         [JsonProperty("type")]
@@ -306,6 +315,8 @@ namespace Mineral
             get { return instance = instance ?? new Config(); }
         }
 
+        [JsonProperty("log")]
+        public LogConfig Log { get; set; }
         [JsonProperty("net")]
         public NetConfig Net { get; set; }
         [JsonProperty("witness")]
@@ -328,12 +339,6 @@ namespace Mineral
         public EventConfig Event { get; set; }
         [JsonProperty("vm")]
         public VMConfig VM { get; set; }
-
-        [JsonProperty("log-level")]
-        [JsonConverter(typeof(JsonLogLevelConverter))]
-        public LogLevel WriteLogLevel { get; set; } = LogLevel.INFO;
-        [JsonProperty("log-console")]
-        public bool WriteLogConsole { get; set; } = false;
 
         public HashSet<IPAddress> LocalAddresses { get; private set; }
         #endregion
@@ -365,8 +370,8 @@ namespace Mineral
                     {
                         instance = JsonConvert.DeserializeObject<Config>(file.ReadToEnd());
 
-                        Logger.WriteConsole = Instance.WriteLogConsole;
-                        Logger.WriteLogLevel = Instance.WriteLogLevel;
+                        Logger.WriteConsole = Instance.Log.WriteConsole;
+                        Logger.WriteLogLevel = Instance.Log.Level;
                     }
                     result = true;
                 }
