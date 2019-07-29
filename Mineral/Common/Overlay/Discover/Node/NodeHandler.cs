@@ -288,7 +288,7 @@ namespace Mineral.Common.Overlay.Discover.Node
 
             SendMessage(message);
 
-            if (this.node_manager.TimerPong.IsShutdown)
+            if (this.node_manager.TimerPong != null && this.node_manager.TimerPong.IsShutdown)
             {
                 return;
             }
