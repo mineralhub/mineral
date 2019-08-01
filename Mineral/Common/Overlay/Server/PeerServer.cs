@@ -49,16 +49,19 @@ namespace Mineral.Common.Overlay.Server
                 bootstrap.Group(boos_group, worker_group);
                 bootstrap.Channel<TcpServerSocketChannel>();
 
-                bootstrap
-                    .Option(ChannelOption.SoKeepalive, true)
-                    .Option(ChannelOption.MessageSizeEstimator, DefaultMessageSizeEstimator.Default)
-                    .Option(ChannelOption.ConnectTimeout, TimeSpan.FromSeconds(Args.Instance.Node.ConnectionTimeout))
-                    .Handler(new LoggingHandler())
-                    .ChildHandler(new NettyChannelInitializer("", false));
+                bootstrap.Option(ChannelOption.SoKeepalive, true);
+                bootstrap.Option(ChannelOption.MessageSizeEstimator, DefaultMessageSizeEstimator.Default);
+                bootstrap.Option(ChannelOption.ConnectTimeout, TimeSpan.FromSeconds(Args.Instance.Node.ConnectionTimeout));
+                bootstrap.Handler(new LoggingHandler());
+                bootstrap.ChildHandler(new NettyChannelInitializer("", false));
 
                 Logger.Info("Tcp listener started, bind port : " + port);
 
                 this.channel = await bootstrap.BindAsync(port);
+            }
+            catch (System.Exception e)
+            {
+                Logger.Error(e.Message, e);
             }
             finally
             {

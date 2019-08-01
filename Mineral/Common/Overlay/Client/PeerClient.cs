@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Net;
 using System.Text;
 using System.Threading.Tasks;
 using DotNetty.Transport.Bootstrapping;
@@ -42,18 +43,27 @@ namespace Mineral.Common.Overlay.Client
             Logger.Info(
                 string.Format("connect peer {0} {1} {2}", host, port, remote_id));
 
-            NettyChannelInitializer initializer = new NettyChannelInitializer(remote_id, discovery_mode);
+            try
+            {
+                NettyChannelInitializer initializer = new NettyChannelInitializer(remote_id, discovery_mode);
 
-            Bootstrap bootstrap = new Bootstrap();
-            bootstrap.Group(this.worker_group);
-            bootstrap.Channel<TcpSocketChannel>();
-            bootstrap.Option(ChannelOption.SoKeepalive, true);
-            bootstrap.Option(ChannelOption.MessageSizeEstimator, DefaultMessageSizeEstimator.Default);
-            bootstrap.Option(ChannelOption.ConnectTimeout, new TimeSpan(Args.Instance.Node.ConnectionTimeout));
-            bootstrap.RemoteAddress(host, port);
-            bootstrap.Handler(initializer);
+                Bootstrap bootstrap = new Bootstrap();
+                bootstrap.Group(this.worker_group);
+                bootstrap.Channel<TcpSocketChannel>();
+                bootstrap.Option(ChannelOption.SoKeepalive, true);
+                bootstrap.Option(ChannelOption.MessageSizeEstimator, DefaultMessageSizeEstimator.Default);
+                bootstrap.Option(ChannelOption.ConnectTimeout, TimeSpan.FromSeconds(Args.Instance.Node.ConnectionTimeout));
+                //bootstrap.RemoteAddress(host, port);
+                bootstrap.Handler(initializer);
 
-            return await bootstrap.ConnectAsync();
+                return await bootstrap.ConnectAsync(new IPEndPoint(IPAddress.Parse(host), port));
+            }
+            catch (System.Exception e)
+            {
+                Logger.Warning(e.Message, e);
+            }
+
+            return null;
         }
         #endregion
 
