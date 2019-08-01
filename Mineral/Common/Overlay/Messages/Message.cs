@@ -4,6 +4,7 @@ using System.Text;
 using DotNetty.Buffers;
 using Google.Protobuf;
 using Mineral.Common.Utils;
+using Mineral.Core;
 using Mineral.Core.Database;
 using Mineral.Core.Exception;
 using Mineral.Core.Net.Messages;
@@ -17,7 +18,6 @@ namespace Mineral.Common.Overlay.Messages
         #region Field
         protected byte[] data = null;
         protected byte type = 0x00;
-        private static DatabaseManager db_manager;
         #endregion
 
 
@@ -34,7 +34,7 @@ namespace Mineral.Common.Overlay.Messages
 
         public static bool IsFilter
         {
-            get { return db_manager.DynamicProperties.GetAllowProtoFilterNum() == 1; }
+            get { return Manager.Instance.DBManager.DynamicProperties.GetAllowProtoFilterNum() == 1; }
         }
 
         public virtual SHA256Hash MessageId
@@ -81,8 +81,8 @@ namespace Mineral.Common.Overlay.Messages
             else
             {
                 result = new byte[this.data.Length + 1];
-                Array.Copy(this.data, result, this.data.Length);
-                result[this.data.Length + 1] = type;
+                result[0] = this.type;
+                Array.Copy(this.data, 0, result, 1, this.data.Length);
             }
 
             return Unpooled.WrappedBuffer(result);
