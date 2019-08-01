@@ -12,6 +12,7 @@ using Mineral.Core;
 using Mineral.Core.Config.Arguments;
 using Mineral.Core.Database;
 using Mineral.Core.Net.Peer;
+using static Mineral.Core.Net.Messages.MessageTypes;
 
 namespace Mineral.Common.Overlay.Server
 {
@@ -66,10 +67,35 @@ namespace Mineral.Common.Overlay.Server
         #region Internal Method
         protected override void Decode(IChannelHandlerContext context, IByteBuffer input, List<object> output)
         {
-            throw new NotImplementedException();
+            byte[] encoded = new byte[input.ReadableBytes];
+            input.ReadBytes(encoded);
+            P2pMessage message = (P2pMessage)this.message_factory.Create(encoded);
+
+            Logger.Info(
+                string.Format("Handshake Receive from {0}, {1}",
+                              context.Channel.RemoteAddress,
+                              message));
+
+            switch (message.Type)
+            {
+                case MsgType.P2P_HELLO:
+                    HandleHelloMessage(context, (HelloMessage)message);
+                    break;
+                case MsgType.P2P_DISCONNECT:
+                    if (this.channel.NodeStatistics!= null)
+                    {
+                        this.channel.NodeStatistics.NodeDisconnectedRemote(((DisconnectMessage)message).Reason);
+                    }
+                    this.channel.Close();
+                    break;
+                default:
+                    this.channel.Close();
+                    break;
+            }
+
         }
 
-        protected void SendHelloMsg(IChannelHandlerContext context, long time)
+        protected void SendHelloMessage(IChannelHandlerContext context, long time)
         {
             HelloMessage message = new HelloMessage(this.node_manager.PublicHomeNode,
                                                     time,
@@ -84,7 +110,7 @@ namespace Mineral.Common.Overlay.Server
                 string.Format("Handshake Send to {0}, {1} ", context.Channel.RemoteAddress, message));
         }
 
-        private void HandleHelloMsg(IChannelHandlerContext context, HelloMessage message)
+        private void HandleHelloMessage(IChannelHandlerContext context, HelloMessage message)
         {
             this.channel.InitNode(message.From.Id, message.From.Port);
 
@@ -145,7 +171,7 @@ namespace Mineral.Common.Overlay.Server
 
             if (this.remote_id.Length != 64)
             {
-                SendHelloMsg(context, message.Timestamp);
+                SendHelloMessage(context, message.Timestamp);
             }
 
             this.sync_pool.OnConnect(channel);
@@ -163,7 +189,7 @@ namespace Mineral.Common.Overlay.Server
             if (this.remote_id.Length == 64)
             {
                 this.channel.InitNode(remote_id, ((IPEndPoint)context.Channel.RemoteAddress).Port);
-                SendHelloMsg(context, Helper.CurrentTimeMillis());
+                SendHelloMessage(context, Helper.CurrentTimeMillis());
             }
         }
         #endregion
