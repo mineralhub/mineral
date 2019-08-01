@@ -172,7 +172,7 @@ namespace Mineral.Common.Overlay.Server
 
         public void InitNode(byte[] node_id, int remote_port)
         {
-            this.node = new Node(node_id, this.socket_address.Address.ToString(), remote_port);
+            this.node = new Node(node_id, this.socket_address.Address.MapToIPv4().ToString(), remote_port);
             this.node_statistics = Manager.Instance.NodeManager.GetNodeStatistics(node);
             Manager.Instance.NodeManager.GetNodeHandler(node).Node = node;
         }
