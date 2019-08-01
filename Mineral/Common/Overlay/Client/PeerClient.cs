@@ -53,7 +53,6 @@ namespace Mineral.Common.Overlay.Client
                 bootstrap.Option(ChannelOption.SoKeepalive, true);
                 bootstrap.Option(ChannelOption.MessageSizeEstimator, DefaultMessageSizeEstimator.Default);
                 bootstrap.Option(ChannelOption.ConnectTimeout, TimeSpan.FromSeconds(Args.Instance.Node.ConnectionTimeout));
-                //bootstrap.RemoteAddress(host, port);
                 bootstrap.Handler(initializer);
 
                 return await bootstrap.ConnectAsync(new IPEndPoint(IPAddress.Parse(host), port));
