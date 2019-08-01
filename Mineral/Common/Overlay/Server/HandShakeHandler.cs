@@ -97,17 +97,24 @@ namespace Mineral.Common.Overlay.Server
 
         protected void SendHelloMessage(IChannelHandlerContext context, long time)
         {
-            HelloMessage message = new HelloMessage(this.node_manager.PublicHomeNode,
-                                                    time,
-                                                    this.db_manager.GenesisBlockId,
-                                                    this.db_manager.SolidBlockId,
-                                                    this.db_manager.HeadBlockId);
+            try
+            {
+                HelloMessage message = new HelloMessage(this.node_manager.PublicHomeNode,
+                                                        time,
+                                                        this.db_manager.GenesisBlockId,
+                                                        this.db_manager.SolidBlockId,
+                                                        this.db_manager.HeadBlockId);
 
-            context.WriteAndFlushAsync(message.GetSendData());
-            this.channel.NodeStatistics.MessageStatistics.AddTcpOutMessage(message);
+                context.WriteAndFlushAsync(message.GetSendData());
+                this.channel.NodeStatistics.MessageStatistics.AddTcpOutMessage(message);
 
-            Logger.Info(
-                string.Format("Handshake Send to {0}, {1} ", context.Channel.RemoteAddress, message));
+                Logger.Info(
+                       string.Format("Handshake Send to {0}, {1} ", context.Channel.RemoteAddress, message));
+            }
+            catch (System.Exception e)
+            {
+                Logger.Error("Fail to SendHelloMessage.", e);
+            }
         }
 
         private void HandleHelloMessage(IChannelHandlerContext context, HelloMessage message)
