@@ -50,8 +50,13 @@ namespace Mineral.Common.Overlay.Server
         #region Internal Method
         private void Send()
         {
-            if (this.request_queue.TryPeek(out MessageRoundTrip round_trip))
+            if (this.request_queue.Count > 0)
             {
+                MessageRoundTrip round_trip = this.request_queue.Peek();
+
+                if (round_trip == null)
+                    return;
+
                 if (!this.send_message_flag)
                     return;
 
@@ -66,6 +71,7 @@ namespace Mineral.Common.Overlay.Server
                                       round_trip.Message.AnswerMessage,
                                       this.context.Channel.RemoteAddress));
                     channel.Close();
+
                     return;
                 }
 
@@ -192,10 +198,13 @@ namespace Mineral.Common.Overlay.Server
 
             this.channel.NodeStatistics.MessageStatistics.AddTcpInMessage(msg);
 
-            MessageRoundTrip round_trip = this.request_queue.Peek();
-            if (round_trip != null && round_trip.Message.AnswerMessage == msg.GetType())
+            if (this.request_queue.Count > 0)
             {
-                this.request_queue.Dequeue();
+                MessageRoundTrip round_trip = this.request_queue.Peek();
+                if (round_trip != null && round_trip.Message.AnswerMessage == msg.GetType())
+                {
+                    this.request_queue.Dequeue();
+                }
             }
         }
 

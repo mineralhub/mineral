@@ -73,7 +73,7 @@ namespace Mineral.Common.Runtime.VM.Program
 
         public DataWord Peek()
         {
-            return this.stack.Peek();
+            return this.stack.Count > 0 ? this.stack.Peek() : DataWord.ZERO;
         }
 
         [MethodImpl(MethodImplOptions.Synchronized)]
