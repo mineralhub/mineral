@@ -75,14 +75,12 @@ namespace Mineral.Common.Overlay.Server
                     return;
                 }
 
-                Message msg = round_trip.Message;
-
-                this.context.WriteAndFlushAsync(msg.GetSendData()).ContinueWith(task =>
+                this.context.WriteAndFlushAsync(round_trip.Message.GetSendData()).ContinueWith(task =>
                 {
                     if (!task.IsCompleted)
                     {
                         Logger.Error(
-                            string.Format("Fail send to {0}, {1}", this.context.Channel.RemoteAddress, msg));
+                            string.Format("Fail send to {0}, {1}", this.context.Channel.RemoteAddress, round_trip.Message));
                     }
                 });
 
@@ -128,7 +126,7 @@ namespace Mineral.Common.Overlay.Server
                 }
                 catch (Exception e)
                 {
-                    Logger.Error("Unhandled exception" + e.Message);
+                    Logger.Error("Unhandled exception " + e.Message);
                 }
             }, 10, 10);
 
@@ -142,7 +140,7 @@ namespace Mineral.Common.Overlay.Server
                         {
                             this.context.WriteAndFlushAsync(msg.GetSendData()).ContinueWith(task =>
                             {
-                                if (task.IsCompleted && this.channel.IsDisconnect)
+                                if (!task.IsCompleted && !this.channel.IsDisconnect)
                                 {
                                     Logger.Error(
                                         string.Format("Fail send to {0}, {1}", this.context.Channel.RemoteAddress, msg));
