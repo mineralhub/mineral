@@ -50,37 +50,39 @@ namespace Mineral.Common.Overlay.Server
         #region Internal Method
         private void Send()
         {
-            MessageRoundTrip round_trip = this.request_queue.Peek();
-            if (!this.send_message_flag || round_trip == null)
-                return;
-
-            if (round_trip.RetryTime > 0 && !round_trip.HasToRetry())
-                return;
-
-            if (round_trip.RetryTime > 0)
+            if (this.request_queue.TryPeek(out MessageRoundTrip round_trip))
             {
-                this.channel.NodeStatistics.NodeDisconnectedLocal(Protocol.ReasonCode.PingTimeout);
-                Logger.Warning(
-                    string.Format("Wait {0} timeout. close channel {1}.",
-                                  round_trip.Message.AnswerMessage,
-                                  this.context.Channel.RemoteAddress));
-                channel.Close();
-                return;
-            }
+                if (!this.send_message_flag)
+                    return;
 
-            Message msg = round_trip.Message;
+                if (round_trip.RetryTime > 0 && !round_trip.HasToRetry())
+                    return;
 
-            this.context.WriteAndFlushAsync(msg.GetSendData()).ContinueWith(task =>
-            {
-                if (!task.IsCompleted)
+                if (round_trip.RetryTime > 0)
                 {
-                    Logger.Error(
-                        string.Format("Fail send to {0}, {1}", this.context.Channel.RemoteAddress, msg));
+                    this.channel.NodeStatistics.NodeDisconnectedLocal(Protocol.ReasonCode.PingTimeout);
+                    Logger.Warning(
+                        string.Format("Wait {0} timeout. close channel {1}.",
+                                      round_trip.Message.AnswerMessage,
+                                      this.context.Channel.RemoteAddress));
+                    channel.Close();
+                    return;
                 }
-            });
 
-            round_trip.IncreaseRetryTime();
-            round_trip.SaveTime();
+                Message msg = round_trip.Message;
+
+                this.context.WriteAndFlushAsync(msg.GetSendData()).ContinueWith(task =>
+                {
+                    if (!task.IsCompleted)
+                    {
+                        Logger.Error(
+                            string.Format("Fail send to {0}, {1}", this.context.Channel.RemoteAddress, msg));
+                    }
+                });
+
+                round_trip.IncreaseRetryTime();
+                round_trip.SaveTime();
+            }
         }
 
         private bool NeedToLog(Message msg)

@@ -163,7 +163,7 @@ namespace Mineral.Common.Overlay.Server
             Manager.Instance.MessageCodec.Channel = this;
             Manager.Instance.MessageQueue.Channel = this;
             this.handshake_handler.Channel = this;
-            this.handshake_handler.RemoteId = remote_id.IsNotNullOrEmpty() ? Helper.HexToBytes(remote_id) : null;
+            this.handshake_handler.RemoteId = remote_id.IsNotNullOrEmpty() ? Helper.HexToBytes(remote_id) : new byte[0];
             Manager.Instance.P2pHandler.Channel = this;
             Manager.Instance.NetHandler.Channel = this as PeerConnection;
 
