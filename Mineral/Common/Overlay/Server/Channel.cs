@@ -15,6 +15,7 @@ using Mineral.Core.Database;
 using Mineral.Core.Exception;
 using Mineral.Core.Net;
 using Mineral.Core.Net.Peer;
+using Mineral.Utils;
 using Protocol;
 
 namespace Mineral.Common.Overlay.Server
@@ -156,13 +157,13 @@ namespace Mineral.Common.Overlay.Server
             pipe_line.AddLast("readTimeoutHandler", new ReadTimeoutHandler(60));
             pipe_line.AddLast(Manager.Instance.TrafficStats.TCP);
             pipe_line.AddLast("protoPender", new ProtobufVarint32LengthFieldPrepender());
-            pipe_line.AddLast("lengthDecode", new TxProtobufVarint32FrameDecoder(this));
+            pipe_line.AddLast("lengthDecode", new ProtobufVarint32FrameDecoder());
             pipe_line.AddLast("handshakeHandler", this.handshake_handler);
 
             Manager.Instance.MessageCodec.Channel = this;
             Manager.Instance.MessageQueue.Channel = this;
             this.handshake_handler.Channel = this;
-            this.handshake_handler.RemoteId = Helper.HexToBytes(remote_id);
+            this.handshake_handler.RemoteId = remote_id.IsNotNullOrEmpty() ? Helper.HexToBytes(remote_id) : null;
             Manager.Instance.P2pHandler.Channel = this;
             Manager.Instance.NetHandler.Channel = this as PeerConnection;
 
