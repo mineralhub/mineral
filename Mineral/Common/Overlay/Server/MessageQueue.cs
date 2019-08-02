@@ -138,21 +138,22 @@ namespace Mineral.Common.Overlay.Server
                 {
                     try
                     {
-                        if (this.message_queue.IsEmpty)
+                        if (this.message_queue.TryDequeue(out Message msg))
+                        {
+                            this.context.WriteAndFlushAsync(msg.GetSendData()).ContinueWith(task =>
+                            {
+                                if (task.IsCompleted && this.channel.IsDisconnect)
+                                {
+                                    Logger.Error(
+                                        string.Format("Fail send to {0}, {1}", this.context.Channel.RemoteAddress, msg));
+                                }
+                            });
+                        }
+                        else
                         {
                             Thread.Sleep(10);
                             continue;
                         }
-
-                        this.message_queue.TryDequeue(out Message msg);
-                        this.context.WriteAndFlushAsync(msg.GetSendData()).ContinueWith(task =>
-                        {
-                            if (task.IsCompleted && this.channel.IsDisconnect)
-                            {
-                                Logger.Error(
-                                    string.Format("Fail send to {0}, {1}", this.context.Channel.RemoteAddress, msg));
-                            }
-                        });
                     }
                     catch (System.Exception e)
                     {
