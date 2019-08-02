@@ -33,14 +33,6 @@ namespace Mineral.Common.Overlay.Server
         }
 
         #region Field
-        //private MineralNetHandler net_handler = Manager.Instance.NetHandler;
-        //private NodeManager node_manager = Manager.Instance.NodeManager;
-        //private ChannelManager channel_manager = Manager.Instance.ChannelManager;
-        //private WireTrafficStats stats = Manager.Instance.TrafficStats;
-        //private P2pHandler p2p_handler = Manager.Instance.P2pHandler;
-        //private MessageQueue message_queue = Manager.Instance.MessageQueue;
-        //private MessageCodec message_codec = Manager.Instance.MessageCodec;
-
         private HandShakeHandler handshake_handler = null;
         protected NodeStatistics node_statistics = null;
         private PeerStatistics peer_statistics = new PeerStatistics();
