@@ -82,6 +82,7 @@ namespace Mineral.Common.Overlay.Server
                             return;
                         }
 
+                        Logger.Debug("Pong");
                         this.has_ping = false;
                         this.channel.NodeStatistics.LastPongReplyTime = Helper.CurrentTimeMillis();
                         this.channel.PeerStatistics.Pong(this.send_ping_time);
@@ -112,6 +113,7 @@ namespace Mineral.Common.Overlay.Server
                 {
                     this.send_ping_time = Helper.CurrentTimeMillis();
                     this.has_ping = this.message_quque.SendMessage(new PingMessage());
+                    Logger.Debug("Ping");
                 }
             }, 10 * 1000, 10 * 1000);
         }
