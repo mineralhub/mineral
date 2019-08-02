@@ -55,7 +55,7 @@ namespace Mineral.Common.Overlay.Messages
                     break;
                 case MessageTypes.MsgType.P2P_PONG:
                     {
-                        result = new HelloMessage(type, raw_data);
+                        result = new PongMessage(type, raw_data);
                     }
                     break;
                 default:
