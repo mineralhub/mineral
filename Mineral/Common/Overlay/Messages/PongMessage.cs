@@ -17,7 +17,7 @@ namespace Mineral.Common.Overlay.Messages
         public override MessageTypes.MsgType Type => (MessageTypes.MsgType)this.type;
         public override Type AnswerMessage
         {
-            get { return GetType(); }
+            get { return null; }
         }
         #endregion
 

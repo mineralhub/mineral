@@ -18,7 +18,7 @@ namespace Mineral.Common.Overlay.Messages
 
         public override Type AnswerMessage
         {
-            get { return GetType(); }
+            get { return typeof(PongMessage); }
         }
         #endregion
 
