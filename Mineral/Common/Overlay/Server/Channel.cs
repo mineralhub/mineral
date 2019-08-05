@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Net;
+using System.Net.Sockets;
 using System.Text;
 using System.Threading.Tasks;
 using DotNetty.Codecs.Protobuf;
@@ -177,7 +178,7 @@ namespace Mineral.Common.Overlay.Server
             context.Channel.Pipeline.Remove(this.handshake_handler);
 
             Manager.Instance.MessageQueue.Activate(context);
-            context.Channel.Pipeline.AddLast("messageCodec", Manager.Instance.MessageCodec);
+            context.Channel.Pipeline.AddLast("message_codec", Manager.Instance.MessageCodec);
             context.Channel.Pipeline.AddLast("p2p", Manager.Instance.P2pHandler);
             context.Channel.Pipeline.AddLast("data", Manager.Instance.NetHandler);
 
@@ -203,6 +204,10 @@ namespace Mineral.Common.Overlay.Server
                                   address,
                                   ((P2pException)exception).Type,
                                   exception.Message));
+            }
+            else if (exception is SocketException)
+            {
+                Logger.Error(string.Format("Close peer {0}", address));
             }
             else
             {
@@ -237,6 +242,11 @@ namespace Mineral.Common.Overlay.Server
             Manager.Instance.P2pHandler.Close();
             Manager.Instance.MessageQueue.Close();
             this.context.CloseAsync();
+        }
+
+        public override int GetHashCode()
+        {
+            return base.GetHashCode();
         }
 
         public override bool Equals(object obj)

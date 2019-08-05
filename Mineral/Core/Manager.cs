@@ -39,7 +39,6 @@ namespace Mineral.Core
         private PeerServer peer_server = new PeerServer();
         private PeerClient peer_client = new PeerClient();
         private PeerStatusCheck peer_check = new PeerStatusCheck();
-        private PeerConnection peer_connection = new PeerConnection();
         private BackupServer backup_server = new BackupServer();
         private AdvanceService advance_service = new AdvanceService();
         private SyncService sync_service = new SyncService();
@@ -131,11 +130,6 @@ namespace Mineral.Core
         public PeerStatusCheck PeerStatusCheck
         {
             get { return this.peer_check; }
-        }
-
-        public PeerConnection PeerConnection
-        {
-            get { return this.peer_connection; }
         }
 
         public BackupServer BackupServer

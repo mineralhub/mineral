@@ -1,9 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
+using System.Threading.Tasks;
 using DotNetty.Transport.Channels;
 using DotNetty.Transport.Channels.Sockets;
 using Mineral.Core;
+using Mineral.Core.Net.Peer;
 
 namespace Mineral.Common.Overlay.Server
 {
@@ -41,7 +43,7 @@ namespace Mineral.Common.Overlay.Server
         {
             try
             {
-                Channel peer = Manager.Instance.PeerConnection;
+                Channel peer = new PeerConnection();
                 peer.Init(channel.Pipeline, this.remote_id, this.is_discovery_mode);
 
                 channel.Configuration.RecvByteBufAllocator = new FixedRecvByteBufAllocator(256 * 1024);
@@ -51,17 +53,6 @@ namespace Mineral.Common.Overlay.Server
             catch (System.Exception e)
             {
                 Logger.Error(e.Message);
-            }
-        }
-
-        public override void ChannelWritabilityChanged(IChannelHandlerContext context)
-        {
-            base.ChannelWritabilityChanged(context);
-
-            Logger.Info("Close channel : " + Manager.Instance.PeerConnection.ToString());
-            if (!this.is_discovery_mode)
-            {
-                Manager.Instance.ChannelManager.NotifyDisconnect(Manager.Instance.PeerConnection);
             }
         }
         #endregion
