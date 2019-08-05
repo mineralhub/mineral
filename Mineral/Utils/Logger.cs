@@ -23,7 +23,7 @@ namespace Mineral
         public string Message;
         public override string ToString()
         {
-            return String.Format("{0} [{1}] {2}", TimeStamp.ToString("s"), LogType, Message);
+            return string.Format("{0} [{1}] {2}", TimeStamp.ToString("s"), LogType, Message);
         }
     }
 
