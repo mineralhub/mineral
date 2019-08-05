@@ -47,11 +47,14 @@ namespace Mineral.Common.Overlay.Server
 
 
         #region Internal Method
-        protected override void ChannelRead0(IChannelHandlerContext context, P2pMessage msg)
+        protected override void ChannelRead0(IChannelHandlerContext context, P2pMessage message)
         {
-            this.message_quque.ReceivedMessage(msg);
+            Logger.Debug(
+                string.Format("Receive message : {0}", message.Type.ToString()));
+
+            this.message_quque.ReceivedMessage(message);
             MessageStatistics message_statistics = this.channel.NodeStatistics.MessageStatistics;
-            switch (msg.Type)
+            switch (message.Type)
             {
                 case MessageTypes.MsgType.P2P_PING:
                     {
@@ -82,7 +85,6 @@ namespace Mineral.Common.Overlay.Server
                             return;
                         }
 
-                        Logger.Debug("Pong");
                         this.has_ping = false;
                         this.channel.NodeStatistics.LastPongReplyTime = Helper.CurrentTimeMillis();
                         this.channel.PeerStatistics.Pong(this.send_ping_time);
@@ -90,7 +92,7 @@ namespace Mineral.Common.Overlay.Server
                     break;
                 case MessageTypes.MsgType.P2P_DISCONNECT:
                     {
-                        this.channel.NodeStatistics.NodeDisconnectedRemote(((DisconnectMessage)msg).Reason);
+                        this.channel.NodeStatistics.NodeDisconnectedRemote(((DisconnectMessage)message).Reason);
                         this.channel.Close();
                     }
                     break;
@@ -113,7 +115,6 @@ namespace Mineral.Common.Overlay.Server
                 {
                     this.send_ping_time = Helper.CurrentTimeMillis();
                     this.has_ping = this.message_quque.SendMessage(new PingMessage());
-                    Logger.Debug("Ping");
                 }
             }, 10 * 1000, 10 * 1000);
         }

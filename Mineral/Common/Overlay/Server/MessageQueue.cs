@@ -19,11 +19,11 @@ namespace Mineral.Common.Overlay.Server
     {
         #region Field
         private volatile bool send_message_flag = false;
-        private long send_time = 0;
+        private long time_send_ping = 0;
         private Thread thread_send_message = null;
         private Channel channel = null;
         private IChannelHandlerContext context;
-        private Queue<MessageRoundTrip> request_queue = new Queue<MessageRoundTrip>();
+        private ConcurrentQueue<MessageRoundTrip> request_queue = new ConcurrentQueue<MessageRoundTrip>();
         private ConcurrentQueue<Message> message_queue = new ConcurrentQueue<Message>();
         private ScheduledExecutorService executor = new ScheduledExecutorService();
         private ScheduledExecutorHandle executor_handler = null;
@@ -50,10 +50,8 @@ namespace Mineral.Common.Overlay.Server
         #region Internal Method
         private void Send()
         {
-            if (this.request_queue.Count > 0)
+            if (this.request_queue.TryPeek(out MessageRoundTrip round_trip))
             {
-                MessageRoundTrip round_trip = this.request_queue.Peek();
-
                 if (round_trip == null)
                     return;
 
@@ -75,12 +73,22 @@ namespace Mineral.Common.Overlay.Server
                     return;
                 }
 
+                if (round_trip.Message is PingMessage)
+                {
+                    this.time_send_ping = Helper.CurrentTimeMillis();
+                }
+
                 this.context.WriteAndFlushAsync(round_trip.Message.GetSendData()).ContinueWith(task =>
                 {
                     if (!task.IsCompleted)
                     {
                         Logger.Error(
                             string.Format("Fail send to {0}, {1}", this.context.Channel.RemoteAddress, round_trip.Message));
+                    }
+                    else
+                    {
+                        Logger.Debug(
+                            string.Format("Send reqeust message {0}", round_trip.Message.Type.ToString()));
                     }
                 });
 
@@ -136,14 +144,19 @@ namespace Mineral.Common.Overlay.Server
                 {
                     try
                     {
-                        if (this.message_queue.TryDequeue(out Message msg))
+                        if (this.message_queue.TryDequeue(out Message message))
                         {
-                            this.context.WriteAndFlushAsync(msg.GetSendData()).ContinueWith(task =>
+                            this.context.WriteAndFlushAsync(message.GetSendData()).ContinueWith(task =>
                             {
                                 if (!task.IsCompleted && !this.channel.IsDisconnect)
                                 {
                                     Logger.Error(
-                                        string.Format("Fail send to {0}, {1}", this.context.Channel.RemoteAddress, msg));
+                                        string.Format("Fail send to {0}, {1}", this.context.Channel.RemoteAddress, message));
+                                }
+                                else
+                                {
+                                    Logger.Debug(
+                                        string.Format("Send reqeust message {0}", message.Type.ToString()));
                                 }
                             });
                         }
@@ -165,24 +178,28 @@ namespace Mineral.Common.Overlay.Server
             this.thread_send_message.Start();
         }
 
-        public bool SendMessage(Message msg)
+        public bool SendMessage(Message message)
         {
-            if (msg is PingMessage && this.send_time > Helper.CurrentTimeMillis() - 10_000)
-                return false;
-
-            if (NeedToLog(msg))
-                Logger.Info(string.Format("Send to {0}, {1} ", this.context.Channel.RemoteAddress, msg));
-
-            this.channel.NodeStatistics.MessageStatistics.AddTcpOutMessage(msg);
-            this.send_time = Helper.CurrentTimeMillis();
-
-            if (msg.AnswerMessage != null)
+            if (message is PingMessage 
+                && this.time_send_ping > Helper.CurrentTimeMillis() - 10000)
             {
-                this.request_queue.Enqueue(new MessageRoundTrip(msg));
+                    return false;
+            }
+
+            if (NeedToLog(message))
+            {
+                Logger.Info(string.Format("Send to {0}, {1} ", this.context.Channel.RemoteAddress, message));
+            }
+
+            this.channel.NodeStatistics.MessageStatistics.AddTcpOutMessage(message);
+
+            if (message.AnswerMessage != null)
+            {
+                this.request_queue.Enqueue(new MessageRoundTrip(message));
             }
             else
             {
-                this.message_queue.Enqueue(msg);
+                this.message_queue.Enqueue(message);
             }
             return true;
         }
@@ -197,12 +214,11 @@ namespace Mineral.Common.Overlay.Server
 
             this.channel.NodeStatistics.MessageStatistics.AddTcpInMessage(msg);
 
-            if (this.request_queue.Count > 0)
+            if (this.request_queue.TryPeek(out MessageRoundTrip round_trip))
             {
-                MessageRoundTrip round_trip = this.request_queue.Peek();
                 if (round_trip != null && round_trip.Message.AnswerMessage == msg.GetType())
                 {
-                    this.request_queue.Dequeue();
+                    this.request_queue.TryDequeue(out _);
                 }
             }
         }
