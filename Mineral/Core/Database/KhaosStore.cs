@@ -60,7 +60,11 @@ namespace Mineral.Core.Database
         #region External Method
         public void Insert(KhaosBlock block)
         {
-            khaosblock_hashes.Add(block.Id, block);
+            // TODO 중복으로 들어올떄는 어떻게 해야할지
+            if (!this.khaosblock_hashes.ContainsKey(block.Id))
+            {
+                this.khaosblock_hashes.Add(block.Id, block);
+            }
 
             long min = Math.Max(0, head.Num - max_capacity);
             foreach (KeyValuePair<long, List<KhaosBlock>> pair in this.khaosblock_numbers.Where(x => x.Key < min))
