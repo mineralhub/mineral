@@ -499,7 +499,7 @@ namespace Mineral.Core.Database
                                                 long postponed_tx_Count,
                                                 bool is_pendding_transaction)
         {
-            if (DateTime.UtcNow.Millisecond - when
+            if (Helper.CurrentTimeMillis() - when
                 > Parameter.ChainParameters.BLOCK_PRODUCED_INTERVAL * 0.5 * Args.Instance.Node.BlockProducedTimeout / 100)
             {
                 Logger.Warning("Processing transaction time exceeds the 50% producing time。");

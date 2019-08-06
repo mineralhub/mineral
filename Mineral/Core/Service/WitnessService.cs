@@ -146,7 +146,7 @@ namespace Mineral.Core.Service
         {
             Logger.Info("Try Produce Block");
 
-            long now = DateTime.UtcNow.Millisecond + 50;
+            long now = Helper.CurrentTimeMillis() + 50;
             if (need_sync_check)
             {
                 long next_slot_time = this.controller.GetSlotTime(1);
@@ -154,7 +154,7 @@ namespace Mineral.Core.Service
                 {
                     need_sync_check = false;
                     Thread.Sleep((int)(next_slot_time - now));
-                    now = DateTime.UtcNow.Millisecond;
+                    now = Helper.CurrentTimeMillis();
                 }
                 else
                 {
