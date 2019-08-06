@@ -49,7 +49,7 @@ namespace Mineral.Utils
         #region External Method
         public bool Add(string key, T value)
         {
-            if (this.cache.GetCount() < this.max_capacity)
+            if (this.cache.GetCount() >= this.max_capacity)
                 return false;
 
             if (this.cache.Contains(key))
