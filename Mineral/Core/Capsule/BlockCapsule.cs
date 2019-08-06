@@ -16,7 +16,7 @@ namespace Mineral.Core.Capsule
 {
     public class BlockCapsule : IProtoCapsule<Block>
     {
-        public class BlockId : SHA256Hash
+        public class BlockId : SHA256Hash, IComparable
         {
             private long num;
 
@@ -34,6 +34,11 @@ namespace Mineral.Core.Capsule
                 num = BitConverter.ToInt64(block_num, 0);
             }
 
+            public override int GetHashCode()
+            {
+                return base.GetHashCode();
+            }
+
             public override bool Equals(object obj)
             {
                 if (this == obj)
@@ -43,6 +48,16 @@ namespace Mineral.Core.Capsule
                     return false;
 
                 return this.Hash.SequenceEqual(((SHA256Hash)obj).Hash);
+            }
+
+            public int CompareTo(object obj)
+            {
+                if (obj.GetType().Equals(typeof(BlockId)))
+                {
+                    throw new ArgumentException("Compare type is not BlockId");
+                }
+
+                return base.CompareTo((BlockId)obj);
             }
 
             public string GetString()
@@ -70,7 +85,7 @@ namespace Mineral.Core.Capsule
             get
             {
                 if (this.block_id.Equals(SHA256Hash.ZERO_HASH))
-                    this.block_id = new BlockId(SHA256Hash.Of(this.block.BlockHeader.RawData.ToByteArray()));
+                    this.block_id = new BlockId(SHA256Hash.Of(this.block.BlockHeader.RawData.ToByteArray()), this.block.BlockHeader.RawData.Number);
 
                 return this.block_id;
             }
@@ -264,6 +279,11 @@ namespace Mineral.Core.Capsule
 
         public SHA256Hash CalcMerkleRoot()
         {
+            if (this.block.Transactions.IsNullOrEmpty())
+            {
+                return SHA256Hash.ZERO_HASH;
+            }
+
             return new SHA256Hash(
                 new MerkleTree(
                     this.block.Transactions
