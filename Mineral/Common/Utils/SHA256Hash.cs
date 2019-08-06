@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 using Google.Protobuf;
 using Mineral.Cryptography;
@@ -116,6 +117,25 @@ namespace Mineral.Common.Utils
         public override string ToString()
         {
             return this.hash.ToHexString();
+        }
+
+        public override bool Equals(object obj)
+        {
+            if (this == obj)
+                return true;
+
+            if (obj == null || obj.GetType().Equals(GetType()))
+                return false;
+
+            return this.hash.SequenceEqual(((SHA256Hash)obj).hash);
+        }
+
+        public override int GetHashCode()
+        {
+            return this.hash[LENGTH - 4] << 24 |
+                   (this.hash[LENGTH - 3] & 0xFF) << 16 |
+                   (this.hash[LENGTH - 2] & 0xFF) << 8 |
+                   (this.hash[LENGTH - 1] & 0xFF);
         }
 
         public int CompareTo(SHA256Hash other)
