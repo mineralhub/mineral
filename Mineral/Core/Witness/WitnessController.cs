@@ -72,10 +72,11 @@ namespace Mineral.Core.Witness
                     witness_address.Add(witness.Address);
                 }
             });
-
-            SortWitness(ref witness_address);
+            
+            //TODO : witness 셔플에 대해서 처리할 것인
+            //SortWitness(ref witness_address);
             SetActiveWitnesses(witness_address);
-            witness_address.ForEach(address => Logger.Info("InitializeWitness shuffled addresses : " + address.ToByteArray().ToHexString()));
+            witness_address.ForEach(address => Logger.Info("InitializeWitness shuffled addresses : " + Wallet.AddressToBase58(address.ToByteArray())));
             SetCurrentShuffledWitnesses(witness_address);
         }
 
@@ -134,7 +135,7 @@ namespace Mineral.Core.Witness
 
         public long GetSlotAtTime(long when)
         {
-            long first_slot_time = GetSlotAtTime(1);
+            long first_slot_time = GetSlotTime(1);
             if (when < first_slot_time)
                 return 0;
 
