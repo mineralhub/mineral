@@ -34,11 +34,15 @@ namespace Mineral.Common.Overlay.Server
         }
 
         #region Field
-        private HandShakeHandler handshake_handler = null;
-        protected NodeStatistics node_statistics = null;
-        private PeerStatistics peer_statistics = new PeerStatistics();
         private IChannelHandlerContext context = null;
         private IPEndPoint socket_address = null;
+        private PeerStatistics peer_statistics = new PeerStatistics();
+        protected NodeStatistics node_statistics = null;
+        protected HandShakeHandler handshake_handler = null;
+        protected MessageCodec message_codec = new MessageCodec();
+        protected MessageQueue message_queue = new MessageQueue();
+        protected MineralNetHandler net_handler = new MineralNetHandler();
+        protected P2pHandler p2p_handler = new P2pHandler();
         private MineralState state = MineralState.INIT;
         private Node node = null;
 
@@ -153,15 +157,15 @@ namespace Mineral.Common.Overlay.Server
             pipe_line.AddLast("lengthDecode", new ProtobufVarint32FrameDecoder());
             pipe_line.AddLast("handshakeHandler", this.handshake_handler);
 
-            Manager.Instance.MessageCodec.Channel = this;
-            Manager.Instance.MessageQueue.Channel = this;
+            this.message_codec.Channel = this;
+            this.message_queue.Channel = this;
             this.handshake_handler.Channel = this;
             this.handshake_handler.RemoteId = remote_id.IsNotNullOrEmpty() ? Helper.HexToBytes(remote_id) : new byte[0];
-            Manager.Instance.P2pHandler.Channel = this;
-            Manager.Instance.NetHandler.Channel = this as PeerConnection;
+            this.p2p_handler.Channel = this;
+            this.net_handler.Channel = this as PeerConnection;
 
-            Manager.Instance.P2pHandler.MessageQueue = Manager.Instance.MessageQueue;
-            Manager.Instance.NetHandler.MessageQueue = Manager.Instance.MessageQueue;
+            this.p2p_handler.MessageQueue = this.message_queue;
+            this.net_handler.MessageQueue = this.message_queue;
         }
 
         public void InitNode(byte[] node_id, int remote_port)
@@ -177,10 +181,10 @@ namespace Mineral.Common.Overlay.Server
             this.is_fast_forward_peer = Manager.Instance.ChannelManager.FastForwardNodes.ContainsKey(this.socket_address?.Address);
             context.Channel.Pipeline.Remove(this.handshake_handler);
 
-            Manager.Instance.MessageQueue.Activate(context);
-            context.Channel.Pipeline.AddLast("message_codec", Manager.Instance.MessageCodec);
-            context.Channel.Pipeline.AddLast("p2p", Manager.Instance.P2pHandler);
-            context.Channel.Pipeline.AddLast("data", Manager.Instance.NetHandler);
+            this.message_queue.Activate(context);
+            context.Channel.Pipeline.AddLast("message_codec", this.message_codec);
+            context.Channel.Pipeline.AddLast("p2p", this.p2p_handler);
+            context.Channel.Pipeline.AddLast("data", this.net_handler);
 
             this.start_time = message.Timestamp;
             this.state = MineralState.HANDSHAKE_FINISHED;
@@ -239,8 +243,10 @@ namespace Mineral.Common.Overlay.Server
         public void Close()
         {
             this.is_disconnect = true;
-            Manager.Instance.P2pHandler.Close();
-            Manager.Instance.MessageQueue.Close();
+            this.p2p_handler.Close();
+            this.message_queue.Close();
+            Manager.Instance.ChannelManager.NotifyDisconnect(this);
+            
             this.context.CloseAsync();
         }
 

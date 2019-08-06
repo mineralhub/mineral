@@ -20,6 +20,10 @@ namespace Mineral.Common.Overlay.Server
 
 
         #region Property
+        public override bool IsSharable
+        {
+            get { return true; }
+        }
         #endregion
 
 
@@ -43,7 +47,7 @@ namespace Mineral.Common.Overlay.Server
 
         public override void ChannelRead(IChannelHandlerContext context, object message)
         {
-            Interlocked.Increment(ref this.out_packets);
+            Interlocked.Increment(ref this.in_packets);
 
             if (message is IByteBuffer)
             {
@@ -63,11 +67,11 @@ namespace Mineral.Common.Overlay.Server
 
             if (message is IByteBuffer)
             {
-                Interlocked.Exchange(ref this.in_size, ((IByteBuffer)message).ReadableBytes);
+                Interlocked.Exchange(ref this.out_size, ((IByteBuffer)message).ReadableBytes);
             }
             else
             {
-                Interlocked.Exchange(ref this.in_size, ((DatagramPacket)message).Content.ReadableBytes);
+                Interlocked.Exchange(ref this.out_size, ((DatagramPacket)message).Content.ReadableBytes);
             }
 
             return base.WriteAsync(context, message);

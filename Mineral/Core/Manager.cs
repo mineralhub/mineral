@@ -46,17 +46,12 @@ namespace Mineral.Core
         private FastForward fast_forward = new FastForward();
         private WireTrafficStats traffic_stats = new WireTrafficStats();
 
-        private MineralNetHandler net_handler = new MineralNetHandler();
-        private P2pHandler p2p_handler = new P2pHandler();
         private BlockMessageHandler block_handler = new BlockMessageHandler();
         private ChainInventoryMessageHandler chain_inventory_handler = new ChainInventoryMessageHandler();
         private FetchInventoryDataMessageHandler fetch_inventory_handler = new FetchInventoryDataMessageHandler();
         private InventoryMessageHandler inventory_handler = new InventoryMessageHandler();
         private SyncBlockChainMessageHandler sync_block_handler = new SyncBlockChainMessageHandler();
         private TransactionMessageHandler transaction_handler = new TransactionMessageHandler();
-
-        private MessageQueue message_queue = new MessageQueue();
-        private MessageCodec message_codec = new MessageCodec();
         #endregion
 
 
@@ -162,16 +157,6 @@ namespace Mineral.Core
             get { return this.traffic_stats; }
         }
 
-        public MineralNetHandler NetHandler
-        {
-            get { return this.net_handler; }
-        }
-
-        public P2pHandler P2pHandler
-        {
-            get { return this.p2p_handler; }
-        }
-
         public BlockMessageHandler BlockHandler
         {
             get { return this.block_handler; }
@@ -200,16 +185,6 @@ namespace Mineral.Core
         public TransactionMessageHandler TransactionHandler
         {
             get { return this.transaction_handler; }
-        }
-
-        public MessageQueue MessageQueue
-        {
-            get { return this.message_queue; }
-        }
-
-        public MessageCodec MessageCodec
-        {
-            get { return this.message_codec; }
         }
         #endregion
 

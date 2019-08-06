@@ -117,7 +117,8 @@ namespace Mineral.Common.Overlay.Server
         public void NotifyDisconnect(Channel channel)
         {
             Manager.Instance.SyncPool.OnDisconnect(channel);
-            this.active_peers.Values.Remove(channel);
+            this.active_peers.TryRemove(channel.Node.Id, out _);
+
 
             if (channel != null)
             {
