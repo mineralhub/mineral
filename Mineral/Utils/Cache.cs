@@ -72,11 +72,9 @@ namespace Mineral.Utils
             }
         }
 
-        public T Get(string key)
+        public object Get(string key)
         {
-            object result = this.cache.Get(key);
-
-            return result != null ? (T)result : default(T);
+            return this.cache.Get(key);
         }
 
         public void Remove(string key)
