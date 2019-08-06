@@ -40,10 +40,6 @@ namespace Mineral.Utils
         {
             CacheItemPolicy policy = new CacheItemPolicy();
             policy.AbsoluteExpiration = DateTime.UtcNow + this.expire_time;
-            policy.RemovedCallback = new CacheEntryRemovedCallback((CacheEntryRemovedArguments arg) =>
-            {
-                Console.WriteLine("Remove : " + arg.CacheItem.Key);
-            });
 
             return policy;
         }
@@ -56,24 +52,39 @@ namespace Mineral.Utils
             if (this.cache.GetCount() < this.max_capacity)
                 return false;
 
-            this.cache.Add(key, value, GetPolicy());
+            if (this.cache.Contains(key))
+            {
+                this.cache.Add(key, value, GetPolicy());
+            }
+            else
+            {
+                this.cache.Set(key, value, GetPolicy());
+            }
 
             return true;
         }
 
         public void Set(string key, T value)
         {
-            this.cache.Set(key, value, GetPolicy());
+            if (this.cache.Contains(key))
+            {
+                this.cache.Set(key, value, GetPolicy());
+            }
         }
 
         public T Get(string key)
         {
-            return (T)this.cache.Get(key);
+            object result = this.cache.Get(key);
+
+            return result != null ? (T)result : default(T);
         }
 
         public void Remove(string key)
         {
-            this.cache.Remove(key);
+            if (this.cache.Contains(key))
+            {
+                this.cache.Remove(key);
+            }
         }
 
         public Cache<T> MaxCapacity(long capacity)
