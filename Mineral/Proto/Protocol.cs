@@ -380,6 +380,7 @@ namespace Protocol {
     [pbr::OriginalName("TIME_OUT")] TimeOut = 32,
     [pbr::OriginalName("CONNECT_FAIL")] ConnectFail = 33,
     [pbr::OriginalName("TOO_MANY_PEERS_WITH_SAME_IP")] TooManyPeersWithSameIp = 34,
+    [pbr::OriginalName("RECENTLY_DISCONNECTED")] RecentlyDisconnected = 35,
     [pbr::OriginalName("UNKNOWN")] Unknown = 255,
   }
 

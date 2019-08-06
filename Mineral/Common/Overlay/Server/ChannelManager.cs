@@ -120,7 +120,6 @@ namespace Mineral.Common.Overlay.Server
             Manager.Instance.SyncPool.OnDisconnect(channel);
             this.active_peers.TryRemove(channel.Node.Id, out _);
 
-
             if (channel != null)
             {
                 channel.NodeStatistics?.NodifyDisconnect();
@@ -130,6 +129,8 @@ namespace Mineral.Common.Overlay.Server
                 {
                     AddRecentlyDisconnected(channel.Address, ReasonCode.Unknown);
                 }
+
+                channel = null;
             }
         }
 

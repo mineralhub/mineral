@@ -173,6 +173,7 @@ namespace Mineral.Common.Overlay.Server
 
             if (!this.channel_manager.ProcessPeer(channel))
             {
+                this.channel.Disconnect(Protocol.ReasonCode.RecentlyDisconnected);
                 return;
             }
 
