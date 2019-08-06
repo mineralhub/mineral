@@ -60,6 +60,23 @@ namespace Mineral.Core.Database
 
 
         #region External Method
+        public override int GetHashCode()
+        {
+            return id.GetHashCode();
+        }
+
+        public override bool Equals(object obj)
+        {
+            if (this == obj)
+                return true;
+
+            if (obj == null || GetType() != obj.GetType())
+                return false;
+
+            KhaosBlock blk = (KhaosBlock)obj;
+
+            return object.Equals(this.id, blk.id);
+        }
         #endregion
     }
 }
