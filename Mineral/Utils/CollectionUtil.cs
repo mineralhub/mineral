@@ -131,7 +131,11 @@ namespace Mineral.Utils
                 }
             }
 
-            collection = temp;
+            collection.Clear();
+            foreach (T value in temp)
+            {
+                collection.Add(value);
+            }
         }
 
         public static void Remove<T>(this ConcurrentQueue<T> collection, T item)
