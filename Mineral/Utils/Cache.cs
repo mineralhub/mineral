@@ -4,20 +4,18 @@ using System.Collections.Generic;
 using System.Runtime.Caching;
 using System.Text;
 
-namespace Cache
+namespace Mineral.Utils
 {
     public class Cache<T> : IDisposable
     {
         #region Field
         private MemoryCache cache = null;
-        private CacheItemPolicy cache_policy = new CacheItemPolicy();
+        private TimeSpan expire_time = TimeSpan.FromTicks(0);
+        private long max_capacity = long.MaxValue;
         #endregion
 
 
         #region Property
-        public TimeSpan ExpiredTime { get; set; }
-        public long MaxCapacity { get; set; }
-
         public long Count
         {
             get { return this.cache.GetCount(); }
@@ -41,7 +39,7 @@ namespace Cache
         private CacheItemPolicy GetPolicy()
         {
             CacheItemPolicy policy = new CacheItemPolicy();
-            policy.AbsoluteExpiration = DateTime.UtcNow + ExpiredTime;
+            policy.AbsoluteExpiration = DateTime.UtcNow + this.expire_time;
             policy.RemovedCallback = new CacheEntryRemovedCallback((CacheEntryRemovedArguments arg) =>
             {
                 Console.WriteLine("Remove : " + arg.CacheItem.Key);
@@ -55,7 +53,7 @@ namespace Cache
         #region External Method
         public bool Add(string key, T value)
         {
-            if (MaxCapacity > 0 && this.cache.GetCount() < MaxCapacity)
+            if (this.cache.GetCount() < this.max_capacity)
                 return false;
 
             this.cache.Add(key, value, GetPolicy());
@@ -76,6 +74,18 @@ namespace Cache
         public void Remove(string key)
         {
             this.cache.Remove(key);
+        }
+
+        public Cache<T> MaxCapacity(long capacity)
+        {
+            this.max_capacity = capacity;
+            return this;
+        }
+
+        public Cache<T> ExpireTime(TimeSpan time)
+        {
+            this.expire_time = time;
+            return this;
         }
 
         public void Dispose()

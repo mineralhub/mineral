@@ -10,6 +10,7 @@ using Mineral.Common.Overlay.Client;
 using Mineral.Common.Overlay.Discover.Node;
 using Mineral.Core;
 using Mineral.Core.Config.Arguments;
+using Mineral.Utils;
 using Protocol;
 
 namespace Mineral.Common.Overlay.Server
@@ -17,8 +18,8 @@ namespace Mineral.Common.Overlay.Server
     public class ChannelManager
     {
         #region Field
-        private MemoryCache bad_peers = MemoryCache.Default;
-        private MemoryCache recently_disconnected = MemoryCache.Default;
+        private Cache<ReasonCode> bad_peers = new Cache<ReasonCode>().ExpireTime(TimeSpan.FromHours(1)).MaxCapacity(10000);
+        private Cache<ReasonCode> recently_disconnected = new Cache<ReasonCode>().ExpireTime(TimeSpan.FromSeconds(30)).MaxCapacity(1000);
 
         private ConcurrentDictionary<byte[], Channel> active_peers = new ConcurrentDictionary<byte[], Channel>();
         private ConcurrentDictionary<IPAddress, Node> trust_nodes = new ConcurrentDictionary<IPAddress, Node>();
@@ -33,12 +34,12 @@ namespace Mineral.Common.Overlay.Server
             get { return this.active_peers.Values; }
         }
 
-        public ObjectCache BadPeers
+        public Cache<ReasonCode> BadPeers
         {
             get { return this.bad_peers; }
         }
 
-        public ObjectCache RecentlyDisconnected
+        public Cache<ReasonCode> RecentlyDisconnected
         {
             get { return this.recently_disconnected; }
         }
@@ -208,18 +209,12 @@ namespace Mineral.Common.Overlay.Server
 
         public void AddBadPeer(IPAddress key, ReasonCode value)
         {
-            CacheItemPolicy policy = new CacheItemPolicy();
-            policy.AbsoluteExpiration = DateTime.UtcNow.AddHours(1);
-
-            this.bad_peers.Add(key.ToString(), value, policy);
+            this.bad_peers.Add(key.ToString(), value);
         }
 
         public void AddRecentlyDisconnected(IPAddress key, ReasonCode value)
         {
-            CacheItemPolicy policy = new CacheItemPolicy();
-            policy.AbsoluteExpiration = DateTime.UtcNow.AddMinutes(30);
-
-            this.recently_disconnected.Add(key.ToString(), value, policy);
+            this.recently_disconnected.Add(key.ToString(), value);
         }
 
         public object GetBadPeer(IPAddress key)
