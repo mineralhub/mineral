@@ -30,7 +30,7 @@
 
     "seed_node": {
         "ip_list": [
-            "127.0.0.1:11255"
+            "127.0.0.1:11256"
         ]
     },
 
@@ -58,27 +58,27 @@
 
         "Witnesses": [
             {
-                "address": "MPxE5hTXRVk1j8awwmp7ZitfiuhSB7wXHZ",
+                "address": "MFzLdgcuDx4cCuLTRa6vk7fo5TCQ1pvx6Y",
                 "url": "http://1.com",
                 "vote_count": 0
             },
             {
-                "address": "MRXTbMN4s4VC38Zn5CwPvTFih6N59HSsUj",
+                "address": "MJmd7nygEt1yXxkthBGMYZAPeGczVmXSSx",
                 "url": "http://2.com",
                 "vote_count": 0
             },
             {
-                "address": "MRPjVQhXjdh6zxudQbV8WcvwR5opSSQddq",
+                "address": "MDS7Y7LW8gQcJWVEWL3iEKtar3EgidSs6z",
                 "url": "http://3.com",
                 "vote_count": 0
             },
             {
-                "address": "MCpTBDcWtBmsTRFikX56M1xtbTkhV1XFn4",
+                "address": "MNBVtrYskpU5uRPhTr6hJNBqxri7mqR1Mz",
                 "url": "http://4.com",
                 "vote_count": 0
             },
             {
-                "address": "MD6ooydoWM5CG1QT4rtCDVaNtwhLPRzjM5",
+                "address": "MLXGzFruPQtW2xNK7hvYvaSVSQxgrk2eS9",
                 "url": "http://5.com",
                 "vote_count": 0
             }
@@ -102,7 +102,7 @@
         "max_active_nodes": 30,
         "max_active_nodes_same_ip": 2,
         "min_participation_rate": 15,
-        "tcp_netty_work_thread_num": 0,
+        "tcp_netty_work_thread_num": 1,
         "udp_netty_work_thread_num": 1,
         "active": [],
         "passive": [],
