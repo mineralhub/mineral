@@ -22,12 +22,12 @@ namespace Mineral.Core.Cache
 
     public enum TimeUnit
     {
+        NANOSECONDS,
         MICROSECONDS,
         MILLISECONDS,
         SECONDS,
         MINUTES,
         HOURS,
         DAYS,
-        YEARS
     }
 }
