@@ -78,5 +78,16 @@ namespace Mineral.Core.Cache
 
             return result;
         }
+
+        public static T FirstNonNull<T>(T first, T second)
+        {
+            if (first != null)
+                return first;
+
+            if (second != null)
+                return second;
+
+            throw new ArgumentNullException("Bad parameters are null");
+        }
     }
 }

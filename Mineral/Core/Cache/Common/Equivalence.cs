@@ -69,4 +69,85 @@ namespace Mineral.Core.Cache.Common
         }
         #endregion
     }
+
+    public class EquivalenceEquals : Equivalence<object>
+    {
+        #region Field
+        private static EquivalenceEquals instance = null;
+        #endregion
+
+
+        #region Property
+        public static EquivalenceEquals Instance
+        {
+            get { return instance ?? new EquivalenceEquals(); }
+        }
+        #endregion
+
+
+        #region Constructor
+        #endregion
+
+
+        #region Event Method
+        #endregion
+
+
+        #region Internal Method
+        #endregion
+
+
+        #region External Method
+        protected override bool DoEquivalent(object t, object u)
+        {
+            return t.Equals(u);
+        }
+
+        protected override int DoHash(object t)
+        {
+            return t.GetHashCode();
+        }
+        #endregion
+    }
+
+
+    public class EquivalenceIdentity : Equivalence<object>
+    {
+        #region Field
+        private static EquivalenceIdentity instance = null;
+        #endregion
+
+
+        #region Property
+        public static EquivalenceIdentity Instance
+        {
+            get { return instance ?? new EquivalenceIdentity(); }
+        }
+        #endregion
+
+
+        #region Constructor
+        #endregion
+
+
+        #region Event Method
+        #endregion
+
+
+        #region Internal Method
+        #endregion
+
+
+        #region External Method
+        protected override bool DoEquivalent(object t, object u)
+        {
+            return false;
+        }
+
+        protected override int DoHash(object t)
+        {
+            return t.GetHashCode();
+        }
+        #endregion
+    }
 }

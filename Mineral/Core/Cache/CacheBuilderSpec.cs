@@ -113,19 +113,19 @@ namespace Mineral.Core.Cache
 
             if (InitialCapacity != null)
             {
-                builder.InitialCapacity = (int)InitialCapacity;
+                builder.SetInitialCapacity((int)InitialCapacity);
             }
             if (MaximumSize != null)
             {
-                builder.MaximumSize = (long)MaximumSize;
+                builder.maximum_size = (long)MaximumSize;
             }
             if (MaximumWeight != null)
             {
-                builder.MaximumWeight = (long)MaximumWeight;
+                builder.maximum_weight = (long)MaximumWeight;
             }
             if (ConcurrencyLevel != null)
             {
-                builder.ConcurrencyLevel = (int)ConcurrencyLevel;
+                builder.concurrency_level = (int)ConcurrencyLevel;
             }
             if (KeyStrength != null)
             {
