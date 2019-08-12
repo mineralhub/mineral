@@ -42,7 +42,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="Core\Cache\Reference\" />
     <Folder Include="Proto\" />
   </ItemGroup>
 
