@@ -7,10 +7,16 @@ namespace Mineral.Core.Cache.Entry
     public class NullEntry<TKey, TValue> : IReferenceEntry<TKey, TValue>
     {
         #region Field
+        private static NullEntry<TKey, TValue> instance = null;
         #endregion
 
 
         #region Property
+        public static NullEntry<TKey, TValue> Instance
+        {
+            get { return instance ?? new NullEntry<TKey, TValue>(); }
+        }
+
         public TKey Key
         {
             get { return default(TKey); }
@@ -71,6 +77,7 @@ namespace Mineral.Core.Cache.Entry
 
 
         #region Constructor
+        private NullEntry() { }
         #endregion
 
 

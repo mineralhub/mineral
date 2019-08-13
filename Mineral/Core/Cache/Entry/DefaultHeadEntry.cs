@@ -4,40 +4,39 @@ using System.Text;
 
 namespace Mineral.Core.Cache.Entry
 {
-    public class StrongWriteEntry<TKey, TValue> : StrongEntry<TKey, TValue>
+    public class DefaultHeadEntry<TKey, TValue> : AbstractReferenceEntry<TKey, TValue>
     {
         #region Field
-        private long write_time = long.MaxValue;
-        private IReferenceEntry<TKey, TValue> prev_write = NullEntry<TKey, TValue>.Instance;
-        private IReferenceEntry<TKey, TValue> next_write = NullEntry<TKey, TValue>.Instance;
+        private IReferenceEntry<TKey, TValue> prev_write;
+        private IReferenceEntry<TKey, TValue> next_write;
         #endregion
 
 
         #region Property
         public override long WriteTime
         {
-            get { return this.write_time; }
-            set { this.write_time = value; }
+            get { return long.MaxValue; }
+            set { }
         }
 
         public override IReferenceEntry<TKey, TValue> PrevInWriteQueue
         {
-            get { return this.prev_write; }
+            get { return prev_write; }
             set { this.prev_write = value; }
         }
 
         public override IReferenceEntry<TKey, TValue> NextInWriteQueue
         {
-            get { return this.next_write; }
+            get { return next_write; }
             set { this.next_write = value; }
         }
         #endregion
 
 
-        #region Constructor
-        public StrongWriteEntry(TKey key, int hash, IReferenceEntry<TKey, TValue> next)
-            : base(key, hash, next)
+        #region Contructor
+        public DefaultHeadEntry()
         {
+            this.next_write = this;
         }
         #endregion
 

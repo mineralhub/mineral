@@ -4,7 +4,8 @@ using System.Text;
 
 namespace Mineral.Core.Cache.Entry
 {
-    public class StrongWriteEntry<TKey, TValue> : StrongEntry<TKey, TValue>
+    public class WeakWriteEntry<TKey, TValue> : WeakEntry<TKey, TValue>
+        where TKey : class
     {
         #region Field
         private long write_time = long.MaxValue;
@@ -34,9 +35,9 @@ namespace Mineral.Core.Cache.Entry
         #endregion
 
 
-        #region Constructor
-        public StrongWriteEntry(TKey key, int hash, IReferenceEntry<TKey, TValue> next)
-            : base(key, hash, next)
+        #region Contructor
+        public WeakWriteEntry(Queue<TKey> queue, TKey key, int hash, IReferenceEntry<TKey, TValue> next)
+            : base(queue, key, hash, next)
         {
         }
         #endregion

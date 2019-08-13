@@ -4,12 +4,13 @@ using System.Text;
 
 namespace Mineral.Core.Cache.Entry
 {
-    public class StrongAccessEntry<TKey, TValue> : StrongEntry<TKey, TValue>
+    public class WeakAccessEntry<TKey, TValue> : WeakEntry<TKey, TValue>
+        where TKey : class
     {
         #region Field
         private long access_time = long.MaxValue;
-        private IReferenceEntry<TKey, TValue> prev_access = NullEntry<TKey, TValue>.Instance;
-        private IReferenceEntry<TKey, TValue> next_access = NullEntry<TKey, TValue>.Instance;
+        private IReferenceEntry<TKey, TValue> prev_access = new NullEntry<TKey, TValue>.Instance;
+        private IReferenceEntry<TKey, TValue> next_access = new NullEntry<TKey, TValue>.Instance;
         #endregion
 
 
@@ -34,9 +35,9 @@ namespace Mineral.Core.Cache.Entry
         #endregion
 
 
-        #region Constructor
-        public StrongAccessEntry(TKey key, int hash, IReferenceEntry<TKey, TValue> next)
-            : base(key, hash, next)
+        #region Contructor
+        public WeakAccessEntry(Queue<TKey> queue, TKey key, int hash, IReferenceEntry<TKey, TValue> next)
+                    : base(queue, key, hash, next)
         {
         }
         #endregion

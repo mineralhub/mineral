@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Mineral.Core.Cache.Entry;
+using System;
 using System.Collections.Generic;
 using System.Text;
 
@@ -88,6 +89,54 @@ namespace Mineral.Core.Cache
                 return second;
 
             throw new ArgumentNullException("Bad parameters are null");
+        }
+
+        public static IReferenceEntry<TKey, TValue> NewEntry<TKey, TValue>(this EntryFactory factory,
+                                                                           Segment<TKey, TValue> segment,
+                                                                           TKey key,
+                                                                           int hash,
+                                                                           IReferenceEntry<TKey, TValue> next)
+            where TKey : class
+        {
+            IReferenceEntry<TKey, TValue> result = null;
+
+            switch (factory)
+            {
+                case EntryFactory.STRONG:
+                    result = new StrongEntry<TKey, TValue>(key, hash, next);
+                    break;
+                case EntryFactory.STRONG_ACCESS:
+                    result = new StrongAccessEntry<TKey, TValue>(key, hash, next);
+                    break;
+                case EntryFactory.STRONG_WRITE:
+                    result = new StrongWriteEntry<TKey, TValue>(key, hash, next);
+                    break;
+                case EntryFactory.STRONG_ACCESS_WRITE:
+                    result = new StrongAccessWriteEntry<TKey, TValue>(key, hash, next);
+                    break;
+                case EntryFactory.WEAK:
+                    result = new WeakEntry<TKey, TValue>(segment.KeyReferenceQueue, key, hash, next);
+                    break;
+                case EntryFactory.WEAK_ACCESS:
+                    result = new WeakAccessEntry<TKey, TValue>(segment.KeyReferenceQueue, key, hash, next);
+                    break;
+                case EntryFactory.WEAK_ACCESS_WRITE:
+                    result = new WeakAccessWriteEntry<TKey, TValue>(segment.KeyReferenceQueue, key, hash, next);
+                    break;
+                default:
+                    throw new ArgumentException();
+            }
+
+            return result;
+        }
+
+        public static IReferenceEntry<TKey, TValue> CopyEntry<TKey, TValue>(this EntryFactory factory,
+                                                                            Segment<TKey, TValue> segment,
+                                                                            IReferenceEntry<TKey, TValue> original,
+                                                                            IReferenceEntry<TKey, TValue> new_value)
+            where TKey : class
+        {
+            return NewEntry<TKey, TValue>(factory, segment, original.Key, original.Hash, new_value);
         }
     }
 }

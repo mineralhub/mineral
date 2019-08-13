@@ -30,4 +30,15 @@ namespace Mineral.Core.Cache
         HOURS,
         DAYS,
     }
+
+    public enum EntryFactory
+    {
+        STRONG,
+        STRONG_ACCESS,
+        STRONG_WRITE,
+        STRONG_ACCESS_WRITE,
+        WEAK,
+        WEAK_ACCESS,
+        WEAK_ACCESS_WRITE
+    }
 }

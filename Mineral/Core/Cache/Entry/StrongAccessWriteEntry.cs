@@ -9,10 +9,10 @@ namespace Mineral.Core.Cache.Entry
         #region Field
         private long access_time = long.MaxValue;
         private long write_time = long.MaxValue;
-        private IReferenceEntry<TKey, TValue> prev_access = new NullEntry<TKey, TValue>();
-        private IReferenceEntry<TKey, TValue> next_access = new NullEntry<TKey, TValue>();
-        private IReferenceEntry<TKey, TValue> prev_write = new NullEntry<TKey, TValue>();
-        private IReferenceEntry<TKey, TValue> next_write = new NullEntry<TKey, TValue>();
+        private IReferenceEntry<TKey, TValue> prev_access = NullEntry<TKey, TValue>.Instance;
+        private IReferenceEntry<TKey, TValue> next_access = NullEntry<TKey, TValue>.Instance;
+        private IReferenceEntry<TKey, TValue> prev_write = NullEntry<TKey, TValue>.Instance;
+        private IReferenceEntry<TKey, TValue> next_write = NullEntry<TKey, TValue>.Instance;
         #endregion
 
 
