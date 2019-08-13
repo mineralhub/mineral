@@ -15,7 +15,7 @@ namespace Mineral.Core.Net.Messages
         #region Property
         public override Type AnswerMessage
         {
-            get { return GetType(); }
+            get { return typeof(ChainInventoryMessage); }
         }
         #endregion
 

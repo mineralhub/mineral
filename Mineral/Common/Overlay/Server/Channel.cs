@@ -51,7 +51,7 @@ namespace Mineral.Common.Overlay.Server
         private bool is_active = false;
         private bool is_trust_peer = false;
         private bool is_fast_forward_peer = false;
-        private volatile bool is_disconnect = true;
+        private volatile bool is_disconnect = false;
         #endregion
 
 
