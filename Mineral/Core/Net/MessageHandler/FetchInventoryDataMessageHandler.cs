@@ -45,7 +45,7 @@ namespace Mineral.Core.Net.MessageHandler
                 {
                     if (peer.GetInventorySpread(new Item(hash, InventoryType.Trx)) == null)
                     {
-                        throw new P2pException(P2pException.ErrorType.BAD_MESSAGE, "not spread inv : " + hash);
+                        throw new P2pException(P2pException.ErrorType.BAD_MESSAGE, "not spread inventory : " + hash);
                     }
                 }
 
