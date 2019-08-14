@@ -62,6 +62,7 @@ namespace Mineral.Core.Net.Messages
                 this.inventory.Ids.Add(ByteString.CopyFrom(hash.Hash));
             }
 
+            this.inventory.Type = type;
             this.type = (byte)MessageTypes.MsgType.INVENTORY;
             this.data = inventory.ToByteArray();
         }
