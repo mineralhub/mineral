@@ -25,7 +25,7 @@ namespace Mineral.Core.Net.Peer
         private HelloMessage hello_message = null;
 
         private BlockId singup_error_id = null;
-        private BlockId block_both_have = null;
+        private BlockId block_both_have = new BlockId();
         private BlockId last_sync_id = null;
         private Cache<long> inventory_receive = new Cache<long>().MaxCapacity(100000).ExpireTime(TimeSpan.FromHours(1));
         private Cache<long> inventory_spread = new Cache<long>().MaxCapacity(100000).ExpireTime(TimeSpan.FromHours(1));
