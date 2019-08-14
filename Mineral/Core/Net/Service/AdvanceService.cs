@@ -74,7 +74,7 @@ namespace Mineral.Core.Net.Service
                         && peer.GetInventoryReceive(spread.Key) == null)
                     {
 
-                        peer.AddInventoryReceive(spread.Key, Helper.CurrentTimeMillis());
+                        peer.AddInventorySpread(spread.Key, Helper.CurrentTimeMillis());
                         sender.Add(spread.Key, peer);
                     }
                     this.inventory_spread.TryRemove(spread.Key, out _);
