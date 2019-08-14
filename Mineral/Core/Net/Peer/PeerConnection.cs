@@ -12,7 +12,9 @@ using DotNetty.Transport.Channels;
 using Mineral.Common.Overlay.Messages;
 using Mineral.Common.Overlay.Server;
 using Mineral.Common.Utils;
+using Mineral.Core.Config;
 using Mineral.Core.Net.Service;
+using Mineral.Utils;
 using static Mineral.Core.Capsule.BlockCapsule;
 
 namespace Mineral.Core.Net.Peer
@@ -25,9 +27,9 @@ namespace Mineral.Core.Net.Peer
         private BlockId singup_error_id = null;
         private BlockId block_both_have = null;
         private BlockId last_sync_id = null;
-        private MemoryCache inventory_receive = MemoryCache.Default;
-        private MemoryCache inventory_spread = MemoryCache.Default;
-        private MemoryCache sync_block_id = MemoryCache.Default;
+        private Cache<long> inventory_receive = new Cache<long>().MaxCapacity(100000).ExpireTime(TimeSpan.FromHours(1));
+        private Cache<long> inventory_spread = new Cache<long>().MaxCapacity(100000).ExpireTime(TimeSpan.FromHours(1));
+        private Cache<long> sync_block_id = new Cache<long>().MaxCapacity(2 * Parameter.NodeParameters.SYNC_FETCH_BATCH_NUM);
 
         private KeyValuePair<Deque<BlockId>, long> sync_chain_request = default(KeyValuePair<Deque<BlockId>, long>);
         private HashSet<BlockId> sync_block_process = new HashSet<BlockId>();
@@ -170,25 +172,17 @@ namespace Mineral.Core.Net.Peer
         #region External Method
         public void AddInventoryReceive(Item key, long value)
         {
-            CacheItemPolicy policy = new CacheItemPolicy();
-            policy.AbsoluteExpiration = DateTime.UtcNow.AddHours(1);
-
-            this.inventory_receive.Add(key.ToString(), value, policy);
+            this.inventory_receive.Add(key.ToString(), value);
         }
 
         public void AddInventorySpread(Item key, long value)
         {
-            CacheItemPolicy policy = new CacheItemPolicy();
-            policy.AbsoluteExpiration = DateTime.UtcNow.AddHours(1);
-
-            this.inventory_spread.Add(key.ToString(), value, policy);
+            this.inventory_spread.Add(key.ToString(), value);
         }
 
         public void AddSyncBlockId(SHA256Hash key, long value)
         {
-            CacheItemPolicy policy = new CacheItemPolicy();
-
-            this.sync_block_id.Add(key.Hash.ToHexString(), value, policy);
+            this.sync_block_id.Add(key.Hash.ToHexString(), value);
         }
 
         public object GetInventoryReceive(Item key)
@@ -244,11 +238,11 @@ namespace Mineral.Core.Net.Peer
             Manager.Instance.SyncService.OnDisconnect(this);
             Manager.Instance.AdvanceService.OnDisconnect(this);
 
-            this.inventory_receive = MemoryCache.Default;
-            this.inventory_spread = MemoryCache.Default;
+            this.inventory_receive = new Cache<long>().MaxCapacity(100000).ExpireTime(TimeSpan.FromHours(1));
+            this.inventory_spread = new Cache<long>().MaxCapacity(100000).ExpireTime(TimeSpan.FromHours(1));
             this.inventory_request.Clear();
 
-            this.sync_block_id = MemoryCache.Default;
+            this.sync_block_id = new Cache<long>().MaxCapacity(2 * Parameter.NodeParameters.SYNC_FETCH_BATCH_NUM);
             this.sync_block_fetch.Clear();
             this.sync_block_request.Clear();
             this.sync_block_process.Clear();
