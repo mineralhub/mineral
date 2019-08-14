@@ -151,7 +151,7 @@ namespace Mineral.Core.Net.Peer
             {
                 return this.inventory_request.IsEmpty
                     && this.sync_block_request.IsEmpty
-                    && this.sync_chain_request.Equals(default(KeyValuePair<BlockingCollection<BlockId>, long>));
+                    && this.sync_chain_request.Equals(default(KeyValuePair<Deque<BlockId>, long>));
             }
         }
         #endregion

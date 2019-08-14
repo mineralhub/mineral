@@ -114,7 +114,7 @@ namespace Mineral.Core.Net.Service
                 this.block_just_receive.Clear();
             }
 
-            bool is_processed = false;
+            bool is_processed = true;
             while (is_processed)
             {
                 is_processed = false;
