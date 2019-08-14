@@ -334,7 +334,7 @@ namespace Mineral.Core.Net.Service
         {
             try
             {
-                if (!peer.SyncChainRequest.Equals(default(KeyValuePair<BlockingCollection<BlockId>, long>)))
+                if (!peer.SyncChainRequest.Equals(default(KeyValuePair<Deque<BlockId>, long>)))
                 {
                     Logger.Warning(
                         string.Format("Peer {0} is in sync.",
