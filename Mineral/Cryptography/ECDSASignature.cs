@@ -188,6 +188,18 @@ namespace Mineral.Cryptography
 
             return bos.ToArray();
         }
+
+        public byte[] ToByteArray()
+        {
+            byte fixed_v = V >= 27 ? (byte)(V - 27) : V;
+
+            byte[] result = new byte[65];
+            Array.Copy(R.ToByteArray(), 0, result, 0, 32);
+            Array.Copy(S.ToByteArray(), 0, result, 32, 32);
+            result[64] = fixed_v;
+
+            return result;
+        }
         #endregion
     }
 }

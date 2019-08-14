@@ -249,7 +249,7 @@ namespace Mineral.Core.Capsule
             ECKey ec_key = ECKey.FromPrivateKey(privatekey);
             ECDSASignature signature = ec_key.Sign(this.GetRawHash().Hash);
 
-            this.block.BlockHeader.WitnessSignature = ByteString.CopyFrom(signature.ToDER());
+            this.block.BlockHeader.WitnessSignature = ByteString.CopyFrom(signature.ToByteArray());
         }
 
         public bool ValidateSignature(DatabaseManager db_manager)

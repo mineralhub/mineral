@@ -248,7 +248,7 @@ namespace Mineral.Core.Capsule
         {
             ECKey ec_key = ECKey.FromPrivateKey(privatekey);
             ECDSASignature signature = ec_key.Sign(GetRawHash().Hash);
-            this.transaction.Signature.Add(ByteString.CopyFrom(signature.ToDER()));
+            this.transaction.Signature.Add(ByteString.CopyFrom(signature.ToByteArray()));
         }
 
         public static long GetWeight(Permission permission, byte[] address)
@@ -367,7 +367,7 @@ namespace Mineral.Core.Capsule
             }
 
             ECDSASignature signature = ec_key.Sign(this.GetRawHash().Hash);
-            this.transaction.Signature.Add(ByteString.CopyFrom(signature.ToDER()));
+            this.transaction.Signature.Add(ByteString.CopyFrom(signature.ToByteArray()));
         }
 
         public static byte[] GetOwner(Transaction.Types.Contract contract)
