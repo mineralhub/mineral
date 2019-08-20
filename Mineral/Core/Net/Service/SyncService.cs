@@ -151,28 +151,6 @@ namespace Mineral.Core.Net.Service
             }
         }
 
-        public void ProcessBlock(PeerConnection peer, BlockMessage message)
-        {
-            lock (this.block_just_receive)
-            {
-                this.block_just_receive.TryAdd(message, peer);
-            }
-
-            this.is_handle = true;
-            if (peer.IsIdle)
-            {
-                if (peer.RemainNum > 0
-                    && peer.SyncBlockFetch.Count <= Parameter.NodeParameters.SYNC_FETCH_BATCH_NUM)
-                {
-                    SyncNext(peer);
-                }
-                else
-                {
-                    this.IsFetch = true;
-                }
-            }
-        }
-
         private void ProcessSyncBlock(BlockCapsule block)
         {
             System.Exception exception = null;
@@ -352,6 +330,28 @@ namespace Mineral.Core.Net.Service
                     string.Format("Peer {0} sync failed, reason: {1}", peer.Address, e.Message));
 
                 peer.Disconnect(Protocol.ReasonCode.SyncFail);
+            }
+        }
+
+        public void ProcessBlock(PeerConnection peer, BlockMessage message)
+        {
+            lock (this.block_just_receive)
+            {
+                this.block_just_receive.TryAdd(message, peer);
+            }
+
+            this.is_handle = true;
+            if (peer.IsIdle)
+            {
+                if (peer.RemainNum > 0
+                    && peer.SyncBlockFetch.Count <= Parameter.NodeParameters.SYNC_FETCH_BATCH_NUM)
+                {
+                    SyncNext(peer);
+                }
+                else
+                {
+                    this.IsFetch = true;
+                }
             }
         }
 
