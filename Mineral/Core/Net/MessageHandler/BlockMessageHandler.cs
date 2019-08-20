@@ -106,7 +106,7 @@ namespace Mineral.Core.Net.MessageHandler
 
             if (peer.SyncBlockRequest.ContainsKey(block_id))
             {
-                peer.RemoveSyncBlockId(block_id);
+                peer.SyncBlockRequest.TryRemove(block_id, out _);
                 Manager.Instance.SyncService.ProcessBlock(peer, block_message);
             }
             else
