@@ -145,7 +145,7 @@ namespace Mineral.Core.Net.MessageHandler
             }
 
             if ((chain_inventory_message.RemainNum == 0 && !peer.SyncBlockFetch.IsEmpty)
-                || (chain_inventory_message.RemainNum != 0&& peer.SyncBlockFetch.Count > Parameter.NodeParameters.SYNC_FETCH_BATCH_NUM))
+                || (chain_inventory_message.RemainNum != 0 && peer.SyncBlockFetch.Count > Parameter.NodeParameters.SYNC_FETCH_BATCH_NUM))
             {
                 Manager.Instance.SyncService.IsFetch = true;
             }
