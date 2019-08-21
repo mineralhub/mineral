@@ -134,12 +134,12 @@ namespace Mineral.Cryptography
         {
             if (isPrivate)
             {
-                key = new ECPrivateKeyParameters(new BigInteger(1, bytes), DomainParameter);
+                this.key = new ECPrivateKeyParameters(new BigInteger(1, bytes), DomainParameter);
             }
             else
             {
                 var q = Secp256k1.Curve.DecodePoint(bytes);
-                key = new ECPublicKeyParameters("EC", q, DomainParameter);
+                this.key = new ECPublicKeyParameters("EC", q, DomainParameter);
             }
         }
         #endregion
@@ -217,7 +217,8 @@ namespace Mineral.Cryptography
             DeterministicECDSA signer = new DeterministicECDSA();
             signer.Init(true, PrivateKeyParameter);
 
-            ECDSASignature signature = ECDSASignature.FromDER(signer.SignHash(hash)).MakeCanonicalised();
+            BigInteger[] components = signer.GenerateSignature(hash);
+            ECDSASignature signature = new ECDSASignature(components[0], components[1]).MakeCanonicalised();
 
             int rec_id = -1;
             for (int i = 0; i < 4; i++)

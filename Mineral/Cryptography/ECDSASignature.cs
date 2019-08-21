@@ -189,13 +189,31 @@ namespace Mineral.Cryptography
             return bos.ToArray();
         }
 
+        public static byte[] BigIntegerToBytes(BigInteger b, int bytes_length)
+        {
+            if (b == null)
+            {
+                return null;
+            }
+
+            byte[] result = new byte[bytes_length];
+            byte[] bytes = b.ToByteArray();
+
+            int start = (bytes.Length == bytes_length + 1) ? 1 : 0;
+            int length = Math.Min(bytes.Length, bytes_length);
+
+            Array.Copy(bytes, start, result, bytes_length - length, length);
+
+            return result;
+        }
+
         public byte[] ToByteArray()
         {
             byte fixed_v = V >= 27 ? (byte)(V - 27) : V;
 
             byte[] result = new byte[65];
-            Array.Copy(R.ToByteArray(), 0, result, 0, 32);
-            Array.Copy(S.ToByteArray(), 0, result, 32, 32);
+            Array.Copy(BigIntegerToBytes(R, 32), 0, result, 0, 32);
+            Array.Copy(BigIntegerToBytes(R, 32), 0, result, 32, 32);
             result[64] = fixed_v;
 
             return result;
