@@ -31,7 +31,7 @@ namespace Mineral.Core.Capsule
             {
                 byte[] block_num = new byte[8];
                 Array.Copy(block_id.Hash, 0, block_num, 0, 8);
-                num = BitConverter.ToInt64(block_num, 0);
+                this.num = BitConverter.ToInt64(block_num, 0);
             }
 
             public override int GetHashCode()

@@ -429,7 +429,7 @@ namespace Mineral.Core.Witness
 
             builder.Append("Dump participation log \n ")
                 .Append("block fiiled slots:")
-                .Append(block_filled_slots.ToString())
+                .Append(string.Join("", block_filled_slots))
                 .Append(",")
                 .Append("\n")
                 .Append(" headSlot:")
