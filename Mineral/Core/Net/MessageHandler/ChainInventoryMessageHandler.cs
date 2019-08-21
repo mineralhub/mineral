@@ -129,7 +129,7 @@ namespace Mineral.Core.Net.MessageHandler
 
             foreach (BlockId id in block_id)
             {
-                peer.SyncBlockFetch.PushLeft(id);
+                peer.SyncBlockFetch.PushRight(id);
             }
 
             lock (Manager.Instance.NetDelegate.LockBlock)
