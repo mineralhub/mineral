@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -12,8 +13,8 @@ namespace Mineral.Core.Database
     public class KhaosStore
     {
         #region Field
-        private Dictionary<BlockId, KhaosBlock> khaosblock_hashes = new Dictionary<BlockId, KhaosBlock>();
-        private Dictionary<long, List<KhaosBlock>> khaosblock_numbers = new Dictionary<long, List<KhaosBlock>>();
+        private ConcurrentDictionary<BlockId, KhaosBlock> khaosblock_hashes = new ConcurrentDictionary<BlockId, KhaosBlock>();
+        private ConcurrentDictionary<long, List<KhaosBlock>> khaosblock_numbers = new ConcurrentDictionary<long, List<KhaosBlock>>();
 
         private KhaosBlock head = null;
         private int max_capacity = 1024;
@@ -63,16 +64,16 @@ namespace Mineral.Core.Database
             // TODO 중복으로 들어올떄는 어떻게 해야할지
             if (!this.khaosblock_hashes.ContainsKey(block.Id))
             {
-                this.khaosblock_hashes.Add(block.Id, block);
+                this.khaosblock_hashes.TryAdd(block.Id, block);
             }
 
             long min = Math.Max(0, head.Num - max_capacity);
             foreach (KeyValuePair<long, List<KhaosBlock>> pair in this.khaosblock_numbers.Where(x => x.Key < min))
             {
-                this.khaosblock_numbers.Remove(pair.Key);
+                this.khaosblock_numbers.TryRemove(pair.Key, out _);
                 foreach (KhaosBlock b in pair.Value)
                 {
-                    this.khaosblock_hashes.Remove(b.Id);
+                    this.khaosblock_hashes.TryRemove(b.Id, out _);
                 }
             }
 
@@ -87,7 +88,7 @@ namespace Mineral.Core.Database
             }
             else
             {
-                this.khaosblock_numbers.Add(block.Num, new List<KhaosBlock>() { block });
+                this.khaosblock_numbers.TryAdd(block.Num, new List<KhaosBlock>() { block });
             }
         }
 
@@ -101,9 +102,9 @@ namespace Mineral.Core.Database
                 }
 
                 if (!blocks.IsNotNullOrEmpty())
-                    this.khaosblock_numbers.Remove(block.Num);
+                    this.khaosblock_numbers.TryRemove(block.Num, out _);
 
-                this.khaosblock_hashes.Remove(new BlockId(hash));
+                this.khaosblock_hashes.TryRemove(new BlockId(hash), out _);
             }
 
             return block != null ? true : false;
