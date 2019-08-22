@@ -124,7 +124,7 @@ namespace Mineral.Common.Utils
             if (this == obj)
                 return true;
 
-            if (obj == null || !obj.GetType().Equals(GetType()))
+            if (obj == null || !(obj is SHA256Hash))
                 return false;
 
             return this.hash.SequenceEqual(((SHA256Hash)obj).hash);
