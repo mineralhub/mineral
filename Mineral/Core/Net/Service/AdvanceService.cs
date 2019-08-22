@@ -24,9 +24,9 @@ namespace Mineral.Core.Net.Service
         private ConcurrentDictionary<Item, long> inventory_fetch = new ConcurrentDictionary<Item, long>();
         private ConcurrentDictionary<Item, long> inventory_spread = new ConcurrentDictionary<Item, long>();
 
-        private MemoryCache block_cache = MemoryCache.Default;
-        private MemoryCache transaction_cache = MemoryCache.Default;
-        private MemoryCache inventory_fetch_cache = MemoryCache.Default;
+        private Cache<Message> block_cache = new Cache<Message>().MaxCapacity(10).ExpireTime(TimeSpan.FromMinutes(1));
+        private Cache<Message> transaction_cache = new Cache<Message>().MaxCapacity(50000).ExpireTime(TimeSpan.FromHours(1));
+        private Cache<long> inventory_fetch_cache = new Cache<long>().MaxCapacity(100000).ExpireTime(TimeSpan.FromHours(1));
 
         private ScheduledExecutorHandle handle_spread = null;
         private ScheduledExecutorHandle handle_fetch = null;
@@ -71,7 +71,7 @@ namespace Mineral.Core.Net.Service
                 foreach (PeerConnection peer in peers)
                 {
                     if (peer.GetInventoryReceive(spread.Key) == null
-                        && peer.GetInventoryReceive(spread.Key) == null)
+                        && peer.GetInventorySpread(spread.Key) == null)
                     {
 
                         peer.AddInventorySpread(spread.Key, Helper.CurrentTimeMillis());
@@ -206,26 +206,17 @@ namespace Mineral.Core.Net.Service
 
         public void AddInventoryFetchCache(Item key, long value)
         {
-            CacheItemPolicy policy = new CacheItemPolicy();
-            policy.AbsoluteExpiration = DateTime.UtcNow.AddHours(1);
-
-            this.inventory_fetch_cache.Add(key.ToString(), value, policy);
+            this.inventory_fetch_cache.Add(key.ToString(), value);
         }
 
         public void AddBlockCache(Item key, Message value)
         {
-            CacheItemPolicy policy = new CacheItemPolicy();
-            policy.AbsoluteExpiration = DateTime.UtcNow.AddMinutes(1);
-
-            this.block_cache.Add(key.ToString(), value, policy);
+            this.block_cache.Add(key.ToString(), value);
         }
 
         public void AddTransactionCache(Item key, Message value)
         {
-            CacheItemPolicy policy = new CacheItemPolicy();
-            policy.AbsoluteExpiration = DateTime.UtcNow.AddHours(1);
-
-            this.transaction_cache.Add(key.ToString(), value, policy);
+            this.transaction_cache.Add(key.ToString(), value);
         }
 
         public object GetInventoryFetchCache(Item key)
