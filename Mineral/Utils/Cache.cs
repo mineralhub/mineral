@@ -24,9 +24,9 @@ namespace Mineral.Utils
 
 
         #region Contructor
-        public Cache()
+        public Cache(string name)
         {
-            this.cache = MemoryCache.Default;
+            this.cache = new MemoryCache(name);
         }
         #endregion
 

@@ -24,9 +24,9 @@ namespace Mineral.Core.Net.Service
         private ConcurrentDictionary<Item, long> inventory_fetch = new ConcurrentDictionary<Item, long>();
         private ConcurrentDictionary<Item, long> inventory_spread = new ConcurrentDictionary<Item, long>();
 
-        private Cache<Message> block_cache = new Cache<Message>().MaxCapacity(10).ExpireTime(TimeSpan.FromMinutes(1));
-        private Cache<Message> transaction_cache = new Cache<Message>().MaxCapacity(50000).ExpireTime(TimeSpan.FromHours(1));
-        private Cache<long> inventory_fetch_cache = new Cache<long>().MaxCapacity(100000).ExpireTime(TimeSpan.FromHours(1));
+        private Cache<Message> block_cache = new Cache<Message>("advance_block").MaxCapacity(10).ExpireTime(TimeSpan.FromMinutes(1));
+        private Cache<Message> transaction_cache = new Cache<Message>("advance_transaction").MaxCapacity(50000).ExpireTime(TimeSpan.FromHours(1));
+        private Cache<long> inventory_fetch_cache = new Cache<long>("advance_fetch").MaxCapacity(100000).ExpireTime(TimeSpan.FromHours(1));
 
         private ScheduledExecutorHandle handle_spread = null;
         private ScheduledExecutorHandle handle_fetch = null;

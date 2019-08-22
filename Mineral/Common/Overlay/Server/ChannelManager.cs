@@ -18,8 +18,8 @@ namespace Mineral.Common.Overlay.Server
     public class ChannelManager
     {
         #region Field
-        private Cache<ReasonCode> bad_peers = new Cache<ReasonCode>().ExpireTime(TimeSpan.FromHours(1)).MaxCapacity(10000);
-        private Cache<ReasonCode> recently_disconnected = new Cache<ReasonCode>().ExpireTime(TimeSpan.FromSeconds(30)).MaxCapacity(1000);
+        private Cache<ReasonCode> bad_peers = new Cache<ReasonCode>("badpeers").ExpireTime(TimeSpan.FromHours(1)).MaxCapacity(10000);
+        private Cache<ReasonCode> recently_disconnected = new Cache<ReasonCode>("recently_disconnected").ExpireTime(TimeSpan.FromSeconds(30)).MaxCapacity(1000);
 
         private ConcurrentDictionary<byte[], Channel> active_peers = new ConcurrentDictionary<byte[], Channel>();
         private ConcurrentDictionary<IPAddress, Node> trust_nodes = new ConcurrentDictionary<IPAddress, Node>();

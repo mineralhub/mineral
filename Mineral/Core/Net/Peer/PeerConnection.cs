@@ -27,9 +27,9 @@ namespace Mineral.Core.Net.Peer
         private BlockId singup_error_id = null;
         private BlockId block_both_have = new BlockId();
         private BlockId last_sync_id = null;
-        private Cache<long> inventory_receive = new Cache<long>().MaxCapacity(100000).ExpireTime(TimeSpan.FromHours(1));
-        private Cache<long> inventory_spread = new Cache<long>().MaxCapacity(100000).ExpireTime(TimeSpan.FromHours(1));
-        private Cache<long> sync_block_id = new Cache<long>().MaxCapacity(2 * Parameter.NodeParameters.SYNC_FETCH_BATCH_NUM);
+        private Cache<long> inventory_receive = new Cache<long>("inventory_receive").MaxCapacity(100000).ExpireTime(TimeSpan.FromHours(1));
+        private Cache<long> inventory_spread = new Cache<long>("inventory_spread").MaxCapacity(100000).ExpireTime(TimeSpan.FromHours(1));
+        private Cache<long> sync_block_id = new Cache<long>("sync_block_id").MaxCapacity(2 * Parameter.NodeParameters.SYNC_FETCH_BATCH_NUM);
 
         private KeyValuePair<Deque<BlockId>, long> sync_chain_request = default(KeyValuePair<Deque<BlockId>, long>);
         private HashSet<BlockId> sync_block_process = new HashSet<BlockId>();
@@ -73,24 +73,6 @@ namespace Mineral.Core.Net.Peer
             get { return this.last_sync_id; }
             set { this.last_sync_id = value; }
         }
-
-        //public MemoryCache InventoryReceive
-        //{
-        //    get { return this.inventory_receive; }
-        //    set { this.inventory_receive = value; }
-        //}
-
-        //public MemoryCache InventorySpread
-        //{
-        //    get { return this.inventory_spread; }
-        //    set { this.inventory_spread = value; }
-        //}
-
-        //public MemoryCache SyncBlockId
-        //{
-        //    get { return this.sync_block_id; }
-        //    set { this.sync_block_id = value; }
-        //}
 
         public KeyValuePair<Deque<BlockId>, long> SyncChainRequest
         {
@@ -238,11 +220,11 @@ namespace Mineral.Core.Net.Peer
             Manager.Instance.SyncService.OnDisconnect(this);
             Manager.Instance.AdvanceService.OnDisconnect(this);
 
-            this.inventory_receive = new Cache<long>().MaxCapacity(100000).ExpireTime(TimeSpan.FromHours(1));
-            this.inventory_spread = new Cache<long>().MaxCapacity(100000).ExpireTime(TimeSpan.FromHours(1));
+            this.inventory_receive = new Cache<long>("inventory_receive").MaxCapacity(100000).ExpireTime(TimeSpan.FromHours(1));
+            this.inventory_spread = new Cache<long>("inventory_spread").MaxCapacity(100000).ExpireTime(TimeSpan.FromHours(1));
             this.inventory_request.Clear();
 
-            this.sync_block_id = new Cache<long>().MaxCapacity(2 * Parameter.NodeParameters.SYNC_FETCH_BATCH_NUM);
+            this.sync_block_id = new Cache<long>("sync_block_id").MaxCapacity(2 * Parameter.NodeParameters.SYNC_FETCH_BATCH_NUM);
             this.sync_block_fetch.Clear();
             this.sync_block_request.Clear();
             this.sync_block_process.Clear();
