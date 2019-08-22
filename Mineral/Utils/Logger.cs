@@ -9,7 +9,8 @@ namespace Mineral
 {
     public enum LogLevel
     {
-        ERROR = 0,
+        REFACTORING,
+        ERROR,
         WARNING,
         INFO,
         DEBUG,
@@ -49,6 +50,11 @@ namespace Mineral
                 if (WriteConsole)
                     Console.WriteLine(logdata);
             }
+        }
+
+        public static void Refactoring(string log)
+        {
+            Log(log, LogLevel.REFACTORING);
         }
 
         public static void Info(string log)
