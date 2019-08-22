@@ -105,21 +105,18 @@ namespace Mineral.Core.Net.Service
         [MethodImpl(MethodImplOptions.Synchronized)]
         private void HandleSyncBlock()
         {
-            lock (this.block_just_receive)
+            foreach (var received in this.block_just_receive)
             {
-                foreach (var received in this.block_just_receive)
-                {
-                    this.block_wait_process.TryAdd(received.Key, received.Value);
-                }
-                this.block_just_receive.Clear();
+                this.block_wait_process.TryAdd(received.Key, received.Value);
             }
+            this.block_just_receive.Clear();
 
             bool is_processed = true;
             while (is_processed)
             {
                 is_processed = false;
 
-                foreach (KeyValuePair<BlockMessage, PeerConnection> process in this.block_wait_process)
+                foreach (KeyValuePair<BlockMessage, PeerConnection> process in this.block_wait_process.OrderBy(block => block.Key.Block.Num))
                 {
                     BlockMessage message = process.Key;
                     PeerConnection peer = process.Value;
@@ -132,7 +129,11 @@ namespace Mineral.Core.Net.Service
                     }
 
                     bool is_found = false;
-                    var peers = Manager.Instance.NetDelegate.ActivePeers.Where(p => message.Block.Id.Equals(p.SyncBlockFetch.FirstOrDefault()));
+                    var peers = Manager.Instance.NetDelegate.ActivePeers.Where(p =>
+                    {
+                        p.SyncBlockFetch.TryPeekLeft(out BlockId id);
+                        return message.Block.Id.Equals(id);
+                    });
 
                     foreach (PeerConnection p in peers)
                     {
