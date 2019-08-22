@@ -213,7 +213,7 @@ namespace Mineral.Cryptography
 
             byte[] result = new byte[65];
             Array.Copy(BigIntegerToBytes(R, 32), 0, result, 0, 32);
-            Array.Copy(BigIntegerToBytes(R, 32), 0, result, 32, 32);
+            Array.Copy(BigIntegerToBytes(S, 32), 0, result, 32, 32);
             result[64] = fixed_v;
 
             return result;
