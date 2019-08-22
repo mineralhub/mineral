@@ -295,6 +295,9 @@ namespace Mineral.Core.Service
                         new DateTime(block.Timestamp),
                         block.ParentId));
 
+                Logger.Refactoring(
+                    string.Format("Produce block successfully, block number {0}", block.Num));
+
                 BroadcastBlock(block);
 
                 return BlockProductionCondition.PRODUCED;

@@ -35,6 +35,9 @@ namespace Mineral.Core.Net
         {
             try
             {
+                Logger.Refactoring(
+                    string.Format("OnMessage : {0}", msg.Type.ToString()));
+
                 switch (msg.Type)
                 {
                     case MessageTypes.MsgType.SYNC_BLOCK_CHAIN:

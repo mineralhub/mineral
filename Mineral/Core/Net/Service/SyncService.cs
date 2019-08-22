@@ -158,6 +158,9 @@ namespace Mineral.Core.Net.Service
 
             try
             {
+                Logger.Refactoring(
+                    string.Format("Process sync block : {0}", block.Num));
+
                 Manager.Instance.NetDelegate.ProcessBlock(block);
             }
             catch (System.Exception e)
