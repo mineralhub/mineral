@@ -74,7 +74,7 @@ namespace Mineral.Core.Witness
             });
             
             //TODO : witness 셔플에 대해서 처리할 것인
-            //SortWitness(ref witness_address);
+            SortWitness(ref witness_address);
             SetActiveWitnesses(witness_address);
             witness_address.ForEach(address => Logger.Info("InitializeWitness shuffled addresses : " + Wallet.AddressToBase58(address.ToByteArray())));
             SetCurrentShuffledWitnesses(witness_address);
@@ -177,7 +177,7 @@ namespace Mineral.Core.Witness
 
         public ByteString GetScheduleWitness(long slot)
         {
-            long current_slot = GetHeadSlot();
+            long current_slot = GetHeadSlot() + slot;
             if (current_slot < 0)
             {
                 throw new System.Exception("CurrentSlot should be positive");
