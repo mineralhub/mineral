@@ -1468,7 +1468,7 @@ namespace Mineral.Core.Database
                 Logger.Info("save block: " + new_block);
 
                 Logger.Refactoring(
-                    string.Format("Push block : {0}", new_block.Num));
+                    string.Format("Push block : {0} IsGenerateMyself : {1}", new_block.Num, new_block.IsGenerateMyself));
             }
             catch
             {
