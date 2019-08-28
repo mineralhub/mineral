@@ -83,7 +83,7 @@ namespace Mineral.Core.Database
 
             if (last_time != now)
             {
-                if (now > last_time)
+                if (now < last_time)
                     throw new ApplicationException(
                         string.Format("last_time({0}) can't big than now({1})", last_time, now)
                         );
