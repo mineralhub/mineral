@@ -14,7 +14,7 @@ using System.IO.Compression;
 
 namespace Mineral.Common.Net.RPC
 {
-    public class RpcServer : IDisposable
+    public abstract class RpcServer : IDisposable
     {
         #region Field
         private IWebHost host;
@@ -34,30 +34,7 @@ namespace Mineral.Common.Net.RPC
 
 
         #region Internal Method
-        private static JObject CreateErrorResult(JToken id, int code, string message)
-        {
-            JObject response = new JObject();
-            response["error"] = new JObject();
-            response["error"]["code"] = code;
-            response["error"]["message"] = message;
-
-            return response;
-        }
-
-        protected static JObject CreateResponse(JToken id)
-        {
-            JObject response = new JObject();
-            response["jsonrpc"] = "2.0";
-            response["id"] = id;
-            return response;
-        }
-
-        protected virtual JObject Process(JToken id, string method, JArray parameters)
-        {
-            return null;
-            //return processHandlers.ContainsKey(method)
-            //    ? processHandlers[method](_localNode, parameters) : CreateErrorResult(id, -1, string.Format("Not found method : {0}", method));
-        }
+        protected abstract JObject Process(JToken id, string method, JArray parameters);
 
         protected async Task ProcessAsync(HttpContext context)
         {
@@ -103,10 +80,10 @@ namespace Mineral.Common.Net.RPC
                     catch (FormatException) { }
                 }
             }
-            JObject response = CreateResponse(request["id"]);
+            JObject response = RpcMessage.CreateResponse(request["id"]);
             if (request == null)
             {
-                response["error"] = CreateErrorResult(null, -32700, "Parse error");
+                response["error"] = RpcMessage.CreateErrorResult(null, RpcMessage.PARSE_ERROR, "Parse error");
             }
             else
             {
@@ -123,9 +100,9 @@ namespace Mineral.Common.Net.RPC
             if (!request.ContainsKey("id"))
                 return null;
             if (!request.ContainsKey("method") || !request.ContainsKey("params") || !(request["params"] is JArray))
-                return CreateErrorResult(request["id"], -32600, "Invalid Request");
+                return RpcMessage.CreateErrorResult(request["id"], RpcMessage.INVALID_REQUEST, "Invalid Request");
             JObject result = null;
-            JObject response = CreateResponse(request["id"]);
+            JObject response = RpcMessage.CreateResponse(request["id"]);
             try
             {
                 JToken id = request["id"];
@@ -142,7 +119,7 @@ namespace Mineral.Common.Net.RPC
             }
             catch (Exception e)
             {
-                result = CreateErrorResult(request["id"], e.HResult, e.Message);
+                result = RpcMessage.CreateErrorResult(request["id"], e.HResult, e.Message);
                 JToken token = null;
                 if (result.TryGetValue("error", out token))
                     response["error"] = token;
@@ -156,7 +133,7 @@ namespace Mineral.Common.Net.RPC
 
 
         #region External Method
-        public void Start(ushort port, long maxBodySize = 10 * 1024, string sslCert = null, string password = null)
+        public void Start(int port, long maxBodySize = 10 * 1024, string sslCert = null, string password = null)
         {
             host = new WebHostBuilder().UseKestrel(options =>
             {
