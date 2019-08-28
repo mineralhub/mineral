@@ -40,19 +40,19 @@
                 "name": "Zion",
                 "Type": "AssetIssue",
                 "Address": "MWBfiNS8VBW1FNTpbecJMABWs9d1nqVY3B",
-                "blance": 99000000000000000
+                "balance": 99000000000000000
             },
             {
                 "name": "Sun",
                 "Type": "AssetIssue",
                 "Address": "MGBn3D65v1anJ7oHjpKzeuMyaw7ksZMvVV",
-                "blance": 0
+                "balance": 0
             },
             {
                 "name": "Blackhole",
                 "Type": "AssetIssue",
                 "Address": "MBqPJ9r9DjZFefcpukRuBa6pULu7grjaRx",
-                "blance": -9223372036854775808
+                "balance": -9223372036854775808
             }
         ],
 
