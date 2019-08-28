@@ -5,7 +5,9 @@ using System.Text;
 using Google.Protobuf;
 using Mineral.Common.Utils;
 using Mineral.Core.Capsule;
+using Mineral.Core.Config;
 using Mineral.Core.Config.Arguments;
+using Mineral.Core.Database;
 using Mineral.Core.Exception;
 using Mineral.Cryptography;
 using Mineral.Utils;
@@ -256,6 +258,30 @@ namespace Mineral.Core
             }
 
             return result;
+        }
+
+        public static AccountCapsule GetAccount(byte[] address)
+        {
+            AccountCapsule account = Manager.Instance.DBManager.Account.Get(address);
+
+            if (account != null)
+            {
+                BandwidthProcessor processer = new BandwidthProcessor(Manager.Instance.DBManager);
+                processer.UpdateUsage(account);
+
+                EnergyProcessor energy_processer = new EnergyProcessor(Manager.Instance.DBManager);
+                energy_processer.UpdateUsage(account);
+
+                long genesis_timestamp = Manager.Instance.DBManager.GenesisBlock.Timestamp;
+                account.LatestConsumeTime = 
+                    genesis_timestamp + Parameter.ChainParameters.BLOCK_PRODUCED_INTERVAL * account.LatestConsumeTime;
+                account.LatestConsumeFreeTime = 
+                    genesis_timestamp + Parameter.ChainParameters.BLOCK_PRODUCED_INTERVAL * account.LatestConsumeFreeTime;
+                account.LatestConsumeTimeForEnergy =
+                    genesis_timestamp + Parameter.ChainParameters.BLOCK_PRODUCED_INTERVAL * account.LatestConsumeTimeForEnergy;
+            }
+
+            return account;
         }
         #endregion
     }
