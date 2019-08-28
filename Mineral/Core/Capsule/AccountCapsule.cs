@@ -43,8 +43,18 @@ namespace Mineral.Core.Capsule
 
         public Account.Types.AccountResource AccountResource
         {
-            get { return this.account.AccountResource; }
-            set { this.account.AccountResource = value; }
+            get
+            {
+                this.account.AccountResource = new Account.Types.AccountResource();
+                return this.account.AccountResource;
+            }
+            set
+            {
+                if (value == null)
+                    throw new ArgumentNullException();
+
+                this.account.AccountResource = value;
+            }
         }
 
         public long Balance
@@ -67,7 +77,7 @@ namespace Mineral.Core.Capsule
 
         public long EnergyFrozenBalance
         {
-            get { return this.account.AccountResource.FrozenBalanceForEnergy.FrozenBalance; }
+            get { return AccountResource.FrozenBalanceForEnergy.FrozenBalance; }
         }
 
         public long AllEnergyFrozenBalance
@@ -105,14 +115,14 @@ namespace Mineral.Core.Capsule
 
         public long EnergyUsage
         {
-            get { return this.account.AccountResource.EnergyUsage; }
-            set { this.account.AccountResource.EnergyUsage = value; }
+            get { return AccountResource.EnergyUsage; }
+            set { AccountResource.EnergyUsage = value; }
         }
 
         public long StorageUsage
         {
-            get { return this.account.AccountResource.StorageUsage; }
-            set { this.account.AccountResource.StorageUsage = value; }
+            get { return AccountResource.StorageUsage; }
+            set { AccountResource.StorageUsage = value; }
         }
 
         public bool IsWitness
@@ -147,8 +157,8 @@ namespace Mineral.Core.Capsule
 
         public long LatestConsumeTimeForEnergy
         {
-            get { return this.account.AccountResource.LatestConsumeTimeForEnergy; }
-            set { this.account.AccountResource.LatestConsumeTimeForEnergy = value; }
+            get { return AccountResource.LatestConsumeTimeForEnergy; }
+            set { AccountResource.LatestConsumeTimeForEnergy = value; }
         }
 
         public long LatestConsumeFreeTime
@@ -159,8 +169,8 @@ namespace Mineral.Core.Capsule
 
         public long LatestExchangeStorageTime
         {
-            get { return this.account.AccountResource.LatestExchangeStorageTime; }
-            set { this.account.AccountResource.LatestExchangeStorageTime = value; }
+            get { return AccountResource.LatestExchangeStorageTime; }
+            set { AccountResource.LatestExchangeStorageTime = value; }
         }
 
         public long AcquiredDelegatedFrozenBalanceForBandwidth
@@ -171,12 +181,12 @@ namespace Mineral.Core.Capsule
 
         public long AcquiredDelegatedFrozenBalanceForEnergy
         {
-            get { return this.account.AccountResource.AcquiredDelegatedFrozenBalanceForEnergy; }
+            get { return AccountResource.AcquiredDelegatedFrozenBalanceForEnergy; }
         }
 
         public long DelegatedFrozenBalanceForEnergy
         {
-            get { return this.account.AccountResource.DelegatedFrozenBalanceForEnergy; }
+            get { return AccountResource.DelegatedFrozenBalanceForEnergy; }
         }
 
         public long DelegatedFrozenBalanceForBandwidth
@@ -217,8 +227,8 @@ namespace Mineral.Core.Capsule
 
         public long StorageLimit
         {
-            get { return this.account.AccountResource.StorageLimit; }
-            set { this.account.AccountResource.StorageLimit = value; }
+            get { return AccountResource.StorageLimit; }
+            set { AccountResource.StorageLimit = value; }
         }
 
         public ByteString AssetIssuedName
@@ -395,12 +405,12 @@ namespace Mineral.Core.Capsule
 
         public void AddAcquiredDelegatedFrozenBalanceForEnergy(long balance)
         {
-            this.account.AccountResource.AcquiredDelegatedFrozenBalanceForEnergy += balance;
+            AccountResource.AcquiredDelegatedFrozenBalanceForEnergy += balance;
         }
 
         public void AddDelegatedFrozenBalanceForEnergy(long balance)
         {
-            this.account.AccountResource.DelegatedFrozenBalanceForEnergy += balance;
+            AccountResource.DelegatedFrozenBalanceForEnergy += balance;
         }
 
         public void PutLatestAssetOperationTimeV2(Dictionary<string, long> assets)
@@ -533,9 +543,9 @@ namespace Mineral.Core.Capsule
                 result += this.account.Frozen[i].FrozenBalance;
             }
 
-            result += this.account.AccountResource.FrozenBalanceForEnergy.FrozenBalance;
+            result += AccountResource.FrozenBalanceForEnergy.FrozenBalance;
             result += this.account.DelegatedFrozenBalanceForBandwidth;
-            result += this.account.AccountResource.DelegatedFrozenBalanceForEnergy;
+            result += AccountResource.DelegatedFrozenBalanceForEnergy;
 
             return result;
         }
@@ -733,7 +743,7 @@ namespace Mineral.Core.Capsule
             frozen.FrozenBalance = frozen_balance;
             frozen.ExpireTime = expire_time;
 
-            this.account.AccountResource.FrozenBalanceForEnergy = frozen;
+            AccountResource.FrozenBalanceForEnergy = frozen;
         }
 
         public void SetFrozenForBandwidth(long frozen_balance, long expire_time)
@@ -773,7 +783,7 @@ namespace Mineral.Core.Capsule
             if (storage_usage <= 0)
                 return;
 
-            this.account.AccountResource.StorageUsage += storage_usage;
+            AccountResource.StorageUsage += storage_usage;
         }
 
         public static Permission GetDefaultPermission(ByteString owner)
