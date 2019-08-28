@@ -37,6 +37,8 @@ namespace MineralNode
                 if (Args.Instance.IsWitness)
                     app.AddService(new WitnessService(Manager.Instance));
 
+                app.AddService(new RpcService());
+
                 app.InitService(Args.Instance);
                 app.StartService();
                 app.Startup();
