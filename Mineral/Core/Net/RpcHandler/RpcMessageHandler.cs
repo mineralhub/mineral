@@ -71,7 +71,7 @@ namespace Mineral.Core.Net.RpcHandler
             {
                 byte[] address = Wallet.Base58ToAddress(parameters[0].Value<string>());
                 AccountCapsule account = Wallet.GetAccount(address);
-                result = JObject.Parse(JsonConvert.SerializeObject(account, Formatting.Indented));
+                result = JObject.Parse(JsonConvert.SerializeObject(account.Instance, Formatting.Indented));
             }
             catch (InvalidCastException e)
             {
@@ -105,7 +105,7 @@ namespace Mineral.Core.Net.RpcHandler
             try
             {
                 BlockCapsule block = Manager.Instance.DBManager.GetBlockByNum(parameters[0].Value<long>());
-                result = JObject.Parse(JsonConvert.SerializeObject(block, Formatting.Indented));
+                result = JObject.Parse(JsonConvert.SerializeObject(block.Instance, Formatting.Indented));
             }
             catch (InvalidCastException e)
             {
