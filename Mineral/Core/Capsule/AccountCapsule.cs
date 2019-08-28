@@ -45,7 +45,7 @@ namespace Mineral.Core.Capsule
         {
             get
             {
-                this.account.AccountResource = new Account.Types.AccountResource();
+                this.account.AccountResource = this.account.AccountResource ?? new Account.Types.AccountResource();
                 return this.account.AccountResource;
             }
             set
@@ -54,6 +54,22 @@ namespace Mineral.Core.Capsule
                     throw new ArgumentNullException();
 
                 this.account.AccountResource = value;
+            }
+        }
+
+        public Account.Types.Frozen FrozenBalanceForEnergy
+        {
+            get
+            {
+                AccountResource.FrozenBalanceForEnergy = AccountResource.FrozenBalanceForEnergy ?? new Account.Types.Frozen();
+                return AccountResource.FrozenBalanceForEnergy;
+            }
+            set
+            {
+                if (value == null)
+                    throw new ArgumentNullException();
+
+                AccountResource.FrozenBalanceForEnergy = value;
             }
         }
 
@@ -77,7 +93,7 @@ namespace Mineral.Core.Capsule
 
         public long EnergyFrozenBalance
         {
-            get { return AccountResource.FrozenBalanceForEnergy.FrozenBalance; }
+            get { return FrozenBalanceForEnergy.FrozenBalance; }
         }
 
         public long AllEnergyFrozenBalance
