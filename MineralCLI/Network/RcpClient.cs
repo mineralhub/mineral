@@ -8,7 +8,7 @@ using Newtonsoft.Json.Linq;
 
 namespace MineralCLI.Network
 {
-    public class RcpClient
+    public static class RcpClient
     {
         public class ResponeData
         {
@@ -16,6 +16,27 @@ namespace MineralCLI.Network
             public HttpStatusCode StatusCode { get; set; }
         }
 
+        #region Field
+        #endregion
+
+
+        #region Property
+        #endregion
+
+
+        #region Contructor
+        #endregion
+
+
+        #region Event Method
+        #endregion
+
+
+        #region Internal Method
+        #endregion
+
+
+        #region External Method
         public static JObject RequestGet(string url)
         {
             string respone_data = null;
@@ -101,8 +122,9 @@ namespace MineralCLI.Network
             {
                 Console.WriteLine(e.Message);
             }
-            Console.WriteLine(respone_data);
+
             return respone_data != null ? JObject.Parse(respone_data) : null;
         }
     }
+    #endregion
 }
