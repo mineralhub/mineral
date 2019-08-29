@@ -8,8 +8,9 @@ namespace MineralCLI
 {
     class Program
     {
+        internal static int id = new Random().Next(0, int.MaxValue);
         internal static string url = null;
-        internal static WalletAccount Wallet = null;
+        //internal static w Wallet = null;
 
         static void Main(string[] args)
         {

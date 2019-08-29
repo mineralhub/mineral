@@ -4,7 +4,6 @@ using System.Linq;
 using System.Text;
 using Newtonsoft.Json.Linq;
 using Mineral;
-using Mineral.Network.RPC.Command;
 using MineralCLI.Network;
 
 namespace MineralCLI.Commands
@@ -44,18 +43,18 @@ namespace MineralCLI.Commands
             return true;
         }
 
-        public static JObject MakeCommand(double id, string method, JArray parameters)
+        public static JObject MakeCommand(string method, JArray parameters)
         {
             JObject cmd = new JObject();
-            cmd["id"] = id;
+            cmd["id"] = Program.id;
             cmd["method"] = method;
             cmd["params"] = parameters;
             return cmd;
         }
 
-        public static JObject SendCommand(double id, string method, JArray parameters)
+        public static JObject SendCommand(string method, JArray parameters)
         {
-            JObject obj = MakeCommand(Config.Instance.BlockVersion, method, parameters);
+            JObject obj = MakeCommand(method, parameters);
             return RcpClient.RequestPostAnsyc(Program.url, obj.ToString()).Result;
         }
 
