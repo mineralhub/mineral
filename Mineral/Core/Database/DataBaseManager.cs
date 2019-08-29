@@ -849,7 +849,7 @@ namespace Mineral.Core.Database
             }
 
             Logger.Debug(
-                string.Format("updateSignedWitness. witness address:{0}, blockNum:{1}, totalProduced:{2}",
+                string.Format("UpdateSignedWitness. Witness address:{0}, Block num:{1}, Total produced:{2}",
                               witness.ToHexString(),
                               block.Num,
                               witness.TotalProduced));
@@ -867,7 +867,7 @@ namespace Mineral.Core.Database
             if (solidified_position < 0)
             {
                 Logger.Warning(
-                    string.Format("updateLatestSolidifiedBlock error, solidifiedPosition:{0},wits.size:{1}",
+                    string.Format("UpdateLatestSolidifiedBlock error, Solidified position : {0}, Witness size : {1}",
                                   solidified_position,
                                   size));
                 return;
@@ -875,14 +875,14 @@ namespace Mineral.Core.Database
             long latest_block_num = numbers[solidified_position];
             if (latest_block_num < this.dynamic_properties_store.GetLatestSolidifiedBlockNum())
             {
-                Logger.Warning("latestSolidifiedBlockNum = 0,LatestBlockNum:" + numbers);
+                Logger.Warning("Latest Solidified Block Num = 0, Latest Block Num:" + numbers);
                 return;
             }
 
             this.dynamic_properties_store.PutLatestSolidifiedBlockNum(latest_block_num);
             this.latest_solidified_block_number = latest_block_num;
 
-            Logger.Info("update solid block, num = " + latest_block_num);
+            Logger.Info("Update solid block, num = " + latest_block_num);
         }
 
         private void UpdateTransHashCache(BlockCapsule block)
@@ -917,6 +917,8 @@ namespace Mineral.Core.Database
             if (block.Num != 1)
             {
                 slot = this.witness_controller.GetSlotAtTime(block.Timestamp);
+                Logger.Refactoring(
+                    string.Format("Slot {0} Block {1}", slot.ToString(), block.Num.ToString()));
             }
             for (int i = 1; i < slot; ++i)
             {
@@ -1468,7 +1470,7 @@ namespace Mineral.Core.Database
                 Logger.Info("save block: " + new_block);
 
                 Logger.Refactoring(
-                    string.Format("Push block : {0}", new_block.Num));
+                    string.Format("Push block : {0} IsGenerateMyself : {1}", new_block.Num, new_block.IsGenerateMyself));
             }
             catch
             {
