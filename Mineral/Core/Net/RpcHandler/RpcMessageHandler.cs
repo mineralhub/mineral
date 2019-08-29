@@ -15,12 +15,12 @@ namespace Mineral.Core.Net.RpcHandler
 
         private Dictionary<string, RpcHandler> handlers = new Dictionary<string, RpcHandler>()
         {
-            { RpcMessageType.GetAccount, new RpcHandler(OnGetAccount) },
+            { RpcCommandType.GetAccount, new RpcHandler(OnGetAccount) },
 
 
 
 
-            { RpcMessageType.GetBlock, new RpcHandler(OnGetBlock) }
+            { RpcCommandType.GetBlock, new RpcHandler(OnGetBlock) }
         };
         #endregion
 
