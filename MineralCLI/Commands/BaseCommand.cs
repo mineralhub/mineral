@@ -58,6 +58,12 @@ namespace MineralCLI.Commands
             return RcpClient.RequestPostAnsyc(Program.url, obj.ToString()).Result;
         }
 
+        public static void OutputErrorMessage(int code, string message)
+        {
+            Console.WriteLine("Error code : " + code);
+            Console.WriteLine("Message \n" + message);
+        }
+
         public static void OutputHelpMessage(string[] usage_message, string[] option_message, string[] commandoption_message, string[] help_message)
         {
             string output_message = Config.Instance.GetVersion() + "\n";

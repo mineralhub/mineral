@@ -14,6 +14,7 @@ namespace MineralCLI.Shell
         {
             { RpcCommandType.GetBlock, new CommandHandler(BlockCommand.GetBlock) },
             { RpcCommandType.GetAccount, new CommandHandler(WalletCommand.GetAccount) },
+            { RpcCommandType.SendCoin, new CommandHandler(WalletCommand.SendCoin) },
         };
 
         public override bool OnCommand(string[] parameters)

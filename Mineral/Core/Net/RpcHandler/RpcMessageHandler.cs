@@ -2,6 +2,7 @@
 using Mineral.Core.Capsule;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
+using Protocol;
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -11,10 +12,11 @@ namespace Mineral.Core.Net.RpcHandler
     public class RpcMessageHandler
     {
         #region Field
-        public delegate bool RpcHandler(JToken id, string method, JArray parameters, out JObject result);
+        public delegate bool RpcHandler(JToken id, string method, JArray parameters, out JToken result);
 
         private Dictionary<string, RpcHandler> handlers = new Dictionary<string, RpcHandler>()
         {
+            { RpcCommandType.CreateTransaction, new RpcHandler(OnCreateTransaction) },
             { RpcCommandType.GetAccount, new RpcHandler(OnGetAccount) },
 
 
@@ -42,9 +44,9 @@ namespace Mineral.Core.Net.RpcHandler
 
 
         #region External Method
-        public JObject Process(JToken id, string method, JArray parameters)
+        public JToken Process(JToken id, string method, JArray parameters)
         {
-            JObject result = new JObject();
+            JToken result = new JObject();
             if (this.handlers.ContainsKey(method))
             {
                 handlers[method](id, method, parameters, out result);
@@ -57,7 +59,34 @@ namespace Mineral.Core.Net.RpcHandler
             return result;
         }
 
-        public static bool OnGetAccount(JToken id, string method, JArray parameters, out JObject result)
+        public static bool OnCreateTransaction(JToken id, string method, JArray parameters, out JToken result)
+        {
+            result = new JObject();
+
+            if (parameters == null || parameters.Count != 1)
+            {
+                result = RpcMessage.CreateErrorResult(id, RpcMessage.INVALID_PARAMS, "Invalid parameters");
+                return false;
+            }
+
+            try
+            {
+                TransferContract contract = TransferContract.Parser.ParseFrom(parameters[0].ToObject<byte[]>());
+                TransactionCapsule transaction = 
+                    RpcWalletApi.CreateTransactionCapsule(contract, Transaction.Types.Contract.Types.ContractType.TransferContract);
+
+                result = transaction.Data;
+            }
+            catch (System.Exception e)
+            {
+                result = RpcMessage.CreateErrorResult(id, RpcMessage.INVALID_PARAMS, e.Message);
+                return false;
+            }
+
+            return true;
+        }
+
+        public static bool OnGetAccount(JToken id, string method, JArray parameters, out JToken result)
         {
             result = new JObject();
 
@@ -92,7 +121,7 @@ namespace Mineral.Core.Net.RpcHandler
             return true;
         }
 
-        public static bool OnGetBlock(JToken id, string method, JArray parameters, out JObject result)
+        public static bool OnGetBlock(JToken id, string method, JArray parameters, out JToken result)
         {
             result = new JObject();
 
