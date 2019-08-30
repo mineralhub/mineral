@@ -29,7 +29,7 @@ namespace Mineral.Core.Service
 
 
         #region Internal Method
-        protected override JObject Process(JToken id, string method, JArray parameters)
+        protected override JToken Process(JToken id, string method, JArray parameters)
         {
             return handler.Process(id, method, parameters);
         }

@@ -34,7 +34,7 @@ namespace Mineral.Common.Net.RPC
 
 
         #region Internal Method
-        protected abstract JObject Process(JToken id, string method, JArray parameters);
+        protected abstract JToken Process(JToken id, string method, JArray parameters);
 
         protected async Task ProcessAsync(HttpContext context)
         {
@@ -109,7 +109,7 @@ namespace Mineral.Common.Net.RPC
                 string method = request["method"].Value<string>();
                 JArray parameters = (JArray)request["params"];
 
-                result = Process(id, method, parameters);
+                result = new JObject(Process(id, method, parameters));
                 JToken token = null;
                 if (result.TryGetValue("error", out token))
                     response["error"] = token;
