@@ -133,10 +133,5 @@ namespace Mineral.Core.Capsule.Util
 
             return !(id.Length > 1 && id[0] == '0');
         }
-
-        public static long GetExpirationTime()
-        {
-            return Helper.CurrentTimeMillis() + 6 * 60 * 60 * 1000;
-        }
     }
 }

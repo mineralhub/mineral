@@ -65,7 +65,25 @@ namespace MineralCLI.Commands
 
                 Transaction transaction = Transaction.Parser.ParseFrom(receive_contract["result"].ToObject<byte[]>());
 
-                //transaction = WalletApi.SignatureTransaction();
+                transaction = WalletApi.SignatureTransaction(transaction);
+
+                //TransactionSignWeight weight = GetTransactionSignWeight(transaction);
+                //if (weight.getResult().getCode() == response_code.ENOUGH_PERMISSION)
+                //{
+                //    break;
+                //}
+                //if (weight.getResult().getCode() == response_code.NOT_ENOUGH_PERMISSION)
+                //{
+                //    System.out.println("Current signWeight is:");
+                //    System.out.println(Utils.printTransactionSignWeight(weight));
+                //    System.out.println("Please confirm if continue add signature enter y or Y, else any other");
+                //    if (!confirm())
+                //    {
+                //        throw new CancelException("User cancelled");
+                //    }
+                //    continue;
+                //}
+                //throw new CancelException(weight.getResult().getMessage());
             }
             catch (System.Exception e)
             {

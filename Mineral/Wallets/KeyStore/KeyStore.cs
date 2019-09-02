@@ -79,7 +79,7 @@ namespace Mineral.Wallets.KeyStore
             {
                 return JsonConvert.DeserializeObject<KeyStore>(json);
             }
-            catch (System.Exception e)
+            catch (System.Exception)
             {
                 Logger.Error("Invalid keystore file format.");
                 return null;
