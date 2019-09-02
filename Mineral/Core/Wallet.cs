@@ -193,6 +193,17 @@ namespace Mineral.Core
             return Hash.ToAddress(merge);
         }
 
+        public static string Encode58Check(byte[] input)
+        {
+            byte[] hash0 = SHA256Hash.ToHash(input);
+            byte[] hash1 = SHA256Hash.ToHash(hash0);
+            byte[] check = new byte[input.Length + 4];
+
+            Array.Copy(input, 0, check, 0, input.Length);
+            Array.Copy(hash1, 0, check, input.Length, 4);
+
+            return Base58.Encode(check);
+        }
 
         public static string AddressToBase58(byte[] address)
         {
