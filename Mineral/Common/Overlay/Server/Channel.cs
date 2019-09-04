@@ -21,6 +21,8 @@ using Protocol;
 
 namespace Mineral.Common.Overlay.Server
 {
+    using Node = Mineral.Common.Overlay.Discover.Node.Node;
+
     public class Channel
     {
         public enum MineralState

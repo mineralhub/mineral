@@ -29,6 +29,8 @@ using static Protocol.Transaction.Types.Contract.Types;
 
 namespace Mineral.Core.Database
 {
+    using Node = Mineral.Common.Overlay.Discover.Node.Node;
+
     public class DatabaseManager
     {
         #region Field

@@ -9,6 +9,8 @@ using Protocol;
 
 namespace Mineral.Common.Overlay.Messages
 {
+    using Node = Mineral.Common.Overlay.Discover.Node.Node;
+
     public class HelloMessage : P2pMessage
     {
         #region Field

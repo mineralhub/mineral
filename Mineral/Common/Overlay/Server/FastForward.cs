@@ -14,6 +14,8 @@ using static Mineral.Utils.ScheduledExecutorService;
 
 namespace Mineral.Common.Overlay.Server
 {
+    using Node = Mineral.Common.Overlay.Discover.Node.Node;
+
     public class FastForward
     {
         #region Field
