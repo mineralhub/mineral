@@ -54,24 +54,7 @@ namespace MineralCLI.Api
 
                     Console.WriteLine("current transaction hex string is " + transaction.ToByteArray().ToHexString());
 
-                    //TransactionSignWeight weight = getTransactionSignWeight(transaction);
-                    //if (weight.getResult().getCode() == response_code.ENOUGH_PERMISSION)
-                    //{
-                    //    break;
-                    //}
-                    //if (weight.getResult().getCode() == response_code.NOT_ENOUGH_PERMISSION)
-                    //{
-                    //    System.out.println("Current signWeight is:");
-                    //    System.out.println(Utils.printTransactionSignWeight(weight));
-                    //    System.out.println("Please confirm if continue add signature enter y or Y, else any other");
-                    //    if (!confirm())
-                    //    {
-                    //        throw new CancelException("User cancelled");
-                    //    }
-                    //    continue;
-                    //}
-                    //throw new CancelException(weight.getResult().getMessage());
-                    break;
+                    //break;
                 }
             }
 
