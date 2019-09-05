@@ -42,8 +42,4 @@
     <PackageReference Include="System.Runtime.Caching" Version="4.5.0" />
   </ItemGroup>
 
-  <ItemGroup>
-    <Folder Include="Protobuf\" />
-  </ItemGroup>
-
 </Project>
