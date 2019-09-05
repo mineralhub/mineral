@@ -1,6 +1,7 @@
 ﻿using Google.Protobuf;
 using Mineral;
 using Mineral.Common.Utils;
+using Mineral.Core;
 using Mineral.Core.Capsule.Util;
 using Mineral.Cryptography;
 using Mineral.Wallets.KeyStore;
@@ -17,8 +18,41 @@ namespace MineralCLI.Api
 {
     public static class WalletApi
     {
-        private static readonly string file_path = "Wallet";
+        #region Field
+        public static readonly string FILE_PATH = "Wallet";
+        #endregion
 
+
+        #region Property
+        public static bool IsLogin
+        {
+            get
+            {
+                bool result = Program.Wallet == null;
+                if (result == false)
+                {
+                    Console.WriteLine("Please login first !!");
+                }
+
+                return result;
+            }
+        }
+        #endregion
+
+
+        #region Constructor
+        #endregion
+
+
+        #region Event Method
+        #endregion
+
+
+        #region Internal Method
+        #endregion
+
+
+        #region External Method
         public static TransferContract CreateTransaferContract(byte[] owner, byte[] to, long amount)
         {
             TransferContract contract = new TransferContract();
@@ -29,7 +63,7 @@ namespace MineralCLI.Api
             return contract;
         }
 
-        public static Transaction SignatureTransaction(Transaction transaction)
+        public static Transaction InitSignatureTransaction(Transaction transaction)
         {
             if (transaction.RawData.Timestamp == 0)
             {
@@ -39,23 +73,21 @@ namespace MineralCLI.Api
             ProtocolUtil.SetExpirationTime(ref transaction);
             ProtocolUtil.SetPermissionId(ref transaction);
 
-            while (true)
+            return transaction;
+        }
+
+        public static Transaction SignatureTransaction(Transaction transaction)
+        {
+            Console.WriteLine("Please choose keystore for signature.");
+            KeyStore key_store = SelectKeyStore();
+
+            string password = ConsoleServiceBase.ReadPasswordString("Please input password");
+            if (KeyStoreService.DecryptKeyStore(password, key_store, out byte[] privatekey))
             {
-                Console.WriteLine("Please choose keystore for signature.");
-                KeyStore key_store = SelectKeyStore();
+                ECKey key = ECKey.FromPrivateKey(privatekey);
+                ECDSASignature signature = key.Sign(SHA256Hash.ToHash(transaction.RawData.ToByteArray()));
 
-                string password = ConsoleServiceBase.ReadPasswordString("Please input password");
-                if (KeyStoreService.DecryptKeyStore(password, key_store, out byte[] privatekey))
-                {
-                    ECKey key = ECKey.FromPrivateKey(privatekey);
-                    ECDSASignature signature = key.Sign(SHA256Hash.ToHash(transaction.RawData.ToByteArray()));
-
-                    transaction.Signature.Add(ByteString.CopyFrom(signature.ToByteArray()));
-
-                    Console.WriteLine("current transaction hex string is " + transaction.ToByteArray().ToHexString());
-
-                    //break;
-                }
+                transaction.Signature.Add(ByteString.CopyFrom(signature.ToByteArray()));
             }
 
             return transaction;
@@ -63,7 +95,7 @@ namespace MineralCLI.Api
 
         public static KeyStore SelectKeyStore()
         {
-            DirectoryInfo info = new DirectoryInfo(file_path);
+            DirectoryInfo info = new DirectoryInfo(FILE_PATH);
             if (!info.Exists)
             {
                 return null;
@@ -124,5 +156,6 @@ namespace MineralCLI.Api
 
             return null;
         }
+        #endregion
     }
 }

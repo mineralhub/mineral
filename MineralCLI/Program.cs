@@ -3,6 +3,7 @@ using System.IO;
 using System.Linq;
 using Newtonsoft.Json.Linq;
 using Mineral.Wallets;
+using Mineral.Wallets.KeyStore;
 
 namespace MineralCLI
 {
@@ -10,7 +11,7 @@ namespace MineralCLI
     {
         internal static int id = new Random().Next(0, int.MaxValue);
         internal static string url = null;
-        //internal static w Wallet = null;
+        internal static KeyStore Wallet = null;
 
         static void Main(string[] args)
         {

@@ -13,6 +13,10 @@ namespace MineralCLI.Shell
         private Dictionary<string, CommandHandler> commands = new Dictionary<string, CommandHandler>()
         {
             { RpcCommandType.GetBlock, new CommandHandler(BlockCommand.GetBlock) },
+
+            { RpcCommandType.RegistWallet, new CommandHandler(WalletCommand.RegistWallet) },
+            { RpcCommandType.Login, new CommandHandler(WalletCommand.Login) },
+            { RpcCommandType.Logout, new CommandHandler(WalletCommand.Logout) },
             { RpcCommandType.GetAccount, new CommandHandler(WalletCommand.GetAccount) },
             { RpcCommandType.SendCoin, new CommandHandler(WalletCommand.SendCoin) },
         };

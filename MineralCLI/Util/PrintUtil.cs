@@ -60,6 +60,48 @@ namespace MineralCLI.Util
             return result;
         }
 
+        public static string PrintTransaction(TransactionExtention extension)
+        {
+            string result = "";
+            result += "txid: ";
+            result += "\n";
+            result += extension.Txid.ToByteArray();
+            result += "\n";
+
+            Transaction transaction = extension.Transaction;
+            if (transaction.RawData != null)
+            {
+                result += "raw_data: ";
+                result += "\n";
+                result += "{";
+                result += "\n";
+                result += PrintTransactionRaw(transaction.RawData);
+                result += "}";
+                result += "\n";
+            }
+            if (transaction.Signature.Count > 0)
+            {
+                result += "signature: ";
+                result += "\n";
+                result += "{";
+                result += "\n";
+                result += PrintSignature(new List<ByteString>(transaction.Signature));
+                result += "}";
+                result += "\n";
+            }
+            if (transaction.Ret.Count != 0)
+            {
+                result += "ret: ";
+                result += "\n";
+                result += "{";
+                result += "\n";
+                result += PrintRet(new List<Result>(transaction.Ret));
+                result += "}";
+                result += "\n";
+            }
+            return result;
+        }
+
         public static string PrintTransactionRaw(Transaction.Types.raw raw)
         {
             string result = "";
@@ -97,6 +139,67 @@ namespace MineralCLI.Util
             result += raw.FeeLimit;
             result += "\n";
 
+            return result;
+        }
+
+        public static string PrintTransactionSignWeight(TransactionSignWeight weight)
+        {
+            string result = "";
+
+            result += "permission:";
+            result += "\n";
+            result += "{";
+            result += "\n";
+            result += PrintPermission(weight.Permission);
+            result += "}";
+            result += "\n";
+            result += "current_weight: ";
+            result += weight.CurrentWeight;
+            result += "\n";
+            result += "result:";
+            result += "\n";
+            result += "{";
+            result += "\n";
+            result += PrintResult(weight.Result);
+            result += "}";
+            result += "\n";
+            if (weight.ApprovedList.Count > 0)
+            {
+                result += "approved_list:";
+                result += "\n";
+                result += "[";
+                result += "\n";
+                foreach (ByteString approved in weight.ApprovedList)
+                {
+                    result += Wallet.Encode58Check(approved.ToByteArray());
+                    result += "\n";
+                }
+                result += "]";
+                result += "\n";
+            }
+            result += "transaction:";
+            result += "\n";
+            result += "{";
+            result += "\n";
+            result += PrintTransaction(weight.Transaction);
+            result += "}";
+            result += "\n";
+
+            return result;
+        }
+
+        public static string PrintResult(TransactionSignWeight.Types.Result weight_result)
+        {
+            string result = "";
+            result += "code: ";
+            result += weight_result.Code;
+            result += "\n";
+            if (weight_result.Message != null && weight_result.Message.Length > 0)
+            {
+                result += "message: ";
+                result += weight_result.Message;
+                result += "\n";
+            }
             return result;
         }
 
