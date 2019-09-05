@@ -140,6 +140,28 @@ namespace Mineral.Wallets.KeyStore
             }
             return true;
         }
+
+        public static bool CheckPassword(string password, KeyStore keystore)
+        {
+            byte[] derivedkey = new byte[32];
+
+            KeyStoreKdfInfo kdf = keystore.Crypto.Kdf;
+            KeyStoreAesInfo aes = keystore.Crypto.Aes;
+
+            if (!KeyStoreCrypto.EncryptScrypt(password
+                                            , kdf.Params.N
+                                            , kdf.Params.R
+                                            , kdf.Params.P
+                                            , kdf.Params.Dklen
+                                            , kdf.Params.Salt
+                                            , out derivedkey))
+            {
+                Console.WriteLine("fail to generate scrypt.");
+                return false;
+            }
+
+            return true;
+        }
         #endregion
     }
 }
