@@ -52,7 +52,7 @@ namespace MineralCLI.Network
                     }
                 }
             }
-            catch (Exception e)
+            catch (System.Exception e)
             {
                 Console.WriteLine(e.Message);
             }
@@ -75,7 +75,7 @@ namespace MineralCLI.Network
                     }
                 }
             }
-            catch (Exception e)
+            catch (System.Exception e)
             {
                 Console.WriteLine(e.Message);
             }
@@ -97,7 +97,7 @@ namespace MineralCLI.Network
                     respone_data = await respone.Content.ReadAsStringAsync();
                 }
             }
-            catch (Exception e)
+            catch (System.Exception e)
             {
                 Console.WriteLine(e.Message);
             }
@@ -118,7 +118,7 @@ namespace MineralCLI.Network
                     respone_data = await respone.Content.ReadAsStringAsync();
                 }
             }
-            catch (Exception e)
+            catch (System.Exception e)
             {
                 Console.WriteLine(e.Message);
             }
