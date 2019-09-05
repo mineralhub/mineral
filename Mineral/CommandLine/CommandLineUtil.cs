@@ -25,5 +25,10 @@ namespace Mineral.CommandLine
 
             return result;
         }
+
+        public static bool Confirm()
+        {
+            return Console.ReadLine().Trim().Equals("y");
+        }
     }
 }
