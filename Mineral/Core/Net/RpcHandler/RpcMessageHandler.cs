@@ -18,7 +18,7 @@ namespace Mineral.Core.Net.RpcHandler
         private Dictionary<string, RpcHandler> handlers = new Dictionary<string, RpcHandler>()
         {
             { RpcCommandType.CreateTransaction, new RpcHandler(OnCreateTransaction) },
-            { RpcCommandType.CreateTransaction, new RpcHandler(OnTransactionSignWeight) },
+            { RpcCommandType.GetTransactionSignWeight, new RpcHandler(OnGetTransactionSignWeight) },
             { RpcCommandType.GetAccount, new RpcHandler(OnGetAccount) },
 
 
@@ -91,7 +91,7 @@ namespace Mineral.Core.Net.RpcHandler
             return true;
         }
 
-        public static bool OnTransactionSignWeight(JToken id, string method, JArray parameters, out JToken result)
+        public static bool OnGetTransactionSignWeight(JToken id, string method, JArray parameters, out JToken result)
         {
             result = new JObject();
 
