@@ -160,6 +160,16 @@ namespace Mineral.Wallets.KeyStore
                 return false;
             }
 
+            byte[] iv = aes.Params.Iv;
+            byte[] ciphertext = aes.Text;
+            byte[] mac = keystore.Crypto.Mac;
+
+            if (!KeyStoreCrypto.VerifyMac(derivedkey, ciphertext, mac))
+            {
+                Console.WriteLine("Password do not match.");
+                return false;
+            }
+
             return true;
         }
         #endregion
