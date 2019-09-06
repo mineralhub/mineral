@@ -20,6 +20,7 @@ namespace MineralCLI.Api
     {
         #region Field
         public static readonly string FILE_PATH = "Wallet";
+        public static readonly string FILE_EXTENTION = ".keystore";
         #endregion
 
 
@@ -109,11 +110,11 @@ namespace MineralCLI.Api
 
             for (int i = 0; i < wallets.Length; i++)
             {
-                Console.WriteLine("The " + "[" + i + 1 + "]" + " Keystore file name : " + wallets[i].Name);
+                Console.WriteLine("[" + (i + 1) + "]" + " Keystore file name : " + wallets[i].Name);
             }
+            Console.WriteLine("Please input keystore file number.");
 
             FileInfo wallet = null;
-
             while (true)
             {
                 int index = -1;
@@ -135,7 +136,7 @@ namespace MineralCLI.Api
                     continue;
                 }
 
-                wallet = wallets[index];
+                wallet = wallets[index - 1];
                 break;
             }
 
@@ -144,7 +145,7 @@ namespace MineralCLI.Api
                 KeyStore keystore = null;
                 using (var file = File.OpenText(wallet.FullName))
                 {
-                    KeyStore.FromJson(file.ReadToEnd());
+                    keystore = KeyStore.FromJson(file.ReadToEnd());
                 }
 
                 return keystore;

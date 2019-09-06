@@ -14,7 +14,7 @@ namespace MineralCLI.Shell
         {
             { RpcCommandType.GetBlock, new CommandHandler(BlockCommand.GetBlock) },
 
-            { RpcCommandType.RegistWallet, new CommandHandler(WalletCommand.RegistWallet) },
+            { RpcCommandType.RegisterWallet, new CommandHandler(WalletCommand.RegisterWallet) },
             { RpcCommandType.Login, new CommandHandler(WalletCommand.Login) },
             { RpcCommandType.Logout, new CommandHandler(WalletCommand.Logout) },
             { RpcCommandType.GetAccount, new CommandHandler(WalletCommand.GetAccount) },

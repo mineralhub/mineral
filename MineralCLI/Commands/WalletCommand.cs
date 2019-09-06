@@ -21,23 +21,33 @@ namespace MineralCLI.Commands
 
     public sealed class WalletCommand : BaseCommand
     {
-        public static bool RegistWallet(string[] parameters)
+        public static bool RegisterWallet(string[] parameters)
         {
             string[] usage = new string[] {
-                string.Format("{0} [command option] <path>\n", RpcCommandType.RegistWallet) };
+                string.Format("{0} [command option] <path>\n", RpcCommandType.RegisterWallet) };
 
             string[] command_option = new string[] { HelpCommandOption.Help };
 
-            if (parameters == null || parameters.Length != 1)
+            if (parameters == null || parameters.Length != 2)
             {
                 OutputHelpMessage(usage, null, command_option, null);
                 return true;
             }
 
             string password = CommandLineUtil.ReadPasswordString("Please input wallet password");
+            string confirm = CommandLineUtil.ReadPasswordString("Please input confirm wallet password");
+
+            if (!password.Equals(confirm))
+            {
+                Console.WriteLine("Confirm password does not match");
+                return true;
+            }
 
             ECKey key = new ECKey();
-            if (!KeyStoreService.GenerateKeyStore(WalletApi.FILE_PATH + @"\" + parameters[0],
+            PathUtil.MakeDirectory(WalletApi.FILE_PATH);
+            string path = PathUtil.MergePath(WalletApi.FILE_PATH, parameters[1], WalletApi.FILE_EXTENTION);
+
+            if (!KeyStoreService.GenerateKeyStore(path,
                                                   password,
                                                   key.PrivateKey,
                                                   Wallet.AddressToBase58(Wallet.PublickKeyToAddress(key.PublicKey))))
