@@ -1,4 +1,5 @@
-﻿using Mineral.Common.Net.RPC;
+﻿using Google.Protobuf;
+using Mineral.Common.Net.RPC;
 using Mineral.Core.Capsule;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
@@ -17,6 +18,7 @@ namespace Mineral.Core.Net.RpcHandler
         private Dictionary<string, RpcHandler> handlers = new Dictionary<string, RpcHandler>()
         {
             { RpcCommandType.CreateTransaction, new RpcHandler(OnCreateTransaction) },
+            { RpcCommandType.CreateTransaction, new RpcHandler(OnTransactionSignWeight) },
             { RpcCommandType.GetAccount, new RpcHandler(OnGetAccount) },
 
 
@@ -75,6 +77,9 @@ namespace Mineral.Core.Net.RpcHandler
                 TransactionCapsule transaction = 
                     RpcWalletApi.CreateTransactionCapsule(contract, Transaction.Types.Contract.Types.ContractType.TransferContract);
 
+                TransactionExtention transaction_extention =
+                    RpcWalletApi.CreateTransactionExtention(transaction);
+
                 result = transaction.Data;
             }
             catch (System.Exception e)
@@ -82,6 +87,24 @@ namespace Mineral.Core.Net.RpcHandler
                 result = RpcMessage.CreateErrorResult(id, RpcMessage.INVALID_PARAMS, e.Message);
                 return false;
             }
+
+            return true;
+        }
+
+        public static bool OnTransactionSignWeight(JToken id, string method, JArray parameters, out JToken result)
+        {
+            result = new JObject();
+
+            if (parameters == null || parameters.Count != 1)
+            {
+                result = RpcMessage.CreateErrorResult(id, RpcMessage.INVALID_PARAMS, "Invalid parameters");
+                return false;
+            }
+
+            Transaction transaction = Transaction.Parser.ParseFrom(parameters[0].ToObject<byte[]>());
+            TransactionSignWeight weight = RpcWalletApi.GetTransactionSignWeight(transaction);
+
+            result = weight.ToByteArray();
 
             return true;
         }
