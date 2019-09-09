@@ -12,6 +12,9 @@ using Mineral.Core.Database;
 using Mineral.Core.Config.Arguments;
 using Mineral.Common.Utils;
 using static Protocol.Transaction.Types;
+using Mineral.Core.Net.Messages;
+using System.Linq;
+using Mineral.Common.Overlay.Messages;
 
 namespace Mineral.Core.Net.RpcHandler
 {
@@ -203,6 +206,175 @@ namespace Mineral.Core.Net.RpcHandler
             }
 
             return weight;
+        }
+
+        public static Return BroadcastTransaction(Transaction signed_transaction)
+        {
+            Return ret = new Return();
+            TransactionCapsule transaction = new TransactionCapsule(signed_transaction);
+            try
+            {
+                int min_effective_connection = (int)Args.Instance.Node.RPC.MinEffectiveConnection;
+                Message message = (Message)new TransactionMessage(signed_transaction);
+
+                if (min_effective_connection != 0)
+                {
+                    if (Manager.Instance.NetDelegate.ActivePeers.Count == 0)
+                    {
+                        Logger.Warning(
+                            string.Format("Broadcast transaction {0} failed, no connection", transaction.Id));
+
+                        ret.Result = false;
+                        ret.Code = Return.Types.response_code.NoConnection;
+                        ret.Message = ByteString.CopyFromUtf8("no connection");
+                        return ret;
+                    }
+
+                    int count = (Manager.Instance.NetDelegate.ActivePeers.Where(peer =>
+                    {
+                        return !peer.IsNeedSyncUs && !peer.IsNeedSyncPeer;
+                    })).Count();
+
+                    if (count < min_effective_connection)
+                    {
+                        string info = "effective connection:" + count + " lt min_effective_connection:" + min_effective_connection;
+                        Logger.Warning(
+                            string.Format("Broadcast transaction {0} failed, {1}.", transaction.Id, info));
+
+                        ret.Result = false;
+                        ret.Code = Return.Types.response_code.NotEnoughEffectiveConnection;
+                        ret.Message = ByteString.CopyFromUtf8(info);
+                        return ret;
+                    }
+                }
+
+                if (Manager.Instance.DBManager.IsTooManyPending)
+                {
+                    ret.Result = false;
+                    ret.Code = Return.Types.response_code.ServerBusy;
+                    return ret;
+                }
+
+                if (Manager.Instance.DBManager.IsGeneratingBlock)
+                {
+                    Logger.Warning(
+                        string.Format("Broadcast transaction {0} failed, is generating block.", transaction.Id));
+
+                    ret.Result = false;
+                    ret.Code = Return.Types.response_code.ServerBusy;
+                    return ret;
+                }
+
+                if (Manager.Instance.DBManager.TransactionIdCache.Get(transaction.Id.ToString()) != null)
+                {
+                    Logger.Warning(
+                        string.Format("Broadcast transaction {0} failed, is already exist.", transaction.Id));
+
+                    ret.Result = false;
+                    ret.Code = Return.Types.response_code.DupTransactionError;
+                    return ret;
+                }
+                else
+                {
+                    Manager.Instance.DBManager.TransactionIdCache.Add(transaction.Id.ToString(), true);
+                }
+
+                if (Manager.Instance.DBManager.DynamicProperties.SupportVM())
+                {
+                    transaction.ClearTransactionResult();
+                }
+
+                Manager.Instance.DBManager.PushTransaction(transaction);
+                Manager.Instance.NetService.Broadcast(message);
+                Logger.Info(
+                    string.Format("Broadcast transaction {0} successfully.", transaction.Id));
+
+                ret.Result = true;
+                ret.Code = Return.Types.response_code.Success;
+            }
+            catch (ValidateSignatureException e)
+            {
+                Logger.Error(
+                    string.Format ("Broadcast transaction {0} failed, {1}.", transaction.Id, e.Message));
+
+                ret.Result = false;
+                ret.Code = Return.Types.response_code.Sigerror;
+                ret.Message = ByteString.CopyFromUtf8("validate signature error : " + e.Message);
+            }
+            catch (ContractValidateException e)
+            {
+                Logger.Error(
+                    string.Format("Broadcast transaction {0} failed, {1}.", transaction.Id, e.Message));
+
+                ret.Result = false;
+                ret.Code = Return.Types.response_code.ContractValidateError;
+                ret.Message = ByteString.CopyFromUtf8("contract validate error : " + e.Message);
+            }
+            catch (ContractExeException e)
+            {
+                Logger.Error(
+                    string.Format("Broadcast transaction {0} failed, {1}.", transaction.Id, e.Message));
+
+                ret.Result = false;
+                ret.Code = Return.Types.response_code.ContractExeError;
+                ret.Message = ByteString.CopyFromUtf8("contract execute error : " + e.Message);
+            }
+            catch (AccountResourceInsufficientException e)
+            {
+                Logger.Error(
+                    string.Format("Broadcast transaction {0} failed, {1}.", transaction.Id, e.Message));
+
+                ret.Result = false;
+                ret.Code = Return.Types.response_code.BandwithError;
+                ret.Message = ByteString.CopyFromUtf8("AccountResourceInsufficient error");
+            }
+            catch (DupTransactionException e)
+            {
+                Logger.Error(
+                    string.Format("Broadcast transaction {0} failed, {1}.", transaction.Id, e.Message));
+
+                ret.Result = false;
+                ret.Code = Return.Types.response_code.DupTransactionError;
+                ret.Message = ByteString.CopyFromUtf8("dup transaction");
+            }
+            catch (TaposException e)
+            {
+                Logger.Error(
+                    string.Format("Broadcast transaction {0} failed, {1}.", transaction.Id, e.Message));
+
+                ret.Result = false;
+                ret.Code = Return.Types.response_code.TaposError;
+                ret.Message = ByteString.CopyFromUtf8("Tapos check error");
+            }
+            catch (TooBigTransactionException e)
+            {
+                Logger.Error(
+                    string.Format("Broadcast transaction {0} failed, {1}.", transaction.Id, e.Message));
+
+                ret.Result = false;
+                ret.Code = Return.Types.response_code.TooBigTransactionError;
+                ret.Message = ByteString.CopyFromUtf8("Transaction size is too big");
+            }
+            catch (TransactionExpirationException e)
+            {
+                Logger.Error(
+                    string.Format("Broadcast transaction {0} failed, {1}.", transaction.Id, e.Message));
+
+                ret.Result = false;
+                ret.Code = Return.Types.response_code.TransactionExpirationError;
+                ret.Message = ByteString.CopyFromUtf8("Transaction expired");
+            }
+            catch (System.Exception e)
+            {
+                Logger.Error(
+                    string.Format("Broadcast transaction {0} failed, {1}.", transaction.Id, e.Message));
+
+                ret.Result = false;
+                ret.Code = Return.Types.response_code.OtherError;
+                ret.Message = ByteString.CopyFromUtf8("Other error : " + e.Message);
+            }
+
+            return ret;
         }
 
         public static bool CheckPermissionOprations(Permission permission, Contract contract)

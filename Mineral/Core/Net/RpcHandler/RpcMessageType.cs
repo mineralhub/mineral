@@ -10,8 +10,11 @@ namespace Mineral.Core.Net.RpcHandler
         [CommandLineAttribute(Name = "CreateTransaction", Description = "")]
         public static readonly string CreateTransaction = "createtransaction";
 
-        [CommandLineAttribute(Name = "CreateTransaction", Description = "")]
+        [CommandLineAttribute(Name = "GetTransactionSignWeight", Description = "")]
         public static readonly string GetTransactionSignWeight = "gettransactionsignweight";
+
+        [CommandLineAttribute(Name = "BroadcastTransaction", Description = "")]
+        public static readonly string BroadcastTransaction = "broadcasttransaction";
 
         [CommandLineAttribute(Name = "RegisterWallet", Description = "")]
         public static readonly string RegisterWallet = "registerwallet";

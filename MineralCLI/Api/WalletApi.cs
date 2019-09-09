@@ -94,6 +94,12 @@ namespace MineralCLI.Api
             return transaction;
         }
 
+        public static bool BroadcastTransaction(Transaction transaction)
+        {
+
+            return true;
+        }
+
         public static KeyStore SelectKeyStore()
         {
             DirectoryInfo info = new DirectoryInfo(FILE_PATH);

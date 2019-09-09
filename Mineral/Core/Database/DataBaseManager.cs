@@ -73,7 +73,7 @@ namespace Mineral.Core.Database
         private ConcurrentQueue<TransactionCapsule> push_transactions = new ConcurrentQueue<TransactionCapsule>();
         private ConcurrentQueue<TransactionCapsule> repush_transactions = new ConcurrentQueue<TransactionCapsule>();
 
-        private MemoryCache transaction_id_cache = MemoryCache.Default;
+        private Cache<bool> transaction_id_cache = new Cache<bool>("transaction_id").MaxCapacity(100000);
         private HashSet<string> owner_addresses = new HashSet<string>();
         private long latest_solidified_block_number = 0;
         #endregion
@@ -167,6 +167,11 @@ namespace Mineral.Core.Database
             get { return this.repush_transactions; }
         }
 
+        public Cache<bool> TransactionIdCache
+        {
+            get { return this.transaction_id_cache; }
+        }
+
         public SessionOptional Session
         {
             get { return this.session; }
@@ -185,6 +190,15 @@ namespace Mineral.Core.Database
         public bool IsGeneratingBlock
         {
             get { return Args.Instance.IsWitness ? this.witness_controller.IsGeneratingBlock : false; }
+        }
+
+        public bool IsTooManyPending
+        {
+            get
+            {
+                return (this.pending_transactions.Count + this.repush_transactions.Count)
+                        > Parameter.NodeParameters.MAX_TRANSACTION_PENDING;
+            }
         }
 
         public bool IsRunRepushThread { get; set; } = true;
@@ -889,9 +903,9 @@ namespace Mineral.Core.Database
 
         private void UpdateTransHashCache(BlockCapsule block)
         {
-            foreach (TransactionCapsule tx in block.Transactions)
+            foreach (TransactionCapsule transactionCapsule in block.Transactions)
             {
-                this.transaction_id_cache.Add(tx.Id.ToString(), true, new CacheItemPolicy());
+                this.transaction_id_cache.Add(transactionCapsule.Id.ToString(), true);
             }
         }
 

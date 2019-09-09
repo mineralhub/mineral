@@ -14,6 +14,7 @@ using Protocol;
 using System;
 using System.Collections.Generic;
 using System.Text;
+using System.Threading;
 
 namespace MineralCLI.Commands
 {
@@ -143,16 +144,16 @@ namespace MineralCLI.Commands
                                                       Wallet.Base58ToAddress(parameters[1]),
                                                       long.Parse(parameters[2]));
 
-                JObject receive_contract = 
+                JObject receive = 
                     SendCommand(RpcCommandType.CreateTransaction, new JArray() { contract.ToByteArray() });
 
-                if (receive_contract.TryGetValue("error", out JToken value))
+                if (receive.TryGetValue("error", out JToken value))
                 {
-                    OutputErrorMessage(receive_contract["code"].ToObject<int>(), receive_contract["message"].ToObject<string>());
+                    OutputErrorMessage(receive["code"].ToObject<int>(), receive["message"].ToObject<string>());
                     return true;
                 }
 
-                TransactionExtention transaction_extention = TransactionExtention.Parser.ParseFrom(receive_contract["result"].ToObject<byte[]>());
+                TransactionExtention transaction_extention = TransactionExtention.Parser.ParseFrom(receive["result"].ToObject<byte[]>());
                 Return ret = transaction_extention.Result;
                 if (!ret.Result)
                 {
@@ -167,10 +168,9 @@ namespace MineralCLI.Commands
                     transaction = WalletApi.SignatureTransaction(transaction);
                     Console.WriteLine("current transaction hex string is " + transaction.ToByteArray().ToHexString());
 
-                    JObject receive_weight =
-                        SendCommand(RpcCommandType.GetTransactionSignWeight, new JArray() { transaction.ToByteArray() });
+                    receive = SendCommand(RpcCommandType.GetTransactionSignWeight, new JArray() { transaction.ToByteArray() });
 
-                    TransactionSignWeight weight = TransactionSignWeight.Parser.ParseFrom(receive_weight["result"].ToObject<byte[]>());
+                    TransactionSignWeight weight = TransactionSignWeight.Parser.ParseFrom(receive["result"].ToObject<byte[]>());
                     if (weight.Result.Code == ResponseCode.EnoughPermission)
                     {
                         break;
@@ -189,6 +189,25 @@ namespace MineralCLI.Commands
                     }
 
                     throw new CancelException(weight.Result.Message);
+                }
+
+                receive = SendCommand(RpcCommandType.BroadcastTransaction, new JArray() { transaction.ToByteArray() });
+                ret = Return.Parser.ParseFrom(receive["result"].ToObject<byte[]>());
+
+                int retry = 10;
+                while (ret.Result == false && ret.Code == Return.Types.response_code.ServerBusy && retry > 0)
+                {
+                    retry--;
+                    receive = SendCommand(RpcCommandType.BroadcastTransaction, new JArray() { transaction.ToByteArray() });
+                    Console.WriteLine("Retry broadcast : " + (11 - retry));
+
+                    Thread.Sleep(1000);
+                }
+
+                if (ret.Result == false)
+                {
+                    Console.WriteLine("Code : " + ret.Code);
+                    Console.WriteLine("message : " + ret.Message);
                 }
             }
             catch (System.Exception e)

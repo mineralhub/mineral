@@ -19,6 +19,8 @@ namespace Mineral.Core.Net.RpcHandler
         {
             { RpcCommandType.CreateTransaction, new RpcHandler(OnCreateTransaction) },
             { RpcCommandType.GetTransactionSignWeight, new RpcHandler(OnGetTransactionSignWeight) },
+            { RpcCommandType.BroadcastTransaction, new RpcHandler(OnBroadcastTransaction) },
+
             { RpcCommandType.GetAccount, new RpcHandler(OnGetAccount) },
 
 
@@ -104,6 +106,24 @@ namespace Mineral.Core.Net.RpcHandler
             TransactionSignWeight weight = RpcWalletApi.GetTransactionSignWeight(transaction);
 
             result = JToken.FromObject(weight.ToByteArray());
+
+            return true;
+        }
+
+        public static bool OnBroadcastTransaction(JToken id, string method, JArray parameters, out JToken result)
+        {
+            result = new JObject();
+
+            if (parameters == null || parameters.Count != 1)
+            {
+                result = RpcMessage.CreateErrorResult(id, RpcMessage.INVALID_PARAMS, "Invalid parameters");
+                return false;
+            }
+
+            Transaction transaction = Transaction.Parser.ParseFrom(parameters[0].ToObject<byte[]>());
+            Return ret = RpcWalletApi.BroadcastTransaction(transaction);
+
+            result = JToken.FromObject(ret.ToByteArray());
 
             return true;
         }
