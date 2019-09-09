@@ -34,7 +34,7 @@ namespace Mineral.Common.Net.RPC
 
 
         #region Internal Method
-        protected abstract JToken Process(JToken id, string method, JArray parameters);
+        protected abstract bool Process(JToken id, string method, JArray parameters, out JToken result);
 
         protected async Task ProcessAsync(HttpContext context)
         {
@@ -101,7 +101,8 @@ namespace Mineral.Common.Net.RPC
                 return null;
             if (!request.ContainsKey("method") || !request.ContainsKey("params") || !(request["params"] is JArray))
                 return RpcMessage.CreateErrorResult(request["id"], RpcMessage.INVALID_REQUEST, "Invalid Request");
-            JObject result = null;
+
+            JToken result = new JObject();
             JObject response = RpcMessage.CreateResponse(request["id"]);
             try
             {
@@ -109,24 +110,20 @@ namespace Mineral.Common.Net.RPC
                 string method = request["method"].Value<string>();
                 JArray parameters = (JArray)request["params"];
 
-                result = new JObject(Process(id, method, parameters));
-                JToken token = null;
-                if (result.TryGetValue("error", out token))
-                    response["error"] = token;
-                else
+                if (Process(id, method, parameters, out result))
+                {
                     response["result"] = result;
-
+                }
+                else
+                {
+                    response["error"] = result;
+                }
             }
             catch (Exception e)
             {
-                result = RpcMessage.CreateErrorResult(request["id"], e.HResult, e.Message);
-                JToken token = null;
-                if (result.TryGetValue("error", out token))
-                    response["error"] = token;
-                else
-                    response["error"] = result;
-                return response;
+                response["error"] = RpcMessage.CreateErrorResult(request["id"], e.HResult, e.Message);
             }
+
             return response;
         }
         #endregion

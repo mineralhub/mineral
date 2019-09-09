@@ -22,8 +22,6 @@ namespace Mineral.Core.Net.RpcHandler
             { RpcCommandType.GetAccount, new RpcHandler(OnGetAccount) },
 
 
-
-
             { RpcCommandType.GetBlock, new RpcHandler(OnGetBlock) }
         };
         #endregion
@@ -46,19 +44,20 @@ namespace Mineral.Core.Net.RpcHandler
 
 
         #region External Method
-        public JToken Process(JToken id, string method, JArray parameters)
+        public bool Process(JToken id, string method, JArray parameters, out JToken result)
         {
-            JToken result = new JObject();
+            bool ret = false;
             if (this.handlers.ContainsKey(method))
             {
-                handlers[method](id, method, parameters, out result);
+                ret = handlers[method](id, method, parameters, out result);
             }
             else
             {
                 result = RpcMessage.CreateErrorResult(id, RpcMessage.METHOD_NOT_FOUND, "Method not found");
+                ret = false;
             }
 
-            return result;
+            return ret;
         }
 
         public static bool OnCreateTransaction(JToken id, string method, JArray parameters, out JToken result)
@@ -80,7 +79,7 @@ namespace Mineral.Core.Net.RpcHandler
                 TransactionExtention transaction_extention =
                     RpcWalletApi.CreateTransactionExtention(transaction);
 
-                result = transaction.Data;
+                result = JToken.FromObject(transaction_extention.ToByteArray());
             }
             catch (System.Exception e)
             {
@@ -104,7 +103,7 @@ namespace Mineral.Core.Net.RpcHandler
             Transaction transaction = Transaction.Parser.ParseFrom(parameters[0].ToObject<byte[]>());
             TransactionSignWeight weight = RpcWalletApi.GetTransactionSignWeight(transaction);
 
-            result = weight.ToByteArray();
+            result = JToken.FromObject(weight.ToByteArray());
 
             return true;
         }
@@ -123,7 +122,8 @@ namespace Mineral.Core.Net.RpcHandler
             {
                 byte[] address = Wallet.Base58ToAddress(parameters[0].Value<string>());
                 AccountCapsule account = Wallet.GetAccount(address);
-                result = JObject.Parse(JsonConvert.SerializeObject(account.Instance, Formatting.Indented));
+
+                result = JToken.FromObject(account.Data);
             }
             catch (InvalidCastException e)
             {
@@ -157,7 +157,7 @@ namespace Mineral.Core.Net.RpcHandler
             try
             {
                 BlockCapsule block = Manager.Instance.DBManager.GetBlockByNum(parameters[0].Value<long>());
-                result = JObject.Parse(JsonConvert.SerializeObject(block.Instance, Formatting.Indented));
+                result = JToken.FromObject(block.Data);
             }
             catch (InvalidCastException e)
             {

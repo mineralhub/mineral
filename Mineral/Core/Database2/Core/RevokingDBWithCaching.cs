@@ -51,14 +51,15 @@ namespace Mineral.Core.Database2.Core
         #region Internal Method
         private ISnapshot Head()
         {
-            if (this.mode == null || this.mode.Value == true)
-            {
-                return this.head;
-            }
-            else
-            {
-                return this.head.GetSolidity();
-            }
+            return this.head;
+            //if (this.mode.Values == null || this.mode.Values[0] == true)
+            //{
+            //    return this.head;
+            //}
+            //else
+            //{
+            //    return this.head.GetSolidity();
+            //}
         }
         #endregion
 

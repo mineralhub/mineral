@@ -29,9 +29,9 @@ namespace Mineral.Core.Service
 
 
         #region Internal Method
-        protected override JToken Process(JToken id, string method, JArray parameters)
+        protected override bool Process(JToken id, string method, JArray parameters, out JToken result)
         {
-            return handler.Process(id, method, parameters);
+            return this.handler.Process(id, method, parameters, out result);
         }
         #endregion
 

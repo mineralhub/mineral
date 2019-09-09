@@ -20,9 +20,8 @@ namespace Mineral.Common.Net.RPC
         public static JObject CreateErrorResult(JToken id, int code, string message)
         {
             JObject response = new JObject();
-            response["error"] = new JObject();
-            response["error"]["code"] = code;
-            response["error"]["message"] = message;
+            response["code"] = code;
+            response["message"] = message;
 
             return response;
         }
