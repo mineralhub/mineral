@@ -284,7 +284,14 @@ namespace Mineral.Core.Net.RpcHandler
                     transaction.ClearTransactionResult();
                 }
 
-                Manager.Instance.DBManager.PushTransaction(transaction);
+                if (Manager.Instance.DBManager.PushTransaction(transaction))
+                {
+                    ret.Result = false;
+                    ret.Code = Return.Types.response_code.ContractValidateError;
+                    ret.Message = ByteString.CopyFromUtf8("Push transaction error");
+                    return ret;
+                }
+
                 Manager.Instance.NetService.Broadcast(message);
                 Logger.Info(
                     string.Format("Broadcast transaction {0} successfully.", transaction.Id));

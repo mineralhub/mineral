@@ -143,7 +143,7 @@ namespace Mineral.Core.Net.RpcHandler
                 byte[] address = Wallet.Base58ToAddress(parameters[0].Value<string>());
                 AccountCapsule account = Wallet.GetAccount(address);
 
-                result = JToken.FromObject(account.Data);
+                result = (account != null) ? JToken.FromObject(account.Data) : new JObject();
             }
             catch (InvalidCastException e)
             {

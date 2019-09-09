@@ -1524,7 +1524,7 @@ namespace Mineral.Core.Database
 
         public bool PushTransaction(TransactionCapsule transaction)
         {
-
+            bool result = false;
             lock (this.push_transactions)
             {
                 this.push_transactions.Enqueue(transaction);
@@ -1552,6 +1552,7 @@ namespace Mineral.Core.Database
                             this.pending_transactions.Add(transaction);
                             temp_session.Merge();
                         }
+                        result = true;
                     }
                     catch (System.Exception e)
                     {
@@ -1564,7 +1565,7 @@ namespace Mineral.Core.Database
                 this.push_transactions.Remove(transaction);
             }
 
-            return true;
+            return result;
         }
 
         [MethodImpl(MethodImplOptions.Synchronized)]
