@@ -108,7 +108,7 @@ namespace MineralCLI.Commands
             JObject receive = SendCommand(method, new JArray() { address });
             if (receive.TryGetValue("error", out JToken value))
             {
-                OutputErrorMessage(receive["code"].ToObject<int>(), receive["message"].ToObject<string>());
+                OutputErrorMessage(value["code"].ToObject<int>(), value["message"].ToObject<string>());
                 return true;
             }
 
@@ -149,7 +149,7 @@ namespace MineralCLI.Commands
 
                 if (receive.TryGetValue("error", out JToken value))
                 {
-                    OutputErrorMessage(receive["code"].ToObject<int>(), receive["message"].ToObject<string>());
+                    OutputErrorMessage(value["code"].ToObject<int>(), value["message"].ToObject<string>());
                     return true;
                 }
 
@@ -199,6 +199,7 @@ namespace MineralCLI.Commands
                 {
                     retry--;
                     receive = SendCommand(RpcCommandType.BroadcastTransaction, new JArray() { transaction.ToByteArray() });
+                    ret = Return.Parser.ParseFrom(receive["result"].ToObject<byte[]>());
                     Console.WriteLine("Retry broadcast : " + (11 - retry));
 
                     Thread.Sleep(1000);
