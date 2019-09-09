@@ -29,7 +29,7 @@ namespace MineralCLI.Api
         {
             get
             {
-                bool result = Program.Wallet == null;
+                bool result = Program.Wallet != null;
                 if (result == false)
                 {
                     Console.WriteLine("Please login first !!");

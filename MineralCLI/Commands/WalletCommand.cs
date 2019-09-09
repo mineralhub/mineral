@@ -121,7 +121,7 @@ namespace MineralCLI.Commands
                 return true;
             }
 
-            if (WalletApi.IsLogin)
+            if (!WalletApi.IsLogin)
             {
                 return true;
             }
