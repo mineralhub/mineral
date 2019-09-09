@@ -6,6 +6,7 @@ using Protocol;
 using System;
 using System.Collections.Generic;
 using System.Text;
+using static Protocol.Account.Types;
 using static Protocol.AssetIssueContract.Types;
 using static Protocol.Transaction.Types;
 using static Protocol.Transaction.Types.Contract.Types;
@@ -14,6 +15,259 @@ namespace MineralCLI.Util
 {
     public static class PrintUtil
     {
+        #region Account
+        public static string PrintAccount(Account account)
+        {
+            string result = "";
+            result += "address: ";
+            result += Wallet.Encode58Check(account.Address.ToByteArray());
+            result += "\n";
+            if (account.AccountId != null && !account.AccountId.IsEmpty)
+            {
+                result += "account_id: ";
+                result += Encoding.UTF8.GetString(account.AccountId.ToByteArray());
+                result += "\n";
+            }
+            if (account.AccountName != null && !account.AccountName.IsEmpty)
+            {
+                result += "account_name: ";
+                result += Encoding.UTF8.GetString(account.AccountName.ToByteArray());
+                result += "\n";
+            }
+
+            result += "type: ";
+            result += account.Type.ToString();
+            result += "\n";
+            result += "balance: ";
+            result += account.Balance;
+            result += "\n";
+            if (account.Frozen.Count > 0)
+            {
+                foreach (Frozen frozen in account.Frozen)
+                {
+                    result += "frozen";
+                    result += "\n";
+                    result += "{";
+                    result += "\n";
+                    result += "  frozen_balance: ";
+                    result += frozen.FrozenBalance;
+                    result += "\n";
+                    result += "  expire_time: ";
+                    result += new DateTime(frozen.ExpireTime);
+                    result += "\n";
+                    result += "}";
+                    result += "\n";
+                }
+            }
+            result += "free_net_usage: ";
+            result += account.FreeNetUsage;
+            result += "\n";
+            result += "net_usage: ";
+            result += account.NetUsage;
+            result += "\n";
+            if (account.CreateTime != 0)
+            {
+                result += "create_time: ";
+                result += new DateTime(account.CreateTime);
+                result += "\n";
+            }
+            if (account.Votes.Count > 0)
+            {
+                foreach (Vote vote in account.Votes)
+                {
+                    result += "votes";
+                    result += "\n";
+                    result += "{";
+                    result += "\n";
+                    result += "  vote_address: ";
+                    result += Wallet.Encode58Check(vote.VoteAddress.ToByteArray());
+                    result += "\n";
+                    result += "  vote_count: ";
+                    result += vote.VoteCount;
+                    result += "\n";
+                    result += "}";
+                    result += "\n";
+                }
+            }
+            if (account.Asset.Count > 0)
+            {
+                foreach (string name in account.Asset.Keys)
+                {
+                    result += "asset";
+                    result += "\n";
+                    result += "{";
+                    result += "\n";
+                    result += "  name: ";
+                    result += name;
+                    result += "\n";
+                    result += "  balance: ";
+                    result += account.Asset[name];
+                    result += "\n";
+                    result += "  latest_asset_operation_time: ";
+                    result += account.LatestAssetOperationTime[name];
+                    result += "\n";
+                    result += "  free_asset_net_usage: ";
+                    result += account.FreeAssetNetUsage[name];
+                    result += "\n";
+                    result += "}";
+                    result += "\n";
+                }
+            }
+            result += "asset issued id:";
+            result += account.AssetIssuedID.ToStringUtf8();
+            result += "\n";
+            if (account.AssetV2.Count > 0)
+            {
+                foreach (string id in account.AssetV2.Keys)
+                {
+                    result += "assetV2";
+                    result += "\n";
+                    result += "{";
+                    result += "\n";
+                    result += "  id: ";
+                    result += id;
+                    result += "\n";
+                    result += "  balance: ";
+                    result += account.AssetV2[id];
+                    result += "\n";
+                    result += "  latest_asset_operation_timeV2: ";
+                    result += account.LatestAssetOperationTimeV2[id];
+                    result += "\n";
+                    result += "  free_asset_net_usageV2: ";
+                    result += account.FreeAssetNetUsageV2[id];
+                    result += "\n";
+                    result += "}";
+                    result += "\n";
+                }
+            }
+            if (account.FrozenSupply.Count > 0)
+            {
+                foreach (Frozen frozen in account.FrozenSupply)
+                {
+                    result += "frozen_supply";
+                    result += "\n";
+                    result += "{";
+                    result += "\n";
+                    result += "  amount: ";
+                    result += frozen.FrozenBalance;
+                    result += "\n";
+                    result += "  expire_time: ";
+                    result += new DateTime(frozen.ExpireTime);
+                    result += "\n";
+                    result += "}";
+                    result += "\n";
+                }
+            }
+            result += "latest_opration_time: ";
+            result += new DateTime(account.LatestOprationTime);
+            result += "\n";
+
+            result += "latest_consume_time: ";
+            result += account.LatestConsumeTime;
+            result += "\n";
+
+            result += "latest_consume_free_time: ";
+            result += account.LatestConsumeFreeTime;
+            result += "\n";
+
+            result += "allowance: ";
+            result += account.Allowance;
+            result += "\n";
+
+            result += "latest_withdraw_time: ";
+            result += new DateTime(account.LatestWithdrawTime);
+            result += "\n";
+
+            result += "is_witness: ";
+            result += account.IsWitness;
+            result += "\n";
+
+            result += "AssetIssuedName: ";
+            result += account.AssetIssuedName.ToStringUtf8();
+            result += "\n";
+            result += "AccountResource: {\n";
+            result += PrintAccountResource(account.AccountResource);
+            result += "\n";
+            result += "AcquiredDelegatedFrozenBalanceForBandwidth: ";
+            result += account.AcquiredDelegatedFrozenBalanceForBandwidth;
+            result += "\n";
+            result += "delegatedFrozenBalanceForBandwidth: ";
+            result += account.DelegatedFrozenBalanceForBandwidth;
+            result += "\n";
+            result += "AcquiredDelegatedFrozenBalanceForEnergy: ";
+            result += account.AccountResource.AcquiredDelegatedFrozenBalanceForEnergy;
+            result += "\n";
+            result += "DelegatedFrozenBalanceForEnergy: ";
+            result += account.AccountResource.DelegatedFrozenBalanceForEnergy;
+            result += "}\n";
+
+            if (account.OwnerPermission != null)
+            {
+                result += "owner_permission: ";
+                result += "\n";
+                result += "{";
+                result += "\n";
+                result += PrintPermission(account.OwnerPermission);
+                result += "\n";
+                result += "}";
+                result += "\n";
+            }
+
+            if (account.WitnessPermission != null)
+            {
+                result += "witness_permission: ";
+                result += "\n";
+                result += "{";
+                result += "\n";
+                result += PrintPermission(account.WitnessPermission);
+                result += "\n";
+                result += "}";
+                result += "\n";
+            }
+
+            if (account.ActivePermission.Count > 0)
+            {
+                result += "active_permissions: ";
+                result += PrintPermissionList(new List<Permission>(account.ActivePermission));
+            }
+
+            return result;
+        }
+
+        public static string PrintAccountResource(AccountResource account_resource)
+        {
+            string result = "";
+            result += "energy_usage: ";
+            result += account_resource.EnergyUsage;
+            result += "\n";
+            result += "frozen_balance_for_energy: ";
+            result += "{";
+            result += "\n";
+            result += "  amount: ";
+            result += account_resource.FrozenBalanceForEnergy.FrozenBalance;
+            result += "\n";
+            result += "  expire_time: ";
+            result += new DateTime(account_resource.FrozenBalanceForEnergy.ExpireTime);
+            result += "\n";
+            result += "}";
+            result += "\n";
+            result += "latest_consume_time_for_energy: ";
+            result += account_resource.LatestConsumeTimeForEnergy;
+            result += "\n";
+            result += "storage_limit: ";
+            result += account_resource.StorageLimit;
+            result += "\n";
+            result += "storage_usage: ";
+            result += account_resource.StorageUsage;
+            result += "\n";
+            result += "latest_exchange_storage_time: ";
+            result += account_resource.LatestExchangeStorageTime;
+            result += "\n";
+            return result;
+        }
+        #endregion
+
+        #region Transaction
         public static string PrintTransaction(Transaction transaction)
         {
             string result = "";
@@ -880,5 +1134,6 @@ namespace MineralCLI.Util
             }
             return result;
         }
+        #endregion
     }
 }

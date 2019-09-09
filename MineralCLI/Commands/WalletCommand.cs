@@ -103,7 +103,17 @@ namespace MineralCLI.Commands
 
             string method = parameters[0].ToLower();
             string address = parameters[1];
-            SendCommand(method, new JArray() { address });
+
+            JObject receive = SendCommand(method, new JArray() { address });
+            if (receive.TryGetValue("error", out JToken value))
+            {
+                OutputErrorMessage(receive["code"].ToObject<int>(), receive["message"].ToObject<string>());
+                return true;
+            }
+
+
+            Account account = Account.Parser.ParseFrom(receive.ToObject<byte[]>());
+            PrintUtil.PrintAccount(account);
 
             return true;
         }
