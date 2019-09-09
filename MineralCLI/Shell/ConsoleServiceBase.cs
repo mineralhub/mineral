@@ -65,7 +65,7 @@ namespace MineralCLI.Shell
         {
             string result = "";
 
-            Console.Write(message);
+            Console.WriteLine(message);
             while (true)
             {
                 var key = System.Console.ReadKey(true);
