@@ -48,7 +48,7 @@ namespace Mineral.Core.Database
 
         public AccountCapsule GetBlackHole()
         {
-            asserts_address.TryGetValue("Blockhole", out byte[] value);
+            asserts_address.TryGetValue("Blackhole", out byte[] value);
             return GetUnchecked(value);
         }
 

@@ -1799,7 +1799,10 @@ namespace Mineral.Core.Database
 
             try
             {
-                byte[] hash = this.recent_block_store.Get(ref_bytes).Data;
+                BlockId head = HeadBlockId;
+                BytesCapsule recent_block = this.recent_block_store.Get(ref_bytes);
+
+                byte[] hash = recent_block != null ? recent_block.Data : null;
                 if (!hash.SequenceEqual(ref_hash))
                 {
                     string msg = string.Format("Tapos failed, different block hash, {0}, {1} , recent block {2}, solid block {3} head block {4}",

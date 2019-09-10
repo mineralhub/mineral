@@ -46,8 +46,8 @@ namespace Mineral.Core.Net.RpcHandler
             DatabaseManager db_manager = Manager.Instance.DBManager;
             TransactionCapsule transaction = new TransactionCapsule(message, type);
 
-            if (type != ContractType.CreateSmartContract &&
-                type != ContractType.TriggerSmartContract)
+            if (type != ContractType.CreateSmartContract
+                && type != ContractType.TriggerSmartContract)
             {
                 List<IActuator> actuators = ActuatorFactory.CreateActuator(transaction, db_manager);
                 foreach (IActuator actuator in actuators)
