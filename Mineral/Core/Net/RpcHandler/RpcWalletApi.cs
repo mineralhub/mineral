@@ -284,7 +284,7 @@ namespace Mineral.Core.Net.RpcHandler
                     transaction.ClearTransactionResult();
                 }
 
-                if (Manager.Instance.DBManager.PushTransaction(transaction))
+                if (!Manager.Instance.DBManager.PushTransaction(transaction))
                 {
                     ret.Result = false;
                     ret.Code = Return.Types.response_code.ContractValidateError;
