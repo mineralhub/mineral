@@ -113,7 +113,7 @@ namespace MineralCLI.Commands
             }
 
 
-            Account account = Account.Parser.ParseFrom(receive.ToObject<byte[]>());
+            Account account = Account.Parser.ParseFrom(receive["result"].ToObject<byte[]>());
             PrintUtil.PrintAccount(account);
 
             return true;
