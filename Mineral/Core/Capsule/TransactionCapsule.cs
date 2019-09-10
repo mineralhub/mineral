@@ -241,7 +241,7 @@ namespace Mineral.Core.Capsule
         {
             byte[] ref_block_num = BitConverter.GetBytes(block_num);
             this.transaction.RawData.RefBlockHash = ByteString.CopyFrom(ArrayUtil.SubArray(block_hash, 8, 16));
-            this.transaction.RawData.RefBlockBytes = ByteString.CopyFrom(ArrayUtil.SubArray(ref_block_num, 6, 8));
+            this.transaction.RawData.RefBlockBytes = ByteString.CopyFrom(ArrayUtil.SubArray(ref_block_num, 0, 2));
         }
 
         public void Signature(byte[] privatekey)

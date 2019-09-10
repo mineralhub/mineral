@@ -17,7 +17,7 @@ namespace Mineral.Common.Runtime.VM
         private System.Exception exception = null;
         private bool is_revert;
 
-        private HashSet<DataWord> delete_account = null;
+        private HashSet<DataWord> delete_account = new HashSet<DataWord>();
         private HashSet<byte[]> touch_account = new HashSet<byte[]>();
         private List<LogInfo> log_infos = new List<LogInfo>();
         private List<InternalTransaction> internal_transactions = new List<InternalTransaction>();
@@ -28,13 +28,51 @@ namespace Mineral.Common.Runtime.VM
 
 
         #region Property
-        public long EnergyUsed => energy_used;
-        public HashSet<DataWord> DeleteAccount => this.delete_account;
-        public HashSet<byte[]> TouchAccount => this.touch_account;
-        public List<LogInfo> LogInfos => this.log_infos;
-        public List<CallCreate> CallCreate => this.call_create;
-        public List<InternalTransaction> InternalTransactions => this.internal_transactions;
-        public long FutureRefund => this.future_refund;
+        public long EnergyUsed
+        {
+            get { return this.energy_used; }
+            set { this.energy_used = value; }
+        }
+
+        public HashSet<DataWord> DeleteAccount
+        {
+            get
+            {
+                if (this.delete_account == null)
+                    this.delete_account = new HashSet<DataWord>();
+
+                return this.delete_account;
+            }
+            set { this.delete_account = value; }
+        }
+
+        public HashSet<byte[]> TouchAccount
+        {
+            get { return this.touch_account; }
+            set { this.touch_account = value; }
+        }
+
+        public List<LogInfo> LogInfos
+        {
+            get { return this.log_infos; }
+            set { this.log_infos = value; }
+        }
+
+        public List<CallCreate> CallCreate
+        {
+            get { return this.call_create; }
+            set { this.call_create = value; }
+        }
+        public List<InternalTransaction> InternalTransactions
+        {
+            get { return this.internal_transactions; }
+            set { this.internal_transactions = value; }
+        }
+        public long FutureRefund
+        {
+            get { return this.future_refund; }
+            set { this.future_refund = value; }
+        }
 
         public bool IsRevert
         {

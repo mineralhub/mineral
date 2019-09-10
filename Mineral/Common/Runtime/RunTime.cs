@@ -40,7 +40,7 @@ namespace Mineral.Common.Runtime
         private string runtime_error = "";
 
         private EnergyProcessor energy_processor = null;
-        private ProgramResult result = null;
+        private ProgramResult result = new ProgramResult();
 
         private Vm vm = null;
         private Program program = null;
@@ -58,9 +58,20 @@ namespace Mineral.Common.Runtime
 
 
         #region Property
-        public VM.InternalTransaction.TransactionType TransactionType => throw new NotImplementedException();
-        public ProgramResult Result => this.result;
-        public string RuntimeError => this.runtime_error;
+        public VM.InternalTransaction.TransactionType TransactionType
+        {
+            get { return this.transaction_type; }
+        }
+
+        public ProgramResult Result
+        {
+            get { return this.result; }
+        }
+
+        public string RuntimeError
+        {
+            get { return this.runtime_error; }
+        }
 
         private bool IsCheckTransaction
         {
@@ -783,7 +794,7 @@ namespace Mineral.Common.Runtime
 
         public void SetEnableEventListener(bool enable_event_listener)
         {
-            throw new NotImplementedException();
+            this.enable_listener = enable_event_listener;
         }
 
         public long GetAccountEnergyLimitWithFixRatio(AccountCapsule account, long fee_limit, long call_value)

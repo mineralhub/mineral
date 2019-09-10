@@ -923,7 +923,7 @@ namespace Mineral.Core.Database
 
         private void UpdateRecentBlock(BlockCapsule block)
         {
-            this.recent_block_store.Put(ArrayUtil.SubArray(BitConverter.GetBytes(block.Num), 6, 8),
+            this.recent_block_store.Put(ArrayUtil.SubArray(BitConverter.GetBytes(block.Num), 0, 2),
                                         new BytesCapsule(ArrayUtil.SubArray(block.Id.Hash, 8, 16)));
         }
 
@@ -1556,6 +1556,7 @@ namespace Mineral.Core.Database
                     }
                     catch (System.Exception e)
                     {
+                        result = false;
                         Logger.Error(e.Message);
                     }
                 }
@@ -1668,11 +1669,11 @@ namespace Mineral.Core.Database
             UpdateDynamicProperties(block);
         }
 
-        public bool ProcessTransaction(TransactionCapsule transaction, BlockCapsule block)
+        public TransactionInfo ProcessTransaction(TransactionCapsule transaction, BlockCapsule block)
         {
             if (transaction == null)
             {
-                return false;
+                return null;
             }
 
             ValidateTapos(transaction);
@@ -1799,7 +1800,9 @@ namespace Mineral.Core.Database
 
             try
             {
-                byte[] hash = this.recent_block_store.Get(ref_bytes).Data;
+                BytesCapsule recent_block = this.recent_block_store.Get(ref_bytes);
+
+                byte[] hash = recent_block != null ? recent_block.Data : null;
                 if (!hash.SequenceEqual(ref_hash))
                 {
                     string msg = string.Format("Tapos failed, different block hash, {0}, {1} , recent block {2}, solid block {3} head block {4}",
