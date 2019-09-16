@@ -29,7 +29,7 @@ namespace MineralCLI.Commands
 
             string[] command_option = new string[] { HelpCommandOption.Help };
 
-            if (parameters == null || parameters.Length != 2)
+            if (parameters == null || parameters.Length != 1)
             {
                 OutputHelpMessage(usage, null, command_option, null);
                 return true;
@@ -46,9 +46,7 @@ namespace MineralCLI.Commands
 
             ECKey key = new ECKey();
             PathUtil.MakeDirectory(WalletApi.FILE_PATH);
-            string path = PathUtil.MergePath(WalletApi.FILE_PATH, parameters[1], WalletApi.FILE_EXTENTION);
-
-            if (!KeyStoreService.GenerateKeyStore(path,
+            if (!KeyStoreService.GenerateKeyStore(WalletApi.FILE_PATH,
                                                   password,
                                                   key.PrivateKey,
                                                   Wallet.AddressToBase58(Wallet.PublickKeyToAddress(key.PublicKey))))

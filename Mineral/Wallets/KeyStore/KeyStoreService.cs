@@ -90,6 +90,7 @@ namespace Mineral.Wallets.KeyStore
             };
 
             string json = JsonConvert.SerializeObject(keystore, Formatting.Indented);
+            path += "\\" + DateTime.UtcNow.ToString("yyyy-MM-ddTHH-mm-ss.ffff") + "__" + keystore.Address + ".keystore";
             using (var file = File.CreateText(path))
             {
                 file.Write(json);
