@@ -1081,7 +1081,7 @@ namespace Mineral.Core.Database
         public void AdjustBalance(AccountCapsule account, long amount)
         {
             long balance = account.Balance;
-            if (balance == 0)
+            if (amount == 0)
                 return;
 
             if (amount < 0 && balance < -amount)
