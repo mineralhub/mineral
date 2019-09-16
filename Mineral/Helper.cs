@@ -100,6 +100,11 @@ namespace Mineral
             return (uint)(time.ToUniversalTime() - unixEpoch).TotalSeconds;
         }
 
+        public static DateTime ToDateTime(this long timestamp)
+        {
+            return unixEpoch.AddMilliseconds(timestamp);
+        }
+
         public static long CurrentTimeMillis()
         {
             return (long)(DateTime.UtcNow - unixEpoch).TotalMilliseconds;

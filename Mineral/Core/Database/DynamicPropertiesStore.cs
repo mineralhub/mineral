@@ -840,8 +840,9 @@ namespace Mineral.Core.Database
             Logger.Info(
                 string.Format(
                     "do update nextMaintenanceTime,currentMaintenanceTime:{0}, blockTime:{1},nextMaintenanceTime:{2}",
-                    new DateTime(current_maintenance_time), new DateTime(block_time),
-                    new DateTime(next_maintenance_time)
+                    current_maintenance_time.ToDateTime().ToLocalTime(),
+                    block_time.ToDateTime().ToLocalTime(),
+                    next_maintenance_time.ToDateTime().ToLocalTime()
             ));
         }
 

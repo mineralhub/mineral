@@ -39,7 +39,7 @@ namespace Mineral.Utils
         private CacheItemPolicy GetPolicy()
         {
             CacheItemPolicy policy = new CacheItemPolicy();
-            policy.AbsoluteExpiration = DateTime.UtcNow + this.expire_time;
+            policy.AbsoluteExpiration = DateTime.Now + this.expire_time;
 
             return policy;
         }

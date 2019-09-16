@@ -103,7 +103,7 @@ namespace Mineral.Core.Service
                     }
                     else
                     {
-                        DateTime time = DateTime.UtcNow;
+                        DateTime time = DateTime.Now;
                         long next_second = Parameter.ChainParameters.BLOCK_PRODUCED_INTERVAL
                             - (time.Second * 1000 + time.Millisecond) % Parameter.ChainParameters.BLOCK_PRODUCED_INTERVAL;
 
@@ -160,8 +160,8 @@ namespace Mineral.Core.Service
                 {
                     Logger.Debug(
                         string.Format("Not sync ,now:{0},headBlockTime:{1},headBlockNumber:{2},headBlockId:{3}",
-                                      new DateTime(now),
-                                      new DateTime(this.db_manager.DynamicProperties.GetLatestBlockHeaderTimestamp()),
+                                      now.ToDateTime().ToLocalTime(),
+                                      this.db_manager.DynamicProperties.GetLatestBlockHeaderTimestamp().ToDateTime().ToLocalTime(),
                                       this.db_manager.DynamicProperties.GetLatestBlockHeaderNumber(),
                                       this.db_manager.DynamicProperties.GetLatestBlockHeaderHash()));
 
@@ -217,8 +217,8 @@ namespace Mineral.Core.Service
                     {
                         Logger.Info(
                             string.Format("Not time yet, now:{0},headBlockTime:{1},headBlockNumber:{2},headBlockId:{3}",
-                                          new DateTime(now),
-                                          new DateTime(this.db_manager.DynamicProperties.GetLatestBlockHeaderTimestamp()),
+                                          now.ToDateTime().ToLocalTime(),
+                                          this.db_manager.DynamicProperties.GetLatestBlockHeaderTimestamp().ToDateTime().ToLocalTime(),
                                           this.db_manager.DynamicProperties.GetLatestBlockHeaderNumber(),
                                           this.db_manager.DynamicProperties.GetLatestBlockHeaderHash()));
 
@@ -229,8 +229,8 @@ namespace Mineral.Core.Service
                     {
                         Logger.Warning(
                             string.Format("have a timestamp:{0} less than or equal to the previous block:{1}",
-                                          new DateTime(now),
-                                          new DateTime(this.db_manager.DynamicProperties.GetLatestBlockHeaderTimestamp())));
+                                          now.ToDateTime().ToLocalTime(),
+                                          this.db_manager.DynamicProperties.GetLatestBlockHeaderTimestamp().ToDateTime().ToLocalTime()));
 
                         return BlockProductionCondition.EXCEPTION_PRODUCING_BLOCK;
                     }
@@ -277,7 +277,7 @@ namespace Mineral.Core.Service
                         Logger.Warning(
                             string.Format("Task timeout ( > {0}ms)，startTime:{1}, endTime:{2}",
                                           timeout,
-                                          new DateTime(now),
+                                          now.ToDateTime().ToLocalTime(),
                                           DateTime.Now));
 
                         this.db_manager.EraseBlock();
@@ -292,7 +292,7 @@ namespace Mineral.Core.Service
                         controller.GetAbsSlotAtTime(now),
                         block.Id,
                         block.Transactions.Count,
-                        new DateTime(block.Timestamp),
+                        block.Timestamp.ToDateTime().ToLocalTime(),
                         block.ParentId));
 
                 Logger.Refactoring(
