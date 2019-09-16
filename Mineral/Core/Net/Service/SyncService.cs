@@ -56,7 +56,7 @@ namespace Mineral.Core.Net.Service
         private void AddRequestBlockIds(BlockId key, long value)
         {
             CacheItemPolicy policy = new CacheItemPolicy();
-            policy.AbsoluteExpiration = DateTime.UtcNow.AddHours(1);
+            policy.AbsoluteExpiration = DateTime.Now.AddHours(1);
 
             this.request_ids.Add(key.ToString(), value, policy);
         }

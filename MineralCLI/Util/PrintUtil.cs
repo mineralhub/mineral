@@ -53,7 +53,7 @@ namespace MineralCLI.Util
                     result += frozen.FrozenBalance;
                     result += "\n";
                     result += "  expire_time: ";
-                    result += new DateTime(frozen.ExpireTime);
+                    result += frozen.ExpireTime.ToDateTime().ToLocalTime();
                     result += "\n";
                     result += "}";
                     result += "\n";
@@ -68,7 +68,7 @@ namespace MineralCLI.Util
             if (account.CreateTime != 0)
             {
                 result += "create_time: ";
-                result += new DateTime(account.CreateTime);
+                result += account.CreateTime.ToDateTime().ToLocalTime();
                 result += "\n";
             }
             if (account.Votes.Count > 0)
@@ -152,14 +152,14 @@ namespace MineralCLI.Util
                     result += frozen.FrozenBalance;
                     result += "\n";
                     result += "  expire_time: ";
-                    result += new DateTime(frozen.ExpireTime);
+                    result += frozen.ExpireTime.ToDateTime().ToLocalTime();
                     result += "\n";
                     result += "}";
                     result += "\n";
                 }
             }
             result += "latest_opration_time: ";
-            result += new DateTime(account.LatestOprationTime);
+            result += account.LatestOprationTime.ToDateTime().ToLocalTime();
             result += "\n";
 
             result += "latest_consume_time: ";
@@ -175,7 +175,7 @@ namespace MineralCLI.Util
             result += "\n";
 
             result += "latest_withdraw_time: ";
-            result += new DateTime(account.LatestWithdrawTime);
+            result += account.LatestWithdrawTime.ToDateTime().ToLocalTime();
             result += "\n";
 
             result += "is_witness: ";
@@ -250,7 +250,7 @@ namespace MineralCLI.Util
                 result += account_resource.FrozenBalanceForEnergy.FrozenBalance;
                 result += "\n";
                 result += "  expire_time: ";
-                result += new DateTime(account_resource.FrozenBalanceForEnergy.ExpireTime);
+                result += account_resource.FrozenBalanceForEnergy.ExpireTime.ToDateTime().ToLocalTime();
                 result += "\n";
                 result += "}";
                 result += "\n";
@@ -391,7 +391,7 @@ namespace MineralCLI.Util
             }
 
             result += "timestamp: ";
-            result += new DateTime(raw.Timestamp);
+            result += raw.Timestamp.ToDateTime().ToLocalTime();
             result += "\n";
 
             result += "fee_limit: ";
@@ -969,10 +969,10 @@ namespace MineralCLI.Util
             result += asset_issue.Precision;
             result += "\n";
             result += "start_time: ";
-            result += new DateTime(asset_issue.StartTime);
+            result += asset_issue.StartTime.ToDateTime().ToLocalTime();
             result += "\n";
             result += "end_time: ";
-            result += new DateTime(asset_issue.EndTime);
+            result += asset_issue.EndTime.ToDateTime().ToLocalTime();
             result += "\n";
             result += "vote_score: ";
             result += asset_issue.VoteScore;

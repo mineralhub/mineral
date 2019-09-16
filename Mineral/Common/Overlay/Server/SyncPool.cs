@@ -116,7 +116,7 @@ namespace Mineral.Common.Overlay.Server
             connect_nodes.ForEach(node =>
             {
                 Manager.Instance.PeerClient.ConnectAsync(node, false);
-                this.node_handler_policy.AbsoluteExpiration = DateTime.UtcNow.AddSeconds(180);
+                this.node_handler_policy.AbsoluteExpiration = DateTime.Now.AddSeconds(180);
                 this.node_handler.Add(node.ToString(), Helper.CurrentTimeMillis(), this.node_handler_policy);
             });
         }

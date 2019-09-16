@@ -141,8 +141,8 @@ namespace Mineral.Core.Witness
 
             Logger.Debug(
                 string.Format("NextFirstSlotTime:[{0}], when[{1}]",
-                new DateTime(first_slot_time).ToString(),
-                new DateTime(when).ToString()));
+                              first_slot_time.ToDateTime().ToLocalTime(),
+                              when.ToDateTime().ToLocalTime()));
 
             return (when - first_slot_time) / Parameter.ChainParameters.BLOCK_PRODUCED_INTERVAL + 1;
         }
@@ -233,7 +233,7 @@ namespace Mineral.Core.Witness
                         "Witness is out of order, scheduledWitness[{0}],blockWitnessAddress[{1}],blockTimeStamp[{2}],slot[{3}]",
                         scheduled_witness.ToByteArray().ToHexString(),
                         witness_address.ToByteArray().ToHexString(),
-                        new DateTime(timestamp),
+                        timestamp.ToDateTime().ToLocalTime(),
                         slot));
 
                 return false;
