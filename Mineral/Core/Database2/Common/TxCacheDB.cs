@@ -64,7 +64,12 @@ namespace Mineral.Core.Database2.Common
 
         public IEnumerator<KeyValuePair<byte[], byte[]>> GetEnumerator()
         {
-            throw new NotImplementedException();
+            Dictionary<byte[], byte[]> result = new Dictionary<byte[], byte[]>();
+            Dictionary<byte[], long>.Enumerator it = this.db.GetEnumerator();
+            while (it.MoveNext())
+            {
+                yield return new KeyValuePair<byte[], byte[]>(it.Current.Key, BitConverter.GetBytes(it.Current.Value));
+            }
         }
 
         public void Put(byte[] key, byte[] value)

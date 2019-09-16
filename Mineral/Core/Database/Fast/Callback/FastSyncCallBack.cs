@@ -70,7 +70,7 @@ namespace Mineral.Core.Database.Fast.Callback
         #region External Method
         public void AccountCallBack(byte[] key, AccountCapsule account)
         {
-            if (Execute())
+            if (!Execute())
                 return;
 
             if (account == null)
