@@ -205,10 +205,17 @@ namespace MineralCLI.Commands
                     Thread.Sleep(1000);
                 }
 
-                if (ret.Result == false)
+                if (ret.Result)
+                {
+                    Console.WriteLine(
+                        string.Format("Send {0} drop to {1} + successful. ", long.Parse(parameters[2]), parameters[1]));
+                }
+                else
                 {
                     Console.WriteLine("Code : " + ret.Code);
-                    Console.WriteLine("message : " + ret.Message);
+                    Console.WriteLine("Message : " + ret.Message);
+                    Console.WriteLine(
+                        string.Format("Send {0} drop to {1} + failed. ", long.Parse(parameters[2]), parameters[1]));
                 }
             }
             catch (System.Exception e)
