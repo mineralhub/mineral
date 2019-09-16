@@ -240,17 +240,22 @@ namespace MineralCLI.Util
             result += "energy_usage: ";
             result += account_resource.EnergyUsage;
             result += "\n";
-            result += "frozen_balance_for_energy: ";
-            result += "{";
-            result += "\n";
-            result += "  amount: ";
-            result += account_resource.FrozenBalanceForEnergy.FrozenBalance;
-            result += "\n";
-            result += "  expire_time: ";
-            result += new DateTime(account_resource.FrozenBalanceForEnergy.ExpireTime);
-            result += "\n";
-            result += "}";
-            result += "\n";
+
+            if (account_resource.FrozenBalanceForEnergy != null)
+            {
+                result += "frozen_balance_for_energy: ";
+                result += "{";
+                result += "\n";
+                result += "  amount: ";
+                result += account_resource.FrozenBalanceForEnergy.FrozenBalance;
+                result += "\n";
+                result += "  expire_time: ";
+                result += new DateTime(account_resource.FrozenBalanceForEnergy.ExpireTime);
+                result += "\n";
+                result += "}";
+                result += "\n";
+            }
+
             result += "latest_consume_time_for_energy: ";
             result += account_resource.LatestConsumeTimeForEnergy;
             result += "\n";
