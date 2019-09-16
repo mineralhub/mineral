@@ -21,7 +21,33 @@ namespace Mineral.Core.Database2.Core
         {
             try
             {
-                this.db = (IBaseDB<byte[], byte[]>)new Mineral.Core.Database2.Common.LevelDB(parent, name);
+                this.db = (IBaseDB<byte[], byte[]>)new Common.LevelDB(parent, name);
+            }
+            catch (System.Exception e)
+            {
+                Logger.Error(e);
+                throw e;
+            }
+
+            this.solidity = this;
+        }
+
+        public SnapshotRoot(string parent, string name, Type db_type)
+        {
+            try
+            {
+                if (db_type == typeof(Common.LevelDB))
+                {
+                    this.db = (IBaseDB<byte[], byte[]>)new Mineral.Core.Database2.Common.LevelDB(parent, name);
+                }
+                else if (db_type == typeof(TxCacheDB))
+                {
+                    this.db = new TxCacheDB();
+                }
+                else
+                {
+                    throw new ArgumentException("Not support database type");
+                }
             }
             catch (System.Exception e)
             {

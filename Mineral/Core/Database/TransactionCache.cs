@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 using Mineral.Core.Capsule;
+using Mineral.Core.Database2.Common;
 
 namespace Mineral.Core.Database
 {
@@ -16,7 +17,8 @@ namespace Mineral.Core.Database
 
 
         #region Contructor
-        public TransactionCache(string db_name = "trans-cache") : base(db_name) { }
+        public TransactionCache(string db_name = "trans-cache")
+            : base(db_name, typeof(TxCacheDB)) { }
         #endregion
 
 

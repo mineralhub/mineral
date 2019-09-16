@@ -38,7 +38,14 @@ namespace Mineral.Core.Database2.Core
         public RevokingDBWithCaching(string db_name)
         {
             this.db_name = db_name;
-            this.head = new SnapshotRoot(Args.Instance.GetOutputDirectoryByDBName(this.db_name), this.db_name);
+            this.head = new SnapshotRoot(Args.Instance.GetOutputDirectoryByDBName(db_name), db_name);
+            this.mode.Value = true;
+        }
+
+        public RevokingDBWithCaching(string db_name, Type db_type)
+        {
+            this.db_name = db_name;
+            this.head = new SnapshotRoot(Args.Instance.GetOutputDirectoryByDBName(db_name), db_name, db_type);
             this.mode.Value = true;
         }
         #endregion

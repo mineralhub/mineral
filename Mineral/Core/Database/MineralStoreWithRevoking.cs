@@ -44,6 +44,12 @@ namespace Mineral.Core.Database
             this.db_name = db_name;
             this.revoking_db = new RevokingDBWithCaching(this.db_name);
         }
+
+        protected MineralStoreWithRevoking(string db_name, Type db_type)
+        {
+            this.db_name = db_name;
+            this.revoking_db = new RevokingDBWithCaching(db_name, db_type);
+        }
         #endregion
 
 

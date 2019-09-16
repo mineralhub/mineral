@@ -1745,7 +1745,7 @@ namespace Mineral.Core.Database
                 this.owner_addresses.Add(TransactionCapsule.GetOwner(transaction.Instance.RawData.Contract[0]).ToHexString());
             }
 
-            return true;
+            return transaction_info.Instance;
         }
 
         public void PreValidateTransactionSign(BlockCapsule block)

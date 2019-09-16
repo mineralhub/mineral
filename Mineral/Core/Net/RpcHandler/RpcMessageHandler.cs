@@ -23,7 +23,6 @@ namespace Mineral.Core.Net.RpcHandler
 
             { RpcCommandType.GetAccount, new RpcHandler(OnGetAccount) },
 
-
             { RpcCommandType.GetBlock, new RpcHandler(OnGetBlock) }
         };
         #endregion
