@@ -51,5 +51,11 @@ namespace Mineral.Core.Net.RpcHandler
 
         [CommandLineAttribute(Name = "AssetIssueById", Description = "")]
         public static readonly string AssetIssueById = "assetissuebyid";
+
+        [CommandLineAttribute(Name = "AssetIssueByName", Description = "")]
+        public static readonly string AssetIssueByName = "assetissuebyname";
+
+        [CommandLineAttribute(Name = "AssetIssueListByName", Description = "")]
+        public static readonly string AssetIssueListByName = "assetissuelistbyname";
     }
 }
