@@ -73,7 +73,6 @@ namespace Mineral.Core.Witness
                 }
             });
             
-            //TODO : witness 셔플에 대해서 처리할 것인
             SortWitness(ref witness_address);
             SetActiveWitnesses(witness_address);
             witness_address.ForEach(address => Logger.Info("InitializeWitness shuffled addresses : " + Wallet.AddressToBase58(address.ToByteArray())));

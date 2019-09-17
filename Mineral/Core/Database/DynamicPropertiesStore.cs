@@ -831,7 +831,6 @@ namespace Mineral.Core.Database
         public void UpdateNextMaintenanceTime(long block_time)
         {
             long maintenance_time_interval = GetMaintenanceTimeInterval();
-
             long current_maintenance_time = GetNextMaintenanceTime();
             long round = (block_time - current_maintenance_time) / maintenance_time_interval;
             long next_maintenance_time = current_maintenance_time + (round + 1) * maintenance_time_interval;
