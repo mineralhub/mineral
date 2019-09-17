@@ -22,6 +22,54 @@ namespace MineralCLI.Commands
 
     public sealed class WalletCommand : BaseCommand
     {
+        public static bool ImportWallet(string[] parameters)
+        {
+            string[] usage = new string[] {
+                string.Format("{0} [command option] <path>\n", RpcCommandType.BackupWallet) };
+
+            string[] command_option = new string[] { HelpCommandOption.Help };
+
+            if (parameters == null || parameters.Length != 1)
+            {
+                OutputHelpMessage(usage, null, command_option, null);
+                return true;
+            }
+
+            string password = CommandLineUtil.ReadPasswordString("Please input your password.");
+            string privatekey = CommandLineUtil.ReadString("Please input your private key.");
+
+            if (WalletApi.ImportWallet(password, privatekey))
+            {
+                Logout(null);
+            }
+
+            return true;
+        }
+
+        public static bool BackupWallet(string[] parameters)
+        {
+            string[] usage = new string[] {
+                string.Format("{0} [command option] <path>\n", RpcCommandType.BackupWallet) };
+
+            string[] command_option = new string[] { HelpCommandOption.Help };
+
+            if (parameters == null || parameters.Length != 1)
+            {
+                OutputHelpMessage(usage, null, command_option, null);
+                return true;
+            }
+
+            if (!WalletApi.IsLogin)
+            {
+                return true;
+            }
+
+            string password = CommandLineUtil.ReadPasswordString("Please input your password.");
+            WalletApi.BackupWallet(password);
+
+            return true;
+        }
+
         public static bool RegisterWallet(string[] parameters)
         {
             string[] usage = new string[] {
@@ -74,7 +122,7 @@ namespace MineralCLI.Commands
                 return true;
             }
 
-            Program.Wallet = keystore;
+            WalletApi.KeyStore = keystore;
             Console.WriteLine("Login success.");
 
             return true;
@@ -82,7 +130,7 @@ namespace MineralCLI.Commands
 
         public static bool Logout(string[] parameters)
         {
-            Program.Wallet = null;
+            WalletApi.KeyStore = null;
 
             return true;
         }
@@ -138,7 +186,7 @@ namespace MineralCLI.Commands
             try
             {
                 TransferContract contract =
-                    WalletApi.CreateTransaferContract(Wallet.Base58ToAddress(Program.Wallet.Address),
+                    WalletApi.CreateTransaferContract(Wallet.Base58ToAddress(WalletApi.KeyStore.Address),
                                                       Wallet.Base58ToAddress(parameters[1]),
                                                       long.Parse(parameters[2]));
 
