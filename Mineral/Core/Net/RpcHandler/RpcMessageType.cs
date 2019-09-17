@@ -34,6 +34,9 @@ namespace Mineral.Core.Net.RpcHandler
         [CommandLineAttribute(Name = "GetAddress", Description = "")]
         public static readonly string GetAddress = "getaddress";
 
+        [CommandLineAttribute(Name = "GetBalance", Description = "")]
+        public static readonly string GetBalance = "getbalance";
+
         [CommandLineAttribute(Name = "GetAccount", Description = "")]
         public static readonly string GetAccount = "getaccount";
 

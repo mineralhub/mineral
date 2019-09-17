@@ -20,6 +20,7 @@ namespace MineralCLI.Shell
             { RpcCommandType.Login, new CommandHandler(WalletCommand.Login) },
             { RpcCommandType.Logout, new CommandHandler(WalletCommand.Logout) },
             { RpcCommandType.GetAddress, new CommandHandler(WalletCommand.GetAddress) },
+            { RpcCommandType.GetBalance, new CommandHandler(WalletCommand.GetBalance) },
             { RpcCommandType.GetAccount, new CommandHandler(WalletCommand.GetAccount) },
             { RpcCommandType.SendCoin, new CommandHandler(WalletCommand.SendCoin) },
         };

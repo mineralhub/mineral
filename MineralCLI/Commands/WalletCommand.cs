@@ -156,6 +156,44 @@ namespace MineralCLI.Commands
             return true;
         }
 
+        public static bool GetBalance(string[] parameters)
+        {
+            string[] usage = new string[] {
+                string.Format("{0} [command option] <path>\n", RpcCommandType.GetAccount) };
+
+            string[] command_option = new string[] { HelpCommandOption.Help };
+
+            if (parameters == null || parameters.Length != 1)
+            {
+                OutputHelpMessage(usage, null, command_option, null);
+                return true;
+            }
+
+            if (!WalletApi.IsLogin)
+                return true;
+
+            JObject receive = SendCommand(RpcCommandType.GetAccount, new JArray() { WalletApi.KeyStore.Address });
+            if (receive.TryGetValue("error", out JToken value))
+            {
+                OutputErrorMessage(value["code"].ToObject<int>(), value["message"].ToObject<string>());
+                return true;
+            }
+
+            Account account = null;
+            if (receive["result"].Type == JTokenType.Null)
+            {
+                account = new Account();    
+            }
+            else
+            {
+                account = Account.Parser.ParseFrom(receive["result"].ToObject<byte[]>());
+            }
+            
+            Console.WriteLine("Balance : ", account.Balance);
+
+            return true;
+        }
+
         public static bool GetAccount(string[] parameters)
         {
             string[] usage = new string[] {
@@ -169,18 +207,23 @@ namespace MineralCLI.Commands
                 return true;
             }
 
-            string method = parameters[0].ToLower();
-            string address = parameters[1];
-
-            JObject receive = SendCommand(method, new JArray() { address });
+            JObject receive = SendCommand(RpcCommandType.GetAccount, new JArray() { parameters[1] });
             if (receive.TryGetValue("error", out JToken value))
             {
                 OutputErrorMessage(value["code"].ToObject<int>(), value["message"].ToObject<string>());
                 return true;
             }
 
+            Account account = null;
+            if (receive["result"].Type == JTokenType.Null)
+            {
+                account = new Account();
+            }
+            else
+            {
+                account = Account.Parser.ParseFrom(receive["result"].ToObject<byte[]>());
+            }
 
-            Account account = Account.Parser.ParseFrom(receive["result"].ToObject<byte[]>());
             Console.WriteLine(PrintUtil.PrintAccount(account));
 
             return true;

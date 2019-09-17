@@ -194,12 +194,15 @@ namespace MineralCLI.Util
             result += "delegatedFrozenBalanceForBandwidth: ";
             result += account.DelegatedFrozenBalanceForBandwidth;
             result += "\n";
-            result += "AcquiredDelegatedFrozenBalanceForEnergy: ";
-            result += account.AccountResource.AcquiredDelegatedFrozenBalanceForEnergy;
-            result += "\n";
-            result += "DelegatedFrozenBalanceForEnergy: ";
-            result += account.AccountResource.DelegatedFrozenBalanceForEnergy;
-            result += "}\n";
+            if (account.AccountResource != null)
+            {
+                result += "AcquiredDelegatedFrozenBalanceForEnergy: ";
+                result += account.AccountResource.AcquiredDelegatedFrozenBalanceForEnergy;
+                result += "\n";
+                result += "DelegatedFrozenBalanceForEnergy: ";
+                result += account.AccountResource.DelegatedFrozenBalanceForEnergy;
+                result += "}\n";
+            }
 
             if (account.OwnerPermission != null)
             {
@@ -236,6 +239,9 @@ namespace MineralCLI.Util
 
         public static string PrintAccountResource(AccountResource account_resource)
         {
+            if (account_resource == null)
+                return "";
+
             string result = "";
             result += "energy_usage: ";
             result += account_resource.EnergyUsage;
