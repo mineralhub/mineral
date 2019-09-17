@@ -393,6 +393,54 @@ namespace Mineral.Core.Net.RpcHandler
 
             return (permission.Operations[(int)contract.Type / 8] & (1 << ((int)contract.Type % 8))) != 0; ;
         }
+
+        public static Protocol.Account GetAccount(byte[] address)
+        {
+            return Wallet.GetAccount(address)?.Instance;
+        }
+
+        public static AssetIssueList GetAssetIssueList(byte[] address)
+        {
+            if (!Wallet.IsValidAddress(address))
+            {
+                throw new ArgumentException("Invalid address");
+            }
+
+            AssetIssueList result = new AssetIssueList();
+            foreach (var asset_issue in Manager.Instance.DBManager.GetAssetIssueStoreFinal().AllAssetIssues)
+            {
+                if (asset_issue.OwnerAddress.Equals(ByteString.CopyFrom(address)))
+                {
+                    result.AssetIssue.Add(asset_issue.Instance);
+                }
+            }
+
+            return result;
+        }
+
+        public static AssetIssueContract GetAssetIssueById(string id)
+        {
+            if (id == null || id.Length == 0)
+            {
+                throw new ArgumentException("Invalid id");
+            }
+
+            AssetIssueContract contract = null;
+            try
+            {
+                AssetIssueCapsule asset_issue = Manager.Instance.DBManager.AssetIssueV2.Get(Encoding.UTF8.GetBytes(id));
+                if (asset_issue != null)
+                {
+                    contract = asset_issue.Instance;
+                }
+            }
+            catch (System.Exception e)
+            {
+                Logger.Error(e.Message);
+            }
+
+            return contract;
+        }
         #endregion
     }
 }

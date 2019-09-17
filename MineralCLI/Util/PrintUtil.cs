@@ -856,8 +856,8 @@ namespace MineralCLI.Util
                         break;
                     case ContractType.AccountPermissionUpdateContract:
                         {
-                            AccountPermissionUpdateContract account_permission_update_contract =
-    contract.Parameter.Unpack<AccountPermissionUpdateContract>();
+                            AccountPermissionUpdateContract account_permission_update_contract = 
+                                contract.Parameter.Unpack<AccountPermissionUpdateContract>();
 
                             result += "owner_address: ";
                             result += Wallet.Encode58Check(account_permission_update_contract.OwnerAddress.ToByteArray());
@@ -942,6 +942,26 @@ namespace MineralCLI.Util
             {
                 Console.WriteLine(e.StackTrace);
                 return "";
+            }
+
+            return result;
+        }
+
+        public static string PrintAssetIssueList(AssetIssueList asset_issue_list)
+        {
+            string result = "";
+            int i = 0;
+            foreach (AssetIssueContract asset_issue in asset_issue_list.AssetIssue)
+            {
+                result += "assetIssue " + i + " :::";
+                result += "\n";
+                result += "[";
+                result += "\n";
+                result += PrintAssetIssue(asset_issue);
+                result += "]";
+                result += "\n";
+                result += "\n";
+                i++;
             }
 
             return result;

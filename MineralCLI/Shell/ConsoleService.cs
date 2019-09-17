@@ -23,6 +23,8 @@ namespace MineralCLI.Shell
             { RpcCommandType.GetBalance, new CommandHandler(WalletCommand.GetBalance) },
             { RpcCommandType.GetAccount, new CommandHandler(WalletCommand.GetAccount) },
             { RpcCommandType.SendCoin, new CommandHandler(WalletCommand.SendCoin) },
+            { RpcCommandType.AssetIssueByAccount, new CommandHandler(AssetIssueCommand.AssetIssueByAccount) },
+            { RpcCommandType.AssetIssueById, new CommandHandler(AssetIssueCommand.AssetIssueById) }
         };
 
         public override bool OnCommand(string[] parameters)
