@@ -22,6 +22,78 @@ namespace MineralCLI.Commands
 
     public sealed class WalletCommand : BaseCommand
     {
+        /// <summary>
+        /// Generate keystore by privatekey
+        /// </summary>
+        /// <param name="parameters">
+        /// Parameters Index
+        /// [0] : Command
+        /// </param>
+        /// <returns></returns>
+        public static bool ImportWallet(string[] parameters)
+        {
+            string[] usage = new string[] {
+                string.Format("{0} [command option] <path>\n", RpcCommandType.BackupWallet) };
+
+            string[] command_option = new string[] { HelpCommandOption.Help };
+
+            if (parameters == null || parameters.Length != 1)
+            {
+                OutputHelpMessage(usage, null, command_option, null);
+                return true;
+            }
+
+            string password = CommandLineUtil.ReadPasswordString("Please input your password.");
+            string privatekey = CommandLineUtil.ReadString("Please input your private key.");
+
+            if (WalletApi.ImportWallet(password, privatekey))
+            {
+                Logout(null);
+            }
+
+            return true;
+        }
+
+        /// <summary>
+        /// Extract private key by keystore
+        /// </summary>
+        /// <param name="parameters">
+        /// Parameters Index
+        /// [0] : Command
+        /// </param>
+        /// <returns></returns>
+        public static bool BackupWallet(string[] parameters)
+        {
+            string[] usage = new string[] {
+                string.Format("{0} [command option] <path>\n", RpcCommandType.BackupWallet) };
+
+            string[] command_option = new string[] { HelpCommandOption.Help };
+
+            if (parameters == null || parameters.Length != 1)
+            {
+                OutputHelpMessage(usage, null, command_option, null);
+                return true;
+            }
+
+            if (!WalletApi.IsLogin)
+            {
+                return true;
+            }
+
+            string password = CommandLineUtil.ReadPasswordString("Please input your password.");
+            WalletApi.BackupWallet(password);
+
+            return true;
+        }
+
+        /// <summary>
+        /// Create keystore file
+        /// </summary>
+        /// <param name="parameters">
+        /// Parameters Index
+        /// [0] : Command
+        /// </param>
+        /// <returns></returns>
         public static bool RegisterWallet(string[] parameters)
         {
             string[] usage = new string[] {
@@ -61,6 +133,14 @@ namespace MineralCLI.Commands
             return true;
         }
 
+        /// <summary>
+        /// Login keystore
+        /// </summary>
+        /// <param name="parameters">
+        /// Parameters Index
+        /// [0] : Command
+        /// </param>
+        /// <returns></returns>
         public static bool Login(string[] parameters)
         {
             Logout(null);
@@ -74,19 +154,111 @@ namespace MineralCLI.Commands
                 return true;
             }
 
-            Program.Wallet = keystore;
+            WalletApi.KeyStore = keystore;
             Console.WriteLine("Login success.");
 
             return true;
         }
 
+        /// <summary>
+        /// Logout keystore
+        /// </summary>
+        /// <param name="parameters">
+        /// Parameters Index
+        /// [0] : Command
+        /// </param>
+        /// <returns></returns>
         public static bool Logout(string[] parameters)
         {
-            Program.Wallet = null;
+            WalletApi.KeyStore = null;
 
             return true;
         }
 
+        /// <summary>
+        /// Get address in current keystore
+        /// </summary>
+        /// <param name="parameters">
+        /// Parameters Index
+        /// [0] : Command
+        /// </param>
+        /// <returns></returns>
+        public static bool GetAddress(string[] parameters)
+        {
+            string[] usage = new string[] {
+                string.Format("{0} [command option] <path>\n", RpcCommandType.GetAddress) };
+
+            string[] command_option = new string[] { HelpCommandOption.Help };
+
+            if (parameters == null || parameters.Length != 1)
+            {
+                OutputHelpMessage(usage, null, command_option, null);
+                return true;
+            }
+
+            if (!WalletApi.IsLogin)
+                return true;
+
+            Console.WriteLine(WalletApi.KeyStore.Address);
+
+            return true;
+        }
+
+        /// <summary>
+        /// Get balance in current keystore
+        /// </summary>
+        /// <param name="parameters">
+        /// Parameters Index
+        /// [0] : Command
+        /// </param>
+        /// <returns></returns>
+        public static bool GetBalance(string[] parameters)
+        {
+            string[] usage = new string[] {
+                string.Format("{0} [command option] <path>\n", RpcCommandType.GetAccount) };
+
+            string[] command_option = new string[] { HelpCommandOption.Help };
+
+            if (parameters == null || parameters.Length != 1)
+            {
+                OutputHelpMessage(usage, null, command_option, null);
+                return true;
+            }
+
+            if (!WalletApi.IsLogin)
+                return true;
+
+            JObject receive = SendCommand(RpcCommandType.GetAccount, new JArray() { WalletApi.KeyStore.Address });
+            if (receive.TryGetValue("error", out JToken value))
+            {
+                OutputErrorMessage(value["code"].ToObject<int>(), value["message"].ToObject<string>());
+                return true;
+            }
+
+            Account account = null;
+            if (receive["result"].Type == JTokenType.Null)
+            {
+                account = new Account();    
+            }
+            else
+            {
+                account = Account.Parser.ParseFrom(receive["result"].ToObject<byte[]>());
+            }
+            
+            Console.WriteLine("Balance : " + account.Balance);
+
+            return true;
+        }
+
+        /// <summary>
+        /// Get account infomation
+        /// </summary>
+        /// <param name="parameters">
+        /// Parameter Index
+        /// [0] : Command
+        /// [1] : Wallet address
+        /// </param>
+        /// <returns></returns>
         public static bool GetAccount(string[] parameters)
         {
             string[] usage = new string[] {
@@ -100,23 +272,38 @@ namespace MineralCLI.Commands
                 return true;
             }
 
-            string method = parameters[0].ToLower();
-            string address = parameters[1];
-
-            JObject receive = SendCommand(method, new JArray() { address });
+            JObject receive = SendCommand(RpcCommandType.GetAccount, new JArray() { parameters[1] });
             if (receive.TryGetValue("error", out JToken value))
             {
                 OutputErrorMessage(value["code"].ToObject<int>(), value["message"].ToObject<string>());
                 return true;
             }
 
+            Account account = null;
+            if (receive["result"].Type == JTokenType.Null)
+            {
+                account = new Account();
+            }
+            else
+            {
+                account = Account.Parser.ParseFrom(receive["result"].ToObject<byte[]>());
+            }
 
-            Account account = Account.Parser.ParseFrom(receive["result"].ToObject<byte[]>());
             Console.WriteLine(PrintUtil.PrintAccount(account));
 
             return true;
         }
 
+        /// <summary>
+        /// Send balance
+        /// </summary>
+        /// <param name="parameters">
+        /// Parameter Index
+        /// [0] : Command
+        /// [1] : To address
+        /// [2] : Balance amount
+        /// </param>
+        /// <returns></returns>
         public static bool SendCoin(string[] parameters)
         {
             string[] usage = new string[] {
@@ -138,7 +325,7 @@ namespace MineralCLI.Commands
             try
             {
                 TransferContract contract =
-                    WalletApi.CreateTransaferContract(Wallet.Base58ToAddress(Program.Wallet.Address),
+                    WalletApi.CreateTransaferContract(Wallet.Base58ToAddress(WalletApi.KeyStore.Address),
                                                       Wallet.Base58ToAddress(parameters[1]),
                                                       long.Parse(parameters[2]));
 

@@ -393,6 +393,116 @@ namespace Mineral.Core.Net.RpcHandler
 
             return (permission.Operations[(int)contract.Type / 8] & (1 << ((int)contract.Type % 8))) != 0; ;
         }
+
+        public static Protocol.Account GetAccount(byte[] address)
+        {
+            return Wallet.GetAccount(address)?.Instance;
+        }
+
+        public static AssetIssueList GetAssetIssueList(byte[] address)
+        {
+            if (!Wallet.IsValidAddress(address))
+            {
+                throw new ArgumentException("Invalid address");
+            }
+
+            AssetIssueList result = new AssetIssueList();
+            foreach (var asset_issue in Manager.Instance.DBManager.GetAssetIssueStoreFinal().AllAssetIssues)
+            {
+                if (asset_issue.OwnerAddress.Equals(ByteString.CopyFrom(address)))
+                {
+                    result.AssetIssue.Add(asset_issue.Instance);
+                }
+            }
+
+            return result;
+        }
+
+        public static AssetIssueList GetAssetIssueListByName(byte[] name)
+        {
+            if (name == null || name.Length == 0)
+            {
+                throw new ArgumentException("Invalid name");
+            }
+
+            AssetIssueList result = new AssetIssueList();
+            foreach (var asset_issue in Manager.Instance.DBManager.GetAssetIssueStoreFinal().AllAssetIssues)
+            {
+                if (asset_issue.Name.Equals(ByteString.CopyFrom(name)))
+                {
+                    result.AssetIssue.Add(asset_issue.Instance);
+                }
+            }
+
+            return result;
+        }
+
+        public static AssetIssueContract GetAssetIssueById(byte[] id)
+        {
+            if (id == null || id.Length == 0)
+            {
+                throw new ArgumentException("Invalid id");
+            }
+
+            AssetIssueCapsule asset_issue = Manager.Instance.DBManager.AssetIssueV2.Get(id);
+
+            return asset_issue != null ? asset_issue.Instance : null;
+        }
+
+        public static AssetIssueContract GetAssetIssueByName(byte[] name)
+        {
+            if (name == null || name.Length == 0)
+            {
+                throw new ArgumentException("Invalid name");
+            }
+
+            AssetIssueContract contract = null;
+            if (Manager.Instance.DBManager.DynamicProperties.GetAllowSameTokenName() == 0)
+            {
+                AssetIssueCapsule asset_issue = Manager.Instance.DBManager.AssetIssue.Get(name);
+                contract = asset_issue != null ? asset_issue.Instance : null;
+            }
+            else
+            {
+                ByteString asset_name = ByteString.CopyFrom(name);
+                AssetIssueList asset_issue_list = new AssetIssueList();
+                foreach (var asset_issue in Manager.Instance.DBManager.AssetIssueV2.AllAssetIssues)
+                {
+                    if (asset_issue.Name.Equals(asset_name))
+                    {
+                        asset_issue_list.AssetIssue.Add(asset_issue.Instance);
+                    }
+                }
+
+                if (asset_issue_list.AssetIssue.Count > 1)
+                {
+                    throw new NonUniqueObjectException("get more than one asset, please use " + RpcCommandType.AssetIssueById);
+                }
+                else
+                {
+                    AssetIssueCapsule asset_issue = Manager.Instance.DBManager.AssetIssueV2.Get(asset_name.ToByteArray());
+                    if (asset_name != null)
+                    {
+                        if (asset_issue_list.AssetIssue.Count > 0
+                            && asset_issue_list.AssetIssue[0].Id.Equals(asset_issue.Instance.Id))
+                        {
+                            contract = asset_issue.Instance;
+                        }
+                        else
+                        {
+                            asset_issue_list.AssetIssue.Add(asset_issue.Instance);
+                            if (asset_issue_list.AssetIssue.Count > 1)
+                            {
+                                throw new NonUniqueObjectException("get more than one asset, please use " + RpcCommandType.AssetIssueById);
+                            }
+                            contract = asset_issue_list.AssetIssue[0];
+                        }
+                    }
+                }
+            }
+
+            return contract;
+        }
         #endregion
     }
 }

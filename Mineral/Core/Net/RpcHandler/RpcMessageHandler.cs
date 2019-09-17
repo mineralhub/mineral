@@ -1,6 +1,7 @@
 ﻿using Google.Protobuf;
 using Mineral.Common.Net.RPC;
 using Mineral.Core.Capsule;
+using Mineral.Core.Exception;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using Protocol;
@@ -22,6 +23,10 @@ namespace Mineral.Core.Net.RpcHandler
             { RpcCommandType.BroadcastTransaction, new RpcHandler(OnBroadcastTransaction) },
 
             { RpcCommandType.GetAccount, new RpcHandler(OnGetAccount) },
+            { RpcCommandType.AssetIssueByAccount, new RpcHandler(OnAssetIssueByAccount) },
+            { RpcCommandType.AssetIssueById, new RpcHandler(OnAssetIssueById) },
+            { RpcCommandType.AssetIssueByName, new RpcHandler(OnAssetIssueByName) },
+            { RpcCommandType.AssetIssueListByName, new RpcHandler(OnAssetIssueListByName) },
 
             { RpcCommandType.GetBlock, new RpcHandler(OnGetBlock) }
         };
@@ -140,9 +145,9 @@ namespace Mineral.Core.Net.RpcHandler
             try
             {
                 byte[] address = Wallet.Base58ToAddress(parameters[0].Value<string>());
-                AccountCapsule account = Wallet.GetAccount(address);
+                Account account = RpcWalletApi.GetAccount(address);
 
-                result = (account != null) ? JToken.FromObject(account.Data) : null;
+                result = (account != null) ? JToken.FromObject(account.ToByteArray()) : new JObject();
             }
             catch (InvalidCastException e)
             {
@@ -150,6 +155,135 @@ namespace Mineral.Core.Net.RpcHandler
                 return false;
             }
             catch (FormatException e)
+            {
+                result = RpcMessage.CreateErrorResult(id, RpcMessage.INVALID_PARAMS, e.Message);
+                return false;
+            }
+            catch (System.Exception e)
+            {
+                result = RpcMessage.CreateErrorResult(id, RpcMessage.UNKNOWN_ERROR, e.Message);
+                return false;
+            }
+
+            return true;
+        }
+
+        public static bool OnAssetIssueByAccount(JToken id, string method, JArray parameters, out JToken result)
+        {
+            result = new JObject();
+
+            if (parameters == null || parameters.Count != 1)
+            {
+                result = RpcMessage.CreateErrorResult(id, RpcMessage.INVALID_PARAMS, "Invalid parameters");
+                return false;
+            }
+
+            try
+            {
+                byte[] address = Wallet.Base58ToAddress(parameters[0].ToString());
+                AssetIssueList asset_issue_list = RpcWalletApi.GetAssetIssueList(address);
+
+                result = JToken.FromObject(asset_issue_list);
+            }
+            catch (ArgumentException e)
+            {
+                result = RpcMessage.CreateErrorResult(id, RpcMessage.INVALID_PARAMS, e.Message);
+                return false;
+            }
+            catch (System.Exception e)
+            {
+                result = RpcMessage.CreateErrorResult(id, RpcMessage.UNKNOWN_ERROR, e.Message);
+                return false;
+            }
+
+            return true;
+        }
+
+        public static bool OnAssetIssueById(JToken id, string method, JArray parameters, out JToken result)
+        {
+            result = new JObject();
+
+            if (parameters == null || parameters.Count != 1)
+            {
+                result = RpcMessage.CreateErrorResult(id, RpcMessage.INVALID_PARAMS, "Invalid parameters");
+                return false;
+            }
+
+            try
+            {
+                byte[] asset_id = Encoding.UTF8.GetBytes(parameters[0].ToString());
+                AssetIssueContract asset_issue_contract = RpcWalletApi.GetAssetIssueById(asset_id);
+
+                result = JToken.FromObject(asset_issue_contract.ToByteArray());
+            }
+            catch (ArgumentException e)
+            {
+                result = RpcMessage.CreateErrorResult(id, RpcMessage.INVALID_PARAMS, e.Message);
+                return false;
+            }
+            catch (System.Exception e)
+            {
+                result = RpcMessage.CreateErrorResult(id, RpcMessage.UNKNOWN_ERROR, e.Message);
+                return false;
+            }
+
+            return true;
+        }
+
+        public static bool OnAssetIssueByName(JToken id, string method, JArray parameters, out JToken result)
+        {
+            result = new JObject();
+
+            if (parameters == null || parameters.Count != 1)
+            {
+                result = RpcMessage.CreateErrorResult(id, RpcMessage.INVALID_PARAMS, "Invalid parameters");
+                return false;
+            }
+
+            try
+            {
+                byte[] name = Encoding.UTF8.GetBytes(parameters[0].ToString());
+                AssetIssueContract asset_issue_contract = RpcWalletApi.GetAssetIssueByName(name);
+
+                result = JToken.FromObject(asset_issue_contract.ToByteArray());
+            }
+            catch (ArgumentException e)
+            {
+                result = RpcMessage.CreateErrorResult(id, RpcMessage.INVALID_PARAMS, e.Message);
+                return false;
+            }
+            catch (System.Exception e)
+            {
+                result = RpcMessage.CreateErrorResult(id, RpcMessage.UNKNOWN_ERROR, e.Message);
+                return false;
+            }
+
+            return true;
+        }
+
+        public static bool OnAssetIssueListByName(JToken id, string method, JArray parameters, out JToken result)
+        {
+            result = new JObject();
+
+            if (parameters == null || parameters.Count != 1)
+            {
+                result = RpcMessage.CreateErrorResult(id, RpcMessage.INVALID_PARAMS, "Invalid parameters");
+                return false;
+            }
+
+            try
+            {
+                byte[] name = Encoding.UTF8.GetBytes(parameters[0].ToString());
+                AssetIssueList asset_issue_list = RpcWalletApi.GetAssetIssueListByName(name);
+
+                result = JToken.FromObject(asset_issue_list.ToByteArray());
+            }
+            catch (NonUniqueObjectException e)
+            {
+                result = RpcMessage.CreateErrorResult(id, RpcMessage.INTERNAL_ERROR, e.Message);
+                return false;
+            }
+            catch (ArgumentException e)
             {
                 result = RpcMessage.CreateErrorResult(id, RpcMessage.INVALID_PARAMS, e.Message);
                 return false;

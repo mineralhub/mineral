@@ -16,6 +16,12 @@ namespace Mineral.Core.Net.RpcHandler
         [CommandLineAttribute(Name = "BroadcastTransaction", Description = "")]
         public static readonly string BroadcastTransaction = "broadcasttransaction";
 
+        [CommandLineAttribute(Name = "ImportWallet", Description = "")]
+        public static readonly string ImportWallet = "importwallet";
+
+        [CommandLineAttribute(Name = "BackupWallet", Description = "")]
+        public static readonly string BackupWallet = "backupwallet";
+
         [CommandLineAttribute(Name = "RegisterWallet", Description = "")]
         public static readonly string RegisterWallet = "registerwallet";
 
@@ -25,6 +31,12 @@ namespace Mineral.Core.Net.RpcHandler
         [CommandLineAttribute(Name = "Logout", Description = "")]
         public static readonly string Logout = "logout";
 
+        [CommandLineAttribute(Name = "GetAddress", Description = "")]
+        public static readonly string GetAddress = "getaddress";
+
+        [CommandLineAttribute(Name = "GetBalance", Description = "")]
+        public static readonly string GetBalance = "getbalance";
+
         [CommandLineAttribute(Name = "GetAccount", Description = "")]
         public static readonly string GetAccount = "getaccount";
 
@@ -33,5 +45,17 @@ namespace Mineral.Core.Net.RpcHandler
 
         [CommandLineAttribute(Name = "SendCoin", Description = "")]
         public static readonly string SendCoin = "sendcoin";
+
+        [CommandLineAttribute(Name = "AssetIssueByAccount", Description = "")]
+        public static readonly string AssetIssueByAccount = "assetissuebyaccount";
+
+        [CommandLineAttribute(Name = "AssetIssueById", Description = "")]
+        public static readonly string AssetIssueById = "assetissuebyid";
+
+        [CommandLineAttribute(Name = "AssetIssueByName", Description = "")]
+        public static readonly string AssetIssueByName = "assetissuebyname";
+
+        [CommandLineAttribute(Name = "AssetIssueListByName", Description = "")]
+        public static readonly string AssetIssueListByName = "assetissuelistbyname";
     }
 }

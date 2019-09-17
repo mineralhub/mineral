@@ -11,7 +11,6 @@ namespace MineralCLI
     {
         internal static int id = new Random().Next(0, int.MaxValue);
         internal static string url = null;
-        internal static KeyStore Wallet = null;
 
         static void Main(string[] args)
         {

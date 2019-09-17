@@ -4,6 +4,7 @@ using Mineral.Common.Utils;
 using Mineral.Core;
 using Mineral.Core.Capsule.Util;
 using Mineral.Cryptography;
+using Mineral.Utils;
 using Mineral.Wallets.KeyStore;
 using MineralCLI.Shell;
 using MineralCLI.Util;
@@ -21,6 +22,8 @@ namespace MineralCLI.Api
         #region Field
         public static readonly string FILE_PATH = "Wallet";
         public static readonly string FILE_EXTENTION = ".keystore";
+
+        public static KeyStore KeyStore = null;
         #endregion
 
 
@@ -29,7 +32,7 @@ namespace MineralCLI.Api
         {
             get
             {
-                bool result = Program.Wallet != null;
+                bool result = WalletApi.KeyStore != null;
                 if (result == false)
                 {
                     Console.WriteLine("Please login first !!");
@@ -96,6 +99,65 @@ namespace MineralCLI.Api
 
         public static bool BroadcastTransaction(Transaction transaction)
         {
+
+            return true;
+        }
+
+        public static bool ImportWallet(string password, string privatekey)
+        {
+            if (password.IsNullOrEmpty()|| privatekey.IsNullOrEmpty())
+            {
+                Console.WriteLine("Invalide password and privatekey");
+                return false;
+            }
+
+            try
+            {
+                byte[] pk = privatekey.HexToBytes();
+                if (pk.Length != 32)
+                {
+                    Console.WriteLine("Invalid privatekey. Privatekey must be 32 bytes.");
+                    return false;
+                }
+
+                ECKey key = ECKey.FromPrivateKey(pk);
+                string address = Wallet.AddressToBase58(Wallet.PublickKeyToAddress(key.PublicKey));
+
+                if (!KeyStoreService.GenerateKeyStore(WalletApi.FILE_PATH,
+                                                      password,
+                                                      pk,
+                                                      address))
+                {
+                    Console.WriteLine("Faild to generate keystore file.");
+                    return false;
+                }
+                Console.WriteLine("Import wallet success.");
+            }
+            catch (System.Exception e)
+            {
+                Console.WriteLine("Import wallet failed.");
+                Console.WriteLine(e.Message);
+                Console.WriteLine(e.StackTrace);
+            }
+
+            return true;
+        }
+
+        public static bool BackupWallet(string password)
+        {
+            if (password.IsNullOrEmpty())
+            {
+                Console.WriteLine("Invalide password.");
+                return false;
+            }
+
+            if (!KeyStoreService.DecryptKeyStore(password, WalletApi.KeyStore, out byte[] privatekey))
+            {
+                Console.WriteLine("Fail to Decrypt keystore.");
+                return false;
+            }
+
+            Console.WriteLine(privatekey.ToHexString());
 
             return true;
         }

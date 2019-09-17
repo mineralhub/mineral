@@ -194,12 +194,15 @@ namespace MineralCLI.Util
             result += "delegatedFrozenBalanceForBandwidth: ";
             result += account.DelegatedFrozenBalanceForBandwidth;
             result += "\n";
-            result += "AcquiredDelegatedFrozenBalanceForEnergy: ";
-            result += account.AccountResource.AcquiredDelegatedFrozenBalanceForEnergy;
-            result += "\n";
-            result += "DelegatedFrozenBalanceForEnergy: ";
-            result += account.AccountResource.DelegatedFrozenBalanceForEnergy;
-            result += "}\n";
+            if (account.AccountResource != null)
+            {
+                result += "AcquiredDelegatedFrozenBalanceForEnergy: ";
+                result += account.AccountResource.AcquiredDelegatedFrozenBalanceForEnergy;
+                result += "\n";
+                result += "DelegatedFrozenBalanceForEnergy: ";
+                result += account.AccountResource.DelegatedFrozenBalanceForEnergy;
+                result += "}\n";
+            }
 
             if (account.OwnerPermission != null)
             {
@@ -236,6 +239,9 @@ namespace MineralCLI.Util
 
         public static string PrintAccountResource(AccountResource account_resource)
         {
+            if (account_resource == null)
+                return "";
+
             string result = "";
             result += "energy_usage: ";
             result += account_resource.EnergyUsage;
@@ -850,8 +856,8 @@ namespace MineralCLI.Util
                         break;
                     case ContractType.AccountPermissionUpdateContract:
                         {
-                            AccountPermissionUpdateContract account_permission_update_contract =
-    contract.Parameter.Unpack<AccountPermissionUpdateContract>();
+                            AccountPermissionUpdateContract account_permission_update_contract = 
+                                contract.Parameter.Unpack<AccountPermissionUpdateContract>();
 
                             result += "owner_address: ";
                             result += Wallet.Encode58Check(account_permission_update_contract.OwnerAddress.ToByteArray());
@@ -936,6 +942,26 @@ namespace MineralCLI.Util
             {
                 Console.WriteLine(e.StackTrace);
                 return "";
+            }
+
+            return result;
+        }
+
+        public static string PrintAssetIssueList(AssetIssueList asset_issue_list)
+        {
+            string result = "";
+            int i = 0;
+            foreach (AssetIssueContract asset_issue in asset_issue_list.AssetIssue)
+            {
+                result += "assetIssue " + i + " :::";
+                result += "\n";
+                result += "[";
+                result += "\n";
+                result += PrintAssetIssue(asset_issue);
+                result += "]";
+                result += "\n";
+                result += "\n";
+                i++;
             }
 
             return result;
