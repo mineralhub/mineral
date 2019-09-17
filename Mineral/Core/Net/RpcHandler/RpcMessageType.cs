@@ -31,6 +31,9 @@ namespace Mineral.Core.Net.RpcHandler
         [CommandLineAttribute(Name = "Logout", Description = "")]
         public static readonly string Logout = "logout";
 
+        [CommandLineAttribute(Name = "GetAddress", Description = "")]
+        public static readonly string GetAddress = "getaddress";
+
         [CommandLineAttribute(Name = "GetAccount", Description = "")]
         public static readonly string GetAccount = "getaccount";
 

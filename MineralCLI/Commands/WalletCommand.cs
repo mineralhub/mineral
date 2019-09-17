@@ -135,6 +135,27 @@ namespace MineralCLI.Commands
             return true;
         }
 
+        public static bool GetAddress(string[] parameters)
+        {
+            string[] usage = new string[] {
+                string.Format("{0} [command option] <path>\n", RpcCommandType.GetAddress) };
+
+            string[] command_option = new string[] { HelpCommandOption.Help };
+
+            if (parameters == null || parameters.Length != 1)
+            {
+                OutputHelpMessage(usage, null, command_option, null);
+                return true;
+            }
+
+            if (!WalletApi.IsLogin)
+                return true;
+
+            Console.WriteLine(WalletApi.KeyStore.Address);
+
+            return true;
+        }
+
         public static bool GetAccount(string[] parameters)
         {
             string[] usage = new string[] {
