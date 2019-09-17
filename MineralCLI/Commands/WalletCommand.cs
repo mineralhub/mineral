@@ -22,6 +22,14 @@ namespace MineralCLI.Commands
 
     public sealed class WalletCommand : BaseCommand
     {
+        /// <summary>
+        /// Generate keystore by privatekey
+        /// </summary>
+        /// <param name="parameters">
+        /// Parameters Index
+        /// [0] : Command
+        /// </param>
+        /// <returns></returns>
         public static bool ImportWallet(string[] parameters)
         {
             string[] usage = new string[] {
@@ -46,6 +54,14 @@ namespace MineralCLI.Commands
             return true;
         }
 
+        /// <summary>
+        /// Extract private key by keystore
+        /// </summary>
+        /// <param name="parameters">
+        /// Parameters Index
+        /// [0] : Command
+        /// </param>
+        /// <returns></returns>
         public static bool BackupWallet(string[] parameters)
         {
             string[] usage = new string[] {
@@ -70,6 +86,14 @@ namespace MineralCLI.Commands
             return true;
         }
 
+        /// <summary>
+        /// Create keystore file
+        /// </summary>
+        /// <param name="parameters">
+        /// Parameters Index
+        /// [0] : Command
+        /// </param>
+        /// <returns></returns>
         public static bool RegisterWallet(string[] parameters)
         {
             string[] usage = new string[] {
@@ -109,6 +133,14 @@ namespace MineralCLI.Commands
             return true;
         }
 
+        /// <summary>
+        /// Login keystore
+        /// </summary>
+        /// <param name="parameters">
+        /// Parameters Index
+        /// [0] : Command
+        /// </param>
+        /// <returns></returns>
         public static bool Login(string[] parameters)
         {
             Logout(null);
@@ -128,6 +160,14 @@ namespace MineralCLI.Commands
             return true;
         }
 
+        /// <summary>
+        /// Logout keystore
+        /// </summary>
+        /// <param name="parameters">
+        /// Parameters Index
+        /// [0] : Command
+        /// </param>
+        /// <returns></returns>
         public static bool Logout(string[] parameters)
         {
             WalletApi.KeyStore = null;
@@ -135,6 +175,14 @@ namespace MineralCLI.Commands
             return true;
         }
 
+        /// <summary>
+        /// Get address in current keystore
+        /// </summary>
+        /// <param name="parameters">
+        /// Parameters Index
+        /// [0] : Command
+        /// </param>
+        /// <returns></returns>
         public static bool GetAddress(string[] parameters)
         {
             string[] usage = new string[] {
@@ -156,6 +204,14 @@ namespace MineralCLI.Commands
             return true;
         }
 
+        /// <summary>
+        /// Get balance in current keystore
+        /// </summary>
+        /// <param name="parameters">
+        /// Parameters Index
+        /// [0] : Command
+        /// </param>
+        /// <returns></returns>
         public static bool GetBalance(string[] parameters)
         {
             string[] usage = new string[] {
@@ -189,11 +245,20 @@ namespace MineralCLI.Commands
                 account = Account.Parser.ParseFrom(receive["result"].ToObject<byte[]>());
             }
             
-            Console.WriteLine("Balance : ", account.Balance);
+            Console.WriteLine("Balance : " + account.Balance);
 
             return true;
         }
 
+        /// <summary>
+        /// Get account infomation
+        /// </summary>
+        /// <param name="parameters">
+        /// Parameter Index
+        /// [0] : Command
+        /// [1] : Wallet address
+        /// </param>
+        /// <returns></returns>
         public static bool GetAccount(string[] parameters)
         {
             string[] usage = new string[] {
@@ -229,6 +294,16 @@ namespace MineralCLI.Commands
             return true;
         }
 
+        /// <summary>
+        /// Send balance
+        /// </summary>
+        /// <param name="parameters">
+        /// Parameter Index
+        /// [0] : Command
+        /// [1] : To address
+        /// [2] : Balance amount
+        /// </param>
+        /// <returns></returns>
         public static bool SendCoin(string[] parameters)
         {
             string[] usage = new string[] {
