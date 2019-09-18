@@ -86,6 +86,12 @@ namespace Mineral.Core.Net.RpcHandler
             return transaction;
         }
 
+        public static TransactionExtention CreateTransactionExtention(IMessage message, ContractType type)
+        {
+            TransactionCapsule transaction = CreateTransactionCapsule(message, type);
+            return CreateTransactionExtention(transaction);
+        }
+
         public static TransactionExtention CreateTransactionExtention(TransactionCapsule transaction)
         {
             TransactionExtention extention = new TransactionExtention();

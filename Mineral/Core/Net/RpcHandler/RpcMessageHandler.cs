@@ -27,6 +27,7 @@ namespace Mineral.Core.Net.RpcHandler
             { RpcCommandType.AssetIssueById, new RpcHandler(OnAssetIssueById) },
             { RpcCommandType.AssetIssueByName, new RpcHandler(OnAssetIssueByName) },
             { RpcCommandType.AssetIssueListByName, new RpcHandler(OnAssetIssueListByName) },
+            { RpcCommandType.TransferAsset, new RpcHandler(OnTransferAsset) },
 
             { RpcCommandType.GetBlock, new RpcHandler(OnGetBlock) }
         };
@@ -79,11 +80,8 @@ namespace Mineral.Core.Net.RpcHandler
             try
             {
                 TransferContract contract = TransferContract.Parser.ParseFrom(parameters[0].ToObject<byte[]>());
-                TransactionCapsule transaction = 
-                    RpcWalletApi.CreateTransactionCapsule(contract, Transaction.Types.Contract.Types.ContractType.TransferContract);
-
                 TransactionExtention transaction_extention =
-                    RpcWalletApi.CreateTransactionExtention(transaction);
+                    RpcWalletApi.CreateTransactionExtention(contract, Transaction.Types.Contract.Types.ContractType.TransferContract);
 
                 result = JToken.FromObject(transaction_extention.ToByteArray());
             }
@@ -287,6 +285,33 @@ namespace Mineral.Core.Net.RpcHandler
             {
                 result = RpcMessage.CreateErrorResult(id, RpcMessage.INVALID_PARAMS, e.Message);
                 return false;
+            }
+            catch (System.Exception e)
+            {
+                result = RpcMessage.CreateErrorResult(id, RpcMessage.UNKNOWN_ERROR, e.Message);
+                return false;
+            }
+
+            return true;
+        }
+
+        public static bool OnTransferAsset(JToken id, string method, JArray parameters, out JToken result)
+        {
+            result = new JObject();
+
+            if (parameters == null || parameters.Count != 1)
+            {
+                result = RpcMessage.CreateErrorResult(id, RpcMessage.INVALID_PARAMS, "Invalid parameters");
+                return false;
+            }
+
+            try
+            {
+                TransferAssetContract contract = TransferAssetContract.Parser.ParseFrom(parameters.ToObject<byte[]>());
+                TransactionExtention transaction =
+                    RpcWalletApi.CreateTransactionExtention(contract,Transaction.Types.Contract.Types.ContractType.TransferAssetContract);
+
+                result = JToken.FromObject(transaction.ToByteArray());
             }
             catch (System.Exception e)
             {

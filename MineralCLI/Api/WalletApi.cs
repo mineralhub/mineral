@@ -4,6 +4,7 @@ using Mineral.CommandLine;
 using Mineral.Common.Utils;
 using Mineral.Core;
 using Mineral.Core.Capsule.Util;
+using Mineral.Core.Exception;
 using Mineral.Cryptography;
 using Mineral.Utils;
 using Mineral.Wallets.KeyStore;
@@ -68,6 +69,21 @@ namespace MineralCLI.Api
             return contract;
         }
 
+        public static bool ProcessTransactionExtention(TransactionExtention tx)
+        {
+            if (tx == null || !tx.Result.Result)
+            {
+                throw new ArgumentException("Invalid transaction extention data");
+            }
+
+            if (tx.Transaction == null || tx.Transaction.RawData.Contract.Count == 0)
+            {
+                throw new InvalidTransactionException("Transaction is empty");
+            }
+
+            return BroadcastTransaction(SignatureTransaction(tx.Transaction));
+        }
+
         public static Transaction InitSignatureTransaction(Transaction transaction)
         {
             if (transaction.RawData.Timestamp == 0)
@@ -100,7 +116,6 @@ namespace MineralCLI.Api
 
         public static bool BroadcastTransaction(Transaction transaction)
         {
-
             return true;
         }
 
@@ -142,6 +157,17 @@ namespace MineralCLI.Api
             }
 
             return true;
+        }
+
+        public static TransferAssetContract CreateTransferAssetContract(byte[] to_address, byte[] from_address, byte[] asset_name, long amount)
+        {
+            TransferAssetContract contract = new TransferAssetContract();
+            contract.ToAddress = ByteString.CopyFrom(to_address);
+            contract.AssetName = ByteString.CopyFrom(asset_name);
+            contract.OwnerAddress = ByteString.CopyFrom(from_address);
+            contract.Amount = amount;
+
+            return contract;
         }
 
         public static bool BackupWallet(string password)
