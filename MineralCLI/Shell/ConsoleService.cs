@@ -10,6 +10,7 @@ namespace MineralCLI.Shell
 {
     public class ConsoleService : ConsoleServiceBase, IDisposable
     {
+        #region Field
         private Dictionary<string, CommandHandler> commands = new Dictionary<string, CommandHandler>()
         {
             { RpcCommandType.GetBlock, new CommandHandler(BlockCommand.GetBlock) },
@@ -28,7 +29,26 @@ namespace MineralCLI.Shell
             { RpcCommandType.AssetIssueByName, new CommandHandler(AssetIssueCommand.AssetIssueByName) },
             { RpcCommandType.AssetIssueListByName, new CommandHandler(AssetIssueCommand.AssetIssueListByName) }
         };
+        #endregion
 
+
+        #region Property
+        #endregion
+
+
+        #region Constructor
+        #endregion
+
+
+        #region Event Method
+        #endregion
+
+
+        #region Internal Method
+        #endregion
+
+
+        #region External Method
         public override bool OnCommand(string[] parameters)
         {
             string command = parameters[0].ToLower();
@@ -96,5 +116,10 @@ namespace MineralCLI.Shell
             commands.Clear();
             base.Dispose();
         }
+
+        #endregion
+
+
+
     }
 }

@@ -1,5 +1,6 @@
 ﻿using Google.Protobuf;
 using Mineral;
+using Mineral.CommandLine;
 using Mineral.Common.Utils;
 using Mineral.Core;
 using Mineral.Core.Capsule.Util;
@@ -85,7 +86,7 @@ namespace MineralCLI.Api
             Console.WriteLine("Please choose keystore for signature.");
             KeyStore key_store = SelectKeyStore();
 
-            string password = ConsoleServiceBase.ReadPasswordString("Please input password");
+            string password = CommandLineUtil.ReadPasswordString("Please input password");
             if (KeyStoreService.DecryptKeyStore(password, key_store, out byte[] privatekey))
             {
                 ECKey key = ECKey.FromPrivateKey(privatekey);
