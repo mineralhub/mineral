@@ -15,6 +15,93 @@ namespace MineralCLI.Util
 {
     public static class PrintUtil
     {
+        #region block
+
+        public static string PrintBlockRowData(BlockHeader.Types.raw raw)
+        {
+            string result = "";
+
+            result += "timestamp: ";
+            result += raw.Timestamp.ToDateTime();
+            result += "\n";
+
+            result += "txTrieRoot: ";
+            result += raw.TxTrieRoot.ToHexString();
+            result += "\n";
+
+            result += "parentHash: ";
+            result += raw.ParentHash.ToHexString();
+            result += "\n";
+
+            result += "number: ";
+            result += raw.Number;
+            result += "\n";
+
+            result += "witness_id: ";
+            result += raw.WitnessId;
+            result += "\n";
+
+            result += "witness_address: ";
+            result += Wallet.Encode58Check(raw.WitnessAddress.ToByteArray());
+            result += "\n";
+
+            result += "version: ";
+            result += raw.Version;
+            result += "\n";
+
+            return result;
+        }
+
+        public static string PrintBlockHeader(BlockHeader block_header)
+        {
+            string result = "";
+            result += "raw_data: ";
+            result += "\n";
+            result += "{";
+            result += "\n";
+            result += PrintBlockRowData(block_header.RawData);
+            result += "}";
+            result += "\n";
+
+            result += "witness_signature: ";
+            result += "\n";
+            result += block_header.WitnessSignature.ToHexString();
+            result += "\n";
+            return result;
+        }
+
+        public static string PrintBlockExtention(BlockExtention block)
+        {
+            string result = "\n";
+            if (block.Blockid != null)
+            {
+                result += "block_id: ";
+                result += "\n";
+                result += "{";
+                result += "\n";
+                result += block.Blockid.ToHexString();
+                result += "\n";
+                result += "}";
+                result += "\n";
+            }
+            if (block.BlockHeader != null)
+            {
+                result += "block_header: ";
+                result += "\n";
+                result += "{";
+                result += "\n";
+                result += PrintBlockHeader(block.BlockHeader);
+                result += "}";
+                result += "\n";
+            }
+            if (block.Transactions.Count > 0)
+            {
+                result += PrintTransactionExtentionList(new List<TransactionExtention>(block.Transactions));
+            }
+            return result;
+        }
+        #endregion
+
         #region Account
         public static string PrintAccount(Account account)
         {
@@ -404,6 +491,25 @@ namespace MineralCLI.Util
             result += raw.FeeLimit;
             result += "\n";
 
+            return result;
+        }
+
+        public static string PrintTransactionExtentionList(List<TransactionExtention> transactions)
+        {
+            string result = "\n";
+            int i = 0;
+            foreach (TransactionExtention transaction in transactions)
+            {
+                result += "transaction " + i + " :::";
+                result += "\n";
+                result += "[";
+                result += "\n";
+                result += PrintTransaction(transaction);
+                result += "]";
+                result += "\n";
+                result += "\n";
+                i++;
+            }
             return result;
         }
 

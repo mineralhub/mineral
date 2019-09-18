@@ -43,6 +43,9 @@ namespace Mineral.Core.Net.RpcHandler
         [CommandLineAttribute(Name = "GetBlock", Description = "")]
         public static readonly string GetBlock = "getblock";
 
+        [CommandLineAttribute(Name = "GetBlockByLatestNum", Description = "")]
+        public static readonly string GetBlockByLatestNum = "getblockbylatestnum";
+
         [CommandLineAttribute(Name = "SendCoin", Description = "")]
         public static readonly string SendCoin = "sendcoin";
 

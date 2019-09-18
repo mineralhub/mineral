@@ -29,7 +29,8 @@ namespace Mineral.Core.Net.RpcHandler
             { RpcCommandType.AssetIssueListByName, new RpcHandler(OnAssetIssueListByName) },
             { RpcCommandType.TransferAsset, new RpcHandler(OnTransferAsset) },
 
-            { RpcCommandType.GetBlock, new RpcHandler(OnGetBlock) }
+                        { RpcCommandType.GetBlock, new RpcHandler(OnGetBlock) },
+            { RpcCommandType.GetBlockByLatestNum, new RpcHandler(OnGetBlockLatestNum) }
         };
         #endregion
 
@@ -336,6 +337,41 @@ namespace Mineral.Core.Net.RpcHandler
             {
                 BlockCapsule block = Manager.Instance.DBManager.GetBlockByNum(parameters[0].Value<long>());
                 result = JToken.FromObject(block.Data);
+            }
+            catch (InvalidCastException e)
+            {
+                result = RpcMessage.CreateErrorResult(id, RpcMessage.INVALID_PARAMS, e.Message);
+                return false;
+            }
+            catch (System.Exception e)
+            {
+                result = RpcMessage.CreateErrorResult(id, RpcMessage.UNKNOWN_ERROR, e.Message);
+                return false;
+            }
+
+            return true;
+        }
+
+        public static bool OnGetBlockLatestNum(JToken id, string method, JArray parameters, out JToken result)
+        {
+            result = new JObject();
+
+            if (parameters == null || parameters.Count != 1)
+            {
+                result = RpcMessage.CreateErrorResult(id, RpcMessage.INVALID_PARAMS, "Invalid parameters");
+                return false;
+            }
+
+            try
+            {
+                List<BlockCapsule> blocks = Manager.Instance.DBManager.Block.GetBlockByLatestNum(1);
+                if (blocks == null || blocks.Count == 0)
+                {
+                    result = RpcMessage.CreateErrorResult(id, RpcMessage.INTERNAL_ERROR, "Can not load latest block.");
+                }
+
+                BlockExtention block_extention = RpcWalletApi.CreateBlockExtention(blocks[0]);
+                result = JToken.FromObject(block_extention.ToByteArray());
             }
             catch (InvalidCastException e)
             {

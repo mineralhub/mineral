@@ -69,21 +69,6 @@ namespace MineralCLI.Api
             return contract;
         }
 
-        public static bool ProcessTransactionExtention(TransactionExtention tx)
-        {
-            if (tx == null || !tx.Result.Result)
-            {
-                throw new ArgumentException("Invalid transaction extention data");
-            }
-
-            if (tx.Transaction == null || tx.Transaction.RawData.Contract.Count == 0)
-            {
-                throw new InvalidTransactionException("Transaction is empty");
-            }
-
-            return BroadcastTransaction(SignatureTransaction(tx.Transaction));
-        }
-
         public static Transaction InitSignatureTransaction(Transaction transaction)
         {
             if (transaction.RawData.Timestamp == 0)

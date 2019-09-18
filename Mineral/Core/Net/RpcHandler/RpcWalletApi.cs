@@ -41,6 +41,25 @@ namespace Mineral.Core.Net.RpcHandler
 
 
         #region External Method
+        public static BlockExtention CreateBlockExtention(BlockCapsule block)
+        {
+            if (block == null)
+            {
+                return null;
+            }
+
+            BlockExtention block_extention = new BlockExtention();
+            block_extention.BlockHeader = block.Instance.BlockHeader;
+            block_extention.Blockid = ByteString.CopyFrom(block.Id.Hash);
+
+            foreach (Transaction transaction in block.Instance.Transactions)
+            {
+                block_extention.Transactions.Add(CreateTransactionExtention(new TransactionCapsule(transaction)));
+            }
+
+            return block_extention;
+        }
+
         public static TransactionCapsule CreateTransactionCapsule(IMessage message, ContractType type)
         {
             DatabaseManager db_manager = Manager.Instance.DBManager;
