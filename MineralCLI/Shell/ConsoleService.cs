@@ -13,8 +13,6 @@ namespace MineralCLI.Shell
         #region Field
         private Dictionary<string, CommandHandler> commands = new Dictionary<string, CommandHandler>()
         {
-            { RpcCommandType.GetBlock, new CommandHandler(BlockCommand.GetBlock) },
-
             { RpcCommandType.ImportWallet, new CommandHandler(WalletCommand.ImportWallet) },
             { RpcCommandType.BackupWallet, new CommandHandler(WalletCommand.BackupWallet) },
             { RpcCommandType.RegisterWallet, new CommandHandler(WalletCommand.RegisterWallet) },
