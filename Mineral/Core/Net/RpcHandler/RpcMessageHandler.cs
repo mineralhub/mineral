@@ -339,7 +339,7 @@ namespace Mineral.Core.Net.RpcHandler
             try
             {
                 BlockCapsule block = Manager.Instance.DBManager.GetBlockByNum(parameters[0].Value<long>());
-                result = JToken.FromObject(block.Data);
+                result = JToken.FromObject(RpcWalletApi.CreateBlockExtention(block).ToByteArray());
             }
             catch (InvalidCastException e)
             {
@@ -359,7 +359,7 @@ namespace Mineral.Core.Net.RpcHandler
         {
             result = new JObject();
 
-            if (parameters == null || parameters.Count != 1)
+            if (parameters == null || parameters.Count != 0)
             {
                 result = RpcMessage.CreateErrorResult(id, RpcMessage.INVALID_PARAMS, "Invalid parameters");
                 return false;
@@ -394,7 +394,7 @@ namespace Mineral.Core.Net.RpcHandler
         {
             result = new JObject();
 
-            if (parameters == null || parameters.Count != 2)
+            if (parameters == null || parameters.Count != 1)
             {
                 result = RpcMessage.CreateErrorResult(id, RpcMessage.INVALID_PARAMS, "Invalid parameters");
                 return false;

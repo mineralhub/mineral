@@ -328,7 +328,6 @@ namespace Mineral.Common.Storage
                     long i = 0;
 
                     it.SeekToLast();
-                    it.Next();
                     if (it.IsValid())
                     {
                         result.Add(it.Value());

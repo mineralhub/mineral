@@ -181,7 +181,10 @@ namespace Mineral.Core.Database2.Core
 
                 if (snapshot.GetPrevious() == null && temp != 0)
                 {
-                    HashSet<byte[]> values = (((Common.LevelDB)((SnapshotRoot)snapshot).DB)).DB.GetLatestValues(temp);
+                    foreach (var value in (((Common.LevelDB)((SnapshotRoot)snapshot).DB)).DB.GetLatestValues(temp))
+                    {
+                        result.Add(value);
+                    }
                 }
             }
 
@@ -215,10 +218,11 @@ namespace Mineral.Core.Database2.Core
             }
 
 
-            return db_dictonary.Keys
-                    .OrderBy(x => x, new UnsignedByteArrayCompare())
-                    .Where(z => ByteUtil.Compare(z, key) >= 0)
+            return db_dictonary
+                    .OrderBy(x => x.Key, new UnsignedByteArrayCompare())
+                    .Where(y => ByteUtil.Compare(y.Key, key) >= 0)
                     .Take((int)limit)
+                    .Select(z => z.Value)
                     .ToHashSet();
         }
 
