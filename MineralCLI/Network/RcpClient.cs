@@ -121,6 +121,7 @@ namespace MineralCLI.Network
             catch (System.Exception e)
             {
                 Console.WriteLine(e.Message);
+                throw e;
             }
 
             return respone_data != null ? JObject.Parse(respone_data) : null;

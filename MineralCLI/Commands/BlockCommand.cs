@@ -34,31 +34,31 @@ namespace MineralCLI.Commands
                 return true;
             }
 
-            JObject receive = null;
-            if (parameters.Length == 1)
-            {
-                Console.WriteLine("Get current block.");
-                receive = SendCommand(RpcCommandType.GetBlockByLatestNum, new JArray() { });
-
-            }
-            else
-            {
-                if (!long.TryParse(parameters[1], out long block_num))
-                {
-                    Console.WriteLine("Invalid block number");
-                    return true;
-                }
-                receive = SendCommand(RpcCommandType.GetBlock, new JArray() { block_num });
-            }
-
-            if (receive.TryGetValue("error", out JToken value))
-            {
-                OutputErrorMessage(value["code"].ToObject<int>(), value["message"].ToObject<string>());
-                return true;
-            }
-
             try
             {
+                JObject receive = null;
+                if (parameters.Length == 1)
+                {
+                    Console.WriteLine("Get current block.");
+                    receive = SendCommand(RpcCommandType.GetBlockByLatestNum, new JArray() { });
+
+                }
+                else
+                {
+                    if (!long.TryParse(parameters[1], out long block_num))
+                    {
+                        Console.WriteLine("Invalid block number");
+                        return true;
+                    }
+                    receive = SendCommand(RpcCommandType.GetBlock, new JArray() { block_num });
+                }
+
+                if (receive.TryGetValue("error", out JToken value))
+                {
+                    OutputErrorMessage(value["code"].ToObject<int>(), value["message"].ToObject<string>());
+                    return true;
+                }
+
                 BlockExtention block = BlockExtention.Parser.ParseFrom(receive["result"].ToObject<byte[]>());
 
                 Console.WriteLine(PrintUtil.PrintBlockExtention(block));
