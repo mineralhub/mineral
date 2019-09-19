@@ -22,7 +22,7 @@ namespace MineralCLI.Util
             string result = "";
 
             result += "timestamp: ";
-            result += raw.Timestamp.ToDateTime();
+            result += raw.Timestamp.ToDateTime().ToLocalTime();
             result += "\n";
 
             result += "txTrieRoot: ";
