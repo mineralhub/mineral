@@ -26,6 +26,8 @@ namespace MineralCLI.Shell
             { RpcCommandType.SendCoin, new CommandHandler(WalletCommand.SendCoin) },
             { RpcCommandType.GetBlock, new CommandHandler(BlockCommand.GetBlock) },
             { RpcCommandType.GetBlockByLatestNum, new CommandHandler(BlockCommand.GetBlockByLatestNum) },
+            { RpcCommandType.GetBlockById, new CommandHandler(BlockCommand.GetBlockById) },
+            { RpcCommandType.GetBlockByLimitNext, new CommandHandler(BlockCommand.GetBlockByLimitNext) },
             { RpcCommandType.AssetIssueByAccount, new CommandHandler(AssetIssueCommand.AssetIssueByAccount) },
             { RpcCommandType.AssetIssueById, new CommandHandler(AssetIssueCommand.AssetIssueById) },
             { RpcCommandType.AssetIssueByName, new CommandHandler(AssetIssueCommand.AssetIssueByName) },

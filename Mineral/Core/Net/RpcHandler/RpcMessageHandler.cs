@@ -1,5 +1,6 @@
 ﻿using Google.Protobuf;
 using Mineral.Common.Net.RPC;
+using Mineral.Common.Utils;
 using Mineral.Core.Capsule;
 using Mineral.Core.Exception;
 using Newtonsoft.Json;
@@ -29,8 +30,10 @@ namespace Mineral.Core.Net.RpcHandler
             { RpcCommandType.AssetIssueListByName, new RpcHandler(OnAssetIssueListByName) },
             { RpcCommandType.TransferAsset, new RpcHandler(OnTransferAsset) },
 
-                        { RpcCommandType.GetBlock, new RpcHandler(OnGetBlock) },
-            { RpcCommandType.GetBlockByLatestNum, new RpcHandler(OnGetBlockLatestNum) }
+            { RpcCommandType.GetBlock, new RpcHandler(OnGetBlock) },
+            { RpcCommandType.GetBlockByLatestNum, new RpcHandler(OnGetBlockByLatestNum) },
+            { RpcCommandType.GetBlockById, new RpcHandler(OnGetBlockById) },
+            { RpcCommandType.GetBlockByLimitNext, new RpcHandler(OnGetBlockByLimitNext) }
         };
         #endregion
 
@@ -352,7 +355,7 @@ namespace Mineral.Core.Net.RpcHandler
             return true;
         }
 
-        public static bool OnGetBlockLatestNum(JToken id, string method, JArray parameters, out JToken result)
+        public static bool OnGetBlockByLatestNum(JToken id, string method, JArray parameters, out JToken result)
         {
             result = new JObject();
 
@@ -377,6 +380,64 @@ namespace Mineral.Core.Net.RpcHandler
             {
                 result = RpcMessage.CreateErrorResult(id, RpcMessage.INVALID_PARAMS, e.Message);
                 return false;
+            }
+            catch (System.Exception e)
+            {
+                result = RpcMessage.CreateErrorResult(id, RpcMessage.UNKNOWN_ERROR, e.Message);
+                return false;
+            }
+
+            return true;
+        }
+
+        public static bool OnGetBlockById(JToken id, string method, JArray parameters, out JToken result)
+        {
+            result = new JObject();
+
+            if (parameters == null || parameters.Count != 2)
+            {
+                result = RpcMessage.CreateErrorResult(id, RpcMessage.INVALID_PARAMS, "Invalid parameters");
+                return false;
+            }
+
+            try
+            {
+                SHA256Hash hash = SHA256Hash.Wrap(parameters[0].ToString().HexToBytes());
+                BlockCapsule block = Manager.Instance.DBManager.GetBlockById(hash);
+                BlockExtention block_extention = RpcWalletApi.CreateBlockExtention(block);
+
+                result = JToken.FromObject(block_extention.ToByteArray());
+            }
+            catch (System.Exception e)
+            {
+                result = RpcMessage.CreateErrorResult(id, RpcMessage.UNKNOWN_ERROR, e.Message);
+                return false;
+            }
+
+            return true;
+        }
+
+
+        public static bool OnGetBlockByLimitNext(JToken id, string method, JArray parameters, out JToken result)
+        {
+            result = new JObject();
+
+            if (parameters == null || parameters.Count != 1)
+            {
+                result = RpcMessage.CreateErrorResult(id, RpcMessage.INVALID_PARAMS, "Invalid parameters");
+                return false;
+            }
+
+            try
+            {
+                BlockLimit limit = BlockLimit.Parser.ParseFrom(parameters[0].ToObject<byte[]>());
+                BlockListExtention blocks = new BlockListExtention();
+                Manager.Instance.DBManager.Block.GetLimitNumber(limit.StartNum, limit.EndNum - limit.StartNum).ForEach(block =>
+                {
+                    blocks.Block.Add(RpcWalletApi.CreateBlockExtention(block));
+                });
+
+                result = JToken.FromObject(blocks.ToByteArray());
             }
             catch (System.Exception e)
             {

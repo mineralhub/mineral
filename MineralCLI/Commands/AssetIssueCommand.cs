@@ -36,15 +36,22 @@ namespace MineralCLI.Commands
                 return true;
             }
 
-            JObject receive = SendCommand(RpcCommandType.AssetIssueByAccount, new JArray() { parameters[1] });
-            if (receive.TryGetValue("error", out JToken value))
+            try
             {
-                OutputErrorMessage(value["code"].ToObject<int>(), value["message"].ToObject<string>());
-                return true;
-            }
+                JObject receive = SendCommand(RpcCommandType.AssetIssueByAccount, new JArray() { parameters[1] });
+                if (receive.TryGetValue("error", out JToken value))
+                {
+                    OutputErrorMessage(value["code"].ToObject<int>(), value["message"].ToObject<string>());
+                    return true;
+                }
 
-            AssetIssueList asset_issue_list = AssetIssueList.Parser.ParseFrom(receive["result"].ToObject<byte[]>());
-            Console.WriteLine(PrintUtil.PrintAssetIssueList(asset_issue_list));
+                AssetIssueList asset_issue_list = AssetIssueList.Parser.ParseFrom(receive["result"].ToObject<byte[]>());
+                Console.WriteLine(PrintUtil.PrintAssetIssueList(asset_issue_list));
+            }
+            catch (System.Exception e)
+            {
+                Console.WriteLine(e.Message + "\n\n" + e.StackTrace);
+            }
 
             return true;
         }
@@ -71,15 +78,23 @@ namespace MineralCLI.Commands
                 return true;
             }
 
-            JObject receive = SendCommand(RpcCommandType.AssetIssueById, new JArray() { parameters[1] });
-            if (receive.TryGetValue("error", out JToken value))
+            try
             {
-                OutputErrorMessage(value["code"].ToObject<int>(), value["message"].ToObject<string>());
-                return true;
-            }
+                JObject receive = SendCommand(RpcCommandType.AssetIssueById, new JArray() { parameters[1] });
+                if (receive.TryGetValue("error", out JToken value))
+                {
+                    OutputErrorMessage(value["code"].ToObject<int>(), value["message"].ToObject<string>());
+                    return true;
+                }
 
-            AssetIssueContract asset_issue_contract = AssetIssueContract.Parser.ParseFrom(receive["result"].ToObject<byte[]>());
-            Console.WriteLine(PrintUtil.PrintAssetIssue(asset_issue_contract));
+                AssetIssueContract asset_issue_contract = AssetIssueContract.Parser.ParseFrom(receive["result"].ToObject<byte[]>());
+
+                Console.WriteLine(PrintUtil.PrintAssetIssue(asset_issue_contract));
+            }
+            catch (System.Exception e)
+            {
+                Console.WriteLine(e.Message + "\n\n" + e.StackTrace);
+            }
 
             return true;
         }
@@ -106,15 +121,23 @@ namespace MineralCLI.Commands
                 return true;
             }
 
-            JObject receive = SendCommand(RpcCommandType.AssetIssueByName, new JArray() { parameters[1] });
-            if (receive.TryGetValue("error", out JToken value))
+            try
             {
-                OutputErrorMessage(value["code"].ToObject<int>(), value["message"].ToObject<string>());
-                return true;
-            }
+                JObject receive = SendCommand(RpcCommandType.AssetIssueByName, new JArray() { parameters[1] });
+                if (receive.TryGetValue("error", out JToken value))
+                {
+                    OutputErrorMessage(value["code"].ToObject<int>(), value["message"].ToObject<string>());
+                    return true;
+                }
 
-            AssetIssueContract asset_issue_contract = AssetIssueContract.Parser.ParseFrom(receive["result"].ToObject<byte[]>());
-            Console.WriteLine(PrintUtil.PrintAssetIssue(asset_issue_contract));
+                AssetIssueContract asset_issue_contract = AssetIssueContract.Parser.ParseFrom(receive["result"].ToObject<byte[]>());
+
+                Console.WriteLine(PrintUtil.PrintAssetIssue(asset_issue_contract));
+            }
+            catch (System.Exception e)
+            {
+                Console.WriteLine(e.Message + "\n\n" + e.StackTrace);
+            }
 
             return true;
         }
@@ -141,15 +164,23 @@ namespace MineralCLI.Commands
                 return true;
             }
 
-            JObject receive = SendCommand(RpcCommandType.AssetIssueByName, new JArray() { parameters[1] });
-            if (receive.TryGetValue("error", out JToken value))
+            try
             {
-                OutputErrorMessage(value["code"].ToObject<int>(), value["message"].ToObject<string>());
-                return true;
-            }
+                JObject receive = SendCommand(RpcCommandType.AssetIssueByName, new JArray() { parameters[1] });
+                if (receive.TryGetValue("error", out JToken value))
+                {
+                    OutputErrorMessage(value["code"].ToObject<int>(), value["message"].ToObject<string>());
+                    return true;
+                }
 
-            AssetIssueList asset_issue_list = AssetIssueList.Parser.ParseFrom(receive["result"].ToObject<byte[]>());
-            Console.WriteLine(PrintUtil.PrintAssetIssueList(asset_issue_list));
+                AssetIssueList asset_issue_list = AssetIssueList.Parser.ParseFrom(receive["result"].ToObject<byte[]>());
+
+                Console.WriteLine(PrintUtil.PrintAssetIssueList(asset_issue_list));
+            }
+            catch (System.Exception e)
+            {
+                Console.WriteLine(e.Message + "\n\n" + e.StackTrace);
+            }
 
             return true;
         }
@@ -242,6 +273,7 @@ namespace MineralCLI.Commands
             }
             catch (System.Exception e)
             {
+                Console.WriteLine(e.Message + "\n\n" + e.StackTrace);
             }
             
             return true;

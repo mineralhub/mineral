@@ -100,6 +100,25 @@ namespace MineralCLI.Util
             }
             return result;
         }
+
+        public static string PrintBlockListExtention(BlockListExtention blocks)
+        {
+            string result = "\n";
+            int i = 0;
+            foreach (BlockExtention block in blocks.Block)
+            {
+                result += "block " + i + " :::";
+                result += "\n";
+                result += "[";
+                result += "\n";
+                result += PrintBlockExtention(block);
+                result += "]";
+                result += "\n";
+                result += "\n";
+                i++;
+            }
+            return result;
+        }
         #endregion
 
         #region Account

@@ -228,24 +228,31 @@ namespace MineralCLI.Commands
             if (!WalletApi.IsLogin)
                 return true;
 
-            JObject receive = SendCommand(RpcCommandType.GetAccount, new JArray() { WalletApi.KeyStore.Address });
-            if (receive.TryGetValue("error", out JToken value))
+            try
             {
-                OutputErrorMessage(value["code"].ToObject<int>(), value["message"].ToObject<string>());
-                return true;
-            }
+                JObject receive = SendCommand(RpcCommandType.GetAccount, new JArray() { WalletApi.KeyStore.Address });
+                if (receive.TryGetValue("error", out JToken value))
+                {
+                    OutputErrorMessage(value["code"].ToObject<int>(), value["message"].ToObject<string>());
+                    return true;
+                }
 
-            Account account = null;
-            if (receive["result"].Type == JTokenType.Null)
-            {
-                account = new Account();    
+                Account account = null;
+                if (receive["result"].Type == JTokenType.Null)
+                {
+                    account = new Account();
+                }
+                else
+                {
+                    account = Account.Parser.ParseFrom(receive["result"].ToObject<byte[]>());
+                }
+
+                Console.WriteLine("Balance : " + account.Balance);
             }
-            else
+            catch (System.Exception e)
             {
-                account = Account.Parser.ParseFrom(receive["result"].ToObject<byte[]>());
+                Console.WriteLine(e.Message + "\n\n" + e.StackTrace);
             }
-            
-            Console.WriteLine("Balance : " + account.Balance);
 
             return true;
         }
@@ -272,24 +279,31 @@ namespace MineralCLI.Commands
                 return true;
             }
 
-            JObject receive = SendCommand(RpcCommandType.GetAccount, new JArray() { parameters[1] });
-            if (receive.TryGetValue("error", out JToken value))
+            try
             {
-                OutputErrorMessage(value["code"].ToObject<int>(), value["message"].ToObject<string>());
-                return true;
-            }
+                JObject receive = SendCommand(RpcCommandType.GetAccount, new JArray() { parameters[1] });
+                if (receive.TryGetValue("error", out JToken value))
+                {
+                    OutputErrorMessage(value["code"].ToObject<int>(), value["message"].ToObject<string>());
+                    return true;
+                }
 
-            Account account = null;
-            if (receive["result"].Type == JTokenType.Null)
-            {
-                account = new Account();
-            }
-            else
-            {
-                account = Account.Parser.ParseFrom(receive["result"].ToObject<byte[]>());
-            }
+                Account account = null;
+                if (receive["result"].Type == JTokenType.Null)
+                {
+                    account = new Account();
+                }
+                else
+                {
+                    account = Account.Parser.ParseFrom(receive["result"].ToObject<byte[]>());
+                }
 
-            Console.WriteLine(PrintUtil.PrintAccount(account));
+                Console.WriteLine(PrintUtil.PrintAccount(account));
+            }
+            catch (System.Exception e)
+            {
+                Console.WriteLine(e.Message + "\n\n" + e.StackTrace);
+            }
 
             return true;
         }
