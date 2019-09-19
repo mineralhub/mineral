@@ -39,10 +39,11 @@ namespace MineralCLI.Commands
             {
                 Console.WriteLine("Get current block.");
                 receive = SendCommand(RpcCommandType.GetBlockByLatestNum, new JArray() { });
+
             }
             else
             {
-                if (long.TryParse(parameters[1], out long block_num))
+                if (!long.TryParse(parameters[1], out long block_num))
                 {
                     Console.WriteLine("Invalid block number");
                     return true;
@@ -50,14 +51,15 @@ namespace MineralCLI.Commands
                 receive = SendCommand(RpcCommandType.GetBlock, new JArray() { block_num });
             }
 
+            if (receive.TryGetValue("error", out JToken value))
+            {
+                OutputErrorMessage(value["code"].ToObject<int>(), value["message"].ToObject<string>());
+                return true;
+            }
+
             try
             {
                 BlockExtention block = BlockExtention.Parser.ParseFrom(receive["result"].ToObject<byte[]>());
-                if (receive.TryGetValue("error", out JToken value))
-                {
-                    OutputErrorMessage(value["code"].ToObject<int>(), value["message"].ToObject<string>());
-                    return true;
-                }
 
                 Console.WriteLine(PrintUtil.PrintBlockExtention(block));
             }
@@ -171,7 +173,7 @@ namespace MineralCLI.Commands
 
             string[] command_option = new string[] { HelpCommandOption.Help };
 
-            if (parameters == null || parameters.Length != 1)
+            if (parameters == null || parameters.Length != 3)
             {
                 OutputHelpMessage(usage, null, command_option, null);
                 return true;
