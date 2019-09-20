@@ -15,6 +15,9 @@ namespace Mineral.Common.Net.RPC
         public static readonly int INVALID_PARAMS = -32602;
         public static readonly int INTERNAL_ERROR = -32603;
         public static readonly int UNKNOWN_ERROR = -32000;
+        public static readonly int INVALID_PASSWORD = -32001;
+        public static readonly int INVALID_PRIVATEKEY = -32002;
+        public static readonly int TRANSACTION_ERROR = -32003;
         #endregion
 
         public static JObject CreateErrorResult(JToken id, int code, string message)

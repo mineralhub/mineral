@@ -1,12 +1,11 @@
 ﻿using Google.Protobuf;
 using Mineral;
 using Mineral.Core.Net.RpcHandler;
+using MineralCLI.Network;
 using MineralCLI.Util;
 using Newtonsoft.Json.Linq;
 using Protocol;
 using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace MineralCLI.Commands
 {
@@ -24,7 +23,7 @@ namespace MineralCLI.Commands
         public static bool GetBlock(string[] parameters)
         {
             string[] usage = new string[] {
-                string.Format("{0} [command option] <path>\n", RpcCommandType.GetBlock) };
+                string.Format("{0} [command option] <block number>\n", RpcCommandType.GetBlock) };
 
             string[] command_option = new string[] { HelpCommandOption.Help };
 
@@ -36,12 +35,13 @@ namespace MineralCLI.Commands
 
             try
             {
-                JObject receive = null;
+
+                RpcApiResult result = null;
+                BlockExtention block = null;
                 if (parameters.Length == 1)
                 {
                     Console.WriteLine("Get current block.");
-                    receive = SendCommand(RpcCommandType.GetBlockByLatestNum, new JArray() { });
-
+                    result = RpcApi.GetBlockByLatestNum(out block);
                 }
                 else
                 {
@@ -50,18 +50,15 @@ namespace MineralCLI.Commands
                         Console.WriteLine("Invalid block number");
                         return true;
                     }
-                    receive = SendCommand(RpcCommandType.GetBlock, new JArray() { block_num });
+                    result = RpcApi.GetBlock(block_num, out block);
                 }
 
-                if (receive.TryGetValue("error", out JToken value))
+                if (result.Result)
                 {
-                    OutputErrorMessage(value["code"].ToObject<int>(), value["message"].ToObject<string>());
-                    return true;
+                    Console.WriteLine(PrintUtil.PrintBlockExtention(block));
                 }
 
-                BlockExtention block = BlockExtention.Parser.ParseFrom(receive["result"].ToObject<byte[]>());
-
-                Console.WriteLine(PrintUtil.PrintBlockExtention(block));
+                OutputResultMessage(RpcCommandType.GetBlock, result.Result, result.Code, result.Message);
             }
             catch (System.Exception e)
             {
@@ -82,7 +79,7 @@ namespace MineralCLI.Commands
         public static bool GetBlockByLatestNum(string[] parameters)
         {
             string[] usage = new string[] {
-                string.Format("{0} [command option] <path>\n", RpcCommandType.GetBlockByLatestNum) };
+                string.Format("{0} [command option]\n", RpcCommandType.GetBlockByLatestNum) };
 
             string[] command_option = new string[] { HelpCommandOption.Help };
 
@@ -94,16 +91,13 @@ namespace MineralCLI.Commands
 
             try
             {
-                JObject receive = SendCommand(RpcCommandType.GetBlockByLatestNum, new JArray() { });
-
-                BlockExtention block = BlockExtention.Parser.ParseFrom(receive["result"].ToObject<byte[]>());
-                if (receive.TryGetValue("error", out JToken value))
+                RpcApiResult result = RpcApi.GetBlockByLatestNum(out BlockExtention block);
+                if (result.Result)
                 {
-                    OutputErrorMessage(value["code"].ToObject<int>(), value["message"].ToObject<string>());
-                    return true;
+                    Console.WriteLine(PrintUtil.PrintBlockExtention(block));
                 }
 
-                Console.WriteLine(PrintUtil.PrintBlockExtention(block));
+                OutputResultMessage(RpcCommandType.GetBlockByLatestNum, result.Result, result.Code, result.Message);
             }
             catch (System.Exception e)
             {
@@ -125,7 +119,7 @@ namespace MineralCLI.Commands
         public static bool GetBlockById(string[] parameters)
         {
             string[] usage = new string[] {
-                string.Format("{0} [command option] <path>\n", RpcCommandType.GetBlockById) };
+                string.Format("{0} [command option] <block id>\n", RpcCommandType.GetBlockById) };
 
             string[] command_option = new string[] { HelpCommandOption.Help };
 
@@ -137,16 +131,13 @@ namespace MineralCLI.Commands
 
             try
             {
-                JObject receive = SendCommand(RpcCommandType.GetBlockById, new JArray() { parameters[1] });
-
-                BlockExtention block = BlockExtention.Parser.ParseFrom(receive["result"].ToObject<byte[]>());
-                if (receive.TryGetValue("error", out JToken value))
+                RpcApiResult result = RpcApi.GetBlockById(parameters[1], out BlockExtention block);
+                if (result.Result)
                 {
-                    OutputErrorMessage(value["code"].ToObject<int>(), value["message"].ToObject<string>());
-                    return true;
+                    Console.WriteLine(PrintUtil.PrintBlockExtention(block));
                 }
 
-                Console.WriteLine(PrintUtil.PrintBlockExtention(block));
+                OutputResultMessage(RpcCommandType.GetBlockById, result.Result, result.Code, result.Message);
             }
             catch (System.Exception e)
             {
@@ -169,7 +160,7 @@ namespace MineralCLI.Commands
         public static bool GetBlockByLimitNext(string[] parameters)
         {
             string[] usage = new string[] {
-                string.Format("{0} [command option] <path>\n", RpcCommandType.GetBlockByLimitNext) };
+                string.Format("{0} [command option] <start number> <end number>\n", RpcCommandType.GetBlockByLimitNext) };
 
             string[] command_option = new string[] { HelpCommandOption.Help };
 
@@ -181,20 +172,16 @@ namespace MineralCLI.Commands
 
             try
             {
-                BlockLimit limit = new BlockLimit();
-                limit.StartNum = long.Parse(parameters[1]);
-                limit.EndNum = long.Parse(parameters[2]);
+                long start = long.Parse(parameters[1]);
+                long end = long.Parse(parameters[2]);
 
-                JObject receive = SendCommand(RpcCommandType.GetBlockByLimitNext, new JArray() { limit.ToByteArray() });
-                if (receive.TryGetValue("error", out JToken value))
+                RpcApiResult result = RpcApi.GetBlockByLimitNext(start, end, out BlockListExtention blocks);
+                if (result.Result)
                 {
-                    OutputErrorMessage(value["code"].ToObject<int>(), value["message"].ToObject<string>());
-                    return true;
+                    Console.WriteLine(PrintUtil.PrintBlockListExtention(blocks));
                 }
 
-                BlockListExtention blocks = BlockListExtention.Parser.ParseFrom(receive["result"].ToObject<byte[]>());
-
-                Console.WriteLine(PrintUtil.PrintBlockListExtention(blocks));
+                OutputResultMessage(RpcCommandType.GetBlockByLimitNext, result.Result, result.Code, result.Message);
             }
             catch (System.Exception e)
             {

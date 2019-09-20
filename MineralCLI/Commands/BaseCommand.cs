@@ -1,10 +1,6 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using Newtonsoft.Json.Linq;
-using Mineral;
-using MineralCLI.Network;
 
 namespace MineralCLI.Commands
 {
@@ -43,25 +39,19 @@ namespace MineralCLI.Commands
             return true;
         }
 
-        public static JObject MakeCommand(string method, JArray parameters)
+        public static void OutputResultMessage(string method, bool result, int code, string message)
         {
-            JObject cmd = new JObject();
-            cmd["id"] = Program.id;
-            cmd["method"] = method;
-            cmd["params"] = parameters;
-            return cmd;
-        }
-
-        public static JObject SendCommand(string method, JArray parameters)
-        {
-            JObject obj = MakeCommand(method, parameters);
-            return RcpClient.RequestPostAnsyc(Program.url, obj.ToString()).Result;
-        }
-
-        public static void OutputErrorMessage(int code, string message)
-        {
-            Console.WriteLine("Error code : " + code);
-            Console.WriteLine("Message \n" + message);
+            if (result)
+            {
+                Console.WriteLine(
+                    string.Format("{0} Success.", method));
+            }
+            else
+            {
+                Console.WriteLine(string.Format("{0} Failed.", method));
+                Console.WriteLine("Error code : " + code);
+                Console.WriteLine("Message \n" + message);
+            }
         }
 
         public static void OutputHelpMessage(string[] usage_message, string[] option_message, string[] commandoption_message, string[] help_message)

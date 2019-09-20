@@ -18,7 +18,7 @@ using Mineral.Common.Overlay.Messages;
 
 namespace Mineral.Core.Net.RpcHandler
 {
-    public class RpcWalletApi
+    public class RpcApiService
     {
         #region Field
         #endregion

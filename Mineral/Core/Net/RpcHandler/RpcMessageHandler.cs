@@ -85,7 +85,7 @@ namespace Mineral.Core.Net.RpcHandler
             {
                 TransferContract contract = TransferContract.Parser.ParseFrom(parameters[0].ToObject<byte[]>());
                 TransactionExtention transaction_extention =
-                    RpcWalletApi.CreateTransactionExtention(contract, Transaction.Types.Contract.Types.ContractType.TransferContract);
+                    RpcApiService.CreateTransactionExtention(contract, Transaction.Types.Contract.Types.ContractType.TransferContract);
 
                 result = JToken.FromObject(transaction_extention.ToByteArray());
             }
@@ -109,7 +109,7 @@ namespace Mineral.Core.Net.RpcHandler
             }
 
             Transaction transaction = Transaction.Parser.ParseFrom(parameters[0].ToObject<byte[]>());
-            TransactionSignWeight weight = RpcWalletApi.GetTransactionSignWeight(transaction);
+            TransactionSignWeight weight = RpcApiService.GetTransactionSignWeight(transaction);
 
             result = JToken.FromObject(weight.ToByteArray());
 
@@ -127,7 +127,7 @@ namespace Mineral.Core.Net.RpcHandler
             }
 
             Transaction transaction = Transaction.Parser.ParseFrom(parameters[0].ToObject<byte[]>());
-            Return ret = RpcWalletApi.BroadcastTransaction(transaction);
+            Return ret = RpcApiService.BroadcastTransaction(transaction);
 
             result = JToken.FromObject(ret.ToByteArray());
 
@@ -147,7 +147,7 @@ namespace Mineral.Core.Net.RpcHandler
             try
             {
                 byte[] address = Wallet.Base58ToAddress(parameters[0].Value<string>());
-                Account account = RpcWalletApi.GetAccount(address);
+                Account account = RpcApiService.GetAccount(address);
 
                 result = (account != null) ? JToken.FromObject(account.ToByteArray()) : new JObject();
             }
@@ -183,7 +183,7 @@ namespace Mineral.Core.Net.RpcHandler
             try
             {
                 byte[] address = Wallet.Base58ToAddress(parameters[0].ToString());
-                AssetIssueList asset_issue_list = RpcWalletApi.GetAssetIssueList(address);
+                AssetIssueList asset_issue_list = RpcApiService.GetAssetIssueList(address);
 
                 result = JToken.FromObject(asset_issue_list);
             }
@@ -214,7 +214,7 @@ namespace Mineral.Core.Net.RpcHandler
             try
             {
                 byte[] asset_id = Encoding.UTF8.GetBytes(parameters[0].ToString());
-                AssetIssueContract asset_issue_contract = RpcWalletApi.GetAssetIssueById(asset_id);
+                AssetIssueContract asset_issue_contract = RpcApiService.GetAssetIssueById(asset_id);
 
                 result = JToken.FromObject(asset_issue_contract.ToByteArray());
             }
@@ -245,7 +245,7 @@ namespace Mineral.Core.Net.RpcHandler
             try
             {
                 byte[] name = Encoding.UTF8.GetBytes(parameters[0].ToString());
-                AssetIssueContract asset_issue_contract = RpcWalletApi.GetAssetIssueByName(name);
+                AssetIssueContract asset_issue_contract = RpcApiService.GetAssetIssueByName(name);
 
                 result = JToken.FromObject(asset_issue_contract.ToByteArray());
             }
@@ -276,7 +276,7 @@ namespace Mineral.Core.Net.RpcHandler
             try
             {
                 byte[] name = Encoding.UTF8.GetBytes(parameters[0].ToString());
-                AssetIssueList asset_issue_list = RpcWalletApi.GetAssetIssueListByName(name);
+                AssetIssueList asset_issue_list = RpcApiService.GetAssetIssueListByName(name);
 
                 result = JToken.FromObject(asset_issue_list.ToByteArray());
             }
@@ -313,7 +313,7 @@ namespace Mineral.Core.Net.RpcHandler
             {
                 TransferAssetContract contract = TransferAssetContract.Parser.ParseFrom(parameters.ToObject<byte[]>());
                 TransactionExtention transaction =
-                    RpcWalletApi.CreateTransactionExtention(contract,Transaction.Types.Contract.Types.ContractType.TransferAssetContract);
+                    RpcApiService.CreateTransactionExtention(contract,Transaction.Types.Contract.Types.ContractType.TransferAssetContract);
 
                 result = JToken.FromObject(transaction.ToByteArray());
             }
@@ -339,7 +339,7 @@ namespace Mineral.Core.Net.RpcHandler
             try
             {
                 BlockCapsule block = Manager.Instance.DBManager.GetBlockByNum(parameters[0].Value<long>());
-                result = JToken.FromObject(RpcWalletApi.CreateBlockExtention(block).ToByteArray());
+                result = JToken.FromObject(RpcApiService.CreateBlockExtention(block).ToByteArray());
             }
             catch (InvalidCastException e)
             {
@@ -373,7 +373,7 @@ namespace Mineral.Core.Net.RpcHandler
                     result = RpcMessage.CreateErrorResult(id, RpcMessage.INTERNAL_ERROR, "Can not load latest block.");
                 }
 
-                BlockExtention block_extention = RpcWalletApi.CreateBlockExtention(blocks[0]);
+                BlockExtention block_extention = RpcApiService.CreateBlockExtention(blocks[0]);
                 result = JToken.FromObject(block_extention.ToByteArray());
             }
             catch (InvalidCastException e)
@@ -404,7 +404,7 @@ namespace Mineral.Core.Net.RpcHandler
             {
                 SHA256Hash hash = SHA256Hash.Wrap(parameters[0].ToString().HexToBytes());
                 BlockCapsule block = Manager.Instance.DBManager.GetBlockById(hash);
-                BlockExtention block_extention = RpcWalletApi.CreateBlockExtention(block);
+                BlockExtention block_extention = RpcApiService.CreateBlockExtention(block);
 
                 result = JToken.FromObject(block_extention.ToByteArray());
             }
@@ -434,7 +434,7 @@ namespace Mineral.Core.Net.RpcHandler
                 BlockListExtention blocks = new BlockListExtention();
                 Manager.Instance.DBManager.Block.GetLimitNumber(limit.StartNum, limit.EndNum - limit.StartNum).ForEach(block =>
                 {
-                    blocks.Block.Add(RpcWalletApi.CreateBlockExtention(block));
+                    blocks.Block.Add(RpcApiService.CreateBlockExtention(block));
                 });
 
                 result = JToken.FromObject(blocks.ToByteArray());

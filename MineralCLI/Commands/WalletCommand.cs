@@ -1,25 +1,14 @@
-﻿using Google.Protobuf;
-using Mineral;
-using Mineral.CommandLine;
+﻿using Mineral.CommandLine;
 using Mineral.Core;
 using Mineral.Core.Net.RpcHandler;
-using Mineral.Cryptography;
 using Mineral.Wallets.KeyStore;
-using MineralCLI.Api;
-using MineralCLI.Exception;
+using MineralCLI.Network;
 using MineralCLI.Util;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
 using Protocol;
 using System;
-using System.Collections.Generic;
-using System.Text;
-using System.Threading;
 
 namespace MineralCLI.Commands
 {
-    using ResponseCode = TransactionSignWeight.Types.Result.Types.response_code;
-
     public sealed class WalletCommand : BaseCommand
     {
         /// <summary>
@@ -43,12 +32,19 @@ namespace MineralCLI.Commands
                 return true;
             }
 
-            string password = CommandLineUtil.ReadPasswordString("Please input your password.");
-            string privatekey = CommandLineUtil.ReadString("Please input your private key.");
-
-            if (WalletApi.ImportWallet(password, privatekey))
+            try
             {
+                string password = CommandLineUtil.ReadPasswordString("Please input your password.");
+                string privatekey = CommandLineUtil.ReadString("Please input your private key.");
+
+                RpcApiResult result = RpcApi.ImportWallet(password, privatekey);
                 Logout(null);
+
+                OutputResultMessage(RpcCommandType.BackupWallet, result.Result, result.Code, result.Message);
+            }
+            catch (System.Exception e)
+            {
+                Console.WriteLine(e.Message + "\n\n" + e.StackTrace);
             }
 
             return true;
@@ -75,14 +71,20 @@ namespace MineralCLI.Commands
                 return true;
             }
 
-            if (!WalletApi.IsLogin)
-            {
+            if (!RpcApi.IsLogin)
                 return true;
+
+            try
+            {
+                string password = CommandLineUtil.ReadPasswordString("Please input your password.");
+                RpcApiResult result = RpcApi.BackupWallet(password);
+
+                OutputResultMessage(RpcCommandType.BackupWallet, result.Result, result.Code, result.Message);
             }
-
-            string password = CommandLineUtil.ReadPasswordString("Please input your password.");
-            WalletApi.BackupWallet(password);
-
+            catch (System.Exception e)
+            {
+                Console.WriteLine(e.Message + "\n\n" + e.StackTrace);
+            }
             return true;
         }
 
@@ -107,28 +109,27 @@ namespace MineralCLI.Commands
                 return true;
             }
 
-            string password = CommandLineUtil.ReadPasswordString("Please input wallet password");
-            string confirm = CommandLineUtil.ReadPasswordString("Please input confirm wallet password");
-
-            if (!password.Equals(confirm))
+            try
             {
-                Console.WriteLine("Confirm password does not match");
-                return true;
+                string password = CommandLineUtil.ReadPasswordString("Please input wallet password");
+                string confirm = CommandLineUtil.ReadPasswordString("Please input confirm wallet password");
+
+                if (!password.Equals(confirm))
+                {
+                    Console.WriteLine("Confirm password does not match");
+                    return true;
+                }
+
+                RpcApiResult result = RpcApi.RegisterWallet(password);
+                Logout(null);
+
+                OutputResultMessage(RpcCommandType.RegisterWallet, result.Result, result.Code, result.Message);
+            }
+            catch (System.Exception e)
+            {
+                Console.WriteLine(e.Message + "\n\n" + e.StackTrace);
             }
 
-            ECKey key = new ECKey();
-            PathUtil.MakeDirectory(WalletApi.FILE_PATH);
-            if (!KeyStoreService.GenerateKeyStore(WalletApi.FILE_PATH,
-                                                  password,
-                                                  key.PrivateKey,
-                                                  Wallet.AddressToBase58(Wallet.PublickKeyToAddress(key.PublicKey))))
-            {
-                Console.WriteLine("Failed to RegistWallet.");
-                return true;
-            }
-
-            Console.WriteLine("Register wallet complete.");
-            Logout(null);
 
             return true;
         }
@@ -145,7 +146,7 @@ namespace MineralCLI.Commands
         {
             Logout(null);
 
-            KeyStore keystore = WalletApi.SelectKeyStore();
+            KeyStore keystore = RpcApi.SelectKeyStore();
 
             string password = CommandLineUtil.ReadPasswordString("Please input your password.");
             if (!KeyStoreService.CheckPassword(password, keystore))
@@ -154,8 +155,9 @@ namespace MineralCLI.Commands
                 return true;
             }
 
-            WalletApi.KeyStore = keystore;
-            Console.WriteLine("Login success.");
+            RpcApi.KeyStore = keystore;
+
+            OutputResultMessage(RpcCommandType.Login, true, 0, "");
 
             return true;
         }
@@ -170,7 +172,8 @@ namespace MineralCLI.Commands
         /// <returns></returns>
         public static bool Logout(string[] parameters)
         {
-            WalletApi.KeyStore = null;
+            RpcApi.KeyStore = null;
+            OutputResultMessage(RpcCommandType.Logout, true, 0, "");
 
             return true;
         }
@@ -186,7 +189,7 @@ namespace MineralCLI.Commands
         public static bool GetAddress(string[] parameters)
         {
             string[] usage = new string[] {
-                string.Format("{0} [command option] <path>\n", RpcCommandType.GetAddress) };
+                string.Format("{0} [command option]\n", RpcCommandType.GetAddress) };
 
             string[] command_option = new string[] { HelpCommandOption.Help };
 
@@ -196,10 +199,10 @@ namespace MineralCLI.Commands
                 return true;
             }
 
-            if (!WalletApi.IsLogin)
+            if (!RpcApi.IsLogin)
                 return true;
 
-            Console.WriteLine(WalletApi.KeyStore.Address);
+            OutputResultMessage(RpcCommandType.GetAddress, true, 0, "");
 
             return true;
         }
@@ -215,7 +218,7 @@ namespace MineralCLI.Commands
         public static bool GetBalance(string[] parameters)
         {
             string[] usage = new string[] {
-                string.Format("{0} [command option] <path>\n", RpcCommandType.GetAccount) };
+                string.Format("{0} [command option]\n", RpcCommandType.GetAccount) };
 
             string[] command_option = new string[] { HelpCommandOption.Help };
 
@@ -225,29 +228,17 @@ namespace MineralCLI.Commands
                 return true;
             }
 
-            if (!WalletApi.IsLogin)
+            if (!RpcApi.IsLogin)
                 return true;
 
             try
             {
-                JObject receive = SendCommand(RpcCommandType.GetAccount, new JArray() { WalletApi.KeyStore.Address });
-                if (receive.TryGetValue("error", out JToken value))
-                {
-                    OutputErrorMessage(value["code"].ToObject<int>(), value["message"].ToObject<string>());
-                    return true;
-                }
+                string address = RpcApi.KeyStore.Address;
+                RpcApiResult result = RpcApi.GetBalance(out long balance);
 
-                Account account = null;
-                if (receive["result"].Type == JTokenType.Null)
-                {
-                    account = new Account();
-                }
-                else
-                {
-                    account = Account.Parser.ParseFrom(receive["result"].ToObject<byte[]>());
-                }
+                Console.WriteLine("Balance : " + balance);
+                OutputResultMessage(RpcCommandType.GetBalance, result.Result, result.Code, result.Message);
 
-                Console.WriteLine("Balance : " + account.Balance);
             }
             catch (System.Exception e)
             {
@@ -269,7 +260,7 @@ namespace MineralCLI.Commands
         public static bool GetAccount(string[] parameters)
         {
             string[] usage = new string[] {
-                string.Format("{0} [command option] <path>\n", RpcCommandType.GetAccount) };
+                string.Format("{0} [command option] <address>\n", RpcCommandType.GetAccount) };
 
             string[] command_option = new string[] { HelpCommandOption.Help };
 
@@ -281,24 +272,55 @@ namespace MineralCLI.Commands
 
             try
             {
-                JObject receive = SendCommand(RpcCommandType.GetAccount, new JArray() { parameters[1] });
-                if (receive.TryGetValue("error", out JToken value))
-                {
-                    OutputErrorMessage(value["code"].ToObject<int>(), value["message"].ToObject<string>());
-                    return true;
-                }
-
-                Account account = null;
-                if (receive["result"].Type == JTokenType.Null)
-                {
-                    account = new Account();
-                }
-                else
-                {
-                    account = Account.Parser.ParseFrom(receive["result"].ToObject<byte[]>());
-                }
+                RpcApiResult result = RpcApi.GetAccount(parameters[1], out Account account);
 
                 Console.WriteLine(PrintUtil.PrintAccount(account));
+                OutputResultMessage(RpcCommandType.GetAccount, result.Result, result.Code, result.Message);
+            }
+            catch (System.Exception e)
+            {
+                Console.WriteLine(e.Message + "\n\n" + e.StackTrace);
+            }
+
+            return true;
+        }
+
+        public static bool CreateAccount(string[] parameters)
+        {
+            string[] usage = new string[] {
+                string.Format("{0} [command option] <address>\n", RpcCommandType.CreateAccount) };
+
+            string[] command_option = new string[] { HelpCommandOption.Help };
+
+            if (parameters == null || parameters.Length != 2)
+            {
+                OutputHelpMessage(usage, null, command_option, null);
+                return true;
+            }
+
+            if (!RpcApi.IsLogin)
+            {
+                return true;
+            }
+
+            try
+            {
+
+                //byte[] owner_address = Wallet.Base58ToAddress(WalletApi.KeyStore.Address);
+                //byte[] to_address = Wallet.Base58ToAddress(parameters[1]);
+                //AccountCreateContract contract = WalletApi.CreateAccountContract(owner_address, to_address);
+
+                //JObject receive = SendCommand(RpcCommandType.CreateAccount, new JArray() { contract.ToByteArray() });
+                //if (receive.TryGetValue("error", out JToken value))
+                //{
+                //    OutputErrorMessage(value["code"].ToObject<int>(), value["message"].ToObject<string>());
+                //    return true;
+                //}
+
+                //TransactionExtention transaction = TransactionExtention.Parser.ParseFrom(receive["result"].ToObject<byte[]>());
+                //WalletApi.SignatureTransaction()
+
+
             }
             catch (System.Exception e)
             {
@@ -321,7 +343,7 @@ namespace MineralCLI.Commands
         public static bool SendCoin(string[] parameters)
         {
             string[] usage = new string[] {
-                string.Format("{0} [command option] <address> <amount>\n", RpcCommandType.SendCoin) };
+                string.Format("{0} [command option] <to address> <amount>\n", RpcCommandType.SendCoin) };
 
             string[] command_option = new string[] { HelpCommandOption.Help };
 
@@ -331,91 +353,41 @@ namespace MineralCLI.Commands
                 return true;
             }
 
-            if (!WalletApi.IsLogin)
+            if (!RpcApi.IsLogin)
             {
                 return true;
             }
 
             try
             {
-                TransferContract contract =
-                    WalletApi.CreateTransaferContract(Wallet.Base58ToAddress(WalletApi.KeyStore.Address),
-                                                      Wallet.Base58ToAddress(parameters[1]),
-                                                      long.Parse(parameters[2]));
+                RpcApiResult result = RpcApi.CreateTransaferContract(Wallet.Base58ToAddress(RpcApi.KeyStore.Address),
+                                                                     Wallet.Base58ToAddress(parameters[1]),
+                                                                     long.Parse(parameters[2]),
+                                                                     out TransferContract contract);
 
-                JObject receive = 
-                    SendCommand(RpcCommandType.CreateTransaction, new JArray() { contract.ToByteArray() });
-
-                if (receive.TryGetValue("error", out JToken value))
+                TransactionExtention transaction_extention = null;
+                if (result.Result)
                 {
-                    OutputErrorMessage(value["code"].ToObject<int>(), value["message"].ToObject<string>());
-                    return true;
+                    result = RpcApi.CreateTransaction(contract, out transaction_extention);
                 }
 
-                TransactionExtention transaction_extention = TransactionExtention.Parser.ParseFrom(receive["result"].ToObject<byte[]>());
-                Return ret = transaction_extention.Result;
-                if (!ret.Result)
+                if (result.Result)
                 {
-                    Console.WriteLine("Code : " + ret.Code);
-                    Console.WriteLine("Message : " + ret.Message.ToStringUtf8());
-                    return true;
+                    result = RpcApi.ProcessTransactionExtention(transaction_extention);
                 }
 
-                Transaction transaction = WalletApi.InitSignatureTransaction(transaction_extention.Transaction);
-                while (true)
-                {
-                    transaction = WalletApi.SignatureTransaction(transaction);
-                    Console.WriteLine("current transaction hex string is " + transaction.ToByteArray().ToHexString());
-
-                    receive = SendCommand(RpcCommandType.GetTransactionSignWeight, new JArray() { transaction.ToByteArray() });
-
-                    TransactionSignWeight weight = TransactionSignWeight.Parser.ParseFrom(receive["result"].ToObject<byte[]>());
-                    if (weight.Result.Code == ResponseCode.EnoughPermission)
-                    {
-                        break;
-                    }
-                    else if (weight.Result.Code == ResponseCode.NotEnoughPermission)
-                    {
-                        Console.WriteLine("Current signWeight is:");
-                        Console.WriteLine(PrintUtil.PrintTransactionSignWeight(weight));
-                        Console.WriteLine("Please confirm if continue add signature enter y or Y, else any other");
-
-                        if (!CommandLineUtil.Confirm())
-                        {
-                            throw new CancelException("User cancelled");
-                        }
-                        continue;
-                    }
-
-                    throw new CancelException(weight.Result.Message);
-                }
-
-                receive = SendCommand(RpcCommandType.BroadcastTransaction, new JArray() { transaction.ToByteArray() });
-                ret = Return.Parser.ParseFrom(receive["result"].ToObject<byte[]>());
-
-                int retry = 10;
-                while (ret.Result == false && ret.Code == Return.Types.response_code.ServerBusy && retry > 0)
-                {
-                    retry--;
-                    receive = SendCommand(RpcCommandType.BroadcastTransaction, new JArray() { transaction.ToByteArray() });
-                    ret = Return.Parser.ParseFrom(receive["result"].ToObject<byte[]>());
-                    Console.WriteLine("Retry broadcast : " + (11 - retry));
-
-                    Thread.Sleep(1000);
-                }
-
-                if (ret.Result)
+                if (result.Result)
                 {
                     Console.WriteLine(
                         string.Format("Send {0} drop to {1} + successful. ", long.Parse(parameters[2]), parameters[1]));
                 }
                 else
                 {
-                    Console.WriteLine("Code : " + ret.Code);
-                    Console.WriteLine("Message : " + ret.Message);
                     Console.WriteLine(
                         string.Format("Send {0} drop to {1} + failed. ", long.Parse(parameters[2]), parameters[1]));
                 }
+
+                OutputResultMessage(RpcCommandType.SendCoin, result.Result, result.Code, result.Message);
             }
             catch (System.Exception e)
             {
