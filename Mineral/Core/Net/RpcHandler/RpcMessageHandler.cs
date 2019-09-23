@@ -21,6 +21,7 @@ namespace Mineral.Core.Net.RpcHandler
         {
             { RpcCommandType.CreateAccount, new RpcHandler(OnCreateAccount) },
             { RpcCommandType.CreateProposal, new RpcHandler(OnCreateProposal) },
+            { RpcCommandType.CreateWitness, new RpcHandler(OnCreateWitness) },
             { RpcCommandType.CreateTransaction, new RpcHandler(OnCreateTransaction) },
             { RpcCommandType.GetTransactionSignWeight, new RpcHandler(OnGetTransactionSignWeight) },
             { RpcCommandType.BroadcastTransaction, new RpcHandler(OnBroadcastTransaction) },
@@ -112,9 +113,36 @@ namespace Mineral.Core.Net.RpcHandler
 
             try
             {
-                AccountCreateContract contract = AccountCreateContract.Parser.ParseFrom(parameters[0].ToObject<byte[]>());
+                ProposalCreateContract contract = ProposalCreateContract.Parser.ParseFrom(parameters[0].ToObject<byte[]>());
                 TransactionExtention transaction_extention =
                     RpcApiService.CreateTransactionExtention(contract, Transaction.Types.Contract.Types.ContractType.ProposalCreateContract);
+
+                result = JToken.FromObject(transaction_extention.ToByteArray());
+            }
+            catch (System.Exception e)
+            {
+                result = RpcMessage.CreateErrorResult(id, RpcMessage.INVALID_PARAMS, e.Message);
+                return false;
+            }
+
+            return true;
+        }
+
+        public static bool OnCreateWitness(JToken id, string method, JArray parameters, out JToken result)
+        {
+            result = new JObject();
+
+            if (parameters == null || parameters.Count != 1)
+            {
+                result = RpcMessage.CreateErrorResult(id, RpcMessage.INVALID_PARAMS, "Invalid parameters");
+                return false;
+            }
+
+            try
+            {
+                WitnessCreateContract contract = WitnessCreateContract.Parser.ParseFrom(parameters[0].ToObject<byte[]>());
+                TransactionExtention transaction_extention =
+                    RpcApiService.CreateTransactionExtention(contract, Transaction.Types.Contract.Types.ContractType.WitnessCreateContract);
 
                 result = JToken.FromObject(transaction_extention.ToByteArray());
             }

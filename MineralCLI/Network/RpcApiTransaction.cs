@@ -67,6 +67,17 @@ namespace MineralCLI.Network
             return RpcApiResult.Success;
         }
 
+        public static RpcApiResult CreateWitnessContract(byte[] owner_address,
+                                                         byte[] url,
+                                                         out WitnessCreateContract contract)
+        {
+            contract = new WitnessCreateContract();
+            contract.OwnerAddress = ByteString.CopyFrom(owner_address);
+            contract.Url = ByteString.CopyFrom(url);
+
+            return RpcApiResult.Success;
+        }
+
 
         public static RpcApiResult CreateTransaferContract(byte[] owner_address,
                                                            byte[] to_address,

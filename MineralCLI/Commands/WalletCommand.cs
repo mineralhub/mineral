@@ -348,7 +348,7 @@ namespace MineralCLI.Commands
         /// <param name="parameters"></param>
         /// /// Parameter Index
         /// [0] : Command
-        /// [1] : Proposal pair parameter
+        /// [1~] : Proposal pair parameter
         /// <returns></returns>
         public static bool CreateProposal(string[] parameters)
         {
@@ -388,6 +388,62 @@ namespace MineralCLI.Commands
                 if (result.Result)
                 {
                     result = RpcApi.CreateTransaction(contract, RpcCommandType.CreateProposal, out transaction_extention);
+                }
+
+                if (result.Result)
+                {
+                    result = RpcApi.ProcessTransactionExtention(transaction_extention);
+                }
+
+                OutputResultMessage(RpcCommandType.SendCoin, result.Result, result.Code, result.Message);
+            }
+            catch (System.Exception e)
+            {
+                Console.WriteLine(e.Message + "\n\n" + e.StackTrace);
+            }
+
+            return true;
+        }
+
+        /// <summary>
+        /// Create account
+        /// </summary>
+        /// <param name="parameters"></param>
+        /// /// Parameter Index
+        /// [0] : Command
+        /// [1] : Witness url
+        /// <returns></returns>
+        public static bool CreateWitness(string[] parameters)
+        {
+            string[] usage = new string[] {
+                string.Format("{0} [command option] <address>\n", RpcCommandType.CreateAccount) };
+
+            string[] command_option = new string[] { HelpCommandOption.Help };
+
+            if (parameters == null || parameters.Length != 2)
+            {
+                OutputHelpMessage(usage, null, command_option, null);
+                return true;
+            }
+
+            if (!RpcApi.IsLogin)
+            {
+                return true;
+            }
+
+            try
+            {
+                byte[] owner_address = Wallet.Base58ToAddress(RpcApi.KeyStore.Address);
+                byte[] url = Wallet.Base58ToAddress(parameters[1]);
+
+                RpcApiResult result = RpcApi.CreateWitnessContract(owner_address,
+                                                                   url,
+                                                                   out WitnessCreateContract contract);
+
+                TransactionExtention transaction_extention = null;
+                if (result.Result)
+                {
+                    result = RpcApi.CreateTransaction(contract, RpcCommandType.CreateWitness, out transaction_extention);
                 }
 
                 if (result.Result)
