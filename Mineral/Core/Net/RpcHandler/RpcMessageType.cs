@@ -10,6 +10,9 @@ namespace Mineral.Core.Net.RpcHandler
         [CommandLineAttribute(Name = "CreateAccount", Description = "")]
         public static readonly string CreateAccount = "createaccount";
 
+        [CommandLineAttribute(Name = "CreateProposal", Description = "")]
+        public static readonly string CreateProposal = "createproposal";
+
         [CommandLineAttribute(Name = "CreateTransaction", Description = "")]
         public static readonly string CreateTransaction = "createtransaction";
 

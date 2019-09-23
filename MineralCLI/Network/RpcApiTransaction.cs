@@ -53,6 +53,21 @@ namespace MineralCLI.Network
             return RpcApiResult.Success;
         }
 
+        public static RpcApiResult CreateProposalContract(byte[] owner_address,
+                                                          Dictionary<long, long> parameters,
+                                                          out ProposalCreateContract contract)
+        {
+            contract = new ProposalCreateContract();
+            contract.OwnerAddress = ByteString.CopyFrom(owner_address);
+            foreach (var parameter in parameters)
+            {
+                contract.Parameters.Add(parameter.Key, parameter.Value);
+            }
+
+            return RpcApiResult.Success;
+        }
+
+
         public static RpcApiResult CreateTransaferContract(byte[] owner_address,
                                                            byte[] to_address,
                                                            long amount, out TransferContract contract)
