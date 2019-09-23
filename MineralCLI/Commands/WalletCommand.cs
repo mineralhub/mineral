@@ -7,6 +7,7 @@ using MineralCLI.Util;
 using Protocol;
 using System;
 using System.Collections.Generic;
+using System.Text;
 
 namespace MineralCLI.Commands
 {
@@ -315,10 +316,10 @@ namespace MineralCLI.Commands
             try
             {
                 byte[] owner_address = Wallet.Base58ToAddress(RpcApi.KeyStore.Address);
-                byte[] to_address = Wallet.Base58ToAddress(parameters[1]);
+                byte[] create_address = Wallet.Base58ToAddress(parameters[1]);
 
                 RpcApiResult result = RpcApi.CreateAccountContract(owner_address,
-                                                                   to_address,
+                                                                   create_address,
                                                                    out AccountCreateContract contract);
 
                 TransactionExtention transaction_extention = null;
@@ -343,7 +344,7 @@ namespace MineralCLI.Commands
         }
 
         /// <summary>
-        /// Create account
+        /// Create proposal
         /// </summary>
         /// <param name="parameters"></param>
         /// /// Parameter Index
@@ -406,7 +407,7 @@ namespace MineralCLI.Commands
         }
 
         /// <summary>
-        /// Create account
+        /// Create witenss
         /// </summary>
         /// <param name="parameters"></param>
         /// /// Parameter Index
@@ -434,7 +435,7 @@ namespace MineralCLI.Commands
             try
             {
                 byte[] owner_address = Wallet.Base58ToAddress(RpcApi.KeyStore.Address);
-                byte[] url = Wallet.Base58ToAddress(parameters[1]);
+                byte[] url = Encoding.UTF8.GetBytes(parameters[1]);
 
                 RpcApiResult result = RpcApi.CreateWitnessContract(owner_address,
                                                                    url,
@@ -444,6 +445,118 @@ namespace MineralCLI.Commands
                 if (result.Result)
                 {
                     result = RpcApi.CreateTransaction(contract, RpcCommandType.CreateWitness, out transaction_extention);
+                }
+
+                if (result.Result)
+                {
+                    result = RpcApi.ProcessTransactionExtention(transaction_extention);
+                }
+
+                OutputResultMessage(RpcCommandType.SendCoin, result.Result, result.Code, result.Message);
+            }
+            catch (System.Exception e)
+            {
+                Console.WriteLine(e.Message + "\n\n" + e.StackTrace);
+            }
+
+            return true;
+        }
+
+        /// <summary>
+        /// Update account name
+        /// </summary>
+        /// <param name="parameters"></param>
+        /// /// Parameter Index
+        /// [0] : Command
+        /// [1] : Witness url
+        /// <returns></returns>
+        public static bool UpdateAccount(string[] parameters)
+        {
+            string[] usage = new string[] {
+                string.Format("{0} [command option] <address>\n", RpcCommandType.CreateAccount) };
+
+            string[] command_option = new string[] { HelpCommandOption.Help };
+
+            if (parameters == null || parameters.Length != 2)
+            {
+                OutputHelpMessage(usage, null, command_option, null);
+                return true;
+            }
+
+            if (!RpcApi.IsLogin)
+            {
+                return true;
+            }
+
+            try
+            {
+                byte[] owner_address = Wallet.Base58ToAddress(RpcApi.KeyStore.Address);
+                byte[] name = Encoding.UTF8.GetBytes(parameters[1]);
+
+                RpcApiResult result = RpcApi.CreateUpdateAcountContract(owner_address,
+                                                                        name,
+                                                                        out AccountUpdateContract contract);
+
+                TransactionExtention transaction_extention = null;
+                if (result.Result)
+                {
+                    result = RpcApi.CreateTransaction(contract, RpcCommandType.UpdateAccount, out transaction_extention);
+                }
+
+                if (result.Result)
+                {
+                    result = RpcApi.ProcessTransactionExtention(transaction_extention);
+                }
+
+                OutputResultMessage(RpcCommandType.SendCoin, result.Result, result.Code, result.Message);
+            }
+            catch (System.Exception e)
+            {
+                Console.WriteLine(e.Message + "\n\n" + e.StackTrace);
+            }
+
+            return true;
+        }
+
+        /// <summary>
+        /// Update witness
+        /// </summary>
+        /// <param name="parameters"></param>
+        /// /// Parameter Index
+        /// [0] : Command
+        /// [1] : Witness url
+        /// <returns></returns>
+        public static bool UpdateWitness(string[] parameters)
+        {
+            string[] usage = new string[] {
+                string.Format("{0} [command option] <address>\n", RpcCommandType.CreateAccount) };
+
+            string[] command_option = new string[] { HelpCommandOption.Help };
+
+            if (parameters == null || parameters.Length != 2)
+            {
+                OutputHelpMessage(usage, null, command_option, null);
+                return true;
+            }
+
+            if (!RpcApi.IsLogin)
+            {
+                return true;
+            }
+
+            try
+            {
+                byte[] owner_address = Wallet.Base58ToAddress(RpcApi.KeyStore.Address);
+                byte[] url = Wallet.Base58ToAddress(parameters[1]);
+
+                RpcApiResult result = RpcApi.CreateUpdateWitnessContract(owner_address,
+                                                                         url,
+                                                                         out WitnessUpdateContract contract);
+
+                TransactionExtention transaction_extention = null;
+                if (result.Result)
+                {
+                    result = RpcApi.CreateTransaction(contract, RpcCommandType.UpdateWitness, out transaction_extention);
                 }
 
                 if (result.Result)

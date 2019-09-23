@@ -106,6 +106,28 @@ namespace MineralCLI.Network
             return RpcApiResult.Success;
         }
 
+        public static RpcApiResult CreateUpdateAcountContract(byte[] address,
+                                                              byte[] name,
+                                                              out AccountUpdateContract contract)
+        {
+            contract = new AccountUpdateContract();
+            contract.OwnerAddress = ByteString.CopyFrom(address);
+            contract.AccountName = ByteString.CopyFrom(name);
+
+            return RpcApiResult.Success;
+        }
+
+        public static RpcApiResult CreateUpdateWitnessContract(byte[] address,
+                                                               byte[] url,
+                                                               out WitnessUpdateContract contract)
+        {
+            contract = new WitnessUpdateContract();
+            contract.OwnerAddress = ByteString.CopyFrom(address);
+            contract.UpdateUrl = ByteString.CopyFrom(url);
+
+            return RpcApiResult.Success;
+        }
+
         public static RpcApiResult CreateTransaction(IMessage contract,
                                                      string command_type,
                                                      out TransactionExtention transaction_extention)

@@ -23,6 +23,8 @@ namespace Mineral.Core.Net.RpcHandler
             { RpcCommandType.CreateProposal, new RpcHandler(OnCreateProposal) },
             { RpcCommandType.CreateWitness, new RpcHandler(OnCreateWitness) },
             { RpcCommandType.CreateTransaction, new RpcHandler(OnCreateTransaction) },
+            { RpcCommandType.UpdateAccount, new RpcHandler(OnUpdateAccount) },
+            { RpcCommandType.UpdateWitness, new RpcHandler(OnUpdateWitness) },
             { RpcCommandType.GetTransactionSignWeight, new RpcHandler(OnGetTransactionSignWeight) },
             { RpcCommandType.BroadcastTransaction, new RpcHandler(OnBroadcastTransaction) },
 
@@ -170,6 +172,60 @@ namespace Mineral.Core.Net.RpcHandler
                 TransferContract contract = TransferContract.Parser.ParseFrom(parameters[0].ToObject<byte[]>());
                 TransactionExtention transaction_extention =
                     RpcApiService.CreateTransactionExtention(contract, Transaction.Types.Contract.Types.ContractType.TransferContract);
+
+                result = JToken.FromObject(transaction_extention.ToByteArray());
+            }
+            catch (System.Exception e)
+            {
+                result = RpcMessage.CreateErrorResult(id, RpcMessage.INVALID_PARAMS, e.Message);
+                return false;
+            }
+
+            return true;
+        }
+
+        public static bool OnUpdateAccount(JToken id, string method, JArray parameters, out JToken result)
+        {
+            result = new JObject();
+
+            if (parameters == null || parameters.Count != 1)
+            {
+                result = RpcMessage.CreateErrorResult(id, RpcMessage.INVALID_PARAMS, "Invalid parameters");
+                return false;
+            }
+
+            try
+            {
+                AccountUpdateContract contract = AccountUpdateContract.Parser.ParseFrom(parameters[0].ToObject<byte[]>());
+                TransactionExtention transaction_extention =
+                    RpcApiService.CreateTransactionExtention(contract, Transaction.Types.Contract.Types.ContractType.AccountUpdateContract);
+
+                result = JToken.FromObject(transaction_extention.ToByteArray());
+            }
+            catch (System.Exception e)
+            {
+                result = RpcMessage.CreateErrorResult(id, RpcMessage.INVALID_PARAMS, e.Message);
+                return false;
+            }
+
+            return true;
+        }
+
+        public static bool OnUpdateWitness(JToken id, string method, JArray parameters, out JToken result)
+        {
+            result = new JObject();
+
+            if (parameters == null || parameters.Count != 1)
+            {
+                result = RpcMessage.CreateErrorResult(id, RpcMessage.INVALID_PARAMS, "Invalid parameters");
+                return false;
+            }
+
+            try
+            {
+                WitnessUpdateContract contract = WitnessUpdateContract.Parser.ParseFrom(parameters[0].ToObject<byte[]>());
+                TransactionExtention transaction_extention =
+                    RpcApiService.CreateTransactionExtention(contract, Transaction.Types.Contract.Types.ContractType.WitnessUpdateContract);
 
                 result = JToken.FromObject(transaction_extention.ToByteArray());
             }
