@@ -6,6 +6,7 @@ using Newtonsoft.Json.Linq;
 using Protocol;
 using System;
 using System.Text;
+using static Protocol.Transaction.Types.Contract.Types;
 
 namespace MineralCLI.Commands
 {
@@ -220,7 +221,10 @@ namespace MineralCLI.Commands
                 TransactionExtention transaction_extention = null;
                 if (result.Result)
                 {
-                    result = RpcApi.CreateTransferAssetTransaction(contract, out transaction_extention);
+                    result = RpcApi.CreateTransaction(contract,
+                                                      ContractType.TransferAssetContract,
+                                                      RpcCommandType.TransferAsset,
+                                                      out transaction_extention);
                 }
 
                 if (result.Result)

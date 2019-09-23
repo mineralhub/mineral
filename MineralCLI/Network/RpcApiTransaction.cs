@@ -3,6 +3,7 @@ using Mineral;
 using Mineral.CommandLine;
 using Mineral.Common.Net.RPC;
 using Mineral.Common.Utils;
+using Mineral.Core;
 using Mineral.Core.Net.RpcHandler;
 using Mineral.Cryptography;
 using Mineral.Wallets.KeyStore;
@@ -14,6 +15,7 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 using System.Threading;
+using static Protocol.Transaction.Types.Contract.Types;
 
 namespace MineralCLI.Network
 {
@@ -38,6 +40,51 @@ namespace MineralCLI.Network
 
 
         #region Internal Method
+        public static Permission JsonToPermission(JObject json)
+        {
+            Permission permisstion = new Permission();
+            if (json.ContainsKey("type"))
+            {
+                permisstion.Type = (Permission.Types.PermissionType)json["type"].ToObject<int>();
+            }
+
+            if (json.ContainsKey("permission_name"))
+            {
+                permisstion.PermissionName = json["permission_name"].ToString();
+            }
+
+            if (json.ContainsKey("threshold"))
+            {
+                permisstion.Threshold = json["threshold"].ToObject<long>();
+            }
+
+            if (json.ContainsKey("parent_id"))
+            {
+                permisstion.ParentId = json["parent_id"].ToObject<int>();
+            }
+
+            if (json.ContainsKey("operations"))
+            {
+                permisstion.Operations = ByteString.CopyFrom(json["operations"].ToString().HexToBytes());
+            }
+
+            if (json.ContainsKey("keys"))
+            {
+                List<Key> keys = new List<Key>();
+
+                foreach (JToken token in json["keys"] as JArray)
+                {
+                    Key key = new Key();
+                    key.Address = ByteString.CopyFrom(Wallet.Base58ToAddress(token["address"].ToString()));
+                    key.Weight = token["weight"].ToObject<long>();
+                    keys.Add(key);
+                }
+
+                permisstion.Keys.AddRange(keys);
+            }
+
+            return permisstion;
+        }
         #endregion
 
 
@@ -106,29 +153,111 @@ namespace MineralCLI.Network
             return RpcApiResult.Success;
         }
 
-        public static RpcApiResult CreateUpdateAcountContract(byte[] address,
+        public static RpcApiResult CreateUpdateAcountContract(byte[] owner_address,
                                                               byte[] name,
                                                               out AccountUpdateContract contract)
         {
             contract = new AccountUpdateContract();
-            contract.OwnerAddress = ByteString.CopyFrom(address);
+            contract.OwnerAddress = ByteString.CopyFrom(owner_address);
             contract.AccountName = ByteString.CopyFrom(name);
 
             return RpcApiResult.Success;
         }
 
-        public static RpcApiResult CreateUpdateWitnessContract(byte[] address,
+        public static RpcApiResult CreateUpdateWitnessContract(byte[] owner_address,
                                                                byte[] url,
                                                                out WitnessUpdateContract contract)
         {
             contract = new WitnessUpdateContract();
-            contract.OwnerAddress = ByteString.CopyFrom(address);
+            contract.OwnerAddress = ByteString.CopyFrom(owner_address);
             contract.UpdateUrl = ByteString.CopyFrom(url);
 
             return RpcApiResult.Success;
         }
 
+        public static RpcApiResult CreateUpdateAssetContract(byte[] owner_address,
+                                                             byte[] description,
+                                                             byte[] url,
+                                                             long limit,
+                                                             long public_limit,
+                                                             out UpdateAssetContract contract)
+        {
+            contract = new UpdateAssetContract();
+            contract.OwnerAddress = ByteString.CopyFrom(owner_address);
+            contract.Description = ByteString.CopyFrom(description);
+            contract.Url = ByteString.CopyFrom(url);
+            contract.NewLimit = limit;
+            contract.NewPublicLimit = public_limit;
+
+            return RpcApiResult.Success;
+        }
+
+        public static RpcApiResult CreateUpdateEnergyLimitContract(byte[] owner_address,
+                                                                   byte[] contract_address,
+                                                                   long energy_limit,
+                                                                   out UpdateEnergyLimitContract contract)
+        {
+            contract = new UpdateEnergyLimitContract();
+            contract.OwnerAddress = ByteString.CopyFrom(owner_address);
+            contract.ContractAddress = ByteString.CopyFrom(contract_address);
+            contract.OriginEnergyLimit = energy_limit;
+
+            return RpcApiResult.Success;
+        }
+
+        public static RpcApiResult CreateAccountPermissionUpdateContract(byte[] owner_address,
+                                                                         string permission_json,
+                                                                         out AccountPermissionUpdateContract contract)
+        {
+            try
+            {
+                contract = new AccountPermissionUpdateContract();
+                JObject json = JObject.Parse(permission_json);
+
+                if (json.TryGetValue("owner_permission", out JToken output))
+                {
+                    contract.Owner = JsonToPermission(output as JObject);
+                }
+
+                if (json.TryGetValue("witness_permission", out output))
+                {
+                    contract.Witness = JsonToPermission(output as JObject);
+                }
+
+                if (json.TryGetValue("active_permission", out output))
+                {
+                    List<Permission> permissions = new List<Permission>();
+                    foreach (JToken permission in output as JArray)
+                    {
+                        contract.Actives.Add(JsonToPermission(permission as JObject));
+                    }
+                }
+
+                contract.OwnerAddress = ByteString.CopyFrom(owner_address);
+            }
+            catch (System.Exception e)
+            {
+                throw e;
+            }
+
+            return RpcApiResult.Success;
+        }
+
+        public static RpcApiResult CreateUpdateSettingContract(byte[] owner_address,
+                                                               byte[] contract_address,
+                                                               long resource_percent,
+                                                               out UpdateSettingContract contract)
+        {
+            contract = new UpdateSettingContract();
+            contract.OwnerAddress = ByteString.CopyFrom(owner_address);
+            contract.ContractAddress = ByteString.CopyFrom(contract_address);
+            contract.ConsumeUserResourcePercent = resource_percent;
+
+            return RpcApiResult.Success;
+        }
+
         public static RpcApiResult CreateTransaction(IMessage contract,
+                                                     ContractType contract_type,
                                                      string command_type,
                                                      out TransactionExtention transaction_extention)
         {
@@ -136,7 +265,13 @@ namespace MineralCLI.Network
             {
                 transaction_extention = null;
 
-                JObject receive = SendCommand(command_type, new JArray() { contract.ToByteArray() });
+                JObject receive = SendCommand(command_type,
+                                              new JArray()
+                                              {
+                                                  contract_type,
+                                                  contract.ToByteArray()
+                                              });
+
                 if (receive.TryGetValue("error", out JToken value))
                 {
                     return new RpcApiResult(false, value["code"].ToObject<int>(), value["message"].ToObject<string>());
@@ -154,31 +289,6 @@ namespace MineralCLI.Network
             catch (System.Exception e)
             {
                 throw e;
-            }
-
-            return RpcApiResult.Success;
-        }
-
-        public static RpcApiResult CreateTransferAssetTransaction(TransferAssetContract contract,
-                                                                  out TransactionExtention transaction_extention)
-        {
-            transaction_extention = null;
-
-            JObject receive = SendCommand(RpcCommandType.TransferAsset, new JArray { contract.ToByteArray() });
-            if (receive.TryGetValue("error", out JToken value))
-            {
-                return new RpcApiResult(false, value["code"].ToObject<int>(), value["message"].ToObject<string>());
-            }
-
-            transaction_extention = TransactionExtention.Parser.ParseFrom(receive["result"].ToObject<byte[]>());
-            if (transaction_extention == null || !transaction_extention.Result.Result)
-            {
-                return new RpcApiResult(false, RpcMessage.TRANSACTION_ERROR, "Invalid transaction extention data");
-            }
-
-            if (transaction_extention.Transaction == null || transaction_extention.Transaction.RawData.Contract.Count == 0)
-            {
-                return new RpcApiResult(false, RpcMessage.TRANSACTION_ERROR, "Transaction is empty");
             }
 
             return RpcApiResult.Success;

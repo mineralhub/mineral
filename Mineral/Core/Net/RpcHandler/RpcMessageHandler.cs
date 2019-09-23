@@ -9,6 +9,7 @@ using Protocol;
 using System;
 using System.Collections.Generic;
 using System.Text;
+using static Protocol.Transaction.Types.Contract.Types;
 
 namespace Mineral.Core.Net.RpcHandler
 {
@@ -19,12 +20,17 @@ namespace Mineral.Core.Net.RpcHandler
 
         private Dictionary<string, RpcHandler> handlers = new Dictionary<string, RpcHandler>()
         {
-            { RpcCommandType.CreateAccount, new RpcHandler(OnCreateAccount) },
-            { RpcCommandType.CreateProposal, new RpcHandler(OnCreateProposal) },
-            { RpcCommandType.CreateWitness, new RpcHandler(OnCreateWitness) },
-            { RpcCommandType.CreateTransaction, new RpcHandler(OnCreateTransaction) },
-            { RpcCommandType.UpdateAccount, new RpcHandler(OnUpdateAccount) },
-            { RpcCommandType.UpdateWitness, new RpcHandler(OnUpdateWitness) },
+            { RpcCommandType.CreateAccount, new RpcHandler(OnCreateContract) },
+            { RpcCommandType.CreateProposal, new RpcHandler(OnCreateContract) },
+            { RpcCommandType.CreateWitness, new RpcHandler(OnCreateContract) },
+            { RpcCommandType.CreateTransaction, new RpcHandler(OnCreateContract) },
+            { RpcCommandType.UpdateAccount, new RpcHandler(OnCreateContract) },
+            { RpcCommandType.UpdateWitness, new RpcHandler(OnCreateContract) },
+            { RpcCommandType.UpdateAsset, new RpcHandler(OnCreateContract) },
+            { RpcCommandType.UpdateEnergyLimit, new RpcHandler(OnCreateContract) },
+            { RpcCommandType.UpdateAccountPermission, new RpcHandler(OnCreateContract) },
+            { RpcCommandType.UpdateSetting, new RpcHandler(OnCreateContract) },
+
             { RpcCommandType.GetTransactionSignWeight, new RpcHandler(OnGetTransactionSignWeight) },
             { RpcCommandType.BroadcastTransaction, new RpcHandler(OnBroadcastTransaction) },
 
@@ -33,7 +39,7 @@ namespace Mineral.Core.Net.RpcHandler
             { RpcCommandType.AssetIssueById, new RpcHandler(OnAssetIssueById) },
             { RpcCommandType.AssetIssueByName, new RpcHandler(OnAssetIssueByName) },
             { RpcCommandType.AssetIssueListByName, new RpcHandler(OnAssetIssueListByName) },
-            { RpcCommandType.TransferAsset, new RpcHandler(OnTransferAsset) },
+            { RpcCommandType.TransferAsset, new RpcHandler(OnCreateContract) },
 
             { RpcCommandType.GetBlock, new RpcHandler(OnGetBlock) },
             { RpcCommandType.GetBlockByLatestNum, new RpcHandler(OnGetBlockByLatestNum) },
@@ -76,11 +82,12 @@ namespace Mineral.Core.Net.RpcHandler
             return ret;
         }
 
-        public static bool OnCreateAccount(JToken id, string method, JArray parameters, out JToken result)
+        #region Contract
+        public static bool OnCreateContract(JToken id, string method, JArray parameters, out JToken result)
         {
             result = new JObject();
 
-            if (parameters == null || parameters.Count != 1)
+            if (parameters == null || parameters.Count != 2)
             {
                 result = RpcMessage.CreateErrorResult(id, RpcMessage.INVALID_PARAMS, "Invalid parameters");
                 return false;
@@ -88,10 +95,102 @@ namespace Mineral.Core.Net.RpcHandler
 
             try
             {
-                AccountCreateContract contract = AccountCreateContract.Parser.ParseFrom(parameters[0].ToObject<byte[]>());
-                TransactionExtention transaction_extention =
-                    RpcApiService.CreateTransactionExtention(contract, Transaction.Types.Contract.Types.ContractType.AccountCreateContract);
+                IMessage contract = null;
+                ContractType contract_type = (ContractType)parameters[0].ToObject<int>();
+                switch (contract_type)
+                {
+                    case ContractType.AccountCreateContract:
+                        contract = AccountCreateContract.Parser.ParseFrom(parameters[0].ToObject<byte[]>());
+                        break;
+                    case ContractType.TransferContract:
+                        contract = TransferContract.Parser.ParseFrom(parameters[0].ToObject<byte[]>());
+                        break;
+                    case ContractType.TransferAssetContract:
+                        contract = TransferAssetContract.Parser.ParseFrom(parameters[0].ToObject<byte[]>());
+                        break;
+                    case ContractType.VoteAssetContract:
+                        contract = VoteAssetContract.Parser.ParseFrom(parameters[0].ToObject<byte[]>());
+                        break;
+                    case ContractType.VoteWitnessContract:
+                        contract = VoteWitnessContract.Parser.ParseFrom(parameters[0].ToObject<byte[]>());
+                        break;
+                    case ContractType.WitnessCreateContract:
+                        contract = WitnessCreateContract.Parser.ParseFrom(parameters[0].ToObject<byte[]>());
+                        break;
+                    case ContractType.AssetIssueContract:
+                        contract = AssetIssueContract.Parser.ParseFrom(parameters[0].ToObject<byte[]>());
+                        break;
+                    case ContractType.WitnessUpdateContract:
+                        contract = WitnessUpdateContract.Parser.ParseFrom(parameters[0].ToObject<byte[]>());
+                        break;
+                    case ContractType.ParticipateAssetIssueContract:
+                        contract = ParticipateAssetIssueContract.Parser.ParseFrom(parameters[0].ToObject<byte[]>());
+                        break;
+                    case ContractType.AccountUpdateContract:
+                        contract = AccountUpdateContract.Parser.ParseFrom(parameters[0].ToObject<byte[]>());
+                        break;
+                    case ContractType.FreezeBalanceContract:
+                        contract = FreezeBalanceContract.Parser.ParseFrom(parameters[0].ToObject<byte[]>());
+                        break;
+                    case ContractType.UnfreezeBalanceContract:
+                        contract = UnfreezeBalanceContract.Parser.ParseFrom(parameters[0].ToObject<byte[]>());
+                        break;
+                    case ContractType.WithdrawBalanceContract:
+                        contract = WithdrawBalanceContract.Parser.ParseFrom(parameters[0].ToObject<byte[]>());
+                        break;
+                    case ContractType.UnfreezeAssetContract:
+                        contract = UnfreezeAssetContract.Parser.ParseFrom(parameters[0].ToObject<byte[]>());
+                        break;
+                    case ContractType.UpdateAssetContract:
+                        contract = UpdateAssetContract.Parser.ParseFrom(parameters[0].ToObject<byte[]>());
+                        break;
+                    case ContractType.ProposalCreateContract:
+                        contract = ProposalCreateContract.Parser.ParseFrom(parameters[0].ToObject<byte[]>());
+                        break;
+                    case ContractType.ProposalApproveContract:
+                        contract = ProposalApproveContract.Parser.ParseFrom(parameters[0].ToObject<byte[]>());
+                        break;
+                    case ContractType.ProposalDeleteContract:
+                        contract = ProposalDeleteContract.Parser.ParseFrom(parameters[0].ToObject<byte[]>());
+                        break;
+                    case ContractType.SetAccountIdContract:
+                        contract = SetAccountIdContract.Parser.ParseFrom(parameters[0].ToObject<byte[]>());
+                        break;
+                    case ContractType.CreateSmartContract:
+                        contract = CreateSmartContract.Parser.ParseFrom(parameters[0].ToObject<byte[]>());
+                        break;
+                    case ContractType.TriggerSmartContract:
+                        contract = TriggerSmartContract.Parser.ParseFrom(parameters[0].ToObject<byte[]>());
+                        break;
+                    case ContractType.UpdateSettingContract:
+                        contract = UpdateSettingContract.Parser.ParseFrom(parameters[0].ToObject<byte[]>());
+                        break;
+                    case ContractType.ExchangeCreateContract:
+                        contract = ExchangeCreateContract.Parser.ParseFrom(parameters[0].ToObject<byte[]>());
+                        break;
+                    case ContractType.ExchangeInjectContract:
+                        contract = ExchangeInjectContract.Parser.ParseFrom(parameters[0].ToObject<byte[]>());
+                        break;
+                    case ContractType.ExchangeWithdrawContract:
+                        contract = ExchangeWithdrawContract.Parser.ParseFrom(parameters[0].ToObject<byte[]>());
+                        break;
+                    case ContractType.ExchangeTransactionContract:
+                        contract = ExchangeTransactionContract.Parser.ParseFrom(parameters[0].ToObject<byte[]>());
+                        break;
+                    case ContractType.UpdateEnergyLimitContract:
+                        contract = UpdateEnergyLimitContract.Parser.ParseFrom(parameters[0].ToObject<byte[]>());
+                        break;
+                    case ContractType.AccountPermissionUpdateContract:
+                        contract = AccountPermissionUpdateContract.Parser.ParseFrom(parameters[0].ToObject<byte[]>());
+                        break;
+                    case ContractType.CustomContract:
+                    case ContractType.GetContract:
+                    case ContractType.ClearAbicontract:
+                    default:
+                        break;
+                }
 
+                TransactionExtention transaction_extention = RpcApiService.CreateTransactionExtention(contract, contract_type);
                 result = JToken.FromObject(transaction_extention.ToByteArray());
             }
             catch (System.Exception e)
@@ -102,142 +201,9 @@ namespace Mineral.Core.Net.RpcHandler
 
             return true;
         }
+        #endregion
 
-        public static bool OnCreateProposal(JToken id, string method, JArray parameters, out JToken result)
-        {
-            result = new JObject();
-
-            if (parameters == null || parameters.Count != 1)
-            {
-                result = RpcMessage.CreateErrorResult(id, RpcMessage.INVALID_PARAMS, "Invalid parameters");
-                return false;
-            }
-
-            try
-            {
-                ProposalCreateContract contract = ProposalCreateContract.Parser.ParseFrom(parameters[0].ToObject<byte[]>());
-                TransactionExtention transaction_extention =
-                    RpcApiService.CreateTransactionExtention(contract, Transaction.Types.Contract.Types.ContractType.ProposalCreateContract);
-
-                result = JToken.FromObject(transaction_extention.ToByteArray());
-            }
-            catch (System.Exception e)
-            {
-                result = RpcMessage.CreateErrorResult(id, RpcMessage.INVALID_PARAMS, e.Message);
-                return false;
-            }
-
-            return true;
-        }
-
-        public static bool OnCreateWitness(JToken id, string method, JArray parameters, out JToken result)
-        {
-            result = new JObject();
-
-            if (parameters == null || parameters.Count != 1)
-            {
-                result = RpcMessage.CreateErrorResult(id, RpcMessage.INVALID_PARAMS, "Invalid parameters");
-                return false;
-            }
-
-            try
-            {
-                WitnessCreateContract contract = WitnessCreateContract.Parser.ParseFrom(parameters[0].ToObject<byte[]>());
-                TransactionExtention transaction_extention =
-                    RpcApiService.CreateTransactionExtention(contract, Transaction.Types.Contract.Types.ContractType.WitnessCreateContract);
-
-                result = JToken.FromObject(transaction_extention.ToByteArray());
-            }
-            catch (System.Exception e)
-            {
-                result = RpcMessage.CreateErrorResult(id, RpcMessage.INVALID_PARAMS, e.Message);
-                return false;
-            }
-
-            return true;
-        }
-
-        public static bool OnCreateTransaction(JToken id, string method, JArray parameters, out JToken result)
-        {
-            result = new JObject();
-
-            if (parameters == null || parameters.Count != 1)
-            {
-                result = RpcMessage.CreateErrorResult(id, RpcMessage.INVALID_PARAMS, "Invalid parameters");
-                return false;
-            }
-
-            try
-            {
-                TransferContract contract = TransferContract.Parser.ParseFrom(parameters[0].ToObject<byte[]>());
-                TransactionExtention transaction_extention =
-                    RpcApiService.CreateTransactionExtention(contract, Transaction.Types.Contract.Types.ContractType.TransferContract);
-
-                result = JToken.FromObject(transaction_extention.ToByteArray());
-            }
-            catch (System.Exception e)
-            {
-                result = RpcMessage.CreateErrorResult(id, RpcMessage.INVALID_PARAMS, e.Message);
-                return false;
-            }
-
-            return true;
-        }
-
-        public static bool OnUpdateAccount(JToken id, string method, JArray parameters, out JToken result)
-        {
-            result = new JObject();
-
-            if (parameters == null || parameters.Count != 1)
-            {
-                result = RpcMessage.CreateErrorResult(id, RpcMessage.INVALID_PARAMS, "Invalid parameters");
-                return false;
-            }
-
-            try
-            {
-                AccountUpdateContract contract = AccountUpdateContract.Parser.ParseFrom(parameters[0].ToObject<byte[]>());
-                TransactionExtention transaction_extention =
-                    RpcApiService.CreateTransactionExtention(contract, Transaction.Types.Contract.Types.ContractType.AccountUpdateContract);
-
-                result = JToken.FromObject(transaction_extention.ToByteArray());
-            }
-            catch (System.Exception e)
-            {
-                result = RpcMessage.CreateErrorResult(id, RpcMessage.INVALID_PARAMS, e.Message);
-                return false;
-            }
-
-            return true;
-        }
-
-        public static bool OnUpdateWitness(JToken id, string method, JArray parameters, out JToken result)
-        {
-            result = new JObject();
-
-            if (parameters == null || parameters.Count != 1)
-            {
-                result = RpcMessage.CreateErrorResult(id, RpcMessage.INVALID_PARAMS, "Invalid parameters");
-                return false;
-            }
-
-            try
-            {
-                WitnessUpdateContract contract = WitnessUpdateContract.Parser.ParseFrom(parameters[0].ToObject<byte[]>());
-                TransactionExtention transaction_extention =
-                    RpcApiService.CreateTransactionExtention(contract, Transaction.Types.Contract.Types.ContractType.WitnessUpdateContract);
-
-                result = JToken.FromObject(transaction_extention.ToByteArray());
-            }
-            catch (System.Exception e)
-            {
-                result = RpcMessage.CreateErrorResult(id, RpcMessage.INVALID_PARAMS, e.Message);
-                return false;
-            }
-
-            return true;
-        }
-
+        #region Transaction
         public static bool OnGetTransactionSignWeight(JToken id, string method, JArray parameters, out JToken result)
         {
             result = new JObject();
@@ -273,7 +239,9 @@ namespace Mineral.Core.Net.RpcHandler
 
             return true;
         }
+        #endregion
 
+        #region Account
         public static bool OnGetAccount(JToken id, string method, JArray parameters, out JToken result)
         {
             result = new JObject();
@@ -309,7 +277,9 @@ namespace Mineral.Core.Net.RpcHandler
 
             return true;
         }
+        #endregion
 
+        #region AssetIssue
         public static bool OnAssetIssueByAccount(JToken id, string method, JArray parameters, out JToken result)
         {
             result = new JObject();
@@ -438,34 +408,9 @@ namespace Mineral.Core.Net.RpcHandler
 
             return true;
         }
+        #endregion
 
-        public static bool OnTransferAsset(JToken id, string method, JArray parameters, out JToken result)
-        {
-            result = new JObject();
-
-            if (parameters == null || parameters.Count != 1)
-            {
-                result = RpcMessage.CreateErrorResult(id, RpcMessage.INVALID_PARAMS, "Invalid parameters");
-                return false;
-            }
-
-            try
-            {
-                TransferAssetContract contract = TransferAssetContract.Parser.ParseFrom(parameters.ToObject<byte[]>());
-                TransactionExtention transaction =
-                    RpcApiService.CreateTransactionExtention(contract,Transaction.Types.Contract.Types.ContractType.TransferAssetContract);
-
-                result = JToken.FromObject(transaction.ToByteArray());
-            }
-            catch (System.Exception e)
-            {
-                result = RpcMessage.CreateErrorResult(id, RpcMessage.UNKNOWN_ERROR, e.Message);
-                return false;
-            }
-
-            return true;
-        }
-
+        #region Block
         public static bool OnGetBlock(JToken id, string method, JArray parameters, out JToken result)
         {
             result = new JObject();
@@ -587,6 +532,7 @@ namespace Mineral.Core.Net.RpcHandler
 
             return true;
         }
+        #endregion
         #endregion
     }
 }

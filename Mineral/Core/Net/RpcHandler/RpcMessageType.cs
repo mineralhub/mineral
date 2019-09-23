@@ -25,6 +25,18 @@ namespace Mineral.Core.Net.RpcHandler
         [CommandLineAttribute(Name = "UpdateWitness", Description = "")]
         public static readonly string UpdateWitness = "updatewitness";
 
+        [CommandLineAttribute(Name = "UpdateAsset", Description = "")]
+        public static readonly string UpdateAsset = "updateasset";
+
+        [CommandLineAttribute(Name = "UpdateEnergyLimit", Description = "")]
+        public static readonly string UpdateEnergyLimit = "updateenergylimit";
+
+        [CommandLineAttribute(Name = "UpdateAccountPermission", Description = "")]
+        public static readonly string UpdateAccountPermission = "updateaccountpermission";
+
+        [CommandLineAttribute(Name = "UpdateSetting", Description = "")]
+        public static readonly string UpdateSetting = "updatesetting";
+
         [CommandLineAttribute(Name = "GetTransactionSignWeight", Description = "")]
         public static readonly string GetTransactionSignWeight = "gettransactionsignweight";
 
