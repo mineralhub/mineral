@@ -13,29 +13,35 @@ namespace MineralCLI.Shell
         #region Field
         private Dictionary<string, CommandHandler> commands = new Dictionary<string, CommandHandler>()
         {
+            // WalletCommands
             { RpcCommandType.ImportWallet, new CommandHandler(WalletCommand.ImportWallet) },
             { RpcCommandType.BackupWallet, new CommandHandler(WalletCommand.BackupWallet) },
             { RpcCommandType.RegisterWallet, new CommandHandler(WalletCommand.RegisterWallet) },
             { RpcCommandType.Login, new CommandHandler(WalletCommand.Login) },
             { RpcCommandType.Logout, new CommandHandler(WalletCommand.Logout) },
-
-            { RpcCommandType.CreateAccount, new CommandHandler(WalletCommand.CreateAccount) },
-            { RpcCommandType.CreateProposal, new CommandHandler(WalletCommand.CreateProposal) },
-            { RpcCommandType.CreateWitness, new CommandHandler(WalletCommand.CreateWitness) },
-            { RpcCommandType.UpdateAccount, new CommandHandler(WalletCommand.UpdateAccount) },
-            { RpcCommandType.UpdateWitness, new CommandHandler(WalletCommand.UpdateWitness) },
-            { RpcCommandType.UpdateAsset, new CommandHandler(WalletCommand.UpdateAsset) },
-            { RpcCommandType.UpdateEnergyLimit, new CommandHandler(WalletCommand.UpdateEnergyLimit) },
-            { RpcCommandType.UpdateAccountPermission, new CommandHandler(WalletCommand.UpdateAccountPermission) },
-            { RpcCommandType.UpdateSetting, new CommandHandler(WalletCommand.UpdateSetting) },
-            { RpcCommandType.SendCoin, new CommandHandler(WalletCommand.SendCoin) },
             { RpcCommandType.GetAddress, new CommandHandler(WalletCommand.GetAddress) },
             { RpcCommandType.GetBalance, new CommandHandler(WalletCommand.GetBalance) },
             { RpcCommandType.GetAccount, new CommandHandler(WalletCommand.GetAccount) },
+
+            // TransactionCommands
+            { RpcCommandType.CreateAccount, new CommandHandler(TransactionCommand.CreateAccount) },
+            { RpcCommandType.CreateProposal, new CommandHandler(TransactionCommand.CreateProposal) },
+            { RpcCommandType.CreateWitness, new CommandHandler(TransactionCommand.CreateWitness) },
+            { RpcCommandType.UpdateAccount, new CommandHandler(TransactionCommand.UpdateAccount) },
+            { RpcCommandType.UpdateWitness, new CommandHandler(TransactionCommand.UpdateWitness) },
+            { RpcCommandType.UpdateAsset, new CommandHandler(TransactionCommand.UpdateAsset) },
+            { RpcCommandType.UpdateEnergyLimit, new CommandHandler(TransactionCommand.UpdateEnergyLimit) },
+            { RpcCommandType.UpdateAccountPermission, new CommandHandler(TransactionCommand.UpdateAccountPermission) },
+            { RpcCommandType.UpdateSetting, new CommandHandler(TransactionCommand.UpdateSetting) },
+            { RpcCommandType.SendCoin, new CommandHandler(TransactionCommand.SendCoin) },
+
+            // BlockCommands
             { RpcCommandType.GetBlock, new CommandHandler(BlockCommand.GetBlock) },
             { RpcCommandType.GetBlockByLatestNum, new CommandHandler(BlockCommand.GetBlockByLatestNum) },
             { RpcCommandType.GetBlockById, new CommandHandler(BlockCommand.GetBlockById) },
             { RpcCommandType.GetBlockByLimitNext, new CommandHandler(BlockCommand.GetBlockByLimitNext) },
+
+            // AssetIssueCommands
             { RpcCommandType.AssetIssueByAccount, new CommandHandler(AssetIssueCommand.AssetIssueByAccount) },
             { RpcCommandType.AssetIssueById, new CommandHandler(AssetIssueCommand.AssetIssueById) },
             { RpcCommandType.AssetIssueByName, new CommandHandler(AssetIssueCommand.AssetIssueByName) },

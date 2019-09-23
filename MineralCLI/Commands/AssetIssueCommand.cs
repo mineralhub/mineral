@@ -38,7 +38,7 @@ namespace MineralCLI.Commands
             {
                 string address = parameters[1];
                 RpcApiResult result = RpcApi.AssetIssueByAccount(address, out AssetIssueList asset_issues);
-               
+
                 if (result.Result)
                 {
                     Console.WriteLine(PrintUtil.PrintAssetIssueList(asset_issues));
@@ -212,7 +212,7 @@ namespace MineralCLI.Commands
                 long amount = long.Parse(parameters[3]);
 
 
-                RpcApiResult result  = RpcApi.CreateTransferAssetContract(to_address,
+                RpcApiResult result = RpcApi.CreateTransferAssetContract(to_address,
                                                                           owner_address,
                                                                           asset_name,
                                                                           amount,
@@ -238,7 +238,7 @@ namespace MineralCLI.Commands
             {
                 Console.WriteLine(e.Message + "\n\n" + e.StackTrace);
             }
-            
+
             return true;
         }
     }
