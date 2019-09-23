@@ -80,14 +80,15 @@ namespace MineralCLI.Network
             return RpcApiResult.Success;
         }
 
-        public static RpcApiResult CreateTransaction(TransferContract contract,
+        public static RpcApiResult CreateTransaction(IMessage contract,
+                                                     string command_type,
                                                      out TransactionExtention transaction_extention)
         {
             try
             {
                 transaction_extention = null;
 
-                JObject receive = SendCommand(RpcCommandType.CreateTransaction, new JArray() { contract.ToByteArray() });
+                JObject receive = SendCommand(command_type, new JArray() { contract.ToByteArray() });
                 if (receive.TryGetValue("error", out JToken value))
                 {
                     return new RpcApiResult(false, value["code"].ToObject<int>(), value["message"].ToObject<string>());

@@ -306,21 +306,22 @@ namespace MineralCLI.Commands
             try
             {
 
-                //byte[] owner_address = Wallet.Base58ToAddress(WalletApi.KeyStore.Address);
-                //byte[] to_address = Wallet.Base58ToAddress(parameters[1]);
-                //AccountCreateContract contract = WalletApi.CreateAccountContract(owner_address, to_address);
+                byte[] owner_address = Wallet.Base58ToAddress(RpcApi.KeyStore.Address);
+                byte[] to_address = Wallet.Base58ToAddress(parameters[1]);
 
-                //JObject receive = SendCommand(RpcCommandType.CreateAccount, new JArray() { contract.ToByteArray() });
-                //if (receive.TryGetValue("error", out JToken value))
-                //{
-                //    OutputErrorMessage(value["code"].ToObject<int>(), value["message"].ToObject<string>());
-                //    return true;
-                //}
+                TransactionExtention transaction_extention = null;
+                RpcApiResult result = RpcApi.CreateAccountContract(owner_address, to_address, out AccountCreateContract contract);
+                if (result.Result)
+                {
+                    result = RpcApi.CreateTransaction(contract, RpcCommandType.CreateAccount, out transaction_extention);
+                }
 
-                //TransactionExtention transaction = TransactionExtention.Parser.ParseFrom(receive["result"].ToObject<byte[]>());
-                //WalletApi.SignatureTransaction()
+                if (result.Result)
+                {
+                    result = RpcApi.ProcessTransactionExtention(transaction_extention);
+                }
 
-
+                OutputResultMessage(RpcCommandType.SendCoin, result.Result, result.Code, result.Message);
             }
             catch (System.Exception e)
             {
@@ -368,7 +369,7 @@ namespace MineralCLI.Commands
                 TransactionExtention transaction_extention = null;
                 if (result.Result)
                 {
-                    result = RpcApi.CreateTransaction(contract, out transaction_extention);
+                    result = RpcApi.CreateTransaction(contract, RpcCommandType.CreateTransaction, out transaction_extention);
                 }
 
                 if (result.Result)
