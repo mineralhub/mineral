@@ -30,6 +30,7 @@ namespace Mineral.Core.Net.RpcHandler
             { RpcCommandType.UpdateEnergyLimit, new RpcHandler(OnCreateContract) },
             { RpcCommandType.UpdateAccountPermission, new RpcHandler(OnCreateContract) },
             { RpcCommandType.UpdateSetting, new RpcHandler(OnCreateContract) },
+            { RpcCommandType.DeleteProposal, new RpcHandler(OnCreateContract) },
 
             { RpcCommandType.GetTransactionSignWeight, new RpcHandler(OnGetTransactionSignWeight) },
             { RpcCommandType.BroadcastTransaction, new RpcHandler(OnBroadcastTransaction) },

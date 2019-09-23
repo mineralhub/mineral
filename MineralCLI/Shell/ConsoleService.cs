@@ -33,6 +33,7 @@ namespace MineralCLI.Shell
             { RpcCommandType.UpdateEnergyLimit, new CommandHandler(TransactionCommand.UpdateEnergyLimit) },
             { RpcCommandType.UpdateAccountPermission, new CommandHandler(TransactionCommand.UpdateAccountPermission) },
             { RpcCommandType.UpdateSetting, new CommandHandler(TransactionCommand.UpdateSetting) },
+            { RpcCommandType.DeleteProposal, new CommandHandler(TransactionCommand.DeleteProposal) },
             { RpcCommandType.SendCoin, new CommandHandler(TransactionCommand.SendCoin) },
 
             // BlockCommands

@@ -536,7 +536,7 @@ namespace MineralCLI.Commands
         public static bool UpdateSetting(string[] parameters)
         {
             string[] usage = new string[] {
-                string.Format("{0} [command option] <url>\n", RpcCommandType.UpdateSetting) };
+                string.Format("{0} [command option] <address> <consume user resource percent>\n", RpcCommandType.UpdateSetting) };
 
             string[] command_option = new string[] { HelpCommandOption.Help };
 
@@ -582,6 +582,65 @@ namespace MineralCLI.Commands
                 }
 
                 OutputResultMessage(RpcCommandType.UpdateSetting, result.Result, result.Code, result.Message);
+            }
+            catch (System.Exception e)
+            {
+                Console.WriteLine(e.Message + "\n\n" + e.StackTrace);
+            }
+
+            return true;
+        }
+
+        /// <summary>
+        /// Update setting
+        /// </summary>
+        /// <param name="parameters"></param>
+        /// /// Parameter Index
+        /// [0] : Command
+        /// [1] : Proposal id
+        /// <returns></returns>
+        public static bool DeleteProposal(string[] parameters)
+        {
+            string[] usage = new string[] {
+                string.Format("{0} [command option] <id>\n", RpcCommandType.DeleteProposal) };
+
+            string[] command_option = new string[] { HelpCommandOption.Help };
+
+            if (parameters == null || parameters.Length != 2)
+            {
+                OutputHelpMessage(usage, null, command_option, null);
+                return true;
+            }
+
+            if (!RpcApi.IsLogin)
+            {
+                return true;
+            }
+
+            try
+            {
+                byte[] owner_address = Wallet.Base58ToAddress(RpcApi.KeyStore.Address);
+                long id = long.Parse(parameters[1]);
+
+                RpcApiResult result = RpcApi.CreateProposalDeleteContract(owner_address,
+                                                                          id,
+                                                                          out ProposalDeleteContract contract);
+
+                TransactionExtention transaction_extention = null;
+                if (result.Result)
+                {
+                    result = RpcApi.CreateTransaction(contract,
+                                                      ContractType.ProposalDeleteContract,
+                                                      RpcCommandType.DeleteProposal,
+                                                      out transaction_extention);
+                }
+
+                if (result.Result)
+                {
+                    result = RpcApi.ProcessTransactionExtention(transaction_extention);
+                }
+
+                OutputResultMessage(RpcCommandType.DeleteProposal, result.Result, result.Code, result.Message);
             }
             catch (System.Exception e)
             {

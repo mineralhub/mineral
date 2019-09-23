@@ -37,6 +37,9 @@ namespace Mineral.Core.Net.RpcHandler
         [CommandLineAttribute(Name = "UpdateSetting", Description = "")]
         public static readonly string UpdateSetting = "updatesetting";
 
+        [CommandLineAttribute(Name = "DeleteProposal", Description = "")]
+        public static readonly string DeleteProposal = "deleteproposal";
+
         [CommandLineAttribute(Name = "GetTransactionSignWeight", Description = "")]
         public static readonly string GetTransactionSignWeight = "gettransactionsignweight";
 

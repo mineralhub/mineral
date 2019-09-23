@@ -256,6 +256,17 @@ namespace MineralCLI.Network
             return RpcApiResult.Success;
         }
 
+        public static RpcApiResult CreateProposalDeleteContract(byte[] owner_address,
+                                                                long id,
+                                                                out ProposalDeleteContract contract)
+        {
+            contract = new ProposalDeleteContract();
+            contract.OwnerAddress = ByteString.CopyFrom(owner_address);
+            contract.ProposalId = id;
+
+            return RpcApiResult.Success;
+        }
+
         public static RpcApiResult CreateTransaction(IMessage contract,
                                                      ContractType contract_type,
                                                      string command_type,
