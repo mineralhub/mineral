@@ -39,7 +39,7 @@ namespace MineralCLI.Shell
             { RpcCommandType.UnfreezeBalance, new CommandHandler(TransactionCommand.UnFreezeBalance) },
             { RpcCommandType.VoteWitness, new CommandHandler(TransactionCommand.VoteWitness) },
             { RpcCommandType.WithdrawBalance, new CommandHandler(TransactionCommand.WithdrawBalance) },
-
+            
             // BlockCommands
             { RpcCommandType.GetBlock, new CommandHandler(BlockCommand.GetBlock) },
             { RpcCommandType.GetBlockByLatestNum, new CommandHandler(BlockCommand.GetBlockByLatestNum) },

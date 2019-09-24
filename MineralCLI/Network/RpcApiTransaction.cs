@@ -191,6 +191,15 @@ namespace MineralCLI.Network
             return RpcApiResult.Success;
         }
 
+        public static RpcApiResult CreateUnfreezeAssetContract(byte[] owner_address,
+                                                               out UnfreezeAssetContract contract)
+        {
+            contract = new UnfreezeAssetContract();
+            contract.OwnerAddress = ByteString.CopyFrom(owner_address);
+
+            return RpcApiResult.Success;
+        }
+
         public static RpcApiResult CreateVoteWitnessContract(byte[] owner_address,
                                                      Dictionary<byte[], long> votes,
                                                      out VoteWitnessContract contract)
