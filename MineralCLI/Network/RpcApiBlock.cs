@@ -35,7 +35,7 @@ namespace MineralCLI.Network
         {
             block = null;
 
-            JObject receive = SendCommand(RpcCommandType.GetBlock, new JArray() { block_num });
+            JObject receive = SendCommand(RpcCommand.Block.GetBlock, new JArray() { block_num });
             if (receive.TryGetValue("error", out JToken value))
             {
                 return new RpcApiResult(false, value["code"].ToObject<int>(), value["message"].ToObject<string>());
@@ -50,7 +50,7 @@ namespace MineralCLI.Network
         {
             block = null;
 
-            JObject receive = SendCommand(RpcCommandType.GetBlockByLatestNum, new JArray() { });
+            JObject receive = SendCommand(RpcCommand.Block.GetBlockByLatestNum, new JArray() { });
             if (receive.TryGetValue("error", out JToken value))
             {
                 return new RpcApiResult(false, value["code"].ToObject<int>(), value["message"].ToObject<string>());
@@ -65,7 +65,7 @@ namespace MineralCLI.Network
         {
             block = null;
 
-            JObject receive = SendCommand(RpcCommandType.GetBlockById, new JArray() { id });
+            JObject receive = SendCommand(RpcCommand.Block.GetBlockById, new JArray() { id });
             if (receive.TryGetValue("error", out JToken value))
             {
                 return new RpcApiResult(false, value["code"].ToObject<int>(), value["message"].ToObject<string>());
@@ -82,7 +82,7 @@ namespace MineralCLI.Network
             limit.StartNum = start;
             limit.EndNum = end;
 
-            JObject receive = SendCommand(RpcCommandType.GetBlockByLimitNext, new JArray() { limit.ToByteArray() });
+            JObject receive = SendCommand(RpcCommand.Block.GetBlockByLimitNext, new JArray() { limit.ToByteArray() });
             if (receive.TryGetValue("error", out JToken value))
             {
                 return new RpcApiResult(false, value["code"].ToObject<int>(), value["message"].ToObject<string>());

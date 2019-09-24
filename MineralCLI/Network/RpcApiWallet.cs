@@ -176,7 +176,7 @@ namespace MineralCLI.Network
         {
             account = null;
 
-            JObject receive = SendCommand(RpcCommandType.GetAccount, new JArray() { KeyStore.Address });
+            JObject receive = SendCommand(RpcCommand.Wallet.GetAccount, new JArray() { KeyStore.Address });
             if (receive.TryGetValue("error", out JToken value))
             {
                 return new RpcApiResult(false, value["code"].ToObject<int>(), value["message"].ToObject<string>());

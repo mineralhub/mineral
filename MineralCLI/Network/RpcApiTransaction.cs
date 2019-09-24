@@ -420,7 +420,7 @@ namespace MineralCLI.Network
                         return new RpcApiResult(false, RpcMessage.INVALID_PASSWORD, "Invalid keystore password");
                     }
 
-                    JObject receive = SendCommand(RpcCommandType.GetTransactionSignWeight, new JArray() { transaction.ToByteArray() });
+                    JObject receive = SendCommand(RpcCommand.Transaction.GetTransactionSignWeight, new JArray() { transaction.ToByteArray() });
 
                     TransactionSignWeight weight = TransactionSignWeight.Parser.ParseFrom(receive["result"].ToObject<byte[]>());
                     if (weight.Result.Code == ResponseCode.EnoughPermission)
@@ -488,14 +488,14 @@ namespace MineralCLI.Network
         {
             try
             {
-                JObject receive = SendCommand(RpcCommandType.BroadcastTransaction, new JArray() { transaction.ToByteArray() });
+                JObject receive = SendCommand(RpcCommand.Transaction.BroadcastTransaction, new JArray() { transaction.ToByteArray() });
                 Return ret = Return.Parser.ParseFrom(receive["result"].ToObject<byte[]>());
 
                 int retry = 10;
                 while (ret.Result == false && ret.Code == Return.Types.response_code.ServerBusy && retry > 0)
                 {
                     retry--;
-                    receive = SendCommand(RpcCommandType.BroadcastTransaction, new JArray() { transaction.ToByteArray() });
+                    receive = SendCommand(RpcCommand.Transaction.BroadcastTransaction, new JArray() { transaction.ToByteArray() });
                     ret = Return.Parser.ParseFrom(receive["result"].ToObject<byte[]>());
                     Console.WriteLine("Retry broadcast : " + (11 - retry));
 

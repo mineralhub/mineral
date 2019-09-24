@@ -25,7 +25,7 @@ namespace MineralCLI.Commands
         public static bool ImportWallet(string[] parameters)
         {
             string[] usage = new string[] {
-                string.Format("{0} [command option] <path>\n", RpcCommandType.BackupWallet) };
+                string.Format("{0} [command option] <path>\n", RpcCommand.Wallet.BackupWallet) };
 
             string[] command_option = new string[] { HelpCommandOption.Help };
 
@@ -43,7 +43,7 @@ namespace MineralCLI.Commands
                 RpcApiResult result = RpcApi.ImportWallet(password, privatekey);
                 Logout(null);
 
-                OutputResultMessage(RpcCommandType.BackupWallet, result.Result, result.Code, result.Message);
+                OutputResultMessage(RpcCommand.Wallet.BackupWallet, result.Result, result.Code, result.Message);
             }
             catch (System.Exception e)
             {
@@ -64,7 +64,7 @@ namespace MineralCLI.Commands
         public static bool BackupWallet(string[] parameters)
         {
             string[] usage = new string[] {
-                string.Format("{0} [command option] <path>\n", RpcCommandType.BackupWallet) };
+                string.Format("{0} [command option] <path>\n", RpcCommand.Wallet.BackupWallet) };
 
             string[] command_option = new string[] { HelpCommandOption.Help };
 
@@ -82,7 +82,7 @@ namespace MineralCLI.Commands
                 string password = CommandLineUtil.ReadPasswordString("Please input your password.");
                 RpcApiResult result = RpcApi.BackupWallet(password);
 
-                OutputResultMessage(RpcCommandType.BackupWallet, result.Result, result.Code, result.Message);
+                OutputResultMessage(RpcCommand.Wallet.BackupWallet, result.Result, result.Code, result.Message);
             }
             catch (System.Exception e)
             {
@@ -102,7 +102,7 @@ namespace MineralCLI.Commands
         public static bool RegisterWallet(string[] parameters)
         {
             string[] usage = new string[] {
-                string.Format("{0} [command option] <path>\n", RpcCommandType.RegisterWallet) };
+                string.Format("{0} [command option] <path>\n", RpcCommand.Wallet.RegisterWallet) };
 
             string[] command_option = new string[] { HelpCommandOption.Help };
 
@@ -126,7 +126,7 @@ namespace MineralCLI.Commands
                 RpcApiResult result = RpcApi.RegisterWallet(password);
                 Logout(null);
 
-                OutputResultMessage(RpcCommandType.RegisterWallet, result.Result, result.Code, result.Message);
+                OutputResultMessage(RpcCommand.Wallet.RegisterWallet, result.Result, result.Code, result.Message);
             }
             catch (System.Exception e)
             {
@@ -160,7 +160,7 @@ namespace MineralCLI.Commands
 
             RpcApi.KeyStore = keystore;
 
-            OutputResultMessage(RpcCommandType.Login, true, 0, "");
+            OutputResultMessage(RpcCommand.Wallet.Login, true, 0, "");
 
             return true;
         }
@@ -176,7 +176,7 @@ namespace MineralCLI.Commands
         public static bool Logout(string[] parameters)
         {
             RpcApi.KeyStore = null;
-            OutputResultMessage(RpcCommandType.Logout, true, 0, "");
+            OutputResultMessage(RpcCommand.Wallet.Logout, true, 0, "");
 
             return true;
         }
@@ -192,7 +192,7 @@ namespace MineralCLI.Commands
         public static bool GetAddress(string[] parameters)
         {
             string[] usage = new string[] {
-                string.Format("{0} [command option]\n", RpcCommandType.GetAddress) };
+                string.Format("{0} [command option]\n", RpcCommand.Wallet.GetAddress) };
 
             string[] command_option = new string[] { HelpCommandOption.Help };
 
@@ -205,7 +205,7 @@ namespace MineralCLI.Commands
             if (!RpcApi.IsLogin)
                 return true;
 
-            OutputResultMessage(RpcCommandType.GetAddress, true, 0, "");
+            OutputResultMessage(RpcCommand.Wallet.GetAddress, true, 0, "");
 
             return true;
         }
@@ -221,7 +221,7 @@ namespace MineralCLI.Commands
         public static bool GetBalance(string[] parameters)
         {
             string[] usage = new string[] {
-                string.Format("{0} [command option]\n", RpcCommandType.GetAccount) };
+                string.Format("{0} [command option]\n", RpcCommand.Wallet.GetAccount) };
 
             string[] command_option = new string[] { HelpCommandOption.Help };
 
@@ -240,7 +240,7 @@ namespace MineralCLI.Commands
                 RpcApiResult result = RpcApi.GetBalance(out long balance);
 
                 Console.WriteLine("Balance : " + balance);
-                OutputResultMessage(RpcCommandType.GetBalance, result.Result, result.Code, result.Message);
+                OutputResultMessage(RpcCommand.Wallet.GetBalance, result.Result, result.Code, result.Message);
 
             }
             catch (System.Exception e)
@@ -263,7 +263,7 @@ namespace MineralCLI.Commands
         public static bool GetAccount(string[] parameters)
         {
             string[] usage = new string[] {
-                string.Format("{0} [command option] <address>\n", RpcCommandType.GetAccount) };
+                string.Format("{0} [command option] <address>\n", RpcCommand.Wallet.GetAccount) };
 
             string[] command_option = new string[] { HelpCommandOption.Help };
 
@@ -278,7 +278,7 @@ namespace MineralCLI.Commands
                 RpcApiResult result = RpcApi.GetAccount(parameters[1], out Account account);
 
                 Console.WriteLine(PrintUtil.PrintAccount(account));
-                OutputResultMessage(RpcCommandType.GetAccount, result.Result, result.Code, result.Message);
+                OutputResultMessage(RpcCommand.Wallet.GetAccount, result.Result, result.Code, result.Message);
             }
             catch (System.Exception e)
             {

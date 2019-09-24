@@ -106,7 +106,7 @@ namespace MineralCLI.Network
         {
             asset_issues = null;
 
-            JObject receive = SendCommand(RpcCommandType.AssetIssueByAccount, new JArray() { account });
+            JObject receive = SendCommand(RpcCommand.AssetIssue.AssetIssueByAccount, new JArray() { account });
             if (receive.TryGetValue("error", out JToken value))
             {
                 return new RpcApiResult(false, value["code"].ToObject<int>(), value["message"].ToObject<string>());
@@ -121,7 +121,7 @@ namespace MineralCLI.Network
         {
             contract = null;
 
-            JObject receive = SendCommand(RpcCommandType.AssetIssueById, new JArray() { id });
+            JObject receive = SendCommand(RpcCommand.AssetIssue.AssetIssueById, new JArray() { id });
             if (receive.TryGetValue("error", out JToken value))
             {
                 return new RpcApiResult(false, value["code"].ToObject<int>(), value["message"].ToObject<string>());
@@ -136,7 +136,7 @@ namespace MineralCLI.Network
         {
             contract = null;
 
-            JObject receive = SendCommand(RpcCommandType.AssetIssueByName, new JArray() { name });
+            JObject receive = SendCommand(RpcCommand.AssetIssue.AssetIssueByName, new JArray() { name });
             if (receive.TryGetValue("error", out JToken value))
             {
                 return new RpcApiResult(false, value["code"].ToObject<int>(), value["message"].ToObject<string>());
@@ -151,7 +151,7 @@ namespace MineralCLI.Network
         {
             contracts = null;
 
-            JObject receive = SendCommand(RpcCommandType.AssetIssueListByName, new JArray() { name });
+            JObject receive = SendCommand(RpcCommand.AssetIssue.AssetIssueListByName, new JArray() { name });
             if (receive.TryGetValue("error", out JToken value))
             {
                 return new RpcApiResult(false, value["code"].ToObject<int>(), value["message"].ToObject<string>());

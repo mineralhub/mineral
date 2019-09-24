@@ -23,7 +23,7 @@ namespace MineralCLI.Commands
         public static bool GetBlock(string[] parameters)
         {
             string[] usage = new string[] {
-                string.Format("{0} [command option] <block number>\n", RpcCommandType.GetBlock) };
+                string.Format("{0} [command option] <block number>\n", RpcCommand.Block.GetBlock) };
 
             string[] command_option = new string[] { HelpCommandOption.Help };
 
@@ -58,7 +58,7 @@ namespace MineralCLI.Commands
                     Console.WriteLine(PrintUtil.PrintBlockExtention(block));
                 }
 
-                OutputResultMessage(RpcCommandType.GetBlock, result.Result, result.Code, result.Message);
+                OutputResultMessage(RpcCommand.Block.GetBlock, result.Result, result.Code, result.Message);
             }
             catch (System.Exception e)
             {
@@ -79,7 +79,7 @@ namespace MineralCLI.Commands
         public static bool GetBlockByLatestNum(string[] parameters)
         {
             string[] usage = new string[] {
-                string.Format("{0} [command option]\n", RpcCommandType.GetBlockByLatestNum) };
+                string.Format("{0} [command option]\n", RpcCommand.Block.GetBlockByLatestNum) };
 
             string[] command_option = new string[] { HelpCommandOption.Help };
 
@@ -97,7 +97,7 @@ namespace MineralCLI.Commands
                     Console.WriteLine(PrintUtil.PrintBlockExtention(block));
                 }
 
-                OutputResultMessage(RpcCommandType.GetBlockByLatestNum, result.Result, result.Code, result.Message);
+                OutputResultMessage(RpcCommand.Block.GetBlockByLatestNum, result.Result, result.Code, result.Message);
             }
             catch (System.Exception e)
             {
@@ -119,7 +119,7 @@ namespace MineralCLI.Commands
         public static bool GetBlockById(string[] parameters)
         {
             string[] usage = new string[] {
-                string.Format("{0} [command option] <block id>\n", RpcCommandType.GetBlockById) };
+                string.Format("{0} [command option] <block id>\n", RpcCommand.Block.GetBlockById) };
 
             string[] command_option = new string[] { HelpCommandOption.Help };
 
@@ -137,7 +137,7 @@ namespace MineralCLI.Commands
                     Console.WriteLine(PrintUtil.PrintBlockExtention(block));
                 }
 
-                OutputResultMessage(RpcCommandType.GetBlockById, result.Result, result.Code, result.Message);
+                OutputResultMessage(RpcCommand.Block.GetBlockById, result.Result, result.Code, result.Message);
             }
             catch (System.Exception e)
             {
@@ -160,7 +160,7 @@ namespace MineralCLI.Commands
         public static bool GetBlockByLimitNext(string[] parameters)
         {
             string[] usage = new string[] {
-                string.Format("{0} [command option] <start number> <end number>\n", RpcCommandType.GetBlockByLimitNext) };
+                string.Format("{0} [command option] <start number> <end number>\n", RpcCommand.Block.GetBlockByLimitNext) };
 
             string[] command_option = new string[] { HelpCommandOption.Help };
 
@@ -181,7 +181,7 @@ namespace MineralCLI.Commands
                     Console.WriteLine(PrintUtil.PrintBlockListExtention(blocks));
                 }
 
-                OutputResultMessage(RpcCommandType.GetBlockByLimitNext, result.Result, result.Code, result.Message);
+                OutputResultMessage(RpcCommand.Block.GetBlockByLimitNext, result.Result, result.Code, result.Message);
             }
             catch (System.Exception e)
             {

@@ -43,7 +43,7 @@ namespace MineralCLI.Commands
         public static bool CreateAccount(string[] parameters)
         {
             string[] usage = new string[] {
-                string.Format("{0} [command option] <address>\n", RpcCommandType.CreateAccount) };
+                string.Format("{0} [command option] <address>\n", RpcCommand.Transaction.CreateAccount) };
 
             string[] command_option = new string[] { HelpCommandOption.Help };
 
@@ -72,7 +72,7 @@ namespace MineralCLI.Commands
                 {
                     result = RpcApi.CreateTransaction(contract,
                                                       ContractType.AccountCreateContract,
-                                                      RpcCommandType.CreateAccount,
+                                                      RpcCommand.Transaction.CreateAccount,
                                                       out transaction_extention);
                 }
 
@@ -81,7 +81,7 @@ namespace MineralCLI.Commands
                     result = RpcApi.ProcessTransactionExtention(transaction_extention);
                 }
 
-                OutputResultMessage(RpcCommandType.CreateAccount, result.Result, result.Code, result.Message);
+                OutputResultMessage(RpcCommand.Transaction.CreateAccount, result.Result, result.Code, result.Message);
             }
             catch (System.Exception e)
             {
@@ -102,7 +102,7 @@ namespace MineralCLI.Commands
         public static bool CreateProposal(string[] parameters)
         {
             string[] usage = new string[] {
-                string.Format("{0} [command option] <id 1> <value 1> <id 2> <value 2> ...\n", RpcCommandType.CreateProposal) };
+                string.Format("{0} [command option] <id 1> <value 1> <id 2> <value 2> ...\n", RpcCommand.Transaction.CreateProposal) };
 
             string[] command_option = new string[] { HelpCommandOption.Help };
 
@@ -138,7 +138,7 @@ namespace MineralCLI.Commands
                 {
                     result = RpcApi.CreateTransaction(contract,
                                                       ContractType.ProposalCreateContract,
-                                                      RpcCommandType.CreateProposal,
+                                                      RpcCommand.Transaction.CreateProposal,
                                                       out transaction_extention);
                 }
 
@@ -147,7 +147,7 @@ namespace MineralCLI.Commands
                     result = RpcApi.ProcessTransactionExtention(transaction_extention);
                 }
 
-                OutputResultMessage(RpcCommandType.CreateProposal, result.Result, result.Code, result.Message);
+                OutputResultMessage(RpcCommand.Transaction.CreateProposal, result.Result, result.Code, result.Message);
             }
             catch (System.Exception e)
             {
@@ -168,7 +168,7 @@ namespace MineralCLI.Commands
         public static bool CreateWitness(string[] parameters)
         {
             string[] usage = new string[] {
-                string.Format("{0} [command option] <url>\n", RpcCommandType.CreateWitness) };
+                string.Format("{0} [command option] <url>\n", RpcCommand.Transaction.CreateWitness) };
 
             string[] command_option = new string[] { HelpCommandOption.Help };
 
@@ -197,7 +197,7 @@ namespace MineralCLI.Commands
                 {
                     result = RpcApi.CreateTransaction(contract,
                                                       ContractType.WitnessCreateContract,
-                                                      RpcCommandType.CreateWitness,
+                                                      RpcCommand.Transaction.CreateWitness,
                                                       out transaction_extention);
                 }
 
@@ -206,7 +206,7 @@ namespace MineralCLI.Commands
                     result = RpcApi.ProcessTransactionExtention(transaction_extention);
                 }
 
-                OutputResultMessage(RpcCommandType.CreateWitness, result.Result, result.Code, result.Message);
+                OutputResultMessage(RpcCommand.Transaction.CreateWitness, result.Result, result.Code, result.Message);
             }
             catch (System.Exception e)
             {
@@ -227,7 +227,7 @@ namespace MineralCLI.Commands
         public static bool UpdateAccount(string[] parameters)
         {
             string[] usage = new string[] {
-                string.Format("{0} [command option] <name>\n", RpcCommandType.UpdateAccount) };
+                string.Format("{0} [command option] <name>\n", RpcCommand.Transaction.UpdateAccount) };
 
             string[] command_option = new string[] { HelpCommandOption.Help };
 
@@ -256,7 +256,7 @@ namespace MineralCLI.Commands
                 {
                     result = RpcApi.CreateTransaction(contract,
                                                       ContractType.AccountUpdateContract,
-                                                      RpcCommandType.UpdateAccount,
+                                                      RpcCommand.Transaction.UpdateAccount,
                                                       out transaction_extention);
                 }
 
@@ -265,7 +265,7 @@ namespace MineralCLI.Commands
                     result = RpcApi.ProcessTransactionExtention(transaction_extention);
                 }
 
-                OutputResultMessage(RpcCommandType.UpdateAccount, result.Result, result.Code, result.Message);
+                OutputResultMessage(RpcCommand.Transaction.UpdateAccount, result.Result, result.Code, result.Message);
             }
             catch (System.Exception e)
             {
@@ -286,7 +286,7 @@ namespace MineralCLI.Commands
         public static bool UpdateWitness(string[] parameters)
         {
             string[] usage = new string[] {
-                string.Format("{0} [command option] <url>\n", RpcCommandType.UpdateWitness) };
+                string.Format("{0} [command option] <url>\n", RpcCommand.Transaction.UpdateWitness) };
 
             string[] command_option = new string[] { HelpCommandOption.Help };
 
@@ -315,7 +315,7 @@ namespace MineralCLI.Commands
                 {
                     result = RpcApi.CreateTransaction(contract,
                                                       ContractType.WitnessUpdateContract,
-                                                      RpcCommandType.UpdateWitness,
+                                                      RpcCommand.Transaction.UpdateWitness,
                                                       out transaction_extention);
                 }
 
@@ -324,75 +324,7 @@ namespace MineralCLI.Commands
                     result = RpcApi.ProcessTransactionExtention(transaction_extention);
                 }
 
-                OutputResultMessage(RpcCommandType.UpdateWitness, result.Result, result.Code, result.Message);
-            }
-            catch (System.Exception e)
-            {
-                Console.WriteLine(e.Message + "\n\n" + e.StackTrace);
-            }
-
-            return true;
-        }
-
-        /// <summary>
-        /// Update asset
-        /// </summary>
-        /// <param name="parameters"></param>
-        /// /// Parameter Index
-        /// [0] : Command
-        /// [1] : Limit
-        /// [2] : Public limit
-        /// [3] : Description
-        /// [4] : url
-        /// <returns></returns>
-        public static bool UpdateAsset(string[] parameters)
-        {
-            string[] usage = new string[] {
-                string.Format("{0} [command option] <limit> <public limit> <description> <url>\n", RpcCommandType.UpdateAsset) };
-
-            string[] command_option = new string[] { HelpCommandOption.Help };
-
-            if (parameters == null || parameters.Length != 5)
-            {
-                OutputHelpMessage(usage, null, command_option, null);
-                return true;
-            }
-
-            if (!RpcApi.IsLogin)
-            {
-                return true;
-            }
-
-            try
-            {
-                long limit = long.Parse(parameters[1]);
-                long public_limit = long.Parse(parameters[2]);
-                byte[] owner_address = Wallet.Base58ToAddress(RpcApi.KeyStore.Address);
-                byte[] description = Encoding.UTF8.GetBytes(parameters[3]);
-                byte[] url = Encoding.UTF8.GetBytes(parameters[4]);
-
-                RpcApiResult result = RpcApi.CreateUpdateAssetContract(owner_address,
-                                                                       description,
-                                                                       url,
-                                                                       limit,
-                                                                       public_limit,
-                                                                       out UpdateAssetContract contract);
-
-                TransactionExtention transaction_extention = null;
-                if (result.Result)
-                {
-                    result = RpcApi.CreateTransaction(contract,
-                                                      ContractType.UpdateAssetContract,
-                                                      RpcCommandType.UpdateAsset,
-                                                      out transaction_extention);
-                }
-
-                if (result.Result)
-                {
-                    result = RpcApi.ProcessTransactionExtention(transaction_extention);
-                }
-
-                OutputResultMessage(RpcCommandType.UpdateAsset, result.Result, result.Code, result.Message);
+                OutputResultMessage(RpcCommand.Transaction.UpdateWitness, result.Result, result.Code, result.Message);
             }
             catch (System.Exception e)
             {
@@ -414,7 +346,7 @@ namespace MineralCLI.Commands
         public static bool UpdateEnergyLimit(string[] parameters)
         {
             string[] usage = new string[] {
-                string.Format("{0} [command option] <contract address> <energy limit>\n", RpcCommandType.UpdateEnergyLimit) };
+                string.Format("{0} [command option] <contract address> <energy limit>\n", RpcCommand.Transaction.UpdateEnergyLimit) };
 
             string[] command_option = new string[] { HelpCommandOption.Help };
 
@@ -445,7 +377,7 @@ namespace MineralCLI.Commands
                 {
                     result = RpcApi.CreateTransaction(contract,
                                                       ContractType.UpdateEnergyLimitContract,
-                                                      RpcCommandType.UpdateEnergyLimit,
+                                                      RpcCommand.Transaction.UpdateEnergyLimit,
                                                       out transaction_extention);
                 }
 
@@ -454,7 +386,7 @@ namespace MineralCLI.Commands
                     result = RpcApi.ProcessTransactionExtention(transaction_extention);
                 }
 
-                OutputResultMessage(RpcCommandType.UpdateEnergyLimit, result.Result, result.Code, result.Message);
+                OutputResultMessage(RpcCommand.Transaction.UpdateEnergyLimit, result.Result, result.Code, result.Message);
             }
             catch (System.Exception e)
             {
@@ -476,7 +408,7 @@ namespace MineralCLI.Commands
         public static bool UpdateAccountPermission(string[] parameters)
         {
             string[] usage = new string[] {
-                string.Format("{0} [command option] <owner address> <permission(json format)>\n", RpcCommandType.UpdateAccountPermission) };
+                string.Format("{0} [command option] <owner address> <permission(json format)>\n", RpcCommand.Transaction.UpdateAccountPermission) };
 
             string[] command_option = new string[] { HelpCommandOption.Help };
 
@@ -505,7 +437,7 @@ namespace MineralCLI.Commands
                 {
                     result = RpcApi.CreateTransaction(contract,
                                                       ContractType.AccountPermissionUpdateContract,
-                                                      RpcCommandType.UpdateAccountPermission,
+                                                      RpcCommand.Transaction.UpdateAccountPermission,
                                                       out transaction_extention);
                 }
 
@@ -514,7 +446,7 @@ namespace MineralCLI.Commands
                     result = RpcApi.ProcessTransactionExtention(transaction_extention);
                 }
 
-                OutputResultMessage(RpcCommandType.UpdateAccountPermission, result.Result, result.Code, result.Message);
+                OutputResultMessage(RpcCommand.Transaction.UpdateAccountPermission, result.Result, result.Code, result.Message);
             }
             catch (System.Exception e)
             {
@@ -536,7 +468,7 @@ namespace MineralCLI.Commands
         public static bool UpdateSetting(string[] parameters)
         {
             string[] usage = new string[] {
-                string.Format("{0} [command option] <address> <consume user resource percent>\n", RpcCommandType.UpdateSetting) };
+                string.Format("{0} [command option] <address> <consume user resource percent>\n", RpcCommand.Transaction.UpdateSetting) };
 
             string[] command_option = new string[] { HelpCommandOption.Help };
 
@@ -572,7 +504,7 @@ namespace MineralCLI.Commands
                 {
                     result = RpcApi.CreateTransaction(contract,
                                                       ContractType.UpdateSettingContract,
-                                                      RpcCommandType.UpdateSetting,
+                                                      RpcCommand.Transaction.UpdateSetting,
                                                       out transaction_extention);
                 }
 
@@ -581,7 +513,7 @@ namespace MineralCLI.Commands
                     result = RpcApi.ProcessTransactionExtention(transaction_extention);
                 }
 
-                OutputResultMessage(RpcCommandType.UpdateSetting, result.Result, result.Code, result.Message);
+                OutputResultMessage(RpcCommand.Transaction.UpdateSetting, result.Result, result.Code, result.Message);
             }
             catch (System.Exception e)
             {
@@ -602,7 +534,7 @@ namespace MineralCLI.Commands
         public static bool DeleteProposal(string[] parameters)
         {
             string[] usage = new string[] {
-                string.Format("{0} [command option] <id>\n", RpcCommandType.DeleteProposal) };
+                string.Format("{0} [command option] <id>\n", RpcCommand.Transaction.DeleteProposal) };
 
             string[] command_option = new string[] { HelpCommandOption.Help };
 
@@ -631,7 +563,7 @@ namespace MineralCLI.Commands
                 {
                     result = RpcApi.CreateTransaction(contract,
                                                       ContractType.ProposalDeleteContract,
-                                                      RpcCommandType.DeleteProposal,
+                                                      RpcCommand.Transaction.DeleteProposal,
                                                       out transaction_extention);
                 }
 
@@ -640,7 +572,7 @@ namespace MineralCLI.Commands
                     result = RpcApi.ProcessTransactionExtention(transaction_extention);
                 }
 
-                OutputResultMessage(RpcCommandType.DeleteProposal, result.Result, result.Code, result.Message);
+                OutputResultMessage(RpcCommand.Transaction.DeleteProposal, result.Result, result.Code, result.Message);
             }
             catch (System.Exception e)
             {
@@ -663,7 +595,7 @@ namespace MineralCLI.Commands
         public static bool SendCoin(string[] parameters)
         {
             string[] usage = new string[] {
-                string.Format("{0} [command option] <to address> <amount>\n", RpcCommandType.SendCoin) };
+                string.Format("{0} [command option] <to address> <amount>\n", RpcCommand.Transaction.SendCoin) };
 
             string[] command_option = new string[] { HelpCommandOption.Help };
 
@@ -694,7 +626,7 @@ namespace MineralCLI.Commands
                 {
                     result = RpcApi.CreateTransaction(contract,
                                                       ContractType.TransferContract,
-                                                      RpcCommandType.CreateTransaction,
+                                                      RpcCommand.Transaction.CreateTransaction,
                                                       out transaction_extention);
                 }
 
@@ -714,7 +646,7 @@ namespace MineralCLI.Commands
                         string.Format("Send {0} drop to {1} + failed. ", long.Parse(parameters[2]), parameters[1]));
                 }
 
-                OutputResultMessage(RpcCommandType.SendCoin, result.Result, result.Code, result.Message);
+                OutputResultMessage(RpcCommand.Transaction.SendCoin, result.Result, result.Code, result.Message);
             }
             catch (System.Exception e)
             {
@@ -739,7 +671,7 @@ namespace MineralCLI.Commands
         public static bool FreezeBalance(string[] parameters)
         {
             string[] usage = new string[] {
-                string.Format("{0} [command option] <amount> <duration> || [<energy/bandwidth>}] || [<address>]\n", RpcCommandType.FreezeBalance) };
+                string.Format("{0} [command option] <amount> <duration> || [<energy/bandwidth>}] || [<address>]\n", RpcCommand.Transaction.FreezeBalance) };
 
             string[] command_option = new string[] { HelpCommandOption.Help };
 
@@ -792,7 +724,7 @@ namespace MineralCLI.Commands
                 {
                     result = RpcApi.CreateTransaction(contract,
                                                       ContractType.FreezeBalanceContract,
-                                                      RpcCommandType.FreezeBalance,
+                                                      RpcCommand.Transaction.FreezeBalance,
                                                       out transaction_extention);
                 }
 
@@ -801,7 +733,7 @@ namespace MineralCLI.Commands
                     result = RpcApi.ProcessTransactionExtention(transaction_extention);
                 }
 
-                OutputResultMessage(RpcCommandType.FreezeBalance, result.Result, result.Code, result.Message);
+                OutputResultMessage(RpcCommand.Transaction.FreezeBalance, result.Result, result.Code, result.Message);
             }
             catch (System.Exception e)
             {
@@ -824,7 +756,7 @@ namespace MineralCLI.Commands
         public static bool UnFreezeBalance(string[] parameters)
         {
             string[] usage = new string[] {
-                string.Format("{0} [command option] <address>\n", RpcCommandType.UnfreezeBalance) };
+                string.Format("{0} [command option] <address>\n", RpcCommand.Transaction.UnfreezeBalance) };
 
             string[] command_option = new string[] { HelpCommandOption.Help };
             
@@ -869,7 +801,7 @@ namespace MineralCLI.Commands
                 {
                     result = RpcApi.CreateTransaction(contract,
                                                       ContractType.UnfreezeBalanceContract,
-                                                      RpcCommandType.UnfreezeBalance,
+                                                      RpcCommand.Transaction.UnfreezeBalance,
                                                       out transaction_extention);
                 }
 
@@ -878,7 +810,7 @@ namespace MineralCLI.Commands
                     result = RpcApi.ProcessTransactionExtention(transaction_extention);
                 }
 
-                OutputResultMessage(RpcCommandType.UnfreezeBalance, result.Result, result.Code, result.Message);
+                OutputResultMessage(RpcCommand.Transaction.UnfreezeBalance, result.Result, result.Code, result.Message);
             }
             catch (System.Exception e)
             {
@@ -900,7 +832,7 @@ namespace MineralCLI.Commands
         public static bool VoteWitness(string[] parameters)
         {
             string[] usage = new string[] {
-                string.Format("{0} [command option] <address 1> <amount 1> <address 2> <amount 2> ...\n", RpcCommandType.VoteWitness) };
+                string.Format("{0} [command option] <address 1> <amount 1> <address 2> <amount 2> ...\n", RpcCommand.Transaction.VoteWitness) };
 
             string[] command_option = new string[] { HelpCommandOption.Help };
 
@@ -932,7 +864,7 @@ namespace MineralCLI.Commands
                 {
                     result = RpcApi.CreateTransaction(contract,
                                                       ContractType.VoteWitnessContract,
-                                                      RpcCommandType.VoteWitness,
+                                                      RpcCommand.Transaction.VoteWitness,
                                                       out transaction_extention);
                 }
 
@@ -941,7 +873,7 @@ namespace MineralCLI.Commands
                     result = RpcApi.ProcessTransactionExtention(transaction_extention);
                 }
 
-                OutputResultMessage(RpcCommandType.VoteWitness, result.Result, result.Code, result.Message);
+                OutputResultMessage(RpcCommand.Transaction.VoteWitness, result.Result, result.Code, result.Message);
             }
             catch (System.Exception e)
             {
@@ -962,7 +894,7 @@ namespace MineralCLI.Commands
         public static bool WithdrawBalance(string[] parameters)
         {
             string[] usage = new string[] {
-                string.Format("{0} [command option] \n", RpcCommandType.WithdrawBalance) };
+                string.Format("{0} [command option] \n", RpcCommand.Transaction.WithdrawBalance) };
 
             string[] command_option = new string[] { HelpCommandOption.Help };
 
@@ -984,7 +916,7 @@ namespace MineralCLI.Commands
                 {
                     result = RpcApi.CreateTransaction(contract,
                                                       ContractType.WithdrawBalanceContract,
-                                                      RpcCommandType.WithdrawBalance,
+                                                      RpcCommand.Transaction.WithdrawBalance,
                                                       out transaction_extention);
                 }
 
@@ -993,7 +925,7 @@ namespace MineralCLI.Commands
                     result = RpcApi.ProcessTransactionExtention(transaction_extention);
                 }
 
-                OutputResultMessage(RpcCommandType.WithdrawBalance, result.Result, result.Code, result.Message);
+                OutputResultMessage(RpcCommand.Transaction.WithdrawBalance, result.Result, result.Code, result.Message);
             }
             catch (System.Exception e)
             {

@@ -36,7 +36,7 @@ namespace MineralCLI.Commands
         /// [12-] : Pair frozen supply
         /// </param>
         /// <returns></returns>
-        public static bool AssetIssue(string[] parameters)
+        public static bool CreateAssetIssue(string[] parameters)
         {
             string[] usage = new string[] {
                 string.Format("{0} [command option] " +
@@ -47,7 +47,7 @@ namespace MineralCLI.Commands
                               "<free net limit> <public free net limit>" +
                               "<start time> <end time>" +
                               "<amount 1> <days 1> <amount 2> <days 2> ...\n"
-                              , RpcCommandType.AssetIssue) };
+                              , RpcCommand.AssetIssue.CreateAssetIssue) };
 
             string[] command_option = new string[] { HelpCommandOption.Help };
 
@@ -108,7 +108,7 @@ namespace MineralCLI.Commands
                 {
                     result = RpcApi.CreateTransaction(contract,
                                                       ContractType.AssetIssueContract,
-                                                      RpcCommandType.AssetIssue,
+                                                      RpcCommand.AssetIssue.CreateAssetIssue,
                                                       out transaction_extention);
                 }
 
@@ -117,7 +117,7 @@ namespace MineralCLI.Commands
                     result = RpcApi.ProcessTransactionExtention(transaction_extention);
                 }
 
-                OutputResultMessage(RpcCommandType.AssetIssue, result.Result, result.Code, result.Message);
+                OutputResultMessage(RpcCommand.AssetIssue.CreateAssetIssue, result.Result, result.Code, result.Message);
             }
             catch (System.Exception e)
             {
@@ -126,7 +126,75 @@ namespace MineralCLI.Commands
 
             return true;
         }
-        
+
+        /// <summary>
+        /// Update asset
+        /// </summary>
+        /// <param name="parameters"></param>
+        /// /// Parameter Index
+        /// [0] : Command
+        /// [1] : Limit
+        /// [2] : Public limit
+        /// [3] : Description
+        /// [4] : url
+        /// <returns></returns>
+        public static bool UpdateAsset(string[] parameters)
+        {
+            string[] usage = new string[] {
+                string.Format("{0} [command option] <limit> <public limit> <description> <url>\n", RpcCommand.AssetIssue.UpdateAsset) };
+
+            string[] command_option = new string[] { HelpCommandOption.Help };
+
+            if (parameters == null || parameters.Length != 5)
+            {
+                OutputHelpMessage(usage, null, command_option, null);
+                return true;
+            }
+
+            if (!RpcApi.IsLogin)
+            {
+                return true;
+            }
+
+            try
+            {
+                long limit = long.Parse(parameters[1]);
+                long public_limit = long.Parse(parameters[2]);
+                byte[] owner_address = Wallet.Base58ToAddress(RpcApi.KeyStore.Address);
+                byte[] description = Encoding.UTF8.GetBytes(parameters[3]);
+                byte[] url = Encoding.UTF8.GetBytes(parameters[4]);
+
+                RpcApiResult result = RpcApi.CreateUpdateAssetContract(owner_address,
+                                                                       description,
+                                                                       url,
+                                                                       limit,
+                                                                       public_limit,
+                                                                       out UpdateAssetContract contract);
+
+                TransactionExtention transaction_extention = null;
+                if (result.Result)
+                {
+                    result = RpcApi.CreateTransaction(contract,
+                                                      ContractType.UpdateAssetContract,
+                                                      RpcCommand.AssetIssue.UpdateAsset,
+                                                      out transaction_extention);
+                }
+
+                if (result.Result)
+                {
+                    result = RpcApi.ProcessTransactionExtention(transaction_extention);
+                }
+
+                OutputResultMessage(RpcCommand.AssetIssue.UpdateAsset, result.Result, result.Code, result.Message);
+            }
+            catch (System.Exception e)
+            {
+                Console.WriteLine(e.Message + "\n\n" + e.StackTrace);
+            }
+
+            return true;
+        }
+
         /// <summary>
         /// Get infomation asset issue by account 
         /// </summary>
@@ -139,7 +207,7 @@ namespace MineralCLI.Commands
         public static bool AssetIssueByAccount(string[] parameters)
         {
             string[] usage = new string[] {
-                string.Format("{0} [command option] <asset issue address>\n", RpcCommandType.AssetIssueByAccount) };
+                string.Format("{0} [command option] <asset issue address>\n", RpcCommand.AssetIssue.AssetIssueByAccount) };
 
             string[] command_option = new string[] { HelpCommandOption.Help };
 
@@ -159,7 +227,7 @@ namespace MineralCLI.Commands
                     Console.WriteLine(PrintUtil.PrintAssetIssueList(asset_issues));
                 }
 
-                OutputResultMessage(RpcCommandType.AssetIssueByAccount, result.Result, result.Code, result.Message);
+                OutputResultMessage(RpcCommand.AssetIssue.AssetIssueByAccount, result.Result, result.Code, result.Message);
             }
             catch (System.Exception e)
             {
@@ -181,7 +249,7 @@ namespace MineralCLI.Commands
         public static bool AssetIssueById(string[] parameters)
         {
             string[] usage = new string[] {
-                string.Format("{0} [command option] <asset issue id>\n", RpcCommandType.AssetIssueById) };
+                string.Format("{0} [command option] <asset issue id>\n", RpcCommand.AssetIssue.AssetIssueById) };
 
             string[] command_option = new string[] { HelpCommandOption.Help };
 
@@ -200,7 +268,7 @@ namespace MineralCLI.Commands
                     Console.WriteLine(PrintUtil.PrintAssetIssue(contract));
                 }
 
-                OutputResultMessage(RpcCommandType.AssetIssueById, result.Result, result.Code, result.Message);
+                OutputResultMessage(RpcCommand.AssetIssue.AssetIssueById, result.Result, result.Code, result.Message);
             }
             catch (System.Exception e)
             {
@@ -222,7 +290,7 @@ namespace MineralCLI.Commands
         public static bool AssetIssueByName(string[] parameters)
         {
             string[] usage = new string[] {
-                string.Format("{0} [command option] <asset issue name>\n", RpcCommandType.AssetIssueByName) };
+                string.Format("{0} [command option] <asset issue name>\n", RpcCommand.AssetIssue.AssetIssueByName) };
 
             string[] command_option = new string[] { HelpCommandOption.Help };
 
@@ -241,7 +309,7 @@ namespace MineralCLI.Commands
                     Console.WriteLine(PrintUtil.PrintAssetIssue(contract));
                 }
 
-                OutputResultMessage(RpcCommandType.AssetIssueByName, result.Result, result.Code, result.Message);
+                OutputResultMessage(RpcCommand.AssetIssue.AssetIssueByName, result.Result, result.Code, result.Message);
             }
             catch (System.Exception e)
             {
@@ -263,7 +331,7 @@ namespace MineralCLI.Commands
         public static bool AssetIssueListByName(string[] parameters)
         {
             string[] usage = new string[] {
-                string.Format("{0} [command option] <asset issue name>\n", RpcCommandType.AssetIssueListByName) };
+                string.Format("{0} [command option] <asset issue name>\n", RpcCommand.AssetIssue.AssetIssueListByName) };
 
             string[] command_option = new string[] { HelpCommandOption.Help };
 
@@ -282,7 +350,7 @@ namespace MineralCLI.Commands
                     Console.WriteLine(PrintUtil.PrintAssetIssueList(contracts));
                 }
 
-                OutputResultMessage(RpcCommandType.AssetIssueListByName, result.Result, result.Code, result.Message);
+                OutputResultMessage(RpcCommand.AssetIssue.AssetIssueListByName, result.Result, result.Code, result.Message);
             }
             catch (System.Exception e)
             {
@@ -306,7 +374,7 @@ namespace MineralCLI.Commands
         public static bool TransferAsset(string[] parameters)
         {
             string[] usage = new string[] {
-                string.Format("{0} [command option] <to address> <asset name> <amount>\n", RpcCommandType.TransferAsset) };
+                string.Format("{0} [command option] <to address> <asset name> <amount>\n", RpcCommand.AssetIssue.TransferAsset) };
 
             string[] command_option = new string[] { HelpCommandOption.Help };
 
@@ -338,7 +406,7 @@ namespace MineralCLI.Commands
                 {
                     result = RpcApi.CreateTransaction(contract,
                                                       ContractType.TransferAssetContract,
-                                                      RpcCommandType.TransferAsset,
+                                                      RpcCommand.AssetIssue.TransferAsset,
                                                       out transaction_extention);
                 }
 
@@ -347,7 +415,7 @@ namespace MineralCLI.Commands
                     result = RpcApi.ProcessTransactionExtention(transaction_extention);
                 }
 
-                OutputResultMessage(RpcCommandType.TransferAsset, result.Result, result.Code, result.Message);
+                OutputResultMessage(RpcCommand.AssetIssue.TransferAsset, result.Result, result.Code, result.Message);
             }
             catch (System.Exception e)
             {
@@ -371,7 +439,7 @@ namespace MineralCLI.Commands
         public static bool UnfreezeAsset(string[] parameters)
         {
             string[] usage = new string[] {
-                string.Format("{0} [command option] <to address> <asset name> <amount>\n", RpcCommandType.UnfreezeAsset) };
+                string.Format("{0} [command option] <to address> <asset name> <amount>\n", RpcCommand.AssetIssue.UnfreezeAsset) };
 
             string[] command_option = new string[] { HelpCommandOption.Help };
 
@@ -396,7 +464,7 @@ namespace MineralCLI.Commands
                 {
                     result = RpcApi.CreateTransaction(contract,
                                                       ContractType.UnfreezeAssetContract,
-                                                      RpcCommandType.UnfreezeAsset,
+                                                      RpcCommand.AssetIssue.UnfreezeAsset,
                                                       out transaction_extention);
                 }
 
@@ -405,7 +473,7 @@ namespace MineralCLI.Commands
                     result = RpcApi.ProcessTransactionExtention(transaction_extention);
                 }
 
-                OutputResultMessage(RpcCommandType.UnfreezeAsset, result.Result, result.Code, result.Message);
+                OutputResultMessage(RpcCommand.AssetIssue.UnfreezeAsset, result.Result, result.Code, result.Message);
             }
             catch (System.Exception e)
             {

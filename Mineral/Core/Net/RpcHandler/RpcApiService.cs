@@ -501,7 +501,7 @@ namespace Mineral.Core.Net.RpcHandler
 
                 if (asset_issue_list.AssetIssue.Count > 1)
                 {
-                    throw new NonUniqueObjectException("get more than one asset, please use " + RpcCommandType.AssetIssueById);
+                    throw new NonUniqueObjectException("get more than one asset, please use " + RpcCommand.AssetIssue.AssetIssueById);
                 }
                 else
                 {
@@ -518,7 +518,7 @@ namespace Mineral.Core.Net.RpcHandler
                             asset_issue_list.AssetIssue.Add(asset_issue.Instance);
                             if (asset_issue_list.AssetIssue.Count > 1)
                             {
-                                throw new NonUniqueObjectException("get more than one asset, please use " + RpcCommandType.AssetIssueById);
+                                throw new NonUniqueObjectException("get more than one asset, please use " + RpcCommand.AssetIssue.AssetIssueById);
                             }
                             contract = asset_issue_list.AssetIssue[0];
                         }
