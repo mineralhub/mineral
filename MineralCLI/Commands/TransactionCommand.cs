@@ -723,6 +723,170 @@ namespace MineralCLI.Commands
 
             return true;
         }
+
+        /// <summary>
+        /// Freeze balance
+        /// </summary>
+        /// <param name="parameters">
+        /// Parameter Index
+        /// [0] : Command
+        /// [1] : Amount
+        /// [2] : Duration time (day)
+        /// [3] : Energy / Bandwidth        (default 0 : enerygy)
+        /// [4] : Address                   (optional)
+        /// </param>
+        /// <returns></returns>
+        public static bool FreezeBalance(string[] parameters)
+        {
+            string[] usage = new string[] {
+                string.Format("{0} [command option] <amount> <duration> || [<energy/bandwidth>}] || [<address>]\n", RpcCommandType.FreezeBalance) };
+
+            string[] command_option = new string[] { HelpCommandOption.Help };
+
+            if (parameters == null || parameters.Length < 3 || parameters.Length > 5)
+            {
+                OutputHelpMessage(usage, null, command_option, null);
+                return true;
+            }
+
+            if (!RpcApi.IsLogin)
+            {
+                return true;
+            }
+
+            try
+            {
+                byte[] owner_address = Wallet.Base58ToAddress(RpcApi.KeyStore.Address);
+                byte[] address = null;
+                long amount = long.Parse(parameters[1]);
+                long duration = long.Parse(parameters[2]);
+                int resource_code = 0;
+                
+                if (parameters.Length == 4)
+                {
+                    try
+                    {
+                        resource_code = int.Parse(parameters[3]);
+                    }
+                    catch (System.Exception e)
+                    {
+                        address = Wallet.Base58ToAddress(parameters[4]);
+                    }
+                }
+                else if (parameters.Length == 5)
+                {
+                    resource_code = int.Parse(parameters[3]);
+                    address = Wallet.Base58ToAddress(parameters[4]);
+                }
+
+                RpcApiResult result = RpcApi.CreateFreezeBalanceContract(owner_address,
+                                                                         address,
+                                                                         amount,
+                                                                         duration,
+                                                                         resource_code,
+                                                                         out FreezeBalanceContract contract);
+
+
+                TransactionExtention transaction_extention = null;
+                if (result.Result)
+                {
+                    result = RpcApi.CreateTransaction(contract,
+                                                      ContractType.FreezeBalanceContract,
+                                                      RpcCommandType.FreezeBalance,
+                                                      out transaction_extention);
+                }
+
+                if (result.Result)
+                {
+                    result = RpcApi.ProcessTransactionExtention(transaction_extention);
+                }
+
+                OutputResultMessage(RpcCommandType.FreezeBalance, result.Result, result.Code, result.Message);
+            }
+            catch (System.Exception e)
+            {
+                Console.WriteLine(e.Message + "\n\n" + e.StackTrace);
+            }
+
+            return true;
+        }
+
+        /// <summary>
+        /// UnFreeze balance
+        /// </summary>
+        /// <param name="parameters">
+        /// Parameter Index
+        /// [0] : Command
+        /// [1] : Energy / Bandwidth        (default 0 : enerygy)
+        /// [2] : Address                   (optional)
+        /// </param>
+        /// <returns></returns>
+        public static bool UnFreezeBalance(string[] parameters)
+        {
+            string[] usage = new string[] {
+                string.Format("{0} [command option] <address>\n", RpcCommandType.GetAccount) };
+
+            string[] command_option = new string[] { HelpCommandOption.Help };
+            
+            if (parameters == null || parameters.Length < 2 || parameters.Length > 3)
+            {
+                OutputHelpMessage(usage, null, command_option, null);
+                return true;
+            }
+
+            try
+            {
+                byte[] owner_address = Wallet.Base58ToAddress(RpcApi.KeyStore.Address);
+                byte[] address = null;
+                int resource_code = 0;
+
+                if (parameters.Length == 2)
+                {
+                    try
+                    {
+                        resource_code = int.Parse(parameters[2]);
+                    }
+                    catch (System.Exception e)
+                    {
+                        address = Wallet.Base58ToAddress(parameters[2]);
+                    }
+                }
+                else if (parameters.Length == 3)
+                {
+                    resource_code = int.Parse(parameters[2]);
+                    address = Wallet.Base58ToAddress(parameters[2]);
+                }
+
+
+                RpcApiResult result = RpcApi.CreateUnfreezeBalanceContract(owner_address,
+                                                                           address,
+                                                                           resource_code,
+                                                                           out UnfreezeBalanceContract contract);
+
+
+                TransactionExtention transaction_extention = null;
+                if (result.Result)
+                {
+                    result = RpcApi.CreateTransaction(contract,
+                                                      ContractType.FreezeBalanceContract,
+                                                      RpcCommandType.FreezeBalance,
+                                                      out transaction_extention);
+                }
+
+                if (result.Result)
+                {
+                    result = RpcApi.ProcessTransactionExtention(transaction_extention);
+                }
+
+                OutputResultMessage(RpcCommandType.GetAccount, result.Result, result.Code, result.Message);
+            }
+            catch (System.Exception e)
+            {
+                Console.WriteLine(e.Message + "\n\n" + e.StackTrace);
+            }
+
+            return true;
+        }
         #endregion
     }
 }

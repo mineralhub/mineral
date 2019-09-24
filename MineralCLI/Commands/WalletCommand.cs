@@ -287,7 +287,5 @@ namespace MineralCLI.Commands
 
             return true;
         }
-
-
     }
 }

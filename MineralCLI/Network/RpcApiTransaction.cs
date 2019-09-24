@@ -153,6 +153,44 @@ namespace MineralCLI.Network
             return RpcApiResult.Success;
         }
 
+        public static RpcApiResult CreateFreezeBalanceContract(byte[] owner_address,
+                                                               byte[] address,
+                                                               long amount,
+                                                               long duration,
+                                                               int resource_code,
+                                                               out FreezeBalanceContract contract)
+        {
+            contract = new FreezeBalanceContract();
+            contract.OwnerAddress = ByteString.CopyFrom(owner_address);
+            contract.FrozenBalance = amount;
+            contract.FrozenDuration = duration;
+            contract.Resource = (ResourceCode)resource_code;
+
+            if (address != null)
+            {
+                contract.ReceiverAddress = ByteString.CopyFrom(address);
+            }
+
+            return RpcApiResult.Success;
+        }
+
+        public static RpcApiResult CreateUnfreezeBalanceContract(byte[] owner_address,
+                                                               byte[] address,
+                                                               int resource_code,
+                                                               out UnfreezeBalanceContract contract)
+        {
+            contract = new UnfreezeBalanceContract();
+            contract.OwnerAddress = ByteString.CopyFrom(owner_address);
+            contract.Resource = (ResourceCode)resource_code;
+
+            if (address != null)
+            {
+                contract.ReceiverAddress = ByteString.CopyFrom(address);
+            }
+
+            return RpcApiResult.Success;
+        }
+
         public static RpcApiResult CreateUpdateAcountContract(byte[] owner_address,
                                                               byte[] name,
                                                               out AccountUpdateContract contract)

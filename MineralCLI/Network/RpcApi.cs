@@ -78,7 +78,7 @@ namespace MineralCLI.Network
         public static JObject SendCommand(string method, JArray parameters)
         {
             JObject obj = MakeCommand(method, parameters);
-            return RcpClient.RequestPostAnsyc(Program.url, obj.ToString()).Result;
+            return RpcClient.RequestPostAnsyc(Program.url, obj.ToString()).Result;
         }
         #endregion
     }

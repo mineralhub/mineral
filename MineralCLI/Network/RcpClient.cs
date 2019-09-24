@@ -8,7 +8,7 @@ using Newtonsoft.Json.Linq;
 
 namespace MineralCLI.Network
 {
-    public static class RcpClient
+    public static class RpcClient
     {
         public class ResponeData
         {

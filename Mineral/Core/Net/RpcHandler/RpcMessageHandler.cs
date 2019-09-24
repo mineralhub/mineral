@@ -31,6 +31,9 @@ namespace Mineral.Core.Net.RpcHandler
             { RpcCommandType.UpdateAccountPermission, new RpcHandler(OnCreateContract) },
             { RpcCommandType.UpdateSetting, new RpcHandler(OnCreateContract) },
             { RpcCommandType.DeleteProposal, new RpcHandler(OnCreateContract) },
+            { RpcCommandType.TransferAsset, new RpcHandler(OnCreateContract) },
+            { RpcCommandType.FreezeBalance, new RpcHandler(OnCreateContract) },
+            { RpcCommandType.UnfreezeBalance, new RpcHandler(OnCreateContract) },
 
             { RpcCommandType.GetTransactionSignWeight, new RpcHandler(OnGetTransactionSignWeight) },
             { RpcCommandType.BroadcastTransaction, new RpcHandler(OnBroadcastTransaction) },
@@ -40,7 +43,6 @@ namespace Mineral.Core.Net.RpcHandler
             { RpcCommandType.AssetIssueById, new RpcHandler(OnAssetIssueById) },
             { RpcCommandType.AssetIssueByName, new RpcHandler(OnAssetIssueByName) },
             { RpcCommandType.AssetIssueListByName, new RpcHandler(OnAssetIssueListByName) },
-            { RpcCommandType.TransferAsset, new RpcHandler(OnCreateContract) },
 
             { RpcCommandType.GetBlock, new RpcHandler(OnGetBlock) },
             { RpcCommandType.GetBlockByLatestNum, new RpcHandler(OnGetBlockByLatestNum) },
