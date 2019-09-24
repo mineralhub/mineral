@@ -241,5 +241,63 @@ namespace MineralCLI.Commands
 
             return true;
         }
+
+        /// <summary>
+        /// Transfer asset
+        /// </summary>
+        /// <param name="parameters">
+        /// Parameter Index
+        /// [0] : Command
+        /// [1] : To address
+        /// [2] : Asset name
+        /// [3] : Amount
+        /// </param>
+        /// <returns></returns>
+        public static bool UnfreezeAsset(string[] parameters)
+        {
+            string[] usage = new string[] {
+                string.Format("{0} [command option] <to address> <asset name> <amount>\n", RpcCommandType.UnfreezeAsset) };
+
+            string[] command_option = new string[] { HelpCommandOption.Help };
+
+            if (parameters == null || parameters.Length != 4)
+            {
+                OutputHelpMessage(usage, null, command_option, null);
+                return true;
+            }
+
+            if (!RpcApi.IsLogin)
+                return true;
+
+            try
+            {
+                byte[] owner_address = Wallet.Base58ToAddress(RpcApi.KeyStore.Address);
+
+                RpcApiResult result = RpcApi.CreateUnfreezeAssetContract(owner_address,
+                                                                         out UnfreezeAssetContract contract);
+
+                TransactionExtention transaction_extention = null;
+                if (result.Result)
+                {
+                    result = RpcApi.CreateTransaction(contract,
+                                                      ContractType.UnfreezeAssetContract,
+                                                      RpcCommandType.UnfreezeAsset,
+                                                      out transaction_extention);
+                }
+
+                if (result.Result)
+                {
+                    result = RpcApi.ProcessTransactionExtention(transaction_extention);
+                }
+
+                OutputResultMessage(RpcCommandType.UnfreezeAsset, result.Result, result.Code, result.Message);
+            }
+            catch (System.Exception e)
+            {
+                Console.WriteLine(e.Message + "\n\n" + e.StackTrace);
+            }
+
+            return true;
+        }
     }
 }

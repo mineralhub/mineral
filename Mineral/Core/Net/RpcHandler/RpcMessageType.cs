@@ -76,6 +76,12 @@ namespace Mineral.Core.Net.RpcHandler
         [CommandLineAttribute(Name = "UnFreezeBalance", Description = "")]
         public static readonly string UnfreezeBalance = "unfreezebalance";
 
+        [CommandLineAttribute(Name = "UnFreezeAsset", Description = "")]
+        public static readonly string UnfreezeAsset = "unfreezeasset";
+
+        [CommandLineAttribute(Name = "VoteWitness", Description = "")]
+        public static readonly string VoteWitness = "votewitness";
+
         [CommandLineAttribute(Name = "GetBlock", Description = "")]
         public static readonly string GetBlock = "getblock";
 

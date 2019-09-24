@@ -824,7 +824,7 @@ namespace MineralCLI.Commands
         public static bool UnFreezeBalance(string[] parameters)
         {
             string[] usage = new string[] {
-                string.Format("{0} [command option] <address>\n", RpcCommandType.GetAccount) };
+                string.Format("{0} [command option] <address>\n", RpcCommandType.UnfreezeBalance) };
 
             string[] command_option = new string[] { HelpCommandOption.Help };
             
@@ -868,8 +868,8 @@ namespace MineralCLI.Commands
                 if (result.Result)
                 {
                     result = RpcApi.CreateTransaction(contract,
-                                                      ContractType.FreezeBalanceContract,
-                                                      RpcCommandType.FreezeBalance,
+                                                      ContractType.UnfreezeBalanceContract,
+                                                      RpcCommandType.UnfreezeBalance,
                                                       out transaction_extention);
                 }
 
@@ -878,7 +878,70 @@ namespace MineralCLI.Commands
                     result = RpcApi.ProcessTransactionExtention(transaction_extention);
                 }
 
-                OutputResultMessage(RpcCommandType.GetAccount, result.Result, result.Code, result.Message);
+                OutputResultMessage(RpcCommandType.UnfreezeBalance, result.Result, result.Code, result.Message);
+            }
+            catch (System.Exception e)
+            {
+                Console.WriteLine(e.Message + "\n\n" + e.StackTrace);
+            }
+
+            return true;
+        }
+
+        /// <summary>
+        /// Vote
+        /// </summary>
+        /// <param name="parameters">
+        /// Parameter Index
+        /// [0] : Command
+        /// [1~] : vote pair parameter
+        /// </param>
+        /// <returns></returns>
+        public static bool VoteWitness(string[] parameters)
+        {
+            string[] usage = new string[] {
+                string.Format("{0} [command option] <address 1> <amount 1> <address 2> <amount 2> ...\n", RpcCommandType.VoteWitness) };
+
+            string[] command_option = new string[] { HelpCommandOption.Help };
+
+            if (parameters == null || parameters.Length < 3 || (parameters.Length - 1) % 2 == 0)
+            {
+                OutputHelpMessage(usage, null, command_option, null);
+                return true;
+            }
+
+            try
+            {
+                byte[] owner_address = Wallet.Base58ToAddress(RpcApi.KeyStore.Address);
+                Dictionary<byte[], long> votes = new Dictionary<byte[], long>();
+
+                for (int i = 1; i < parameters.Length; i += 2)
+                {
+                    byte[] address = Wallet.Base58ToAddress(parameters[i]);
+                    long amount = long.Parse(parameters[i + 1]);
+                    votes.Add(address, amount);
+                }
+
+                RpcApiResult result = RpcApi.CreateVoteWitnessContract(owner_address,
+                                                                       votes,
+                                                                       out VoteWitnessContract contract);
+
+
+                TransactionExtention transaction_extention = null;
+                if (result.Result)
+                {
+                    result = RpcApi.CreateTransaction(contract,
+                                                      ContractType.VoteWitnessContract,
+                                                      RpcCommandType.VoteWitness,
+                                                      out transaction_extention);
+                }
+
+                if (result.Result)
+                {
+                    result = RpcApi.ProcessTransactionExtention(transaction_extention);
+                }
+
+                OutputResultMessage(RpcCommandType.VoteWitness, result.Result, result.Code, result.Message);
             }
             catch (System.Exception e)
             {

@@ -34,6 +34,7 @@ namespace Mineral.Core.Net.RpcHandler
             { RpcCommandType.TransferAsset, new RpcHandler(OnCreateContract) },
             { RpcCommandType.FreezeBalance, new RpcHandler(OnCreateContract) },
             { RpcCommandType.UnfreezeBalance, new RpcHandler(OnCreateContract) },
+            { RpcCommandType.VoteWitness, new RpcHandler(OnCreateContract) },
 
             { RpcCommandType.GetTransactionSignWeight, new RpcHandler(OnGetTransactionSignWeight) },
             { RpcCommandType.BroadcastTransaction, new RpcHandler(OnBroadcastTransaction) },

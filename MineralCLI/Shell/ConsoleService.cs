@@ -35,6 +35,9 @@ namespace MineralCLI.Shell
             { RpcCommandType.UpdateSetting, new CommandHandler(TransactionCommand.UpdateSetting) },
             { RpcCommandType.DeleteProposal, new CommandHandler(TransactionCommand.DeleteProposal) },
             { RpcCommandType.SendCoin, new CommandHandler(TransactionCommand.SendCoin) },
+            { RpcCommandType.FreezeBalance, new CommandHandler(TransactionCommand.FreezeBalance) },
+            { RpcCommandType.UnfreezeBalance, new CommandHandler(TransactionCommand.UnFreezeBalance) },
+            { RpcCommandType.VoteWitness, new CommandHandler(TransactionCommand.VoteWitness) },
 
             // BlockCommands
             { RpcCommandType.GetBlock, new CommandHandler(BlockCommand.GetBlock) },
@@ -47,7 +50,8 @@ namespace MineralCLI.Shell
             { RpcCommandType.AssetIssueById, new CommandHandler(AssetIssueCommand.AssetIssueById) },
             { RpcCommandType.AssetIssueByName, new CommandHandler(AssetIssueCommand.AssetIssueByName) },
             { RpcCommandType.AssetIssueListByName, new CommandHandler(AssetIssueCommand.AssetIssueListByName) },
-            { RpcCommandType.TransferAsset, new CommandHandler(AssetIssueCommand.TransferAsset) }
+            { RpcCommandType.TransferAsset, new CommandHandler(AssetIssueCommand.TransferAsset) },
+            { RpcCommandType.UnfreezeAsset, new CommandHandler(AssetIssueCommand.UnfreezeAsset) }
         };
         #endregion
 

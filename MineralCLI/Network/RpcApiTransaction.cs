@@ -191,6 +191,29 @@ namespace MineralCLI.Network
             return RpcApiResult.Success;
         }
 
+        public static RpcApiResult CreateVoteWitnessContract(byte[] owner_address,
+                                                             Dictionary<byte[], long> votes,
+                                                             out VoteWitnessContract contract)
+        {
+            contract = new VoteWitnessContract();
+            contract.OwnerAddress = ByteString.CopyFrom(owner_address);
+            
+            foreach(var vote in votes)
+            {
+                if (vote.Key == null)
+                {
+                    continue;
+                }
+
+                VoteWitnessContract.Types.Vote entry = new VoteWitnessContract.Types.Vote();
+                entry.VoteAddress = ByteString.CopyFrom(vote.Key);
+                entry.VoteCount = vote.Value;
+                contract.Votes.Add(entry);
+            }
+
+            return RpcApiResult.Success;
+        }
+
         public static RpcApiResult CreateUpdateAcountContract(byte[] owner_address,
                                                               byte[] name,
                                                               out AccountUpdateContract contract)
