@@ -82,6 +82,9 @@ namespace Mineral.Core.Net.RpcHandler
         [CommandLineAttribute(Name = "VoteWitness", Description = "")]
         public static readonly string VoteWitness = "votewitness";
 
+        [CommandLineAttribute(Name = "WithdrawBalance", Description = "")]
+        public static readonly string WithdrawBalance = "withdrawbalance";
+
         [CommandLineAttribute(Name = "GetBlock", Description = "")]
         public static readonly string GetBlock = "getblock";
 

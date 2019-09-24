@@ -192,13 +192,13 @@ namespace MineralCLI.Network
         }
 
         public static RpcApiResult CreateVoteWitnessContract(byte[] owner_address,
-                                                             Dictionary<byte[], long> votes,
-                                                             out VoteWitnessContract contract)
+                                                     Dictionary<byte[], long> votes,
+                                                     out VoteWitnessContract contract)
         {
             contract = new VoteWitnessContract();
             contract.OwnerAddress = ByteString.CopyFrom(owner_address);
-            
-            foreach(var vote in votes)
+
+            foreach (var vote in votes)
             {
                 if (vote.Key == null)
                 {
@@ -210,6 +210,15 @@ namespace MineralCLI.Network
                 entry.VoteCount = vote.Value;
                 contract.Votes.Add(entry);
             }
+
+            return RpcApiResult.Success;
+        }
+
+        public static RpcApiResult CreateWithdrawBalanceContract(byte[] owner_address,
+                                                                 out WithdrawBalanceContract contract)
+        {
+            contract = new WithdrawBalanceContract();
+            contract.OwnerAddress = ByteString.CopyFrom(owner_address);
 
             return RpcApiResult.Success;
         }

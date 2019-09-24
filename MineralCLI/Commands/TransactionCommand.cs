@@ -950,6 +950,58 @@ namespace MineralCLI.Commands
 
             return true;
         }
+
+        /// <summary>
+        /// Withdraw balance
+        /// </summary>
+        /// <param name="parameters">
+        /// Parameter Index
+        /// [0] : Command
+        /// </param>
+        /// <returns></returns>
+        public static bool WithdrawBalance(string[] parameters)
+        {
+            string[] usage = new string[] {
+                string.Format("{0} [command option] \n", RpcCommandType.WithdrawBalance) };
+
+            string[] command_option = new string[] { HelpCommandOption.Help };
+
+            if (parameters == null || parameters.Length < 3 || (parameters.Length - 1) % 2 == 0)
+            {
+                OutputHelpMessage(usage, null, command_option, null);
+                return true;
+            }
+
+            try
+            {
+                byte[] owner_address = Wallet.Base58ToAddress(RpcApi.KeyStore.Address);
+
+                RpcApiResult result = RpcApi.CreateWithdrawBalanceContract(owner_address,
+                                                                           out WithdrawBalanceContract contract);
+
+                TransactionExtention transaction_extention = null;
+                if (result.Result)
+                {
+                    result = RpcApi.CreateTransaction(contract,
+                                                      ContractType.WithdrawBalanceContract,
+                                                      RpcCommandType.WithdrawBalance,
+                                                      out transaction_extention);
+                }
+
+                if (result.Result)
+                {
+                    result = RpcApi.ProcessTransactionExtention(transaction_extention);
+                }
+
+                OutputResultMessage(RpcCommandType.WithdrawBalance, result.Result, result.Code, result.Message);
+            }
+            catch (System.Exception e)
+            {
+                Console.WriteLine(e.Message + "\n\n" + e.StackTrace);
+            }
+
+            return true;
+        }
         #endregion
     }
 }
