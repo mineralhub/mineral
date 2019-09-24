@@ -47,6 +47,7 @@ namespace MineralCLI.Shell
             { RpcCommandType.GetBlockByLimitNext, new CommandHandler(BlockCommand.GetBlockByLimitNext) },
 
             // AssetIssueCommands
+            { RpcCommandType.AssetIssue, new CommandHandler(AssetIssueCommand.AssetIssue) },
             { RpcCommandType.AssetIssueByAccount, new CommandHandler(AssetIssueCommand.AssetIssueByAccount) },
             { RpcCommandType.AssetIssueById, new CommandHandler(AssetIssueCommand.AssetIssueById) },
             { RpcCommandType.AssetIssueByName, new CommandHandler(AssetIssueCommand.AssetIssueByName) },

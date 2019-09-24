@@ -20,6 +20,7 @@ namespace Mineral.Core.Net.RpcHandler
 
         private Dictionary<string, RpcHandler> handlers = new Dictionary<string, RpcHandler>()
         {
+            { RpcCommandType.AssetIssue, new RpcHandler(OnCreateContract) },
             { RpcCommandType.CreateAccount, new RpcHandler(OnCreateContract) },
             { RpcCommandType.CreateProposal, new RpcHandler(OnCreateContract) },
             { RpcCommandType.CreateWitness, new RpcHandler(OnCreateContract) },

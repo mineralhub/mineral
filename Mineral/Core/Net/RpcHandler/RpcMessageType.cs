@@ -100,6 +100,9 @@ namespace Mineral.Core.Net.RpcHandler
         [CommandLineAttribute(Name = "SendCoin", Description = "")]
         public static readonly string SendCoin = "sendcoin";
 
+        [CommandLineAttribute(Name = "AssetIssue", Description = "")]
+        public static readonly string AssetIssue = "assetissue";
+
         [CommandLineAttribute(Name = "AssetIssueByAccount", Description = "")]
         public static readonly string AssetIssueByAccount = "assetissuebyaccount";
 
