@@ -13,7 +13,7 @@ namespace MineralCLI.Network
         {
             nodes = null;
 
-            JObject receive = SendCommand(RpcCommand.Block.GetBlock, new JArray() { });
+            JObject receive = SendCommand(RpcCommand.Node.ListNode, new JArray() { });
             if (receive.TryGetValue("error", out JToken value))
             {
                 return new RpcApiResult(false, value["code"].ToObject<int>(), value["message"].ToObject<string>());

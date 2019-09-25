@@ -36,7 +36,7 @@ namespace MineralCLI.Commands
             {
                 RpcApiResult result = null;
                 BlockExtention block = null;
-                if (parameters.Length == 0)
+                if (parameters == null)
                 {
                     Console.WriteLine("Get current block.");
                     result = RpcApi.GetBlockByLatestNum(out block);

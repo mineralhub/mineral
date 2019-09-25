@@ -107,7 +107,6 @@ namespace MineralCLI.Commands
                 {
                     result = RpcApi.CreateTransaction(contract,
                                                       ContractType.AssetIssueContract,
-                                                      command,
                                                       out transaction_extention);
                 }
 
@@ -174,7 +173,6 @@ namespace MineralCLI.Commands
                 {
                     result = RpcApi.CreateTransaction(contract,
                                                       ContractType.UpdateAssetContract,
-                                                      command,
                                                       out transaction_extention);
                 }
 
@@ -520,7 +518,6 @@ namespace MineralCLI.Commands
                 {
                     result = RpcApi.CreateTransaction(contract,
                                                       ContractType.TransferAssetContract,
-                                                      command,
                                                       out transaction_extention);
                 }
 
@@ -574,7 +571,6 @@ namespace MineralCLI.Commands
                 {
                     result = RpcApi.CreateTransaction(contract,
                                                       ContractType.UnfreezeAssetContract,
-                                                      command,
                                                       out transaction_extention);
                 }
 
