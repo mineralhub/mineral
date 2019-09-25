@@ -15,6 +15,8 @@ using static Protocol.Transaction.Types;
 using Mineral.Core.Net.Messages;
 using System.Linq;
 using Mineral.Common.Overlay.Messages;
+using Mineral.Core.Config;
+using Mineral.Common.Overlay.Discover.Node;
 
 namespace Mineral.Core.Net.RpcHandler
 {
@@ -41,6 +43,24 @@ namespace Mineral.Core.Net.RpcHandler
 
 
         #region External Method
+        public static NodeList GetListNode()
+        {
+            NodeList result = new NodeList();
+            foreach (NodeHandler handler in Manager.Instance.NodeManager.DumpActiveNodes())
+            {
+                result.Nodes.Add(new Protocol.Node()
+                {
+                    Address = new Address()
+                    {
+                        Host = ByteString.CopyFromUtf8(handler.Node.Host),
+                        Port = handler.Node.Port
+                    }
+                });
+            }
+
+            return result;
+        }
+
         public static BlockExtention CreateBlockExtention(BlockCapsule block)
         {
             if (block == null)
@@ -409,6 +429,47 @@ namespace Mineral.Core.Net.RpcHandler
             return ret;
         }
 
+        public static ProposalList GetListProposal()
+        {
+            ProposalList result = new ProposalList();
+            foreach (var proposal in Manager.Instance.DBManager.Proposal.AllProposals)
+            {
+                result.Proposals.Add(proposal.Instance);
+            }
+
+            return result;
+        }
+
+        public static ProposalList GetListProposalPaginated(int offset, int limit)
+        {
+            if (offset < 0 || limit < 0)
+            {
+                throw new ArgumentException("offset and limit value must be >= 0");
+            }
+
+            long latest_num = Manager.Instance.DBManager.DynamicProperties.GetLatestProposalNum();
+            if (latest_num <= offset)
+            {
+                throw new ArgumentException("latest num is " + latest_num + ". offset num  must be smaller than latest.");
+            }
+
+            limit = limit > Parameter.DatabaseParameters.PROPOSAL_COUNT_LIMIT_MAX ? Parameter.DatabaseParameters.PROPOSAL_COUNT_LIMIT_MAX : limit;
+            long end = offset + limit;
+            end = end > latest_num ? latest_num : end;
+
+            ProposalList result = new ProposalList();
+            for (int i = offset; i < end; i++)
+            {
+                ProposalCapsule exchange = Manager.Instance.DBManager.Proposal.Get(ProposalCapsule.CalculateDatabaseKey(i));
+                if (exchange != null)
+                {
+                    result.Proposals.Add(exchange.Instance);
+                }
+            }
+
+            return result;
+        }
+
         public static bool CheckPermissionOprations(Permission permission, Contract contract)
         {
             if (permission.Operations.Length != 32)
@@ -424,7 +485,70 @@ namespace Mineral.Core.Net.RpcHandler
             return Wallet.GetAccount(address)?.Instance;
         }
 
-        public static AssetIssueList GetAssetIssueList(byte[] address)
+        public static WitnessList GetListWitness()
+        {
+            WitnessList result = new WitnessList();
+            foreach (var witness in Manager.Instance.DBManager.Witness.AllWitnesses)
+            {
+                result.Witnesses.Add(witness.Instance);
+            }
+
+            return result;
+        }
+
+        public static AssetIssueList GetAssetIssueList()
+        {
+            AssetIssueList result = new AssetIssueList();
+            foreach (var asset_issue in Manager.Instance.DBManager.GetAssetIssueStoreFinal().AllAssetIssues)
+            {
+                result.AssetIssue.Add(asset_issue.Instance);
+            }
+
+            return result;
+        }
+
+        public static ExchangeList GetListExchange()
+        {
+            ExchangeList result = new ExchangeList();
+            foreach (var exchange in Manager.Instance.DBManager.ExchangeFinal.AllExchanges)
+            {
+                result.Exchanges.Add(exchange.Instance);
+            }
+
+            return result;
+        }
+
+        public static ExchangeList GetListExchangePaginated(int offset, int limit)
+        {
+            if (offset < 0 || limit <0)
+            {
+                throw new ArgumentException("offset and limit value must be >= 0");
+            }
+
+            long latest_num = Manager.Instance.DBManager.DynamicProperties.GetLatestExchangeNum();
+            if (latest_num <= offset)
+            {
+                throw new ArgumentException("latest num is " + latest_num + ". offset num  must be smaller than latest.");
+            }
+
+            limit = limit > Parameter.DatabaseParameters.EXCHANGE_COUNT_LIMIT_MAX ? Parameter.DatabaseParameters.EXCHANGE_COUNT_LIMIT_MAX : limit;
+            long end = offset + limit;
+            end = end > latest_num ? latest_num : end;
+
+            ExchangeList result = new ExchangeList();
+            for (int i = offset; i < end; i++)
+            {
+                ExchangeCapsule exchange = Manager.Instance.DBManager.ExchangeFinal.Get(ExchangeCapsule.CalculateDatabaseKey(i));
+                if (exchange != null)
+                {
+                    result.Exchanges.Add(exchange.Instance);
+                }
+            }
+
+            return result;
+        }
+
+        public static AssetIssueList GetAssetIssueListByAddress(byte[] address)
         {
             if (!Wallet.IsValidAddress(address))
             {

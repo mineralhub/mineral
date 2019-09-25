@@ -515,6 +515,42 @@ namespace MineralCLI.Network
 
             return RpcApiResult.Success;
         }
+
+        public static RpcApiResult ListProposal(out ProposalList proposals)
+        {
+            proposals = null;
+
+            JObject receive = SendCommand(RpcCommand.Transaction.ListProposal, new JArray() { });
+            if (receive.TryGetValue("error", out JToken value))
+            {
+                return new RpcApiResult(false, value["code"].ToObject<int>(), value["message"].ToObject<string>());
+            }
+
+            proposals = ProposalList.Parser.ParseFrom(receive["result"].ToObject<byte[]>());
+
+            return RpcApiResult.Success;
+        }
+
+        public static RpcApiResult ListProposalPaginated(int offset,
+                                                         int limit,
+                                                         out ProposalList proposals)
+        {
+            proposals = null;
+
+            PaginatedMessage message = new PaginatedMessage();
+            message.Offset = offset;
+            message.Limit = limit;
+
+            JObject receive = SendCommand(RpcCommand.Transaction.ListProposalPaginated, new JArray() { message.ToByteArray() });
+            if (receive.TryGetValue("error", out JToken value))
+            {
+                return new RpcApiResult(false, value["code"].ToObject<int>(), value["message"].ToObject<string>());
+            }
+
+            proposals = ProposalList.Parser.ParseFrom(receive["result"].ToObject<byte[]>());
+
+            return RpcApiResult.Success;
+        }
         #endregion
     }
 }

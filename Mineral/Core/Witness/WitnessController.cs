@@ -65,7 +65,7 @@ namespace Mineral.Core.Witness
             bool reult = it.MoveNext();
 
             List<ByteString> witness_address = new List<ByteString>();
-            this.db_manager.Witness.GetAllWitnesses().ForEach(witness =>
+            this.db_manager.Witness.AllWitnesses.ForEach(witness =>
             {
                 if (witness.IsJobs)
                 {
@@ -341,7 +341,7 @@ namespace Mineral.Core.Witness
             {
                 List<ByteString> active_witness = GetActiveWitnesses();
                 List<ByteString> witness_address = new List<ByteString>();
-                this.db_manager.Witness.GetAllWitnesses().ForEach(witness =>
+                this.db_manager.Witness.AllWitnesses.ForEach(witness =>
                 {
                     witness_address.Add(witness.Address);
                 });

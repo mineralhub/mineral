@@ -1,6 +1,7 @@
 ﻿using Mineral.Core;
 using Mineral.Core.Net.RpcHandler;
 using MineralCLI.Network;
+using MineralCLI.Util;
 using Protocol;
 using System;
 using System.Collections.Generic;
@@ -37,17 +38,16 @@ namespace MineralCLI.Commands
         /// </summary>
         /// <param name="parameters"></param>
         /// /// Parameter Index
-        /// [0] : Command
-        /// [1] : Create account address
+        /// [0] : Create account address
         /// <returns></returns>
-        public static bool CreateAccount(string[] parameters)
+        public static bool CreateAccount(string command, string[] parameters)
         {
             string[] usage = new string[] {
-                string.Format("{0} [command option] <address>\n", RpcCommand.Transaction.CreateAccount) };
+                string.Format("{0} [command option] <address>\n", command) };
 
             string[] command_option = new string[] { HelpCommandOption.Help };
 
-            if (parameters == null || parameters.Length != 2)
+            if (parameters == null || parameters.Length != 1)
             {
                 OutputHelpMessage(usage, null, command_option, null);
                 return true;
@@ -61,7 +61,7 @@ namespace MineralCLI.Commands
             try
             {
                 byte[] owner_address = Wallet.Base58ToAddress(RpcApi.KeyStore.Address);
-                byte[] create_address = Wallet.Base58ToAddress(parameters[1]);
+                byte[] create_address = Wallet.Base58ToAddress(parameters[0]);
 
                 RpcApiResult result = RpcApi.CreateAccountContract(owner_address,
                                                                    create_address,
@@ -72,7 +72,7 @@ namespace MineralCLI.Commands
                 {
                     result = RpcApi.CreateTransaction(contract,
                                                       ContractType.AccountCreateContract,
-                                                      RpcCommand.Transaction.CreateAccount,
+                                                      command,
                                                       out transaction_extention);
                 }
 
@@ -81,7 +81,7 @@ namespace MineralCLI.Commands
                     result = RpcApi.ProcessTransactionExtention(transaction_extention);
                 }
 
-                OutputResultMessage(RpcCommand.Transaction.CreateAccount, result.Result, result.Code, result.Message);
+                OutputResultMessage(command, result.Result, result.Code, result.Message);
             }
             catch (System.Exception e)
             {
@@ -96,17 +96,16 @@ namespace MineralCLI.Commands
         /// </summary>
         /// <param name="parameters"></param>
         /// /// Parameter Index
-        /// [0] : Command
-        /// [1~] : Proposal pair parameter
+        /// [0~] : Proposal pair parameter
         /// <returns></returns>
-        public static bool CreateProposal(string[] parameters)
+        public static bool CreateProposal(string command, string[] parameters)
         {
             string[] usage = new string[] {
-                string.Format("{0} [command option] <id 1> <value 1> <id 2> <value 2> ...\n", RpcCommand.Transaction.CreateProposal) };
+                string.Format("{0} [command option] <id 1> <value 1> <id 2> <value 2> ...\n", command) };
 
             string[] command_option = new string[] { HelpCommandOption.Help };
 
-            if (parameters == null || parameters.Length < 3 || (parameters.Length - 1) % 2 == 0)
+            if (parameters == null || parameters.Length < 2 || parameters.Length % 2 != 0)
             {
                 OutputHelpMessage(usage, null, command_option, null);
                 return true;
@@ -122,7 +121,7 @@ namespace MineralCLI.Commands
                 byte[] owner_address = Wallet.Base58ToAddress(RpcApi.KeyStore.Address);
                 Dictionary<long, long> proposal = new Dictionary<long, long>();
 
-                for (int i = 1; i < parameters.Length; i += 2)
+                for (int i = 0; i < parameters.Length; i += 2)
                 {
                     long id = long.Parse(parameters[i]);
                     long value = long.Parse(parameters[i + 1]);
@@ -138,7 +137,7 @@ namespace MineralCLI.Commands
                 {
                     result = RpcApi.CreateTransaction(contract,
                                                       ContractType.ProposalCreateContract,
-                                                      RpcCommand.Transaction.CreateProposal,
+                                                      command,
                                                       out transaction_extention);
                 }
 
@@ -147,7 +146,7 @@ namespace MineralCLI.Commands
                     result = RpcApi.ProcessTransactionExtention(transaction_extention);
                 }
 
-                OutputResultMessage(RpcCommand.Transaction.CreateProposal, result.Result, result.Code, result.Message);
+                OutputResultMessage(command, result.Result, result.Code, result.Message);
             }
             catch (System.Exception e)
             {
@@ -162,17 +161,16 @@ namespace MineralCLI.Commands
         /// </summary>
         /// <param name="parameters"></param>
         /// /// Parameter Index
-        /// [0] : Command
-        /// [1] : Witness url
+        /// [0] : Witness url
         /// <returns></returns>
-        public static bool CreateWitness(string[] parameters)
+        public static bool CreateWitness(string command, string[] parameters)
         {
             string[] usage = new string[] {
-                string.Format("{0} [command option] <url>\n", RpcCommand.Transaction.CreateWitness) };
+                string.Format("{0} [command option] <url>\n", command) };
 
             string[] command_option = new string[] { HelpCommandOption.Help };
 
-            if (parameters == null || parameters.Length != 2)
+            if (parameters == null || parameters.Length != 1)
             {
                 OutputHelpMessage(usage, null, command_option, null);
                 return true;
@@ -186,7 +184,7 @@ namespace MineralCLI.Commands
             try
             {
                 byte[] owner_address = Wallet.Base58ToAddress(RpcApi.KeyStore.Address);
-                byte[] url = Encoding.UTF8.GetBytes(parameters[1]);
+                byte[] url = Encoding.UTF8.GetBytes(parameters[0]);
 
                 RpcApiResult result = RpcApi.CreateWitnessContract(owner_address,
                                                                    url,
@@ -197,7 +195,7 @@ namespace MineralCLI.Commands
                 {
                     result = RpcApi.CreateTransaction(contract,
                                                       ContractType.WitnessCreateContract,
-                                                      RpcCommand.Transaction.CreateWitness,
+                                                      command,
                                                       out transaction_extention);
                 }
 
@@ -206,7 +204,7 @@ namespace MineralCLI.Commands
                     result = RpcApi.ProcessTransactionExtention(transaction_extention);
                 }
 
-                OutputResultMessage(RpcCommand.Transaction.CreateWitness, result.Result, result.Code, result.Message);
+                OutputResultMessage(command, result.Result, result.Code, result.Message);
             }
             catch (System.Exception e)
             {
@@ -221,17 +219,16 @@ namespace MineralCLI.Commands
         /// </summary>
         /// <param name="parameters"></param>
         /// /// Parameter Index
-        /// [0] : Command
-        /// [1] : Address name
+        /// [0] : Address name
         /// <returns></returns>
-        public static bool UpdateAccount(string[] parameters)
+        public static bool UpdateAccount(string command, string[] parameters)
         {
             string[] usage = new string[] {
-                string.Format("{0} [command option] <name>\n", RpcCommand.Transaction.UpdateAccount) };
+                string.Format("{0} [command option] <name>\n", command) };
 
             string[] command_option = new string[] { HelpCommandOption.Help };
 
-            if (parameters == null || parameters.Length != 2)
+            if (parameters == null || parameters.Length != 1)
             {
                 OutputHelpMessage(usage, null, command_option, null);
                 return true;
@@ -245,7 +242,7 @@ namespace MineralCLI.Commands
             try
             {
                 byte[] owner_address = Wallet.Base58ToAddress(RpcApi.KeyStore.Address);
-                byte[] name = Encoding.UTF8.GetBytes(parameters[1]);
+                byte[] name = Encoding.UTF8.GetBytes(parameters[0]);
 
                 RpcApiResult result = RpcApi.CreateUpdateAcountContract(owner_address,
                                                                         name,
@@ -256,7 +253,7 @@ namespace MineralCLI.Commands
                 {
                     result = RpcApi.CreateTransaction(contract,
                                                       ContractType.AccountUpdateContract,
-                                                      RpcCommand.Transaction.UpdateAccount,
+                                                      command,
                                                       out transaction_extention);
                 }
 
@@ -265,7 +262,7 @@ namespace MineralCLI.Commands
                     result = RpcApi.ProcessTransactionExtention(transaction_extention);
                 }
 
-                OutputResultMessage(RpcCommand.Transaction.UpdateAccount, result.Result, result.Code, result.Message);
+                OutputResultMessage(command, result.Result, result.Code, result.Message);
             }
             catch (System.Exception e)
             {
@@ -280,13 +277,71 @@ namespace MineralCLI.Commands
         /// </summary>
         /// <param name="parameters"></param>
         /// /// Parameter Index
-        /// [0] : Command
-        /// [1] : Witness url
+        /// [0] : Witness url
         /// <returns></returns>
-        public static bool UpdateWitness(string[] parameters)
+        public static bool UpdateWitness(string command, string[] parameters)
         {
             string[] usage = new string[] {
-                string.Format("{0} [command option] <url>\n", RpcCommand.Transaction.UpdateWitness) };
+                string.Format("{0} [command option] <url>\n", command) };
+
+            string[] command_option = new string[] { HelpCommandOption.Help };
+
+            if (parameters == null || parameters.Length != 1)
+            {
+                OutputHelpMessage(usage, null, command_option, null);
+                return true;
+            }
+
+            if (!RpcApi.IsLogin)
+            {
+                return true;
+            }
+
+            try
+            {
+                byte[] owner_address = Wallet.Base58ToAddress(RpcApi.KeyStore.Address);
+                byte[] url = Wallet.Base58ToAddress(parameters[0]);
+
+                RpcApiResult result = RpcApi.CreateUpdateWitnessContract(owner_address,
+                                                                         url,
+                                                                         out WitnessUpdateContract contract);
+
+                TransactionExtention transaction_extention = null;
+                if (result.Result)
+                {
+                    result = RpcApi.CreateTransaction(contract,
+                                                      ContractType.WitnessUpdateContract,
+                                                      command,
+                                                      out transaction_extention);
+                }
+
+                if (result.Result)
+                {
+                    result = RpcApi.ProcessTransactionExtention(transaction_extention);
+                }
+
+                OutputResultMessage(command, result.Result, result.Code, result.Message);
+            }
+            catch (System.Exception e)
+            {
+                Console.WriteLine(e.Message + "\n\n" + e.StackTrace);
+            }
+
+            return true;
+        }
+
+        /// <summary>
+        /// Update energy limit
+        /// </summary>
+        /// <param name="parameters"></param>
+        /// /// Parameter Index
+        /// [0] : Contract address
+        /// [1] : Energy limit
+        /// <returns></returns>
+        public static bool UpdateEnergyLimit(string command, string[] parameters)
+        {
+            string[] usage = new string[] {
+                string.Format("{0} [command option] <contract address> <energy limit>\n", command) };
 
             string[] command_option = new string[] { HelpCommandOption.Help };
 
@@ -304,68 +359,8 @@ namespace MineralCLI.Commands
             try
             {
                 byte[] owner_address = Wallet.Base58ToAddress(RpcApi.KeyStore.Address);
-                byte[] url = Wallet.Base58ToAddress(parameters[1]);
-
-                RpcApiResult result = RpcApi.CreateUpdateWitnessContract(owner_address,
-                                                                         url,
-                                                                         out WitnessUpdateContract contract);
-
-                TransactionExtention transaction_extention = null;
-                if (result.Result)
-                {
-                    result = RpcApi.CreateTransaction(contract,
-                                                      ContractType.WitnessUpdateContract,
-                                                      RpcCommand.Transaction.UpdateWitness,
-                                                      out transaction_extention);
-                }
-
-                if (result.Result)
-                {
-                    result = RpcApi.ProcessTransactionExtention(transaction_extention);
-                }
-
-                OutputResultMessage(RpcCommand.Transaction.UpdateWitness, result.Result, result.Code, result.Message);
-            }
-            catch (System.Exception e)
-            {
-                Console.WriteLine(e.Message + "\n\n" + e.StackTrace);
-            }
-
-            return true;
-        }
-
-        /// <summary>
-        /// Update energy limit
-        /// </summary>
-        /// <param name="parameters"></param>
-        /// /// Parameter Index
-        /// [0] : Command
-        /// [1] : Contract address
-        /// [2] : Energy limit
-        /// <returns></returns>
-        public static bool UpdateEnergyLimit(string[] parameters)
-        {
-            string[] usage = new string[] {
-                string.Format("{0} [command option] <contract address> <energy limit>\n", RpcCommand.Transaction.UpdateEnergyLimit) };
-
-            string[] command_option = new string[] { HelpCommandOption.Help };
-
-            if (parameters == null || parameters.Length != 3)
-            {
-                OutputHelpMessage(usage, null, command_option, null);
-                return true;
-            }
-
-            if (!RpcApi.IsLogin)
-            {
-                return true;
-            }
-
-            try
-            {
-                byte[] owner_address = Wallet.Base58ToAddress(RpcApi.KeyStore.Address);
-                byte[] contract_address = Wallet.Base58ToAddress(parameters[1]);
-                long energy_limit = long.Parse(parameters[2]);
+                byte[] contract_address = Wallet.Base58ToAddress(parameters[0]);
+                long energy_limit = long.Parse(parameters[1]);
 
                 RpcApiResult result = RpcApi.CreateUpdateEnergyLimitContract(owner_address,
                                                                              contract_address,
@@ -377,7 +372,7 @@ namespace MineralCLI.Commands
                 {
                     result = RpcApi.CreateTransaction(contract,
                                                       ContractType.UpdateEnergyLimitContract,
-                                                      RpcCommand.Transaction.UpdateEnergyLimit,
+                                                      command,
                                                       out transaction_extention);
                 }
 
@@ -386,7 +381,7 @@ namespace MineralCLI.Commands
                     result = RpcApi.ProcessTransactionExtention(transaction_extention);
                 }
 
-                OutputResultMessage(RpcCommand.Transaction.UpdateEnergyLimit, result.Result, result.Code, result.Message);
+                OutputResultMessage(command, result.Result, result.Code, result.Message);
             }
             catch (System.Exception e)
             {
@@ -401,18 +396,17 @@ namespace MineralCLI.Commands
         /// </summary>
         /// <param name="parameters"></param>
         /// /// Parameter Index
-        /// [0] : Command
-        /// [1] : Owner address
-        /// [2] : Permission json
+        /// [0] : Owner address
+        /// [1] : Permission json
         /// <returns></returns>
-        public static bool UpdateAccountPermission(string[] parameters)
+        public static bool UpdateAccountPermission(string command, string[] parameters)
         {
             string[] usage = new string[] {
-                string.Format("{0} [command option] <owner address> <permission(json format)>\n", RpcCommand.Transaction.UpdateAccountPermission) };
+                string.Format("{0} [command option] <owner address> <permission(json format)>\n", command) };
 
             string[] command_option = new string[] { HelpCommandOption.Help };
 
-            if (parameters == null || parameters.Length != 3)
+            if (parameters == null || parameters.Length != 2)
             {
                 OutputHelpMessage(usage, null, command_option, null);
                 return true;
@@ -425,7 +419,7 @@ namespace MineralCLI.Commands
 
             try
             {
-                byte[] owner_address = Wallet.Base58ToAddress(parameters[1]);
+                byte[] owner_address = Wallet.Base58ToAddress(parameters[0]);
                 string permission = parameters[2];
 
                 RpcApiResult result = RpcApi.CreateAccountPermissionUpdateContract(owner_address,
@@ -437,7 +431,7 @@ namespace MineralCLI.Commands
                 {
                     result = RpcApi.CreateTransaction(contract,
                                                       ContractType.AccountPermissionUpdateContract,
-                                                      RpcCommand.Transaction.UpdateAccountPermission,
+                                                      command,
                                                       out transaction_extention);
                 }
 
@@ -446,7 +440,7 @@ namespace MineralCLI.Commands
                     result = RpcApi.ProcessTransactionExtention(transaction_extention);
                 }
 
-                OutputResultMessage(RpcCommand.Transaction.UpdateAccountPermission, result.Result, result.Code, result.Message);
+                OutputResultMessage(command, result.Result, result.Code, result.Message);
             }
             catch (System.Exception e)
             {
@@ -461,18 +455,17 @@ namespace MineralCLI.Commands
         /// </summary>
         /// <param name="parameters"></param>
         /// /// Parameter Index
-        /// [0] : Command
-        /// [1] : Contract address
-        /// [2] : Consume user resource percent
+        /// [0] : Contract address
+        /// [1] : Consume user resource percent
         /// <returns></returns>
-        public static bool UpdateSetting(string[] parameters)
+        public static bool UpdateSetting(string command, string[] parameters)
         {
             string[] usage = new string[] {
-                string.Format("{0} [command option] <address> <consume user resource percent>\n", RpcCommand.Transaction.UpdateSetting) };
+                string.Format("{0} [command option] <address> <consume user resource percent>\n", command) };
 
             string[] command_option = new string[] { HelpCommandOption.Help };
 
-            if (parameters == null || parameters.Length != 3)
+            if (parameters == null || parameters.Length != 2)
             {
                 OutputHelpMessage(usage, null, command_option, null);
                 return true;
@@ -486,8 +479,8 @@ namespace MineralCLI.Commands
             try
             {
                 byte[] owner_address = Wallet.Base58ToAddress(RpcApi.KeyStore.Address);
-                byte[] contract_address = Wallet.Base58ToAddress(parameters[1]);
-                long resource_percent = long.Parse(parameters[2]);
+                byte[] contract_address = Wallet.Base58ToAddress(parameters[0]);
+                long resource_percent = long.Parse(parameters[1]);
                 if (resource_percent > 100 || resource_percent < 0)
                 {
                     Console.WriteLine("Consume user resource percent must be 0 to 100.");
@@ -504,7 +497,7 @@ namespace MineralCLI.Commands
                 {
                     result = RpcApi.CreateTransaction(contract,
                                                       ContractType.UpdateSettingContract,
-                                                      RpcCommand.Transaction.UpdateSetting,
+                                                      command,
                                                       out transaction_extention);
                 }
 
@@ -513,7 +506,7 @@ namespace MineralCLI.Commands
                     result = RpcApi.ProcessTransactionExtention(transaction_extention);
                 }
 
-                OutputResultMessage(RpcCommand.Transaction.UpdateSetting, result.Result, result.Code, result.Message);
+                OutputResultMessage(command, result.Result, result.Code, result.Message);
             }
             catch (System.Exception e)
             {
@@ -528,13 +521,72 @@ namespace MineralCLI.Commands
         /// </summary>
         /// <param name="parameters"></param>
         /// /// Parameter Index
-        /// [0] : Command
-        /// [1] : Proposal id
+        /// [0] : Proposal id
         /// <returns></returns>
-        public static bool DeleteProposal(string[] parameters)
+        public static bool DeleteProposal(string command, string[] parameters)
         {
             string[] usage = new string[] {
-                string.Format("{0} [command option] <id>\n", RpcCommand.Transaction.DeleteProposal) };
+                string.Format("{0} [command option] <id>\n", command) };
+
+            string[] command_option = new string[] { HelpCommandOption.Help };
+
+            if (parameters == null || parameters.Length != 1)
+            {
+                OutputHelpMessage(usage, null, command_option, null);
+                return true;
+            }
+
+            if (!RpcApi.IsLogin)
+            {
+                return true;
+            }
+
+            try
+            {
+                byte[] owner_address = Wallet.Base58ToAddress(RpcApi.KeyStore.Address);
+                long id = long.Parse(parameters[0]);
+
+                RpcApiResult result = RpcApi.CreateProposalDeleteContract(owner_address,
+                                                                          id,
+                                                                          out ProposalDeleteContract contract);
+
+                TransactionExtention transaction_extention = null;
+                if (result.Result)
+                {
+                    result = RpcApi.CreateTransaction(contract,
+                                                      ContractType.ProposalDeleteContract,
+                                                      command,
+                                                      out transaction_extention);
+                }
+
+                if (result.Result)
+                {
+                    result = RpcApi.ProcessTransactionExtention(transaction_extention);
+                }
+
+                OutputResultMessage(command, result.Result, result.Code, result.Message);
+            }
+            catch (System.Exception e)
+            {
+                Console.WriteLine(e.Message + "\n\n" + e.StackTrace);
+            }
+
+            return true;
+        }
+
+        /// <summary>
+        /// Send balance
+        /// </summary>
+        /// <param name="parameters">
+        /// Parameter Index
+        /// [0] : To address
+        /// [1] : Balance amount
+        /// </param>
+        /// <returns></returns>
+        public static bool SendCoin(string command, string[] parameters)
+        {
+            string[] usage = new string[] {
+                string.Format("{0} [command option] <to address> <amount>\n", command) };
 
             string[] command_option = new string[] { HelpCommandOption.Help };
 
@@ -552,69 +604,8 @@ namespace MineralCLI.Commands
             try
             {
                 byte[] owner_address = Wallet.Base58ToAddress(RpcApi.KeyStore.Address);
-                long id = long.Parse(parameters[1]);
-
-                RpcApiResult result = RpcApi.CreateProposalDeleteContract(owner_address,
-                                                                          id,
-                                                                          out ProposalDeleteContract contract);
-
-                TransactionExtention transaction_extention = null;
-                if (result.Result)
-                {
-                    result = RpcApi.CreateTransaction(contract,
-                                                      ContractType.ProposalDeleteContract,
-                                                      RpcCommand.Transaction.DeleteProposal,
-                                                      out transaction_extention);
-                }
-
-                if (result.Result)
-                {
-                    result = RpcApi.ProcessTransactionExtention(transaction_extention);
-                }
-
-                OutputResultMessage(RpcCommand.Transaction.DeleteProposal, result.Result, result.Code, result.Message);
-            }
-            catch (System.Exception e)
-            {
-                Console.WriteLine(e.Message + "\n\n" + e.StackTrace);
-            }
-
-            return true;
-        }
-
-        /// <summary>
-        /// Send balance
-        /// </summary>
-        /// <param name="parameters">
-        /// Parameter Index
-        /// [0] : Command
-        /// [1] : To address
-        /// [2] : Balance amount
-        /// </param>
-        /// <returns></returns>
-        public static bool SendCoin(string[] parameters)
-        {
-            string[] usage = new string[] {
-                string.Format("{0} [command option] <to address> <amount>\n", RpcCommand.Transaction.SendCoin) };
-
-            string[] command_option = new string[] { HelpCommandOption.Help };
-
-            if (parameters == null || parameters.Length != 3)
-            {
-                OutputHelpMessage(usage, null, command_option, null);
-                return true;
-            }
-
-            if (!RpcApi.IsLogin)
-            {
-                return true;
-            }
-
-            try
-            {
-                byte[] owner_address = Wallet.Base58ToAddress(RpcApi.KeyStore.Address);
-                byte[] to_address = Wallet.Base58ToAddress(parameters[1]);
-                long amount = long.Parse(parameters[2]);
+                byte[] to_address = Wallet.Base58ToAddress(parameters[0]);
+                long amount = long.Parse(parameters[1]);
 
                 RpcApiResult result = RpcApi.CreateTransaferContract(owner_address,
                                                                      to_address,
@@ -626,7 +617,7 @@ namespace MineralCLI.Commands
                 {
                     result = RpcApi.CreateTransaction(contract,
                                                       ContractType.TransferContract,
-                                                      RpcCommand.Transaction.CreateTransaction,
+                                                      command,
                                                       out transaction_extention);
                 }
 
@@ -661,21 +652,20 @@ namespace MineralCLI.Commands
         /// </summary>
         /// <param name="parameters">
         /// Parameter Index
-        /// [0] : Command
-        /// [1] : Amount
-        /// [2] : Duration time (day)
-        /// [3] : Energy / Bandwidth        (default 0 : enerygy)
-        /// [4] : Address                   (optional)
+        /// [0] : Amount
+        /// [1] : Duration time (day)
+        /// [2] : Energy / Bandwidth        (default 0 : enerygy)
+        /// [3] : Address                   (optional)
         /// </param>
         /// <returns></returns>
-        public static bool FreezeBalance(string[] parameters)
+        public static bool FreezeBalance(string command, string[] parameters)
         {
             string[] usage = new string[] {
-                string.Format("{0} [command option] <amount> <duration> || [<energy/bandwidth>}] || [<address>]\n", RpcCommand.Transaction.FreezeBalance) };
+                string.Format("{0} [command option] <amount> <duration> || [<energy/bandwidth>}] || [<address>]\n", command) };
 
             string[] command_option = new string[] { HelpCommandOption.Help };
 
-            if (parameters == null || parameters.Length < 3 || parameters.Length > 5)
+            if (parameters == null || parameters.Length < 2 || parameters.Length > 4)
             {
                 OutputHelpMessage(usage, null, command_option, null);
                 return true;
@@ -690,25 +680,25 @@ namespace MineralCLI.Commands
             {
                 byte[] owner_address = Wallet.Base58ToAddress(RpcApi.KeyStore.Address);
                 byte[] address = null;
-                long amount = long.Parse(parameters[1]);
-                long duration = long.Parse(parameters[2]);
+                long amount = long.Parse(parameters[0]);
+                long duration = long.Parse(parameters[1]);
                 int resource_code = 0;
                 
-                if (parameters.Length == 4)
+                if (parameters.Length == 3)
                 {
                     try
                     {
-                        resource_code = int.Parse(parameters[3]);
+                        resource_code = int.Parse(parameters[2]);
                     }
                     catch (System.Exception e)
                     {
-                        address = Wallet.Base58ToAddress(parameters[4]);
+                        address = Wallet.Base58ToAddress(parameters[3]);
                     }
                 }
-                else if (parameters.Length == 5)
+                else if (parameters.Length == 4)
                 {
-                    resource_code = int.Parse(parameters[3]);
-                    address = Wallet.Base58ToAddress(parameters[4]);
+                    resource_code = int.Parse(parameters[2]);
+                    address = Wallet.Base58ToAddress(parameters[3]);
                 }
 
                 RpcApiResult result = RpcApi.CreateFreezeBalanceContract(owner_address,
@@ -724,7 +714,7 @@ namespace MineralCLI.Commands
                 {
                     result = RpcApi.CreateTransaction(contract,
                                                       ContractType.FreezeBalanceContract,
-                                                      RpcCommand.Transaction.FreezeBalance,
+                                                      command,
                                                       out transaction_extention);
                 }
 
@@ -733,7 +723,7 @@ namespace MineralCLI.Commands
                     result = RpcApi.ProcessTransactionExtention(transaction_extention);
                 }
 
-                OutputResultMessage(RpcCommand.Transaction.FreezeBalance, result.Result, result.Code, result.Message);
+                OutputResultMessage(command, result.Result, result.Code, result.Message);
             }
             catch (System.Exception e)
             {
@@ -748,19 +738,18 @@ namespace MineralCLI.Commands
         /// </summary>
         /// <param name="parameters">
         /// Parameter Index
-        /// [0] : Command
-        /// [1] : Energy / Bandwidth        (default 0 : enerygy)
-        /// [2] : Address                   (optional)
+        /// [0] : Energy / Bandwidth        (default 0 : enerygy)
+        /// [1] : Address                   (optional)
         /// </param>
         /// <returns></returns>
-        public static bool UnFreezeBalance(string[] parameters)
+        public static bool UnFreezeBalance(string command, string[] parameters)
         {
             string[] usage = new string[] {
-                string.Format("{0} [command option] <address>\n", RpcCommand.Transaction.UnfreezeBalance) };
+                string.Format("{0} [command option] <address>\n", command) };
 
             string[] command_option = new string[] { HelpCommandOption.Help };
             
-            if (parameters == null || parameters.Length < 2 || parameters.Length > 3)
+            if (parameters == null || parameters.Length < 1 || parameters.Length > 2)
             {
                 OutputHelpMessage(usage, null, command_option, null);
                 return true;
@@ -772,21 +761,21 @@ namespace MineralCLI.Commands
                 byte[] address = null;
                 int resource_code = 0;
 
-                if (parameters.Length == 2)
+                if (parameters.Length == 1)
                 {
                     try
                     {
-                        resource_code = int.Parse(parameters[2]);
+                        resource_code = int.Parse(parameters[0]);
                     }
                     catch (System.Exception e)
                     {
-                        address = Wallet.Base58ToAddress(parameters[2]);
+                        address = Wallet.Base58ToAddress(parameters[0]);
                     }
                 }
-                else if (parameters.Length == 3)
+                else if (parameters.Length == 2)
                 {
-                    resource_code = int.Parse(parameters[2]);
-                    address = Wallet.Base58ToAddress(parameters[2]);
+                    resource_code = int.Parse(parameters[0]);
+                    address = Wallet.Base58ToAddress(parameters[1]);
                 }
 
 
@@ -801,7 +790,7 @@ namespace MineralCLI.Commands
                 {
                     result = RpcApi.CreateTransaction(contract,
                                                       ContractType.UnfreezeBalanceContract,
-                                                      RpcCommand.Transaction.UnfreezeBalance,
+                                                      command,
                                                       out transaction_extention);
                 }
 
@@ -810,7 +799,7 @@ namespace MineralCLI.Commands
                     result = RpcApi.ProcessTransactionExtention(transaction_extention);
                 }
 
-                OutputResultMessage(RpcCommand.Transaction.UnfreezeBalance, result.Result, result.Code, result.Message);
+                OutputResultMessage(command, result.Result, result.Code, result.Message);
             }
             catch (System.Exception e)
             {
@@ -825,18 +814,17 @@ namespace MineralCLI.Commands
         /// </summary>
         /// <param name="parameters">
         /// Parameter Index
-        /// [0] : Command
-        /// [1~] : vote pair parameter
+        /// [0~] : vote pair parameter
         /// </param>
         /// <returns></returns>
-        public static bool VoteWitness(string[] parameters)
+        public static bool VoteWitness(string command, string[] parameters)
         {
             string[] usage = new string[] {
-                string.Format("{0} [command option] <address 1> <amount 1> <address 2> <amount 2> ...\n", RpcCommand.Transaction.VoteWitness) };
+                string.Format("{0} [command option] <address 1> <amount 1> <address 2> <amount 2> ...\n", command) };
 
             string[] command_option = new string[] { HelpCommandOption.Help };
 
-            if (parameters == null || parameters.Length < 3 || (parameters.Length - 1) % 2 == 0)
+            if (parameters == null || parameters.Length < 2 || parameters.Length % 2 == 0)
             {
                 OutputHelpMessage(usage, null, command_option, null);
                 return true;
@@ -847,7 +835,7 @@ namespace MineralCLI.Commands
                 byte[] owner_address = Wallet.Base58ToAddress(RpcApi.KeyStore.Address);
                 Dictionary<byte[], long> votes = new Dictionary<byte[], long>();
 
-                for (int i = 1; i < parameters.Length; i += 2)
+                for (int i = 0; i < parameters.Length; i += 2)
                 {
                     byte[] address = Wallet.Base58ToAddress(parameters[i]);
                     long amount = long.Parse(parameters[i + 1]);
@@ -864,7 +852,7 @@ namespace MineralCLI.Commands
                 {
                     result = RpcApi.CreateTransaction(contract,
                                                       ContractType.VoteWitnessContract,
-                                                      RpcCommand.Transaction.VoteWitness,
+                                                      command,
                                                       out transaction_extention);
                 }
 
@@ -873,7 +861,7 @@ namespace MineralCLI.Commands
                     result = RpcApi.ProcessTransactionExtention(transaction_extention);
                 }
 
-                OutputResultMessage(RpcCommand.Transaction.VoteWitness, result.Result, result.Code, result.Message);
+                OutputResultMessage(command, result.Result, result.Code, result.Message);
             }
             catch (System.Exception e)
             {
@@ -888,17 +876,16 @@ namespace MineralCLI.Commands
         /// </summary>
         /// <param name="parameters">
         /// Parameter Index
-        /// [0] : Command
         /// </param>
         /// <returns></returns>
-        public static bool WithdrawBalance(string[] parameters)
+        public static bool WithdrawBalance(string command, string[] parameters)
         {
             string[] usage = new string[] {
-                string.Format("{0} [command option] \n", RpcCommand.Transaction.WithdrawBalance) };
+                string.Format("{0} [command option] \n", command) };
 
             string[] command_option = new string[] { HelpCommandOption.Help };
 
-            if (parameters == null || parameters.Length < 3 || (parameters.Length - 1) % 2 == 0)
+            if (parameters != null)
             {
                 OutputHelpMessage(usage, null, command_option, null);
                 return true;
@@ -916,7 +903,7 @@ namespace MineralCLI.Commands
                 {
                     result = RpcApi.CreateTransaction(contract,
                                                       ContractType.WithdrawBalanceContract,
-                                                      RpcCommand.Transaction.WithdrawBalance,
+                                                      command,
                                                       out transaction_extention);
                 }
 
@@ -925,7 +912,90 @@ namespace MineralCLI.Commands
                     result = RpcApi.ProcessTransactionExtention(transaction_extention);
                 }
 
-                OutputResultMessage(RpcCommand.Transaction.WithdrawBalance, result.Result, result.Code, result.Message);
+                OutputResultMessage(command, result.Result, result.Code, result.Message);
+            }
+            catch (System.Exception e)
+            {
+                Console.WriteLine(e.Message + "\n\n" + e.StackTrace);
+            }
+
+            return true;
+        }
+
+        /// <summary>
+        /// Get information proposal list
+        /// </summary>
+        /// <param name="parameters">
+        /// Parameter Index
+        /// </param>
+        /// <returns></returns>
+        public static bool ListProposal(string command, string[] parameters)
+        {
+            string[] usage = new string[] {
+                string.Format("{0} [command option] \n", command) };
+
+            string[] command_option = new string[] { HelpCommandOption.Help };
+
+            if (parameters != null)
+            {
+                OutputHelpMessage(usage, null, command_option, null);
+                return true;
+            }
+
+            try
+            {
+                RpcApiResult result = RpcApi.ListProposal(out ProposalList proposals);
+                if (result.Result)
+                {
+                    Console.WriteLine(PrintUtil.PrintProposalsList(proposals));
+                }
+
+                OutputResultMessage(command, result.Result, result.Code, result.Message);
+            }
+            catch (System.Exception e)
+            {
+                Console.WriteLine(e.Message + "\n\n" + e.StackTrace);
+            }
+
+            return true;
+        }
+
+        /// <summary>
+        /// Get information proposal list
+        /// </summary>
+        /// <param name="parameters">
+        /// Parameter Index
+        /// [0] : Offset
+        /// [1] : Limit
+        /// </param>
+        /// <returns></returns>
+        public static bool ListProposalPaginated(string command, string[] parameters)
+        {
+            string[] usage = new string[] {
+                string.Format("{0} [command option] \n", command) };
+
+            string[] command_option = new string[] { HelpCommandOption.Help };
+
+            if (parameters == null || parameters.Length != 2)
+            {
+                OutputHelpMessage(usage, null, command_option, null);
+                return true;
+            }
+
+            try
+            {
+                int offset = int.Parse(parameters[0]);
+                int limit = int.Parse(parameters[1]);
+
+                RpcApiResult result = RpcApi.ListProposalPaginated(offset,
+                                                                   limit,
+                                                                   out ProposalList proposals);
+                if (result.Result)
+                {
+                    Console.WriteLine(PrintUtil.PrintProposalsList(proposals));
+                }
+
+                OutputResultMessage(command, result.Result, result.Code, result.Message);
             }
             catch (System.Exception e)
             {

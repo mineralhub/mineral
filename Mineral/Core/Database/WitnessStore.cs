@@ -13,6 +13,21 @@ namespace Mineral.Core.Database
 
 
         #region Property
+        public List<WitnessCapsule> AllWitnesses
+        {
+            get
+            {
+                List<WitnessCapsule> result = new List<WitnessCapsule>();
+                IEnumerator<KeyValuePair<byte[], WitnessCapsule>> it = GetEnumerator();
+                while (it.MoveNext())
+                {
+                    result.Add(it.Current.Value);
+                }
+
+                return result;
+            }
+        }
+
         #endregion
 
 
@@ -30,18 +45,6 @@ namespace Mineral.Core.Database
 
 
         #region External Method
-        public List<WitnessCapsule> GetAllWitnesses()
-        {
-            List<WitnessCapsule> result = new List<WitnessCapsule>();
-            IEnumerator<KeyValuePair<byte[], WitnessCapsule>> it = GetEnumerator();
-            while (it.MoveNext())
-            {
-                result.Add(it.Current.Value);
-            }
-
-            return result;
-        }
-
         public WitnessCapsule Get(byte[] key)
         {
             byte[] value = this.revoking_db.GetUnchecked(key);

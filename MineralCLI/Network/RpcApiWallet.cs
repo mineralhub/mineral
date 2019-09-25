@@ -1,4 +1,5 @@
 ﻿using Mineral;
+using Mineral.CommandLine;
 using Mineral.Common.Net.RPC;
 using Mineral.Core;
 using Mineral.Core.Net.RpcHandler;
@@ -108,6 +109,29 @@ namespace MineralCLI.Network
             return RpcApiResult.Success;
         }
 
+        public static RpcApiResult Login()
+        {
+            KeyStore keystore = RpcApi.SelectKeyStore();
+
+            string password = CommandLineUtil.ReadPasswordString("Please input your password.");
+            if (!KeyStoreService.CheckPassword(password, keystore))
+            {
+                Console.WriteLine("Login Fail.");
+                return new RpcApiResult(false, RpcMessage.INVALID_PASSWORD, "Please check password.");
+            }
+
+            RpcApi.KeyStore = keystore;
+
+            return RpcApiResult.Success;
+        }
+
+        public static RpcApiResult Logout()
+        {
+            RpcApi.KeyStore = null;
+
+            return RpcApiResult.Success;
+        }
+
         public static KeyStore SelectKeyStore()
         {
             DirectoryInfo info = new DirectoryInfo(FILE_PATH);
@@ -205,6 +229,21 @@ namespace MineralCLI.Network
             }
 
             return result;
+        }
+
+        public static RpcApiResult ListWitness(out WitnessList witnesses)
+        {
+            witnesses = null;
+
+            JObject receive = SendCommand(RpcCommand.Wallet.ListWitness, new JArray() { });
+            if (receive.TryGetValue("error", out JToken value))
+            {
+                return new RpcApiResult(false, value["code"].ToObject<int>(), value["message"].ToObject<string>());
+            }
+
+            witnesses = WitnessList.Parser.ParseFrom(receive["result"].ToObject<byte[]>());
+
+            return RpcApiResult.Success;
         }
         #endregion
     }

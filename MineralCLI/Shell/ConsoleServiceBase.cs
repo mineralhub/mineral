@@ -38,20 +38,23 @@ namespace MineralCLI.Shell
             {
                 Console.Write(_prompt);
                 string input = Console.ReadLine();
-                string[] parameters = input.Split(new char[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
+                string[] inputs = input.Split(new char[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
 
-                if (parameters.Length > 0)
+                if (inputs.Length > 0)
                 {
-                    IsRunning = OnCommand(parameters);
+                    string command = inputs[0].ToLower();
+                    string[] parameters = inputs.Length > 1 ? Mineral.Utils.ArrayUtil.SubArray<string>(inputs, 1, inputs.Length) : null;
+
+                    IsRunning = OnCommand(command, parameters);
                 }
             }
         }
 
-        public virtual bool OnCommand(string[] parameters)
+        public virtual bool OnCommand(string command, string[] parameters)
         {
             bool result = true;
 
-            switch (parameters[0].ToLower())
+            switch (command.ToLower())
             {
                 case "cls":
                 case "clear":

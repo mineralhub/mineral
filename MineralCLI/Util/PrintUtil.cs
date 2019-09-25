@@ -121,7 +121,7 @@ namespace MineralCLI.Util
         }
         #endregion
 
-        #region Account
+        #region Wallet
         public static string PrintAccount(Account account)
         {
             string result = "";
@@ -380,6 +380,58 @@ namespace MineralCLI.Util
             result += "latest_exchange_storage_time: ";
             result += account_resource.LatestExchangeStorageTime;
             result += "\n";
+            return result;
+        }
+
+        public static string PrintWitness(Witness witness)
+        {
+            string result = "";
+            result += "address: ";
+            result += Wallet.AddressToBase58(witness.Address.ToByteArray());
+            result += "\n";
+            result += "voteCount: ";
+            result += witness.VoteCount;
+            result += "\n";
+            result += "pubKey: ";
+            result += witness.PubKey.ToByteArray().ToHexString();
+            result += "\n";
+            result += "url: ";
+            result += witness.Url;
+            result += "\n";
+            result += "totalProduced: ";
+            result += witness.TotalProduced;
+            result += "\n";
+            result += "totalMissed: ";
+            result += witness.TotalMissed;
+            result += "\n";
+            result += "latestBlockNum: ";
+            result += witness.LatestBlockNum;
+            result += "\n";
+            result += "latestSlotNum: ";
+            result += witness.LatestSlotNum;
+            result += "\n";
+            result += "isJobs: ";
+            result += witness.IsJobs;
+            result += "\n";
+            return result;
+        }
+
+        public static string PrintWitnessList(WitnessList witnesses)
+        {
+            string result = "\n";
+            int i = 0;
+            foreach (Witness witness in witnesses.Witnesses)
+            {
+                result += "witness " + i + " :::";
+                result += "\n";
+                result += "[";
+                result += "\n";
+                result += PrintWitness(witness);
+                result += "]";
+                result += "\n";
+                result += "\n";
+                i++;
+            }
             return result;
         }
         #endregion
@@ -1072,109 +1124,6 @@ namespace MineralCLI.Util
             return result;
         }
 
-        public static string PrintAssetIssueList(AssetIssueList asset_issue_list)
-        {
-            string result = "";
-            int i = 0;
-            foreach (AssetIssueContract asset_issue in asset_issue_list.AssetIssue)
-            {
-                result += "assetIssue " + i + " :::";
-                result += "\n";
-                result += "[";
-                result += "\n";
-                result += PrintAssetIssue(asset_issue);
-                result += "]";
-                result += "\n";
-                result += "\n";
-                i++;
-            }
-
-            return result;
-        }
-
-        public static string PrintAssetIssue(AssetIssueContract asset_issue)
-        {
-            string result = "";
-            result += "id: ";
-            result += asset_issue.Id;
-            result += "\n";
-            result += "owner_address: ";
-            result += Wallet.Encode58Check(asset_issue.OwnerAddress.ToByteArray());
-            result += "\n";
-            result += "name: ";
-            result += Encoding.UTF8.GetString(asset_issue.Name.ToByteArray());
-            result += "\n";
-            result += "order: ";
-            result += asset_issue.Order;
-            result += "\n";
-            result += "total_supply: ";
-            result += asset_issue.TotalSupply;
-            result += "\n";
-            result += "trx_num: ";
-            result += asset_issue.TrxNum;
-            result += "\n";
-            result += "num: ";
-            result += asset_issue.Num;
-            result += "\n";
-            result += "precision ";
-            result += asset_issue.Precision;
-            result += "\n";
-            result += "start_time: ";
-            result += asset_issue.StartTime.ToDateTime().ToLocalTime();
-            result += "\n";
-            result += "end_time: ";
-            result += asset_issue.EndTime.ToDateTime().ToLocalTime();
-            result += "\n";
-            result += "vote_score: ";
-            result += asset_issue.VoteScore;
-            result += "\n";
-            result += "description: ";
-            result += Encoding.UTF8.GetString(asset_issue.Description.ToByteArray());
-            result += "\n";
-            result += "url: ";
-            result += Encoding.UTF8.GetString(asset_issue.Url.ToByteArray());
-            result += "\n";
-            result += "free asset net limit: ";
-            result += asset_issue.FreeAssetNetLimit;
-            result += "\n";
-            result += "public free asset net limit: ";
-            result += asset_issue.PublicFreeAssetNetLimit;
-            result += "\n";
-            result += "public free asset net usage: ";
-            result += asset_issue.PublicFreeAssetNetUsage;
-            result += "\n";
-            result += "public latest free net time: ";
-            result += asset_issue.PublicLatestFreeNetTime;
-            result += "\n";
-
-            if (asset_issue.FrozenSupply.Count > 0)
-            {
-                foreach (FrozenSupply frozenSupply in asset_issue.FrozenSupply)
-                {
-                    result += "frozen_supply";
-                    result += "\n";
-                    result += "{";
-                    result += "\n";
-                    result += "  amount: ";
-                    result += frozenSupply.FrozenAmount;
-                    result += "\n";
-                    result += "  frozen_days: ";
-                    result += frozenSupply.FrozenDays;
-                    result += "\n";
-                    result += "}";
-                    result += "\n";
-                }
-            }
-
-            if (asset_issue.Id.Equals(""))
-            {
-                result += "\n";
-                result += "Note: In 3.2, you can use AssetIssueById or AssetIssueListByName, because 3.2 allows same token name.";
-                result += "\n";
-            }
-            return result;
-        }
-
         public static string PrintPermission(Permission permission)
         {
             string result = "";
@@ -1287,6 +1236,228 @@ namespace MineralCLI.Util
                 result += "]";
                 result += "\n";
                 i++;
+            }
+            return result;
+        }
+
+        public static string PrintProposal(Proposal proposal)
+        {
+            string result = "";
+            result += "id: ";
+            result += proposal.ProposalId;
+            result += "\n";
+            result += "state: ";
+            result += proposal.State;
+            result += "\n";
+            result += "createTime: ";
+            result += proposal.CreateTime.ToDateTime().ToLocalTime();
+            result += "\n";
+            result += "expirationTime: ";
+            result += proposal.ExpirationTime.ToDateTime().ToLocalTime();
+            result += "\n";
+            result += "parametersMap: ";
+            foreach (var parameter in proposal.Parameters)
+            {
+                result += parameter.Key;
+                result += "  ";
+                result += parameter.Value;
+                result += "\n";
+            }
+            result += "\n";
+            result += "approvalsList: [ \n";
+            foreach (ByteString address in proposal.Approvals)
+            {
+                result += Wallet.AddressToBase58(address.ToByteArray());
+                result += "\n";
+            }
+            result += "]";
+            return result;
+        }
+
+        public static string PrintProposalsList(ProposalList proposals)
+        {
+            string result = "\n";
+            int i = 0;
+            foreach (Proposal proposal in proposals.Proposals)
+            {
+                result += "proposal " + i + " :::";
+                result += "\n";
+                result += "[";
+                result += "\n";
+                result += PrintProposal(proposal);
+                result += "]";
+                result += "\n";
+                result += "\n";
+                i++;
+            }
+            return result;
+        }
+
+        #endregion
+
+        #region AssetIssue
+        public static string PrintAssetIssueList(AssetIssueList asset_issue_list)
+        {
+            string result = "";
+            int i = 0;
+            foreach (AssetIssueContract asset_issue in asset_issue_list.AssetIssue)
+            {
+                result += "assetIssue " + i + " :::";
+                result += "\n";
+                result += "[";
+                result += "\n";
+                result += PrintAssetIssue(asset_issue);
+                result += "]";
+                result += "\n";
+                result += "\n";
+                i++;
+            }
+
+            return result;
+        }
+
+        public static string PrintAssetIssue(AssetIssueContract asset_issue)
+        {
+            string result = "";
+            result += "id: ";
+            result += asset_issue.Id;
+            result += "\n";
+            result += "owner_address: ";
+            result += Wallet.Encode58Check(asset_issue.OwnerAddress.ToByteArray());
+            result += "\n";
+            result += "name: ";
+            result += Encoding.UTF8.GetString(asset_issue.Name.ToByteArray());
+            result += "\n";
+            result += "order: ";
+            result += asset_issue.Order;
+            result += "\n";
+            result += "total_supply: ";
+            result += asset_issue.TotalSupply;
+            result += "\n";
+            result += "trx_num: ";
+            result += asset_issue.TrxNum;
+            result += "\n";
+            result += "num: ";
+            result += asset_issue.Num;
+            result += "\n";
+            result += "precision ";
+            result += asset_issue.Precision;
+            result += "\n";
+            result += "start_time: ";
+            result += asset_issue.StartTime.ToDateTime().ToLocalTime();
+            result += "\n";
+            result += "end_time: ";
+            result += asset_issue.EndTime.ToDateTime().ToLocalTime();
+            result += "\n";
+            result += "vote_score: ";
+            result += asset_issue.VoteScore;
+            result += "\n";
+            result += "description: ";
+            result += Encoding.UTF8.GetString(asset_issue.Description.ToByteArray());
+            result += "\n";
+            result += "url: ";
+            result += Encoding.UTF8.GetString(asset_issue.Url.ToByteArray());
+            result += "\n";
+            result += "free asset net limit: ";
+            result += asset_issue.FreeAssetNetLimit;
+            result += "\n";
+            result += "public free asset net limit: ";
+            result += asset_issue.PublicFreeAssetNetLimit;
+            result += "\n";
+            result += "public free asset net usage: ";
+            result += asset_issue.PublicFreeAssetNetUsage;
+            result += "\n";
+            result += "public latest free net time: ";
+            result += asset_issue.PublicLatestFreeNetTime;
+            result += "\n";
+
+            if (asset_issue.FrozenSupply.Count > 0)
+            {
+                foreach (FrozenSupply frozenSupply in asset_issue.FrozenSupply)
+                {
+                    result += "frozen_supply";
+                    result += "\n";
+                    result += "{";
+                    result += "\n";
+                    result += "  amount: ";
+                    result += frozenSupply.FrozenAmount;
+                    result += "\n";
+                    result += "  frozen_days: ";
+                    result += frozenSupply.FrozenDays;
+                    result += "\n";
+                    result += "}";
+                    result += "\n";
+                }
+            }
+
+            if (asset_issue.Id.Equals(""))
+            {
+                result += "\n";
+                result += "Note: In 3.2, you can use AssetIssueById or AssetIssueListByName, because 3.2 allows same token name.";
+                result += "\n";
+            }
+            return result;
+        }
+
+        public static string PrintExchange(Exchange exchange)
+        {
+            string result = "";
+            result += "id: ";
+            result += exchange.ExchangeId;
+            result += "\n";
+            result += "creator: ";
+            result += Wallet.AddressToBase58(exchange.CreatorAddress.ToByteArray());
+            result += "\n";
+            result += "createTime: ";
+            result += exchange.CreateTime.ToDateTime().ToLocalTime();
+            result += "\n";
+            result += "firstTokenId: ";
+            result += exchange.FirstTokenId.ToStringUtf8();
+            result += "\n";
+            result += "firstTokenBalance: ";
+            result += exchange.FirstTokenBalance;
+            result += "\n";
+            result += "secondTokenId: ";
+            result += exchange.SecondTokenId.ToStringUtf8();
+            result += "\n";
+            result += "secondTokenBalance: ";
+            result += exchange.SecondTokenBalance;
+            result += "\n";
+            return result;
+        }
+
+
+        public static string PrintExchangeList(ExchangeList exchanges)
+        {
+            string result = "\n";
+            int i = 0;
+            foreach (Exchange exchange in exchanges.Exchanges)
+            {
+                result += "exchange " + i + " :::";
+                result += "\n";
+                result += "[";
+                result += "\n";
+                result += PrintExchange(exchange);
+                result += "]";
+                result += "\n";
+                result += "\n";
+                i++;
+            }
+            return result;
+        }
+        #endregion
+
+        #region Node
+        public static string PrintNodeList(NodeList nodes)
+        {
+            string result = "";
+            foreach (var node in nodes.Nodes)
+            {
+                result += "IP::";
+                result += node.Address.Host.ToStringUtf8();
+                result += "\n";
+                result += "Port::";
+                result += node.Address.Port;
             }
             return result;
         }

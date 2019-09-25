@@ -13,6 +13,20 @@ namespace Mineral.Core.Database
 
 
         #region Property
+        public List<ProposalCapsule> AllProposals
+        {
+            get
+            {
+                List<ProposalCapsule> result = new List<ProposalCapsule>();
+                IEnumerator<KeyValuePair<byte[], ProposalCapsule>> it = GetEnumerator();
+                while (it.MoveNext())
+                {
+                    result.Add(it.Current.Value);
+                }
+
+                return result;
+            }
+        }
         #endregion
 
 
@@ -33,18 +47,6 @@ namespace Mineral.Core.Database
         public override ProposalCapsule Get(byte[] key)
         {
             return new ProposalCapsule(this.revoking_db.Get(key));
-        }
-
-        public List<ProposalCapsule> GetAllProposals()
-        {
-            List<ProposalCapsule> result = new List<ProposalCapsule>();
-            IEnumerator<KeyValuePair<byte[], ProposalCapsule>> it = GetEnumerator();
-            while (it.MoveNext())
-            {
-                result.Add(it.Current.Value);
-            }
-
-            return result;
         }
         #endregion
     }

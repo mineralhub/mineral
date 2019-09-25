@@ -6,7 +6,7 @@ namespace MineralCLI.Commands
 {
     public class BaseCommand
     {
-        public delegate bool CommandHandler(string[] parameters);
+        public delegate bool CommandHandler(string command, string[] parameters);
 
         public struct HelpCategory
         {

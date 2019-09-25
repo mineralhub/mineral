@@ -19,17 +19,16 @@ namespace MineralCLI.Commands
         /// </summary>
         /// <param name="parameters">
         /// Parameters Index
-        /// [0] : Command
         /// </param>
         /// <returns></returns>
-        public static bool ImportWallet(string[] parameters)
+        public static bool ImportWallet(string command, string[] parameters)
         {
             string[] usage = new string[] {
-                string.Format("{0} [command option] <path>\n", RpcCommand.Wallet.BackupWallet) };
+                string.Format("{0} [command option] <path>\n", command) };
 
             string[] command_option = new string[] { HelpCommandOption.Help };
 
-            if (parameters == null || parameters.Length != 1)
+            if (parameters != null)
             {
                 OutputHelpMessage(usage, null, command_option, null);
                 return true;
@@ -40,10 +39,14 @@ namespace MineralCLI.Commands
                 string password = CommandLineUtil.ReadPasswordString("Please input your password.");
                 string privatekey = CommandLineUtil.ReadString("Please input your private key.");
 
-                RpcApiResult result = RpcApi.ImportWallet(password, privatekey);
-                Logout(null);
+                RpcApiResult result = RpcApi.Logout();
+                if (result.Result)
+                {
+                    result = RpcApi.ImportWallet(password, privatekey);
+                }
+                
 
-                OutputResultMessage(RpcCommand.Wallet.BackupWallet, result.Result, result.Code, result.Message);
+                OutputResultMessage(command, result.Result, result.Code, result.Message);
             }
             catch (System.Exception e)
             {
@@ -58,17 +61,16 @@ namespace MineralCLI.Commands
         /// </summary>
         /// <param name="parameters">
         /// Parameters Index
-        /// [0] : Command
         /// </param>
         /// <returns></returns>
-        public static bool BackupWallet(string[] parameters)
+        public static bool BackupWallet(string command, string[] parameters)
         {
             string[] usage = new string[] {
-                string.Format("{0} [command option] <path>\n", RpcCommand.Wallet.BackupWallet) };
+                string.Format("{0} [command option] <path>\n", command) };
 
             string[] command_option = new string[] { HelpCommandOption.Help };
 
-            if (parameters == null || parameters.Length != 1)
+            if (parameters != null)
             {
                 OutputHelpMessage(usage, null, command_option, null);
                 return true;
@@ -82,7 +84,7 @@ namespace MineralCLI.Commands
                 string password = CommandLineUtil.ReadPasswordString("Please input your password.");
                 RpcApiResult result = RpcApi.BackupWallet(password);
 
-                OutputResultMessage(RpcCommand.Wallet.BackupWallet, result.Result, result.Code, result.Message);
+                OutputResultMessage(command, result.Result, result.Code, result.Message);
             }
             catch (System.Exception e)
             {
@@ -96,17 +98,16 @@ namespace MineralCLI.Commands
         /// </summary>
         /// <param name="parameters">
         /// Parameters Index
-        /// [0] : Command
         /// </param>
         /// <returns></returns>
-        public static bool RegisterWallet(string[] parameters)
+        public static bool RegisterWallet(string command, string[] parameters)
         {
             string[] usage = new string[] {
-                string.Format("{0} [command option] <path>\n", RpcCommand.Wallet.RegisterWallet) };
+                string.Format("{0} [command option] <path>\n", command) };
 
             string[] command_option = new string[] { HelpCommandOption.Help };
 
-            if (parameters == null || parameters.Length != 1)
+            if (parameters != null)
             {
                 OutputHelpMessage(usage, null, command_option, null);
                 return true;
@@ -124,9 +125,9 @@ namespace MineralCLI.Commands
                 }
 
                 RpcApiResult result = RpcApi.RegisterWallet(password);
-                Logout(null);
+                Logout(null, null);
 
-                OutputResultMessage(RpcCommand.Wallet.RegisterWallet, result.Result, result.Code, result.Message);
+                OutputResultMessage(command, result.Result, result.Code, result.Message);
             }
             catch (System.Exception e)
             {
@@ -142,25 +143,16 @@ namespace MineralCLI.Commands
         /// </summary>
         /// <param name="parameters">
         /// Parameters Index
-        /// [0] : Command
         /// </param>
         /// <returns></returns>
-        public static bool Login(string[] parameters)
+        public static bool Login(string command, string[] parameters)
         {
-            Logout(null);
-
-            KeyStore keystore = RpcApi.SelectKeyStore();
-
-            string password = CommandLineUtil.ReadPasswordString("Please input your password.");
-            if (!KeyStoreService.CheckPassword(password, keystore))
+            RpcApiResult result = RpcApi.Logout();
+            if (result.Result)
             {
-                Console.WriteLine("Login Fail.");
-                return true;
+                result = RpcApi.Login();
             }
-
-            RpcApi.KeyStore = keystore;
-
-            OutputResultMessage(RpcCommand.Wallet.Login, true, 0, "");
+            OutputResultMessage(command, result.Result, result.Code, result.Message);
 
             return true;
         }
@@ -170,13 +162,12 @@ namespace MineralCLI.Commands
         /// </summary>
         /// <param name="parameters">
         /// Parameters Index
-        /// [0] : Command
         /// </param>
         /// <returns></returns>
-        public static bool Logout(string[] parameters)
+        public static bool Logout(string command, string[] parameters)
         {
-            RpcApi.KeyStore = null;
-            OutputResultMessage(RpcCommand.Wallet.Logout, true, 0, "");
+            RpcApiResult result = RpcApi.Logout();
+            OutputResultMessage(command, result.Result, result.Code, result.Message);
 
             return true;
         }
@@ -186,17 +177,16 @@ namespace MineralCLI.Commands
         /// </summary>
         /// <param name="parameters">
         /// Parameters Index
-        /// [0] : Command
         /// </param>
         /// <returns></returns>
-        public static bool GetAddress(string[] parameters)
+        public static bool GetAddress(string command, string[] parameters)
         {
             string[] usage = new string[] {
-                string.Format("{0} [command option]\n", RpcCommand.Wallet.GetAddress) };
+                string.Format("{0} [command option]\n", command) };
 
             string[] command_option = new string[] { HelpCommandOption.Help };
 
-            if (parameters == null || parameters.Length != 1)
+            if (parameters != null)
             {
                 OutputHelpMessage(usage, null, command_option, null);
                 return true;
@@ -205,7 +195,7 @@ namespace MineralCLI.Commands
             if (!RpcApi.IsLogin)
                 return true;
 
-            OutputResultMessage(RpcCommand.Wallet.GetAddress, true, 0, "");
+            OutputResultMessage(command, true, 0, "");
 
             return true;
         }
@@ -215,17 +205,16 @@ namespace MineralCLI.Commands
         /// </summary>
         /// <param name="parameters">
         /// Parameters Index
-        /// [0] : Command
         /// </param>
         /// <returns></returns>
-        public static bool GetBalance(string[] parameters)
+        public static bool GetBalance(string command, string[] parameters)
         {
             string[] usage = new string[] {
-                string.Format("{0} [command option]\n", RpcCommand.Wallet.GetAccount) };
+                string.Format("{0} [command option]\n", command) };
 
             string[] command_option = new string[] { HelpCommandOption.Help };
 
-            if (parameters == null || parameters.Length != 1)
+            if (parameters != null)
             {
                 OutputHelpMessage(usage, null, command_option, null);
                 return true;
@@ -240,7 +229,7 @@ namespace MineralCLI.Commands
                 RpcApiResult result = RpcApi.GetBalance(out long balance);
 
                 Console.WriteLine("Balance : " + balance);
-                OutputResultMessage(RpcCommand.Wallet.GetBalance, result.Result, result.Code, result.Message);
+                OutputResultMessage(command, result.Result, result.Code, result.Message);
 
             }
             catch (System.Exception e)
@@ -256,18 +245,17 @@ namespace MineralCLI.Commands
         /// </summary>
         /// <param name="parameters">
         /// Parameter Index
-        /// [0] : Command
         /// [1] : Wallet address
         /// </param>
         /// <returns></returns>
-        public static bool GetAccount(string[] parameters)
+        public static bool GetAccount(string command, string[] parameters)
         {
             string[] usage = new string[] {
-                string.Format("{0} [command option] <address>\n", RpcCommand.Wallet.GetAccount) };
+                string.Format("{0} [command option] <address>\n", command) };
 
             string[] command_option = new string[] { HelpCommandOption.Help };
 
-            if (parameters == null || parameters.Length != 2)
+            if (parameters == null || parameters.Length != 1)
             {
                 OutputHelpMessage(usage, null, command_option, null);
                 return true;
@@ -275,10 +263,48 @@ namespace MineralCLI.Commands
 
             try
             {
-                RpcApiResult result = RpcApi.GetAccount(parameters[1], out Account account);
+                RpcApiResult result = RpcApi.GetAccount(parameters[0], out Account account);
 
                 Console.WriteLine(PrintUtil.PrintAccount(account));
-                OutputResultMessage(RpcCommand.Wallet.GetAccount, result.Result, result.Code, result.Message);
+                OutputResultMessage(command, result.Result, result.Code, result.Message);
+            }
+            catch (System.Exception e)
+            {
+                Console.WriteLine(e.Message + "\n\n" + e.StackTrace);
+            }
+
+            return true;
+        }
+
+        /// <summary>
+        /// Get information witness list
+        /// </summary>
+        /// <param name="parameters">
+        /// Parameter Index
+        /// </param>
+        /// <returns></returns>
+        public static bool ListWitness(string command, string[] parameters)
+        {
+            string[] usage = new string[] {
+                string.Format("{0} [command option] \n", command) };
+
+            string[] command_option = new string[] { HelpCommandOption.Help };
+
+            if (parameters != null)
+            {
+                OutputHelpMessage(usage, null, command_option, null);
+                return true;
+            }
+
+            try
+            {
+                RpcApiResult result = RpcApi.ListWitness(out WitnessList witnesses);
+                if (result.Result)
+                {
+                    Console.WriteLine(PrintUtil.PrintWitnessList(witnesses));
+                }
+
+                OutputResultMessage(command, result.Result, result.Code, result.Message);
             }
             catch (System.Exception e)
             {

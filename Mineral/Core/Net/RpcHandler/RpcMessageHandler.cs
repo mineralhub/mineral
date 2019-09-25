@@ -20,7 +20,10 @@ namespace Mineral.Core.Net.RpcHandler
 
         private Dictionary<string, RpcHandler> handlers = new Dictionary<string, RpcHandler>()
         {
+            { RpcCommand.Node.ListNode, new RpcHandler(OnListNode) },
+
             { RpcCommand.Wallet.GetAccount, new RpcHandler(OnGetAccount) },
+            { RpcCommand.Wallet.ListWitness, new RpcHandler(OnListWitness) },
 
             { RpcCommand.Block.GetBlock, new RpcHandler(OnGetBlock) },
             { RpcCommand.Block.GetBlockByLatestNum, new RpcHandler(OnGetBlockByLatestNum) },
@@ -43,6 +46,8 @@ namespace Mineral.Core.Net.RpcHandler
             { RpcCommand.Transaction.WithdrawBalance, new RpcHandler(OnCreateContract) },
             { RpcCommand.Transaction.GetTransactionSignWeight, new RpcHandler(OnGetTransactionSignWeight) },
             { RpcCommand.Transaction.BroadcastTransaction, new RpcHandler(OnBroadcastTransaction) },
+            { RpcCommand.Transaction.ListProposal, new RpcHandler(OnListProposal) },
+            { RpcCommand.Transaction.ListProposalPaginated, new RpcHandler(OnListProposalPaginated) },
 
             { RpcCommand.AssetIssue.CreateAssetIssue, new RpcHandler(OnCreateContract) },
             { RpcCommand.AssetIssue.UpdateAsset, new RpcHandler(OnCreateContract) },
@@ -52,6 +57,9 @@ namespace Mineral.Core.Net.RpcHandler
             { RpcCommand.AssetIssue.AssetIssueById, new RpcHandler(OnAssetIssueById) },
             { RpcCommand.AssetIssue.AssetIssueByName, new RpcHandler(OnAssetIssueByName) },
             { RpcCommand.AssetIssue.AssetIssueListByName, new RpcHandler(OnAssetIssueListByName) },
+            { RpcCommand.AssetIssue.ListAssetIssue, new RpcHandler(OnListAssetIssue) },
+            { RpcCommand.AssetIssue.ListExchange, new RpcHandler(OnListExchange) },
+            { RpcCommand.AssetIssue.ListExchangePaginated, new RpcHandler(OnListExchangePaginated) },
         };
         #endregion
 
@@ -88,6 +96,103 @@ namespace Mineral.Core.Net.RpcHandler
 
             return ret;
         }
+
+        #region Node
+        public static bool OnListNode(JToken id, string method, JArray parameters, out JToken result)
+        {
+            result = new JObject();
+
+            if (parameters == null || parameters.Count != 0)
+            {
+                result = RpcMessage.CreateErrorResult(id, RpcMessage.INVALID_PARAMS, "Invalid parameters");
+                return false;
+            }
+
+            try
+            {
+                result = JToken.FromObject(RpcApiService.GetListNode());
+            }
+            catch (System.Exception e)
+            {
+                result = RpcMessage.CreateErrorResult(id, RpcMessage.UNKNOWN_ERROR, e.Message);
+                return false;
+            }
+
+            return true;
+        }
+        #endregion
+
+        #region Account
+        public static bool OnGetAccount(JToken id, string method, JArray parameters, out JToken result)
+        {
+            result = new JObject();
+
+            if (parameters == null || parameters.Count != 1)
+            {
+                result = RpcMessage.CreateErrorResult(id, RpcMessage.INVALID_PARAMS, "Invalid parameters");
+                return false;
+            }
+
+            try
+            {
+                byte[] address = Wallet.Base58ToAddress(parameters[0].Value<string>());
+                Account account = RpcApiService.GetAccount(address);
+
+                result = (account != null) ? JToken.FromObject(account.ToByteArray()) : new JObject();
+            }
+            catch (InvalidCastException e)
+            {
+                result = RpcMessage.CreateErrorResult(id, RpcMessage.INVALID_PARAMS, e.Message);
+                return false;
+            }
+            catch (FormatException e)
+            {
+                result = RpcMessage.CreateErrorResult(id, RpcMessage.INVALID_PARAMS, e.Message);
+                return false;
+            }
+            catch (System.Exception e)
+            {
+                result = RpcMessage.CreateErrorResult(id, RpcMessage.UNKNOWN_ERROR, e.Message);
+                return false;
+            }
+
+            return true;
+        }
+
+        
+        public static bool OnListWitness(JToken id, string method, JArray parameters, out JToken result)
+        {
+            result = new JObject();
+
+            if (parameters == null || parameters.Count != 0)
+            {
+                result = RpcMessage.CreateErrorResult(id, RpcMessage.INVALID_PARAMS, "Invalid parameters");
+                return false;
+            }
+
+            try
+            {
+                result = JToken.FromObject(RpcApiService.GetListWitness().ToByteArray());
+            }
+            catch (InvalidCastException e)
+            {
+                result = RpcMessage.CreateErrorResult(id, RpcMessage.INVALID_PARAMS, e.Message);
+                return false;
+            }
+            catch (FormatException e)
+            {
+                result = RpcMessage.CreateErrorResult(id, RpcMessage.INVALID_PARAMS, e.Message);
+                return false;
+            }
+            catch (System.Exception e)
+            {
+                result = RpcMessage.CreateErrorResult(id, RpcMessage.UNKNOWN_ERROR, e.Message);
+                return false;
+            }
+
+            return true;
+        }
+        #endregion
 
         #region Contract
         public static bool OnCreateContract(JToken id, string method, JArray parameters, out JToken result)
@@ -246,14 +351,12 @@ namespace Mineral.Core.Net.RpcHandler
 
             return true;
         }
-        #endregion
 
-        #region Account
-        public static bool OnGetAccount(JToken id, string method, JArray parameters, out JToken result)
+        public static bool OnListProposal(JToken id, string method, JArray parameters, out JToken result)
         {
             result = new JObject();
 
-            if (parameters == null || parameters.Count != 1)
+            if (parameters == null || parameters.Count != 0)
             {
                 result = RpcMessage.CreateErrorResult(id, RpcMessage.INVALID_PARAMS, "Invalid parameters");
                 return false;
@@ -261,17 +364,37 @@ namespace Mineral.Core.Net.RpcHandler
 
             try
             {
-                byte[] address = Wallet.Base58ToAddress(parameters[0].Value<string>());
-                Account account = RpcApiService.GetAccount(address);
-
-                result = (account != null) ? JToken.FromObject(account.ToByteArray()) : new JObject();
+                result = JToken.FromObject(RpcApiService.GetListProposal().ToByteArray());
             }
-            catch (InvalidCastException e)
+            catch (System.Exception e)
             {
-                result = RpcMessage.CreateErrorResult(id, RpcMessage.INVALID_PARAMS, e.Message);
+                result = RpcMessage.CreateErrorResult(id, RpcMessage.UNKNOWN_ERROR, e.Message);
                 return false;
             }
-            catch (FormatException e)
+
+            return true;
+        }
+
+        public static bool OnListProposalPaginated(JToken id, string method, JArray parameters, out JToken result)
+        {
+            result = new JObject();
+
+            if (parameters == null || parameters.Count != 2)
+            {
+                result = RpcMessage.CreateErrorResult(id, RpcMessage.INVALID_PARAMS, "Invalid parameters");
+                return false;
+            }
+
+            try
+            {
+                int offset = parameters[0].ToObject<int>();
+                int limit = parameters[1].ToObject<int>();
+
+                ProposalList proposals = RpcApiService.GetListProposalPaginated(offset, limit);
+
+                result = JToken.FromObject(proposals.ToByteArray());
+            }
+            catch (ArgumentException e)
             {
                 result = RpcMessage.CreateErrorResult(id, RpcMessage.INVALID_PARAMS, e.Message);
                 return false;
@@ -300,7 +423,7 @@ namespace Mineral.Core.Net.RpcHandler
             try
             {
                 byte[] address = Wallet.Base58ToAddress(parameters[0].ToString());
-                AssetIssueList asset_issue_list = RpcApiService.GetAssetIssueList(address);
+                AssetIssueList asset_issue_list = RpcApiService.GetAssetIssueListByAddress(address);
 
                 result = JToken.FromObject(asset_issue_list);
             }
@@ -401,6 +524,89 @@ namespace Mineral.Core.Net.RpcHandler
             {
                 result = RpcMessage.CreateErrorResult(id, RpcMessage.INTERNAL_ERROR, e.Message);
                 return false;
+            }
+            catch (ArgumentException e)
+            {
+                result = RpcMessage.CreateErrorResult(id, RpcMessage.INVALID_PARAMS, e.Message);
+                return false;
+            }
+            catch (System.Exception e)
+            {
+                result = RpcMessage.CreateErrorResult(id, RpcMessage.UNKNOWN_ERROR, e.Message);
+                return false;
+            }
+
+            return true;
+        }
+
+        public static bool OnListAssetIssue(JToken id, string method, JArray parameters, out JToken result)
+        {
+            result = new JObject();
+
+            if (parameters == null || parameters.Count != 0)
+            {
+                result = RpcMessage.CreateErrorResult(id, RpcMessage.INVALID_PARAMS, "Invalid parameters");
+                return false;
+            }
+
+            try
+            {
+                AssetIssueList asset_issue_list = RpcApiService.GetAssetIssueList();
+
+                result = JToken.FromObject(asset_issue_list.ToByteArray());
+            }
+            catch (System.Exception e)
+            {
+                result = RpcMessage.CreateErrorResult(id, RpcMessage.UNKNOWN_ERROR, e.Message);
+                return false;
+            }
+
+            return true;
+        }
+
+        public static bool OnListExchange(JToken id, string method, JArray parameters, out JToken result)
+        {
+            result = new JObject();
+
+            if (parameters == null || parameters.Count != 0)
+            {
+                result = RpcMessage.CreateErrorResult(id, RpcMessage.INVALID_PARAMS, "Invalid parameters");
+                return false;
+            }
+
+            try
+            {
+                ExchangeList exchanges = RpcApiService.GetListExchange();
+
+                result = JToken.FromObject(exchanges.ToByteArray());
+            }
+            catch (System.Exception e)
+            {
+                result = RpcMessage.CreateErrorResult(id, RpcMessage.UNKNOWN_ERROR, e.Message);
+                return false;
+            }
+
+            return true;
+        }
+
+        public static bool OnListExchangePaginated(JToken id, string method, JArray parameters, out JToken result)
+        {
+            result = new JObject();
+
+            if (parameters == null || parameters.Count != 2)
+            {
+                result = RpcMessage.CreateErrorResult(id, RpcMessage.INVALID_PARAMS, "Invalid parameters");
+                return false;
+            }
+
+            try
+            {
+                int offset = parameters[0].ToObject<int>();
+                int limit = parameters[1].ToObject<int>();
+
+                ExchangeList exchanges = RpcApiService.GetListExchangePaginated(offset, limit);
+
+                result = JToken.FromObject(exchanges.ToByteArray());
             }
             catch (ArgumentException e)
             {

@@ -7,6 +7,12 @@ namespace Mineral.Core.Net.RpcHandler
 {
     public static class RpcCommand
     {
+        public static class Node
+        {
+            [CommandLineAttribute(Name = "ListNode", Description = "")]
+            public static readonly string ListNode = "listnode";
+        }
+
         public static class Wallet
         {
             [CommandLineAttribute(Name = "ImportWallet", Description = "")]
@@ -32,6 +38,9 @@ namespace Mineral.Core.Net.RpcHandler
 
             [CommandLineAttribute(Name = "GetAccount", Description = "")]
             public static readonly string GetAccount = "getaccount";
+
+            [CommandLineAttribute(Name = "ListWitness", Description = "")]
+            public static readonly string ListWitness = "listwitness";
         }
 
         public static class AssetIssue
@@ -53,6 +62,15 @@ namespace Mineral.Core.Net.RpcHandler
 
             [CommandLineAttribute(Name = "AssetIssueListByName", Description = "")]
             public static readonly string AssetIssueListByName = "assetissuelistbyname";
+
+            [CommandLineAttribute(Name = "ListAssetIssue", Description = "")]
+            public static readonly string ListAssetIssue = "listassetissue";
+
+            [CommandLineAttribute(Name = "ListExchange", Description = "")]
+            public static readonly string ListExchange = "listexchange";
+
+            [CommandLineAttribute(Name = "ListExchangePaginated", Description = "")]
+            public static readonly string ListExchangePaginated = "listexchangepaginated";
 
             [CommandLineAttribute(Name = "TransferAsset", Description = "")]
             public static readonly string TransferAsset = "transferasset";
@@ -128,6 +146,12 @@ namespace Mineral.Core.Net.RpcHandler
 
             [CommandLineAttribute(Name = "SendCoin", Description = "")]
             public static readonly string SendCoin = "sendcoin";
+
+            [CommandLineAttribute(Name = "ListProposal", Description = "")]
+            public static readonly string ListProposal = "listproposal";
+
+            [CommandLineAttribute(Name = "ListProposalPaginated", Description = "")]
+            public static readonly string ListProposalPaginated = "listproposalpaginated";
         }
     }
 }

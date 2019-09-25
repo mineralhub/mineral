@@ -161,6 +161,58 @@ namespace MineralCLI.Network
 
             return RpcApiResult.Success;
         }
+
+        public static RpcApiResult ListAssetIssue(out AssetIssueList asset_issues)
+        {
+            asset_issues = null;
+
+            JObject receive = SendCommand(RpcCommand.AssetIssue.ListAssetIssue, new JArray() { });
+            if (receive.TryGetValue("error", out JToken value))
+            {
+                return new RpcApiResult(false, value["code"].ToObject<int>(), value["message"].ToObject<string>());
+            }
+
+            asset_issues = AssetIssueList.Parser.ParseFrom(receive["result"].ToObject<byte[]>());
+
+            return RpcApiResult.Success;
+        }
+
+        public static RpcApiResult ListExchange(out ExchangeList exchanges)
+        {
+            exchanges = null;
+
+            JObject receive = SendCommand(RpcCommand.AssetIssue.ListExchange, new JArray() { });
+            if (receive.TryGetValue("error", out JToken value))
+            {
+                return new RpcApiResult(false, value["code"].ToObject<int>(), value["message"].ToObject<string>());
+            }
+
+            exchanges = ExchangeList.Parser.ParseFrom(receive["result"].ToObject<byte[]>());
+
+            return RpcApiResult.Success;
+        }
+
+        public static RpcApiResult ListExchangePaginated(int offset,
+                                                         int limit,
+                                                         out ExchangeList exchanges)
+        {
+            exchanges = null;
+
+            PaginatedMessage message = new PaginatedMessage();
+            message.Offset = offset;
+            message.Limit = limit;
+
+            JObject receive = SendCommand(RpcCommand.AssetIssue.ListExchange, new JArray() { message.ToByteArray() });
+            if (receive.TryGetValue("error", out JToken value))
+            {
+                return new RpcApiResult(false, value["code"].ToObject<int>(), value["message"].ToObject<string>());
+            }
+
+            exchanges = ExchangeList.Parser.ParseFrom(receive["result"].ToObject<byte[]>());
+
+            return RpcApiResult.Success;
+        }
+
         #endregion
     }
 }

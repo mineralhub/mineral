@@ -277,7 +277,7 @@ namespace Mineral.Core.Net
                     return result;
                 }
 
-                foreach (WitnessCapsule witness in Manager.Instance.DBManager.Witness.GetAllWitnesses())
+                foreach (WitnessCapsule witness in Manager.Instance.DBManager.Witness.AllWitnesses)
                 {
                     if (witness.Address.Equals(block.WitnessAddress))
                     {

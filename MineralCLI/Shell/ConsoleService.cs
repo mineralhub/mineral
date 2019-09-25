@@ -13,6 +13,9 @@ namespace MineralCLI.Shell
         #region Field
         private Dictionary<string, CommandHandler> commands = new Dictionary<string, CommandHandler>()
         {
+            // NodeCommands
+            { RpcCommand.Node.ListNode, new CommandHandler(NodeCommand.ListNode) },
+
             // WalletCommands
             { RpcCommand.Wallet.ImportWallet, new CommandHandler(WalletCommand.ImportWallet) },
             { RpcCommand.Wallet.BackupWallet, new CommandHandler(WalletCommand.BackupWallet) },
@@ -22,6 +25,7 @@ namespace MineralCLI.Shell
             { RpcCommand.Wallet.GetAddress, new CommandHandler(WalletCommand.GetAddress) },
             { RpcCommand.Wallet.GetBalance, new CommandHandler(WalletCommand.GetBalance) },
             { RpcCommand.Wallet.GetAccount, new CommandHandler(WalletCommand.GetAccount) },
+            { RpcCommand.Wallet.ListWitness, new CommandHandler(WalletCommand.ListWitness) },
 
             // TransactionCommands
             { RpcCommand.Transaction.CreateAccount, new CommandHandler(TransactionCommand.CreateAccount) },
@@ -38,6 +42,8 @@ namespace MineralCLI.Shell
             { RpcCommand.Transaction.UnfreezeBalance, new CommandHandler(TransactionCommand.UnFreezeBalance) },
             { RpcCommand.Transaction.VoteWitness, new CommandHandler(TransactionCommand.VoteWitness) },
             { RpcCommand.Transaction.WithdrawBalance, new CommandHandler(TransactionCommand.WithdrawBalance) },
+            { RpcCommand.Transaction.ListProposal, new CommandHandler(TransactionCommand.ListProposal) },
+            { RpcCommand.Transaction.ListProposalPaginated, new CommandHandler(TransactionCommand.ListProposalPaginated) },
             
             // BlockCommands
             { RpcCommand.Block.GetBlock, new CommandHandler(BlockCommand.GetBlock) },
@@ -52,6 +58,9 @@ namespace MineralCLI.Shell
             { RpcCommand.AssetIssue.AssetIssueById, new CommandHandler(AssetIssueCommand.AssetIssueById) },
             { RpcCommand.AssetIssue.AssetIssueByName, new CommandHandler(AssetIssueCommand.AssetIssueByName) },
             { RpcCommand.AssetIssue.AssetIssueListByName, new CommandHandler(AssetIssueCommand.AssetIssueListByName) },
+            { RpcCommand.AssetIssue.ListAssetIssue, new CommandHandler(AssetIssueCommand.ListAssetIssue) },
+            { RpcCommand.AssetIssue.ListExchange, new CommandHandler(AssetIssueCommand.ListExchange) },
+            { RpcCommand.AssetIssue.ListExchangePaginated, new CommandHandler(AssetIssueCommand.ListExchangePaginated) },
             { RpcCommand.AssetIssue.TransferAsset, new CommandHandler(AssetIssueCommand.TransferAsset) },
             { RpcCommand.AssetIssue.UnfreezeAsset, new CommandHandler(AssetIssueCommand.UnfreezeAsset) }
         };
@@ -75,10 +84,9 @@ namespace MineralCLI.Shell
 
 
         #region External Method
-        public override bool OnCommand(string[] parameters)
+        public override bool OnCommand(string command, string[] parameters)
         {
-            string command = parameters[0].ToLower();
-            return commands.ContainsKey(command) ? commands[command](parameters) : base.OnCommand(parameters);
+            return commands.ContainsKey(command) ? commands[command](command, parameters) : base.OnCommand(command, parameters);
         }
 
         public override void OnHelp(string[] parameters)
