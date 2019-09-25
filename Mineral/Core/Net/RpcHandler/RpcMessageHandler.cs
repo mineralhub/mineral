@@ -30,29 +30,12 @@ namespace Mineral.Core.Net.RpcHandler
             { RpcCommand.Block.GetBlockById, new RpcHandler(OnGetBlockById) },
             { RpcCommand.Block.GetBlockByLimitNext, new RpcHandler(OnGetBlockByLimitNext) },
 
-            { RpcCommand.Transaction.CreateAccount, new RpcHandler(OnCreateContract) },
-            { RpcCommand.Transaction.CreateProposal, new RpcHandler(OnCreateContract) },
-            { RpcCommand.Transaction.CreateWitness, new RpcHandler(OnCreateContract) },
             { RpcCommand.Transaction.CreateTransaction, new RpcHandler(OnCreateContract) },
-            { RpcCommand.Transaction.UpdateAccount, new RpcHandler(OnCreateContract) },
-            { RpcCommand.Transaction.UpdateWitness, new RpcHandler(OnCreateContract) },
-            { RpcCommand.Transaction.UpdateEnergyLimit, new RpcHandler(OnCreateContract) },
-            { RpcCommand.Transaction.UpdateAccountPermission, new RpcHandler(OnCreateContract) },
-            { RpcCommand.Transaction.UpdateSetting, new RpcHandler(OnCreateContract) },
-            { RpcCommand.Transaction.DeleteProposal, new RpcHandler(OnCreateContract) },
-            { RpcCommand.Transaction.FreezeBalance, new RpcHandler(OnCreateContract) },
-            { RpcCommand.Transaction.UnfreezeBalance, new RpcHandler(OnCreateContract) },
-            { RpcCommand.Transaction.VoteWitness, new RpcHandler(OnCreateContract) },
-            { RpcCommand.Transaction.WithdrawBalance, new RpcHandler(OnCreateContract) },
             { RpcCommand.Transaction.GetTransactionSignWeight, new RpcHandler(OnGetTransactionSignWeight) },
             { RpcCommand.Transaction.BroadcastTransaction, new RpcHandler(OnBroadcastTransaction) },
             { RpcCommand.Transaction.ListProposal, new RpcHandler(OnListProposal) },
             { RpcCommand.Transaction.ListProposalPaginated, new RpcHandler(OnListProposalPaginated) },
 
-            { RpcCommand.AssetIssue.CreateAssetIssue, new RpcHandler(OnCreateContract) },
-            { RpcCommand.AssetIssue.UpdateAsset, new RpcHandler(OnCreateContract) },
-            { RpcCommand.AssetIssue.TransferAsset, new RpcHandler(OnCreateContract) },
-            { RpcCommand.AssetIssue.UnfreezeAsset, new RpcHandler(OnCreateContract) },
             { RpcCommand.AssetIssue.AssetIssueByAccount, new RpcHandler(OnAssetIssueByAccount) },
             { RpcCommand.AssetIssue.AssetIssueById, new RpcHandler(OnAssetIssueById) },
             { RpcCommand.AssetIssue.AssetIssueByName, new RpcHandler(OnAssetIssueByName) },
@@ -138,7 +121,7 @@ namespace Mineral.Core.Net.RpcHandler
                 byte[] address = Wallet.Base58ToAddress(parameters[0].Value<string>());
                 Account account = RpcApiService.GetAccount(address);
 
-                result = (account != null) ? JToken.FromObject(account.ToByteArray()) : new JObject();
+                result = (account != null) ? JToken.FromObject(account.ToByteArray()) : null;
             }
             catch (InvalidCastException e)
             {
@@ -159,7 +142,6 @@ namespace Mineral.Core.Net.RpcHandler
             return true;
         }
 
-        
         public static bool OnListWitness(JToken id, string method, JArray parameters, out JToken result)
         {
             result = new JObject();
@@ -212,88 +194,88 @@ namespace Mineral.Core.Net.RpcHandler
                 switch (contract_type)
                 {
                     case ContractType.AccountCreateContract:
-                        contract = AccountCreateContract.Parser.ParseFrom(parameters[0].ToObject<byte[]>());
+                        contract = AccountCreateContract.Parser.ParseFrom(parameters[1].ToObject<byte[]>());
                         break;
                     case ContractType.TransferContract:
-                        contract = TransferContract.Parser.ParseFrom(parameters[0].ToObject<byte[]>());
+                        contract = TransferContract.Parser.ParseFrom(parameters[1].ToObject<byte[]>());
                         break;
                     case ContractType.TransferAssetContract:
-                        contract = TransferAssetContract.Parser.ParseFrom(parameters[0].ToObject<byte[]>());
+                        contract = TransferAssetContract.Parser.ParseFrom(parameters[1].ToObject<byte[]>());
                         break;
                     case ContractType.VoteAssetContract:
-                        contract = VoteAssetContract.Parser.ParseFrom(parameters[0].ToObject<byte[]>());
+                        contract = VoteAssetContract.Parser.ParseFrom(parameters[1].ToObject<byte[]>());
                         break;
                     case ContractType.VoteWitnessContract:
-                        contract = VoteWitnessContract.Parser.ParseFrom(parameters[0].ToObject<byte[]>());
+                        contract = VoteWitnessContract.Parser.ParseFrom(parameters[1].ToObject<byte[]>());
                         break;
                     case ContractType.WitnessCreateContract:
-                        contract = WitnessCreateContract.Parser.ParseFrom(parameters[0].ToObject<byte[]>());
+                        contract = WitnessCreateContract.Parser.ParseFrom(parameters[1].ToObject<byte[]>());
                         break;
                     case ContractType.AssetIssueContract:
-                        contract = AssetIssueContract.Parser.ParseFrom(parameters[0].ToObject<byte[]>());
+                        contract = AssetIssueContract.Parser.ParseFrom(parameters[1].ToObject<byte[]>());
                         break;
                     case ContractType.WitnessUpdateContract:
-                        contract = WitnessUpdateContract.Parser.ParseFrom(parameters[0].ToObject<byte[]>());
+                        contract = WitnessUpdateContract.Parser.ParseFrom(parameters[1].ToObject<byte[]>());
                         break;
                     case ContractType.ParticipateAssetIssueContract:
-                        contract = ParticipateAssetIssueContract.Parser.ParseFrom(parameters[0].ToObject<byte[]>());
+                        contract = ParticipateAssetIssueContract.Parser.ParseFrom(parameters[1].ToObject<byte[]>());
                         break;
                     case ContractType.AccountUpdateContract:
-                        contract = AccountUpdateContract.Parser.ParseFrom(parameters[0].ToObject<byte[]>());
+                        contract = AccountUpdateContract.Parser.ParseFrom(parameters[1].ToObject<byte[]>());
                         break;
                     case ContractType.FreezeBalanceContract:
-                        contract = FreezeBalanceContract.Parser.ParseFrom(parameters[0].ToObject<byte[]>());
+                        contract = FreezeBalanceContract.Parser.ParseFrom(parameters[1].ToObject<byte[]>());
                         break;
                     case ContractType.UnfreezeBalanceContract:
-                        contract = UnfreezeBalanceContract.Parser.ParseFrom(parameters[0].ToObject<byte[]>());
+                        contract = UnfreezeBalanceContract.Parser.ParseFrom(parameters[1].ToObject<byte[]>());
                         break;
                     case ContractType.WithdrawBalanceContract:
-                        contract = WithdrawBalanceContract.Parser.ParseFrom(parameters[0].ToObject<byte[]>());
+                        contract = WithdrawBalanceContract.Parser.ParseFrom(parameters[1].ToObject<byte[]>());
                         break;
                     case ContractType.UnfreezeAssetContract:
-                        contract = UnfreezeAssetContract.Parser.ParseFrom(parameters[0].ToObject<byte[]>());
+                        contract = UnfreezeAssetContract.Parser.ParseFrom(parameters[1].ToObject<byte[]>());
                         break;
                     case ContractType.UpdateAssetContract:
-                        contract = UpdateAssetContract.Parser.ParseFrom(parameters[0].ToObject<byte[]>());
+                        contract = UpdateAssetContract.Parser.ParseFrom(parameters[1].ToObject<byte[]>());
                         break;
                     case ContractType.ProposalCreateContract:
-                        contract = ProposalCreateContract.Parser.ParseFrom(parameters[0].ToObject<byte[]>());
+                        contract = ProposalCreateContract.Parser.ParseFrom(parameters[1].ToObject<byte[]>());
                         break;
                     case ContractType.ProposalApproveContract:
-                        contract = ProposalApproveContract.Parser.ParseFrom(parameters[0].ToObject<byte[]>());
+                        contract = ProposalApproveContract.Parser.ParseFrom(parameters[1].ToObject<byte[]>());
                         break;
                     case ContractType.ProposalDeleteContract:
-                        contract = ProposalDeleteContract.Parser.ParseFrom(parameters[0].ToObject<byte[]>());
+                        contract = ProposalDeleteContract.Parser.ParseFrom(parameters[1].ToObject<byte[]>());
                         break;
                     case ContractType.SetAccountIdContract:
-                        contract = SetAccountIdContract.Parser.ParseFrom(parameters[0].ToObject<byte[]>());
+                        contract = SetAccountIdContract.Parser.ParseFrom(parameters[1].ToObject<byte[]>());
                         break;
                     case ContractType.CreateSmartContract:
-                        contract = CreateSmartContract.Parser.ParseFrom(parameters[0].ToObject<byte[]>());
+                        contract = CreateSmartContract.Parser.ParseFrom(parameters[1].ToObject<byte[]>());
                         break;
                     case ContractType.TriggerSmartContract:
-                        contract = TriggerSmartContract.Parser.ParseFrom(parameters[0].ToObject<byte[]>());
+                        contract = TriggerSmartContract.Parser.ParseFrom(parameters[1].ToObject<byte[]>());
                         break;
                     case ContractType.UpdateSettingContract:
-                        contract = UpdateSettingContract.Parser.ParseFrom(parameters[0].ToObject<byte[]>());
+                        contract = UpdateSettingContract.Parser.ParseFrom(parameters[1].ToObject<byte[]>());
                         break;
                     case ContractType.ExchangeCreateContract:
-                        contract = ExchangeCreateContract.Parser.ParseFrom(parameters[0].ToObject<byte[]>());
+                        contract = ExchangeCreateContract.Parser.ParseFrom(parameters[1].ToObject<byte[]>());
                         break;
                     case ContractType.ExchangeInjectContract:
-                        contract = ExchangeInjectContract.Parser.ParseFrom(parameters[0].ToObject<byte[]>());
+                        contract = ExchangeInjectContract.Parser.ParseFrom(parameters[1].ToObject<byte[]>());
                         break;
                     case ContractType.ExchangeWithdrawContract:
-                        contract = ExchangeWithdrawContract.Parser.ParseFrom(parameters[0].ToObject<byte[]>());
+                        contract = ExchangeWithdrawContract.Parser.ParseFrom(parameters[1].ToObject<byte[]>());
                         break;
                     case ContractType.ExchangeTransactionContract:
-                        contract = ExchangeTransactionContract.Parser.ParseFrom(parameters[0].ToObject<byte[]>());
+                        contract = ExchangeTransactionContract.Parser.ParseFrom(parameters[1].ToObject<byte[]>());
                         break;
                     case ContractType.UpdateEnergyLimitContract:
-                        contract = UpdateEnergyLimitContract.Parser.ParseFrom(parameters[0].ToObject<byte[]>());
+                        contract = UpdateEnergyLimitContract.Parser.ParseFrom(parameters[1].ToObject<byte[]>());
                         break;
                     case ContractType.AccountPermissionUpdateContract:
-                        contract = AccountPermissionUpdateContract.Parser.ParseFrom(parameters[0].ToObject<byte[]>());
+                        contract = AccountPermissionUpdateContract.Parser.ParseFrom(parameters[1].ToObject<byte[]>());
                         break;
                     case ContractType.CustomContract:
                     case ContractType.GetContract:
