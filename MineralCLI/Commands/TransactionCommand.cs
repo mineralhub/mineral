@@ -72,7 +72,6 @@ namespace MineralCLI.Commands
                 {
                     result = RpcApi.CreateTransaction(contract,
                                                       ContractType.AccountCreateContract,
-                                                      command,
                                                       out transaction_extention);
                 }
 
@@ -137,7 +136,6 @@ namespace MineralCLI.Commands
                 {
                     result = RpcApi.CreateTransaction(contract,
                                                       ContractType.ProposalCreateContract,
-                                                      command,
                                                       out transaction_extention);
                 }
 
@@ -195,7 +193,6 @@ namespace MineralCLI.Commands
                 {
                     result = RpcApi.CreateTransaction(contract,
                                                       ContractType.WitnessCreateContract,
-                                                      command,
                                                       out transaction_extention);
                 }
 
@@ -253,7 +250,6 @@ namespace MineralCLI.Commands
                 {
                     result = RpcApi.CreateTransaction(contract,
                                                       ContractType.AccountUpdateContract,
-                                                      command,
                                                       out transaction_extention);
                 }
 
@@ -311,7 +307,6 @@ namespace MineralCLI.Commands
                 {
                     result = RpcApi.CreateTransaction(contract,
                                                       ContractType.WitnessUpdateContract,
-                                                      command,
                                                       out transaction_extention);
                 }
 
@@ -372,7 +367,6 @@ namespace MineralCLI.Commands
                 {
                     result = RpcApi.CreateTransaction(contract,
                                                       ContractType.UpdateEnergyLimitContract,
-                                                      command,
                                                       out transaction_extention);
                 }
 
@@ -431,7 +425,6 @@ namespace MineralCLI.Commands
                 {
                     result = RpcApi.CreateTransaction(contract,
                                                       ContractType.AccountPermissionUpdateContract,
-                                                      command,
                                                       out transaction_extention);
                 }
 
@@ -497,7 +490,6 @@ namespace MineralCLI.Commands
                 {
                     result = RpcApi.CreateTransaction(contract,
                                                       ContractType.UpdateSettingContract,
-                                                      command,
                                                       out transaction_extention);
                 }
 
@@ -555,7 +547,6 @@ namespace MineralCLI.Commands
                 {
                     result = RpcApi.CreateTransaction(contract,
                                                       ContractType.ProposalDeleteContract,
-                                                      command,
                                                       out transaction_extention);
                 }
 
@@ -617,7 +608,6 @@ namespace MineralCLI.Commands
                 {
                     result = RpcApi.CreateTransaction(contract,
                                                       ContractType.TransferContract,
-                                                      command,
                                                       out transaction_extention);
                 }
 
@@ -629,12 +619,12 @@ namespace MineralCLI.Commands
                 if (result.Result)
                 {
                     Console.WriteLine(
-                        string.Format("Send {0} drop to {1} + successful. ", long.Parse(parameters[2]), parameters[1]));
+                        string.Format("Send {0} drop to {1} + successful. ", long.Parse(parameters[1]), parameters[0]));
                 }
                 else
                 {
                     Console.WriteLine(
-                        string.Format("Send {0} drop to {1} + failed. ", long.Parse(parameters[2]), parameters[1]));
+                        string.Format("Send {0} drop to {1} + failed. ", long.Parse(parameters[1]), parameters[0]));
                 }
 
                 OutputResultMessage(RpcCommand.Transaction.SendCoin, result.Result, result.Code, result.Message);
@@ -714,7 +704,6 @@ namespace MineralCLI.Commands
                 {
                     result = RpcApi.CreateTransaction(contract,
                                                       ContractType.FreezeBalanceContract,
-                                                      command,
                                                       out transaction_extention);
                 }
 
@@ -790,7 +779,6 @@ namespace MineralCLI.Commands
                 {
                     result = RpcApi.CreateTransaction(contract,
                                                       ContractType.UnfreezeBalanceContract,
-                                                      command,
                                                       out transaction_extention);
                 }
 
@@ -852,7 +840,6 @@ namespace MineralCLI.Commands
                 {
                     result = RpcApi.CreateTransaction(contract,
                                                       ContractType.VoteWitnessContract,
-                                                      command,
                                                       out transaction_extention);
                 }
 
@@ -903,7 +890,6 @@ namespace MineralCLI.Commands
                 {
                     result = RpcApi.CreateTransaction(contract,
                                                       ContractType.WithdrawBalanceContract,
-                                                      command,
                                                       out transaction_extention);
                 }
 

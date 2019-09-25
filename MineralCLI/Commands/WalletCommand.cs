@@ -195,6 +195,8 @@ namespace MineralCLI.Commands
             if (!RpcApi.IsLogin)
                 return true;
 
+            Console.WriteLine(RpcApi.KeyStore.Address);
+
             OutputResultMessage(command, true, 0, "");
 
             return true;

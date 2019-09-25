@@ -71,6 +71,8 @@ namespace MineralCLI.Network
                 return new RpcApiResult(false, value["code"].ToObject<int>(), value["message"].ToObject<string>());
             }
 
+            block = BlockExtention.Parser.ParseFrom(receive["result"].ToObject<byte[]>());
+
             return RpcApiResult.Success;
         }
 

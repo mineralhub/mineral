@@ -348,14 +348,13 @@ namespace MineralCLI.Network
 
         public static RpcApiResult CreateTransaction(IMessage contract,
                                                      ContractType contract_type,
-                                                     string command_type,
                                                      out TransactionExtention transaction_extention)
         {
             try
             {
                 transaction_extention = null;
 
-                JObject receive = SendCommand(command_type,
+                JObject receive = SendCommand(RpcCommand.Transaction.CreateTransaction,
                                               new JArray()
                                               {
                                                   contract_type,
