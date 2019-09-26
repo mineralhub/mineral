@@ -21,9 +21,8 @@ namespace Mineral.Core.Database2.Core
 
         #region Constructor
         public Session(SnapshotManager snapshot_manager)
+            : this (snapshot_manager, false)
         {
-            this.snapshot_manager = snapshot_manager;
-            this.disable_exit = false;
         }
 
         public Session(SnapshotManager snapshot_manager, bool disable_exit)

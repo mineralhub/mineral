@@ -3,10 +3,12 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading;
 using Mineral.Core.Config.Arguments;
 using Mineral.Core.Database2.Common;
+using Mineral.Core.Exception;
 using Mineral.Utils;
 
 namespace Mineral.Core.Database2.Core
@@ -56,38 +58,28 @@ namespace Mineral.Core.Database2.Core
 
 
         #region Internal Method
-        private ISnapshot Head()
-        {
-            return this.head;
-            //if (this.mode.Values == null || this.mode.Values[0] == true)
-            //{
-            //    return this.head;
-            //}
-            //else
-            //{
-            //    return this.head.GetSolidity();
-            //}
-        }
+
         #endregion
 
 
         #region External Method
+        [MethodImpl(MethodImplOptions.Synchronized)]
         public ISnapshot GetHead()
         {
-            ISnapshot snapshot = null;
-            lock (lock_db)
+            if (this.mode == null || this.mode.Value == true)
             {
-                snapshot = Head();
+                return this.head;
             }
-            return snapshot;
+            else
+            {
+                return this.head.GetSolidity();
+            }
         }
 
+        [MethodImpl(MethodImplOptions.Synchronized)]
         public void SetHead(ISnapshot snapshot)
         {
-            lock (lock_db)
-            {
-                this.head = snapshot;
-            }
+            this.head = snapshot;
         }
 
         public void SetMode(bool mode)
@@ -95,66 +87,61 @@ namespace Mineral.Core.Database2.Core
             this.mode.Value = mode;
         }
 
+        [MethodImpl(MethodImplOptions.Synchronized)]
         public void Close()
         {
-            lock (lock_db)
-            {
-                Head().Close();
-            }
+            GetHead().Close();
         }
 
+        [MethodImpl(MethodImplOptions.Synchronized)]
         public void Reset()
         {
-            lock (lock_db)
-            {
-                Head().Reset();
-                Head().Close();
-                this.head = new SnapshotRoot(Args.Instance.GetOutputDirectoryByDBName(this.db_name), this.db_name);
-            }
+            GetHead().Close();
+            this.head = new SnapshotRoot(Args.Instance.GetOutputDirectoryByDBName(this.db_name), this.db_name);
         }
 
+        [MethodImpl(MethodImplOptions.Synchronized)]
         public byte[] GetUnchecked(byte[] key)
         {
-            byte[] value = null;
-            lock (lock_db)
-            {
-                value = Head().Get(key);
-            }
-
-            return value;
+            return GetHead().Get(key);
         }
 
+        [MethodImpl(MethodImplOptions.Synchronized)]
         public bool Contains(byte[] key)
         {
             return GetUnchecked(key) != null;
         }
 
+        [MethodImpl(MethodImplOptions.Synchronized)]
         public void Put(byte[] key, byte[] value)
         {
-            lock (lock_db)
-            {
-                Head().Put(key, value);
-            }
+            GetHead().Put(key, value);
         }
 
+        [MethodImpl(MethodImplOptions.Synchronized)]
         public byte[] Get(byte[] key)
         {
+            byte[] result = GetUnchecked(key);
+            if (result == null)
+            {
+                throw new ItemNotFoundException();
+            }
+
             return GetUnchecked(key);
         }
 
+        [MethodImpl(MethodImplOptions.Synchronized)]
         public void Delete(byte[] key)
         {
-            lock (lock_db)
-            {
-                Head().Remove(key);
-            }
+            GetHead().Remove(key);
         }
 
         public HashSet<byte[]> GetLatestValues(long limit)
         {
-            return GetLatestValues(Head(), limit);
+            return GetLatestValues(GetHead(), limit);
         }
 
+        [MethodImpl(MethodImplOptions.Synchronized)]
         public HashSet<byte[]> GetLatestValues(ISnapshot head, long limit)
         {
             HashSet<byte[]> result = new HashSet<byte[]>();
@@ -193,7 +180,7 @@ namespace Mineral.Core.Database2.Core
 
         public HashSet<byte[]> GetValuesNext(byte[] key, long limit)
         {
-            return GetValuesNext(Head(), key, limit);
+            return GetValuesNext(GetHead(), key, limit);
         }
 
         public HashSet<byte[]> GetValuesNext(ISnapshot snapshot, byte[] key, long limit)
@@ -209,7 +196,7 @@ namespace Mineral.Core.Database2.Core
                 ((Snapshot)(snapshot)).Collect(collection);
             }
 
-            Dictionary<byte[], byte[]> db_dictonary = 
+            Dictionary<byte[], byte[]> db_dictonary =
                 new Dictionary<byte[], byte[]>((((Common.LevelDB)((SnapshotRoot)snapshot.GetRoot()).DB).DB.GetNext(key, limit)));
 
             foreach (KeyValuePair<byte[], byte[]> pair in collection)
@@ -268,7 +255,7 @@ namespace Mineral.Core.Database2.Core
             {
                 ((Snapshot)this.head).Collect(collection);
             }
-            
+
             Dictionary<byte[], byte[]> result = ((Common.LevelDB)((SnapshotRoot)this.head.GetRoot()).DB).DB.GetAll();
             foreach (KeyValuePair<byte[], byte[]> pair in collection)
             {
@@ -278,6 +265,7 @@ namespace Mineral.Core.Database2.Core
             return result;
         }
 
+        [MethodImpl(MethodImplOptions.Synchronized)]
         public IEnumerator<KeyValuePair<byte[], byte[]>> GetEnumerator()
         {
             return this.head.GetEnumerator();

@@ -55,7 +55,10 @@ namespace Mineral.Common.Utils
         [MethodImpl(MethodImplOptions.Synchronized)]
         public void Reset()
         {
-            this.value?.Dispose();
+            if (this.value == null)
+            {
+                this.value.Destroy();
+            }
             this.value = null;
         }
         #endregion

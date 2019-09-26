@@ -551,17 +551,18 @@ namespace Mineral.Core.Database
 
             try
             {
-                ISession temp_session = this.revoking_store.BuildSession();
-
-                Manager.Instance.FastSyncCallback.PreExecuteTrans();
-                ProcessTransaction(transaction, block);
-                Manager.Instance.FastSyncCallback.ExecuteTransFinish();
-
-                temp_session.Merge();
-                block.AddTransaction(transaction);
-                if (is_pendding_transaction)
+                using (ISession temp_session = this.revoking_store.BuildSession())
                 {
-                    this.pending_transactions.TryTake(out _);
+                    Manager.Instance.FastSyncCallback.PreExecuteTrans();
+                    ProcessTransaction(transaction, block);
+                    Manager.Instance.FastSyncCallback.ExecuteTransFinish();
+
+                    temp_session.Merge();
+                    block.AddTransaction(transaction);
+                    if (is_pendding_transaction)
+                    {
+                        this.pending_transactions.TryTake(out _);
+                    }
                 }
             }
             catch (ContractExeException e)
@@ -1377,116 +1378,117 @@ namespace Mineral.Core.Database
 
             try
             {
-                PendingManager pm = new PendingManager(this);
-
-                if (!block.IsGenerateMyself)
+                using (PendingManager pm = new PendingManager(this))
                 {
-                    if (!block.ValidateSignature(this))
+                    if (!block.IsGenerateMyself)
                     {
-                        Logger.Warning("The signature is not validated.");
-                        throw new BadBlockException("The signature is not validated");
-                    }
-
-                    if (!block.CalcMerkleRoot().Equals(block.MerkleRoot))
-                    {
-                        Logger.Warning(
-                            string.Format(
-                                "The merkle root doesn't match, Calc result is "
-                                + block.CalcMerkleRoot()
-                                + " , the headers is "
-                                + block.MerkleRoot));
-
-                        throw new BadBlockException("The merkle hash is not validated");
-                    }
-                }
-
-                if (this.witness_service != null)
-                {
-                    this.witness_service.CheckDupWitness(block);
-                }
-
-                BlockCapsule new_block = this.khaos_database.Push(block);
-
-                if (this.dynamic_properties_store.GetLatestBlockHeaderHash() == null)
-                {
-                    if (new_block.Num != 0)
-                        return;
-                }
-                else
-                {
-                    if (new_block.Num <= this.dynamic_properties_store.GetLatestBlockHeaderNumber())
-                        return;
-
-                    if (!new_block.ParentId.Equals(this.dynamic_properties_store.GetLatestBlockHeaderHash()))
-                    {
-                        Logger.Warning(
-                            string.Format("switch fork! new head num = {0}, blockid = {1}",
-                                          new_block.Num,
-                                          new_block.Id.ToString()));
-
-                        Logger.Warning(
-                            "******** before switchFork ******* push block: "
-                                + block.ToString()
-                                + ", new block:"
-                                + new_block.ToString()
-                                + ", dynamic head num: "
-                                + this.dynamic_properties_store.GetLatestBlockHeaderNumber()
-                                + ", dynamic head hash: "
-                                + this.dynamic_properties_store.GetLatestBlockHeaderHash()
-                                + ", dynamic head timestamp: "
-                                + this.dynamic_properties_store.GetLatestBlockHeaderTimestamp()
-                                + ", khaosDb head: "
-                                + this.khaos_database.GetHead().ToString()
-                                + ", khaosDb miniStore size: "
-                                + this.khaos_database.MiniStore.Size
-                                + ", khaosDb unlinkMiniStore size: "
-                                + this.khaos_database.MiniUnlinkedStore.Size);
-
-                        SwitchFork(new_block);
-                        Logger.Info("save block: " + new_block);
-
-                        Logger.Warning(
-                            "******** after switchFork ******* push block: "
-                                + block.ToString()
-                                + ", new block:"
-                                + new_block.ToString()
-                                + ", dynamic head num: "
-                                + this.dynamic_properties_store.GetLatestBlockHeaderNumber()
-                                + ", dynamic head hash: "
-                                + this.dynamic_properties_store.GetLatestBlockHeaderHash()
-                                + ", dynamic head timestamp: "
-                                + this.dynamic_properties_store.GetLatestBlockHeaderTimestamp()
-                                + ", khaosDb head: "
-                                + this.khaos_database.GetHead()
-                                + ", khaosDb miniStore size: "
-                                + this.khaos_database.MiniStore.Size
-                                + ", khaosDb unlinkMiniStore size: "
-                                + this.khaos_database.MiniUnlinkedStore.Size);
-
-                        return;
-                    }
-
-                    try
-                    {
-                        using (ISession tmpSession = this.revoking_store.BuildSession())
+                        if (!block.ValidateSignature(this))
                         {
-                            ApplyBlock(new_block);
-                            tmpSession.Commit();
-                            PostBlockTrigger(new_block);
+                            Logger.Warning("The signature is not validated.");
+                            throw new BadBlockException("The signature is not validated");
+                        }
+
+                        if (!block.CalcMerkleRoot().Equals(block.MerkleRoot))
+                        {
+                            Logger.Warning(
+                                string.Format(
+                                    "The merkle root doesn't match, Calc result is "
+                                    + block.CalcMerkleRoot()
+                                    + " , the headers is "
+                                    + block.MerkleRoot));
+
+                            throw new BadBlockException("The merkle hash is not validated");
                         }
                     }
-                    catch (System.Exception e)
+
+                    if (this.witness_service != null)
                     {
-                        Logger.Error(e.Message);
-                        this.khaos_database.RemoveBlock(block.Id);
-                        throw e;
+                        this.witness_service.CheckDupWitness(block);
                     }
+
+                    BlockCapsule new_block = this.khaos_database.Push(block);
+
+                    if (this.dynamic_properties_store.GetLatestBlockHeaderHash() == null)
+                    {
+                        if (new_block.Num != 0)
+                            return;
+                    }
+                    else
+                    {
+                        if (new_block.Num <= this.dynamic_properties_store.GetLatestBlockHeaderNumber())
+                            return;
+
+                        if (!new_block.ParentId.Equals(this.dynamic_properties_store.GetLatestBlockHeaderHash()))
+                        {
+                            Logger.Warning(
+                                string.Format("switch fork! new head num = {0}, blockid = {1}",
+                                              new_block.Num,
+                                              new_block.Id.ToString()));
+
+                            Logger.Warning(
+                                "******** before switchFork ******* push block: "
+                                    + block.ToString()
+                                    + ", new block:"
+                                    + new_block.ToString()
+                                    + ", dynamic head num: "
+                                    + this.dynamic_properties_store.GetLatestBlockHeaderNumber()
+                                    + ", dynamic head hash: "
+                                    + this.dynamic_properties_store.GetLatestBlockHeaderHash()
+                                    + ", dynamic head timestamp: "
+                                    + this.dynamic_properties_store.GetLatestBlockHeaderTimestamp()
+                                    + ", khaosDb head: "
+                                    + this.khaos_database.GetHead().ToString()
+                                    + ", khaosDb miniStore size: "
+                                    + this.khaos_database.MiniStore.Size
+                                    + ", khaosDb unlinkMiniStore size: "
+                                    + this.khaos_database.MiniUnlinkedStore.Size);
+
+                            SwitchFork(new_block);
+                            Logger.Info("save block: " + new_block);
+
+                            Logger.Warning(
+                                "******** after switchFork ******* push block: "
+                                    + block.ToString()
+                                    + ", new block:"
+                                    + new_block.ToString()
+                                    + ", dynamic head num: "
+                                    + this.dynamic_properties_store.GetLatestBlockHeaderNumber()
+                                    + ", dynamic head hash: "
+                                    + this.dynamic_properties_store.GetLatestBlockHeaderHash()
+                                    + ", dynamic head timestamp: "
+                                    + this.dynamic_properties_store.GetLatestBlockHeaderTimestamp()
+                                    + ", khaosDb head: "
+                                    + this.khaos_database.GetHead()
+                                    + ", khaosDb miniStore size: "
+                                    + this.khaos_database.MiniStore.Size
+                                    + ", khaosDb unlinkMiniStore size: "
+                                    + this.khaos_database.MiniUnlinkedStore.Size);
+
+                            return;
+                        }
+
+                        try
+                        {
+                            using (ISession tmpSession = this.revoking_store.BuildSession())
+                            {
+                                ApplyBlock(new_block);
+                                tmpSession.Commit();
+                                PostBlockTrigger(new_block);
+                            }
+                        }
+                        catch (System.Exception e)
+                        {
+                            Logger.Error(e.Message);
+                            this.khaos_database.RemoveBlock(block.Id);
+                            throw e;
+                        }
+                    }
+
+                    Logger.Info("save block: " + new_block);
+
+                    Logger.Refactoring(
+                        string.Format("Push block : {0} IsGenerateMyself : {1}", new_block.Num, new_block.IsGenerateMyself));
                 }
-
-                Logger.Info("save block: " + new_block);
-
-                Logger.Refactoring(
-                    string.Format("Push block : {0} IsGenerateMyself : {1}", new_block.Num, new_block.IsGenerateMyself));
             }
             catch
             {
