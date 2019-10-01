@@ -6,10 +6,10 @@ using System.Text;
 
 namespace Mineral.Core.Database2.Common
 {
-    public class HashDB : IBaseDB<byte[], byte[]>
+    public class HashDB : IBaseDB<Key, Value>
     {
         #region Field
-        private ConcurrentDictionary<byte[], byte[]> db = new ConcurrentDictionary<byte[], byte[]>();
+        private ConcurrentDictionary<Key, Value> db = new ConcurrentDictionary<Key, Value>(new KeyEqualComparer());
         #endregion
 
 
@@ -32,25 +32,25 @@ namespace Mineral.Core.Database2.Common
 
 
         #region External Method
-        public byte[] Get(byte[] key)
+        public Value Get(Key key)
         {
-            if (this.db.TryGetValue(key, out byte[] value))
+            if (this.db.TryGetValue(key, out Value value))
                 return value;
             else
                 return null;
         }
 
-        public void Put(byte[] key, byte[] value)
+        public void Put(Key key, Value value)
         {
             this.db.TryAdd(key, value);
         }
 
-        public void Remove(byte[] key)
+        public void Remove(Key key)
         {
             this.db.TryRemove(key, out _);
         }
 
-        public IEnumerator<KeyValuePair<byte[], byte[]>> GetEnumerator()
+        public IEnumerator<KeyValuePair<Key, Value>> GetEnumerator()
         {
             return this.db.GetEnumerator();
         }

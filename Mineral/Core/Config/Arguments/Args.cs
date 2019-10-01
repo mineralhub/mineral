@@ -235,19 +235,22 @@ namespace Mineral.Core.Config.Arguments
             if (Config.Instance.Node.Discovery.ExternalIP.IsNullOrEmpty())
             {
                 Logger.Info("External IP wasn't set, using checkip.amazonaws.com to identify it...");
-                try
+                lock (this)
                 {
-                    string ip = new WebClient().DownloadString(new Uri(@"http://checkip.amazonaws.com"));
-                    if (ip.EndsWith("\n"))
+                    try
                     {
-                        ip = ip.Remove(ip.Length - 1);
-                    }
+                        string ip = new WebClient().DownloadString(new Uri(@"http://checkip.amazonaws.com"));
+                        if (ip.EndsWith("\n"))
+                        {
+                            ip = ip.Remove(ip.Length - 1);
+                        }
 
-                    instance.Node.Discovery.ExternalIP = ip;
-                }
-                catch (System.Exception e)
-                {
-                    Logger.Debug(e.Message);
+                        instance.Node.Discovery.ExternalIP = ip;
+                    }
+                    catch (System.Exception e)
+                    {
+                        Logger.Debug(e.Message);
+                    }
                 }
             }
             else

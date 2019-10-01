@@ -16,7 +16,10 @@ namespace Mineral.Core.Database
 
 
         #region Contructor
-        public StorageRowStore(string db_name = "storage-row") : base(db_name) { }
+        public StorageRowStore(IRevokingDatabase revoking_database, string db_name = "storage-row")
+            : base(revoking_database, db_name)
+        {
+        }
         #endregion
 
 

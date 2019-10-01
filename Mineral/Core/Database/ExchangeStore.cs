@@ -41,7 +41,10 @@ namespace Mineral.Core.Database
 
 
         #region Contructor
-        public ExchangeStore(string db_name = "exchange") : base(db_name) { }
+        public ExchangeStore(IRevokingDatabase revoking_database, string db_name = "exchange")
+            : base(revoking_database, db_name)
+        {
+        }
         #endregion
 
 

@@ -16,7 +16,10 @@ namespace Mineral.Core.Database
 
 
         #region Contructor
-        public RecentBlockStore(string db_name = "recent-block") : base(db_name) { }
+        public RecentBlockStore(IRevokingDatabase revoking_database, string db_name = "recent-block")
+            : base(revoking_database, db_name)
+        {
+        }
         #endregion
 
 

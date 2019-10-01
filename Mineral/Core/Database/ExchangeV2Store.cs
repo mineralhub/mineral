@@ -15,7 +15,10 @@ namespace Mineral.Core.Database
 
 
         #region Contructor
-        public ExchangeV2Store(string db_name = "exchange-v2") : base(db_name) { }
+        public ExchangeV2Store(IRevokingDatabase revoking_database, string db_name = "exchange-v2")
+            : base(revoking_database, db_name)
+        {
+        }
         #endregion
 
 

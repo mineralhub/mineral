@@ -2,6 +2,7 @@
 using System.Collections;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 using LevelDB;
 using Mineral.Common.Storage;
@@ -52,9 +53,15 @@ namespace Mineral.Core.Database2.Common
             this.db.Reset();
         }
 
-        public void Flush(Dictionary<byte[], byte[]> batch)
+        public void Flush(Dictionary<WrappedByteArray, WrappedByteArray> batch)
         {
-            this.db.UpdateByBatch(batch);
+            Dictionary<byte[], byte[]> result = new Dictionary<byte[], byte[]>();
+            foreach (var pair in batch)
+            {
+                result.Add(pair.Key.Data, pair.Value.Data);
+            }
+
+            this.db.UpdateByBatch(result);
         }
 
         public byte[] Get(byte[] key)

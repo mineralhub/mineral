@@ -13,7 +13,7 @@ namespace Mineral.Core.Database
         int MaxFlushCount { get; set; }
 
         ISession BuildSession();
-        ISession BuildSeesion(bool force_enable);
+        ISession BuildSession(bool force_enable);
 
         void Add(IRevokingDB revoking_db);
         void Merge();

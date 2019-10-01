@@ -25,7 +25,6 @@ namespace Mineral.Core
 
         private DatabaseManager db_manager = new DatabaseManager();
         private TrieService trie_service = new TrieService();
-        private AccountStateStoreTrie account_state_store_trie = new AccountStateStoreTrie();
 
         private NodeManager node_manager = new NodeManager();
         private ChannelManager channel_manager = new ChannelManager();
@@ -65,11 +64,6 @@ namespace Mineral.Core
         public DatabaseManager DBManager
         {
             get { return this.db_manager; }
-        }
-
-        public AccountStateStoreTrie AccountStateTrie
-        {
-            get { return this.account_state_store_trie; }
         }
 
         public TrieService TrieService

@@ -104,7 +104,7 @@ namespace Mineral.Core.Database.Fast.Callback
                 root_hash = Hash.EMPTY_TRIE_HASH;
             }
 
-            trie = new Trie(Manager.Instance.AccountStateTrie, root_hash);
+            trie = new Trie(Manager.Instance.DBManager.AccountStateTrie, root_hash);
         }
 
         public void PreExecuteTrans()

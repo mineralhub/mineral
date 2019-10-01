@@ -20,7 +20,10 @@ namespace Mineral.Core.Database
 
 
         #region Contructor
-        public BlockIndexStore(string db_name = "block-index") : base(db_name) { }
+        public BlockIndexStore(IRevokingDatabase revoking_database, string db_name = "block-index")
+            : base(revoking_database, db_name)
+        {
+        }
         #endregion
 
 

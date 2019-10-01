@@ -16,7 +16,10 @@ namespace Mineral.Core.Database
 
 
         #region Contructor
-        public CodeStore(string db_name = "code") : base(db_name) { }
+        public CodeStore(IRevokingDatabase revoking_database, string db_name = "code")
+            : base(revoking_database, db_name)
+        {
+        }
         #endregion
 
 

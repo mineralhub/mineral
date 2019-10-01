@@ -18,7 +18,7 @@ namespace Mineral.Core.Database2.Core
         #region Field
         private string db_name = "";
         private ISnapshot head = null;
-        private ThreadLocal<bool> mode = new ThreadLocal<bool>();
+        private ThreadLocal<bool?> mode = new ThreadLocal<bool?>();
         object lock_db = new object();
         #endregion
 
@@ -37,13 +37,6 @@ namespace Mineral.Core.Database2.Core
 
 
         #region Constructor
-        public RevokingDBWithCaching(string db_name)
-        {
-            this.db_name = db_name;
-            this.head = new SnapshotRoot(Args.Instance.GetOutputDirectoryByDBName(db_name), db_name);
-            this.mode.Value = true;
-        }
-
         public RevokingDBWithCaching(string db_name, Type db_type)
         {
             this.db_name = db_name;
@@ -66,7 +59,7 @@ namespace Mineral.Core.Database2.Core
         [MethodImpl(MethodImplOptions.Synchronized)]
         public ISnapshot GetHead()
         {
-            if (this.mode == null || this.mode.Value == true)
+            if (this.mode.Value == null || this.mode.Value == true)
             {
                 return this.head;
             }
@@ -158,10 +151,10 @@ namespace Mineral.Core.Database2.Core
                     if (!((Snapshot)(snapshot)).DB.IsEmpty)
                     {
                         --temp;
-                        IEnumerator<KeyValuePair<byte[], byte[]>> it = ((Snapshot)(snapshot)).GetEnumerator();
+                        IEnumerator<KeyValuePair<Key, Value>> it = ((Snapshot)(snapshot)).GetEnumerator();
                         while (it.MoveNext())
                         {
-                            result.Add(it.Current.Value);
+                            result.Add(it.Current.Value.Data);
                         }
                     }
                 }
@@ -190,7 +183,7 @@ namespace Mineral.Core.Database2.Core
             if (limit <= 0)
                 return result;
 
-            Dictionary<byte[], byte[]> collection = new Dictionary<byte[], byte[]>();
+            Dictionary<WrappedByteArray, WrappedByteArray> collection = new Dictionary<WrappedByteArray, WrappedByteArray>();
             if (snapshot.GetPrevious() != null)
             {
                 ((Snapshot)(snapshot)).Collect(collection);
@@ -199,9 +192,9 @@ namespace Mineral.Core.Database2.Core
             Dictionary<byte[], byte[]> db_dictonary =
                 new Dictionary<byte[], byte[]>((((Common.LevelDB)((SnapshotRoot)snapshot.GetRoot()).DB).DB.GetNext(key, limit)));
 
-            foreach (KeyValuePair<byte[], byte[]> pair in collection)
+            foreach (KeyValuePair<WrappedByteArray, WrappedByteArray> pair in collection)
             {
-                db_dictonary.Add(pair.Key, pair.Value);
+                db_dictonary.Add(pair.Key.Data, pair.Value.Data);
             }
 
 
@@ -215,7 +208,7 @@ namespace Mineral.Core.Database2.Core
 
         public HashSet<byte[]> GetValuesPrevious(byte[] key, long limit)
         {
-            Dictionary<byte[], byte[]> collection = new Dictionary<byte[], byte[]>();
+            Dictionary<WrappedByteArray, WrappedByteArray> collection = new Dictionary<WrappedByteArray, WrappedByteArray>();
 
             if (this.head.GetPrevious() != null)
             {
@@ -225,11 +218,11 @@ namespace Mineral.Core.Database2.Core
             int precision = sizeof(long) / sizeof(byte);
             HashSet<byte[]> result = new HashSet<byte[]>();
 
-            foreach (byte[] array in collection.Keys)
+            foreach (WrappedByteArray array in collection.Keys)
             {
-                if (ByteUtil.Compare(ArrayUtil.GetRange(array, 0, precision), key) <= 0)
+                if (ByteUtil.Compare(ArrayUtil.GetRange(array.Data, 0, precision), key) <= 0)
                 {
-                    result.Add(array);
+                    result.Add(array.Data);
                     limit--;
                 }
             }
@@ -250,16 +243,16 @@ namespace Mineral.Core.Database2.Core
 
         public Dictionary<byte[], byte[]> GetAllValues()
         {
-            Dictionary<byte[], byte[]> collection = new Dictionary<byte[], byte[]>();
+            Dictionary<WrappedByteArray, WrappedByteArray> collection = new Dictionary<WrappedByteArray, WrappedByteArray>();
             if (this.head.GetPrevious() != null)
             {
                 ((Snapshot)this.head).Collect(collection);
             }
 
             Dictionary<byte[], byte[]> result = ((Common.LevelDB)((SnapshotRoot)this.head.GetRoot()).DB).DB.GetAll();
-            foreach (KeyValuePair<byte[], byte[]> pair in collection)
+            foreach (KeyValuePair<WrappedByteArray, WrappedByteArray> pair in collection)
             {
-                result.Add(pair.Key, pair.Value);
+                result.Add(pair.Key.Data, pair.Value.Data);
             }
 
             return result;

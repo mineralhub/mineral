@@ -4,7 +4,7 @@ using System.Text;
 
 namespace Mineral.Common.Storage
 {
-    public interface IDBSourceInter<V> : IBatchSourceInter<byte[], V>
+    public interface IDBSourceInter<V> : IBatchSourceInter<byte[], V>, IEnumerable<KeyValuePair<byte[], V>>
     {
         string DataBaseName { get; set; }
         bool IsAlive { get; set; }

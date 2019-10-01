@@ -18,7 +18,10 @@ namespace Mineral.Core.Database
 
 
         #region Contructor
-        public TransactionHistoryStore(string db_name = "transaction_history_store") : base(db_name) { }
+        public TransactionHistoryStore(IRevokingDatabase revoking_database, string db_name = "transaction_history_store") 
+            : base(revoking_database, db_name)
+        {
+        }
         #endregion
 
 

@@ -30,7 +30,7 @@ namespace Mineral.Core.Database2.Core
         private int active_session = 0;
         private bool is_unchecked = true;
         private volatile int max_flush_count = DEFAULT_MAX_FLUSH_COUNT;
-        private volatile int flush_count = DEFAULT_MIN_FLUSH_COUNT;
+        private volatile int flush_count = 0;
         #endregion
 
 
@@ -72,7 +72,7 @@ namespace Mineral.Core.Database2.Core
         private void Retreat()
         {
             this.databases.ForEach(db => db.SetHead(db.GetHead().Retreat()));
-            ++size;
+            --size;
         }
 
         private void Refresh()
@@ -80,11 +80,12 @@ namespace Mineral.Core.Database2.Core
             List<Task> tasks = new List<Task>();
             foreach (RevokingDBWithCaching db in this.databases)
             {
-                if (this.flush_service.TryGetValue(db.DBName, out Task task))
-                {
-                    task.Start();
-                    tasks.Add(task);
-                }
+                tasks.Add(new Task((() => RefreshOne(db))));
+            }
+
+            foreach (Task task in tasks)
+            {
+                task.Start();
             }
 
             try
@@ -134,29 +135,20 @@ namespace Mineral.Core.Database2.Core
         private byte[] SimpleEncode(string name)
         {
             byte[] bytes = name.ToBytes();
-            byte[] length = new byte[]
-            {
-                (byte)(bytes.Length >> 24),
-                (byte)(bytes.Length >> 16),
-                (byte)(bytes.Length >> 8),
-                (byte)(bytes.Length >> 0)
-            };
-            byte[] result = new byte[4 + bytes.Length];
-            Array.Copy(length, 0, result, 0, 4);
-            Array.Copy(bytes, 0, result, 0, bytes.Length);
+            byte[] length = BitConverter.GetBytes(bytes.Length);
+            byte[] result = new byte[sizeof(int) + bytes.Length];
+
+            Array.Copy(length, result, length.Length);
+            Array.Copy(bytes, 0, result, length.Length, bytes.Length);
 
             return result;
         }
 
         private string SimpleDecode(byte[] bytes)
         {
-            byte[] length_bytes = new byte[4];
-            Array.Copy(bytes, length_bytes, 4);
-            int length = (length_bytes[0] << 24 |
-                        (length_bytes[1] & 0xFF) << 16 |
-                        (length_bytes[2] & 0xFF) << 8 |
-                        (length_bytes[3] & 0xFF) << 0);
-            byte[] value = ArrayUtil.CopyRange(bytes, 4, 4 + length);
+            int length = BitConverter.ToInt32(bytes, 0);
+            byte[] value = new byte[length];
+            Array.Copy(bytes, 0, value, 0, length);
 
             return value.BytesToString();
         }
@@ -176,14 +168,14 @@ namespace Mineral.Core.Database2.Core
                 {
                     next = next.GetNext();
                     Snapshot snapshot = (Snapshot)next;
-                    IBaseDB<byte[], byte[]> key_value_db = snapshot.DB;
-                    foreach (KeyValuePair<byte[], byte[]> pair in key_value_db)
+                    IBaseDB<Common.Key, Common.Value> key_value_db = snapshot.DB;
+                    foreach (KeyValuePair<Common.Key, Common.Value> pair in key_value_db)
                     {
                         byte[] name = SimpleEncode(db_name);
-                        byte[] key = new byte[name.Length + pair.Key.Length];
+                        byte[] key = new byte[name.Length + pair.Key.Data.Length];
                         Array.Copy(name, 0, key, 0, name.Length);
-                        Array.Copy(pair.Key, 0, key, name.Length, pair.Key.Length);
-                        batch.Add(key, pair.Value);
+                        Array.Copy(pair.Key.Data, 0, key, name.Length, pair.Key.Data.Length);
+                        batch.Add(key, pair.Value.Encode());
                     }
                 }
             }
@@ -196,10 +188,9 @@ namespace Mineral.Core.Database2.Core
             Dictionary<byte[], byte[]> collection = new Dictionary<byte[], byte[]>();
             if (!(CheckTempStore.Instance.DBSource.AllKeys().Count <= 0))
             {
-                IEnumerator<KeyValuePair<byte[], byte[]>> it = CheckTempStore.Instance.GetEnumerator();
-                while (it.MoveNext())
+                foreach (var entry in CheckTempStore.Instance.DBSource)
                 {
-                    collection.Add(it.Current.Key, it.Current.Value);
+                    collection.Add(entry.Key, entry.Value);
                 }
             }
 
@@ -212,11 +203,11 @@ namespace Mineral.Core.Database2.Core
         #region Interface Method
         public ISession BuildSession()
         {
-            return BuildSeesion(false);
+            return BuildSession(false);
         }
 
         [MethodImpl(MethodImplOptions.Synchronized)]
-        public ISession BuildSeesion(bool force_enable)
+        public ISession BuildSession(bool force_enable)
         {
             if (this.is_disable && !force_enable)
                 return new Session(this);
@@ -225,12 +216,13 @@ namespace Mineral.Core.Database2.Core
             if (force_enable)
                 this.is_disable = false;
 
+            Logger.Refactoring("&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&" + this.size + "   " + this.max_size);
             if (this.size > this.max_size)
             {
                 this.flush_count = this.flush_count + (this.size - this.max_size);
                 UpdateSolidity(this.size - this.max_size);
                 this.size = this.max_size;
-                flush();
+                Flush();
             }
 
             Advance();
@@ -243,7 +235,6 @@ namespace Mineral.Core.Database2.Core
         {
             RevokingDBWithCaching db = (RevokingDBWithCaching)revoking_db;
             this.databases.Add(db);
-            flush_service.Add(db.DBName, new Task((() => RefreshOne(db))));
         }
 
         public void Merge()
@@ -344,15 +335,14 @@ namespace Mineral.Core.Database2.Core
 
                 Advance();
 
-                IEnumerator<KeyValuePair<byte[], byte[]>> it = CheckTempStore.Instance.GetEnumerator();
-                while (it.MoveNext())
+                foreach (var entry in CheckTempStore.Instance.DBSource)
                 {
-                    string db = SimpleDecode(it.Current.Key);
+                    string db = SimpleDecode(entry.Key);
                     if (!dbs.TryGetValue(db, out RevokingDBWithCaching revoking_db))
                         continue;
 
-                    byte[] key = it.Current.Key;
-                    byte[] value = it.Current.Value;
+                    byte[] key = entry.Key;
+                    byte[] value = entry.Value;
                     byte[] db_bytes = db.ToBytes();
                     byte[] real_key = ArrayUtil.CopyRange(key, db_bytes.Length + 4, key.Length);
                     byte[] real_value = value.Length == 1 ? null : ArrayUtil.CopyRange(value, 1, value.Length);
@@ -361,6 +351,7 @@ namespace Mineral.Core.Database2.Core
                         revoking_db.GetHead().Put(real_key, real_value);
                     else
                         revoking_db.GetHead().Remove(real_key);
+
                 }
 
                 this.databases.ForEach(db => db.GetHead().GetRoot().Merge(db.GetHead()));
@@ -410,7 +401,7 @@ namespace Mineral.Core.Database2.Core
             }
         }
 
-        public void flush()
+        public void Flush()
         {
             if (this.is_unchecked)
                 return;

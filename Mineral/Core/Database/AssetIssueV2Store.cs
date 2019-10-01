@@ -15,7 +15,10 @@ namespace Mineral.Core.Database
 
 
         #region Contructor
-        public AssetIssueV2Store(string db_name = "asset-issue-v2") : base(db_name) { }
+        public AssetIssueV2Store(IRevokingDatabase revoking_database, string db_name = "asset-issue-v2")
+            : base(revoking_database, db_name)
+        {
+        }
         #endregion
 
 

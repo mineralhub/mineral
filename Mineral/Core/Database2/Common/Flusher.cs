@@ -7,7 +7,7 @@ namespace Mineral.Core.Database2.Common
 {
     public interface Flusher
     {
-        void Flush(Dictionary<byte[], byte[]> batch);
+        void Flush(Dictionary<WrappedByteArray, WrappedByteArray> batch);
         void Close();
         void Reset();
     }

@@ -18,7 +18,10 @@ namespace Mineral.Core.Database
 
 
         #region Contructor
-        public VotesStore(string db_name = "votes") : base(db_name) { }
+        public VotesStore(IRevokingDatabase revoking_database, string db_name = "votes")
+            : base(revoking_database, db_name)
+        {
+        }
         #endregion
 
 

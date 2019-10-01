@@ -17,7 +17,10 @@ namespace Mineral.Core.Database
 
 
         #region Contructor
-        public DelegatedResourceStore(string db_name = "delegated-resource") : base(db_name) { }
+        public DelegatedResourceStore(IRevokingDatabase revoking_database, string db_name = "delegated-resource")
+            : base(revoking_database, db_name)
+        {
+        }
         #endregion
 
 

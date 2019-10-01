@@ -10,7 +10,7 @@ namespace Mineral.Core.Database2.Core
     {
         #region Field
         protected ISnapshot previous;
-        protected WeakReference next = null;
+        protected WeakReference<ISnapshot> next = null;
         protected IBaseDB<T, V> db { get; set; }
         #endregion
 
@@ -45,7 +45,7 @@ namespace Mineral.Core.Database2.Core
 
         public void SetNext(ISnapshot next)
         {
-            this.next = new WeakReference(next);
+            this.next = new WeakReference<ISnapshot>(next);
         }
 
         public ISnapshot GetPrevious()
@@ -55,7 +55,8 @@ namespace Mineral.Core.Database2.Core
 
         public ISnapshot GetNext()
         {
-            return (ISnapshot)this.next.Target;
+            this.next.TryGetTarget(out ISnapshot result);
+            return result;
         }
 
         IEnumerator<KeyValuePair<byte[], byte[]>> IEnumerable<KeyValuePair<byte[], byte[]>>.GetEnumerator()

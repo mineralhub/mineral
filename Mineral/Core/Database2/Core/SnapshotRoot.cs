@@ -105,26 +105,26 @@ namespace Mineral.Core.Database2.Core
 
         public override void Merge(ISnapshot snapshot)
         {
-            Dictionary<byte[], byte[]> batch = new Dictionary<byte[], byte[]>();
+            Dictionary<WrappedByteArray, WrappedByteArray> batch = new Dictionary<WrappedByteArray, WrappedByteArray>();
 
-            IEnumerator<KeyValuePair<byte[], byte[]>> datas = ((Snapshot)snapshot).GetEnumerator();
+            IEnumerator<KeyValuePair<Key, Value>> datas = ((Snapshot)snapshot).GetEnumerator();
             while (datas.MoveNext())
             {
-                batch.Add(datas.Current.Key, datas.Current.Value);
+                batch.Add(WrappedByteArray.Of(datas.Current.Key.Data), WrappedByteArray.Of(datas.Current.Value.Data));
             }
             ((Flusher)this.db).Flush(batch);
         }
 
         public void Merge(List<ISnapshot> snapshots)
         {
-            Dictionary<byte[], byte[]> batch = new Dictionary<byte[], byte[]>();
+            Dictionary<WrappedByteArray, WrappedByteArray> batch = new Dictionary<WrappedByteArray, WrappedByteArray>();
             foreach (ISnapshot snapshot in snapshots)
             {
                 Snapshot from = (Snapshot)snapshot;
-                IEnumerator<KeyValuePair<byte[], byte[]>> it = from.DB.GetEnumerator();
+                IEnumerator<KeyValuePair<Key, Value>> it = from.DB.GetEnumerator();
                 while (it.MoveNext())
                 {
-                    batch.Add(it.Current.Key, it.Current.Value);
+                    batch.Add(WrappedByteArray.Of(it.Current.Key.Data), WrappedByteArray.Of(it.Current.Value.Data));
                 }
             }
 

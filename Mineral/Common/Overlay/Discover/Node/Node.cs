@@ -74,8 +74,9 @@ namespace Mineral.Common.Overlay.Discover.Node
                     return new Node(address);
                 }
             }
-            catch
+            catch (System.Exception e)
             {
+                Logger.Debug(e.Message);
             }
 
             byte[] privatekey = Hash.SHA256(address.ToBytes());

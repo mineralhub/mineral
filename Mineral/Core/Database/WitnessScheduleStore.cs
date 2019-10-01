@@ -21,7 +21,10 @@ namespace Mineral.Core.Database
 
 
         #region Contructor
-        public WitnessScheduleStore(string db_name = "witness_schedule") : base(db_name) { }
+        public WitnessScheduleStore(IRevokingDatabase revoking_database, string db_name = "witness_schedule")
+            : base(revoking_database, db_name)
+        {
+        }
         #endregion
 
 

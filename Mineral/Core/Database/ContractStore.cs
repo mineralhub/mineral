@@ -19,7 +19,10 @@ namespace Mineral.Core.Database
 
 
         #region Contructor
-        public ContractStore(string db_name = "contract") : base(db_name) { }
+        public ContractStore(IRevokingDatabase revoking_database, string db_name = "contract")
+            : base(revoking_database, db_name)
+        {
+        }
         #endregion
 
 

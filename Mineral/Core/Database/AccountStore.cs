@@ -22,8 +22,8 @@ namespace Mineral.Core.Database
 
 
         #region Constructor
-        public AccountStore(string db_name = "account")
-            : base(db_name)
+        public AccountStore(IRevokingDatabase revoking_database, string db_name = "account")
+            : base(revoking_database, db_name)
         {
         }
         #endregion
@@ -79,7 +79,7 @@ namespace Mineral.Core.Database
         public override void Close()
         {
             base.Close();
-            Manager.Instance.AccountStateTrie.Close();
+            Manager.Instance.DBManager.AccountStateTrie.Close();
         }
         #endregion
     }

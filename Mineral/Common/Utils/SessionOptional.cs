@@ -23,6 +23,9 @@ namespace Mineral.Common.Utils
 
 
         #region Contructor
+        private SessionOptional()
+        {
+        }
         #endregion
 
 
@@ -55,7 +58,7 @@ namespace Mineral.Common.Utils
         [MethodImpl(MethodImplOptions.Synchronized)]
         public void Reset()
         {
-            if (this.value == null)
+            if (this.value != null)
             {
                 this.value.Destroy();
             }

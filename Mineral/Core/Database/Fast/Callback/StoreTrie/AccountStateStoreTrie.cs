@@ -23,8 +23,8 @@ namespace Mineral.Core.Database.Fast.Callback.StoreTrie
 
 
         #region Contructor
-        public AccountStateStoreTrie(string db_name = "accountTrie")
-            : base(db_name)
+        public AccountStateStoreTrie(IRevokingDatabase revoking_database, string db_name = "accountTrie")
+            : base(revoking_database, db_name)
         {
         }
         #endregion

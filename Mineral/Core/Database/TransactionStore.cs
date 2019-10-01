@@ -21,8 +21,8 @@ namespace Mineral.Core.Database
 
 
         #region Contructor
-        public TransactionStore(BlockStore block, KhaosDatabase khaos, string db_name = "transaction")
-            : base(db_name)
+        public TransactionStore(IRevokingDatabase revoking_database, BlockStore block, KhaosDatabase khaos, string db_name = "transaction")
+            : base(revoking_database, db_name)
         {
             this.block_store = block;
             this.khaos_database = khaos;

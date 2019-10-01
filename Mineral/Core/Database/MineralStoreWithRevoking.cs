@@ -16,7 +16,7 @@ namespace Mineral.Core.Database
     {
         #region Field
         protected IRevokingDB revoking_db = null;
-        private IRevokingDatabase revoking_database = new SnapshotManager();
+        private IRevokingDatabase revoking_database = null;
         private string db_name = "";
         #endregion
 
@@ -39,17 +39,19 @@ namespace Mineral.Core.Database
 
 
         #region Constructor
-        protected MineralStoreWithRevoking(string db_name)
+        protected MineralStoreWithRevoking(IRevokingDatabase revoking_database, string db_name)
         {
             this.db_name = db_name;
-            this.revoking_db = new RevokingDBWithCaching(this.db_name);
+            this.revoking_db = new RevokingDBWithCaching(this.db_name, typeof(Core.Database2.Common.LevelDB));
+            this.revoking_database = revoking_database;
             this.revoking_database.Add(this.revoking_db);
         }
 
-        protected MineralStoreWithRevoking(string db_name, Type db_type)
+        protected MineralStoreWithRevoking(IRevokingDatabase revoking_database, string db_name, Type db_type)
         {
             this.db_name = db_name;
             this.revoking_db = new RevokingDBWithCaching(db_name, db_type);
+            this.revoking_database = revoking_database;
             this.revoking_database.Add(this.revoking_db);
         }
         #endregion

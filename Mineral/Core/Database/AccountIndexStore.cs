@@ -17,7 +17,10 @@ namespace Mineral.Core.Database
 
 
         #region Contructor
-        public AccountIndexStore(string db_name = "account-index") : base(db_name) { }
+        public AccountIndexStore(IRevokingDatabase revoking_database, string db_name = "account-index")
+            : base(revoking_database, db_name)
+        {
+        }
         #endregion
 
 

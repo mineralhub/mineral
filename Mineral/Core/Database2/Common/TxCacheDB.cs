@@ -98,11 +98,11 @@ namespace Mineral.Core.Database2.Common
             return this.db.GetEnumerator();
         }
 
-        public void Flush(Dictionary<byte[], byte[]> batch)
+        public void Flush(Dictionary<WrappedByteArray, WrappedByteArray> batch)
         {
             foreach (var item in batch)
             {
-                Put(item.Key, item.Value);
+                Put(item.Key.Data, item.Value.Data);
             }
         }
 

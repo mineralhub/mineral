@@ -20,7 +20,10 @@ namespace Mineral.Core.Database
 
 
         #region Constructor
-        public BlockStore(string db_name = "block") : base (db_name) { }
+        public BlockStore(IRevokingDatabase revoking_database, string db_name = "block")
+            : base (revoking_database, db_name)
+        {
+        }
         #endregion
 
 

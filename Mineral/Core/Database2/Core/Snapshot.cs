@@ -6,7 +6,7 @@ using Mineral.Core.Database2.Common;
 
 namespace Mineral.Core.Database2.Core
 {
-    public class Snapshot : AbstractSnapshot<byte[], byte[]>
+    public class Snapshot : AbstractSnapshot<Key, Value>
     {
         #region Field
         private ISnapshot root = null;
@@ -43,10 +43,15 @@ namespace Mineral.Core.Database2.Core
         #region External Method
         public static bool IsRoot(ISnapshot snapshot)
         {
-            return snapshot != null && typeof(Snapshot) == typeof(SnapshotRoot);
+            return snapshot != null && snapshot.GetType() == typeof(SnapshotRoot);
         }
 
-        public IEnumerator<KeyValuePair<byte[], byte[]>> GetEnumerator()
+        public static bool IsImplement(ISnapshot snapshot)
+        {
+            return snapshot != null && snapshot.GetType() == typeof(Snapshot);
+        }
+
+        public IEnumerator<KeyValuePair<Key, Value>> GetEnumerator()
         {
             return ((HashDB)(this.db)).GetEnumerator();
         }
@@ -60,13 +65,13 @@ namespace Mineral.Core.Database2.Core
         {
             ISnapshot snapshot = head;
 
-            byte[] result = null;
-            while (IsRoot(snapshot))
+            Value result = null;
+            while (IsImplement(snapshot))
             {
-                result = ((Snapshot)(snapshot)).db.Get(key);
+                result = ((Snapshot)(snapshot)).db.Get(Key.Of(key));
                 if (result != null)
                 {
-                    return result;
+                    return result.Data;
                 }
                 snapshot = snapshot.GetPrevious();
             }
@@ -93,7 +98,7 @@ namespace Mineral.Core.Database2.Core
             Helper.IsNotNull(key, "Key must be not null.");
             Helper.IsNotNull(value, "Key must be not null.");
 
-            this.db.Put(key, value);
+            this.db.Put(Key.CopyOf(key), Value.CopyOf(Value.Operator.PUT, value));
         }
 
         public override void Merge(ISnapshot snapshot)
@@ -102,17 +107,17 @@ namespace Mineral.Core.Database2.Core
             if (((Snapshot)snapshot).db is HashDB)
             {
                 hash_db = (HashDB)((Snapshot)snapshot).db;
-                IEnumerator<KeyValuePair<byte[], byte[]>> enumerator = hash_db.GetEnumerator();
+                IEnumerator<KeyValuePair<Key, Value>> it = hash_db.GetEnumerator();
 
-                while (hash_db.GetEnumerator().MoveNext())
-                    this.db.Put(enumerator.Current.Key, enumerator.Current.Value);
+                while (it.MoveNext())
+                    this.db.Put(it.Current.Key, it.Current.Value);
             }
         }
 
         public override void Remove(byte[] key)
         {
             Helper.IsNotNull(key, "Key must be not null.");
-            this.db.Remove(key);
+            this.db.Put(Key.Of(key), Value.Of(Value.Operator.DELETE, null));
         }
 
         public override void Reset()
@@ -135,15 +140,15 @@ namespace Mineral.Core.Database2.Core
             this.root.UpdateSolidity();
         }
 
-        public void Collect(Dictionary<byte[], byte[]> collect)
+        public void Collect(Dictionary<WrappedByteArray, WrappedByteArray> collect)
         {
             ISnapshot next = GetRoot().GetNext();
             while (next != null)
             {
-                IEnumerator<KeyValuePair<byte[], byte[]>> values = ((Snapshot)next).GetEnumerator();
+                IEnumerator<KeyValuePair<Key, Value>> values = ((Snapshot)next).GetEnumerator();
                 while (values.MoveNext())
                 {
-                    collect.Add(values.Current.Key, values.Current.Value);
+                    collect.Add(WrappedByteArray.Of(values.Current.Key.Data), WrappedByteArray.Of(values.Current.Value.Data));
                 }
                 next = next.GetNext();
             }

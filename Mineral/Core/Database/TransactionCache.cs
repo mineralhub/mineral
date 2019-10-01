@@ -17,8 +17,10 @@ namespace Mineral.Core.Database
 
 
         #region Contructor
-        public TransactionCache(string db_name = "trans-cache")
-            : base(db_name, typeof(TxCacheDB)) { }
+        public TransactionCache(IRevokingDatabase revoking_database, string db_name = "trans-cache")
+            : base(revoking_database, db_name, typeof(TxCacheDB))
+        {
+        }
         #endregion
 
 

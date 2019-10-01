@@ -31,7 +31,10 @@ namespace Mineral.Core.Database
 
 
         #region Contructor
-        public ProposalStore(string db_name = "proposal") : base(db_name) { }
+        public ProposalStore(IRevokingDatabase revoking_database, string db_name = "proposal")
+            : base(revoking_database, db_name)
+        {
+        }
         #endregion
 
 
