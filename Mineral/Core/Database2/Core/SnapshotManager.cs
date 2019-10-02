@@ -180,18 +180,16 @@ namespace Mineral.Core.Database2.Core
                 }
             }
 
+            // TODO : temp 계속 저장만 하는지 확인해야봐야함 용량 문제 발생
             CheckTempStore.Instance.DBSource.UpdateByBatch(batch, new WriteOptions() { Sync = Args.Instance.Storage.Sync });
         }
 
         private void DeleteCheckPoint()
         {
             Dictionary<byte[], byte[]> collection = new Dictionary<byte[], byte[]>();
-            if (!(CheckTempStore.Instance.DBSource.AllKeys().Count <= 0))
+            foreach (var entry in CheckTempStore.Instance.DBSource)
             {
-                foreach (var entry in CheckTempStore.Instance.DBSource)
-                {
-                    collection.Add(entry.Key, entry.Value);
-                }
+                collection.Add(entry.Key, entry.Value);
             }
 
             CheckTempStore.Instance.DBSource.UpdateByBatch(collection, new WriteOptions() { Sync = Args.Instance.Storage.Sync });
@@ -216,7 +214,6 @@ namespace Mineral.Core.Database2.Core
             if (force_enable)
                 this.is_disable = false;
 
-            Logger.Refactoring("&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&" + this.size + "   " + this.max_size);
             if (this.size > this.max_size)
             {
                 this.flush_count = this.flush_count + (this.size - this.max_size);
