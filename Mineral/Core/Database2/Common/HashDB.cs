@@ -42,7 +42,14 @@ namespace Mineral.Core.Database2.Common
 
         public void Put(Key key, Value value)
         {
-            this.db.TryAdd(key, value);
+            if (this.db.TryGetValue(key, out Value old))
+            {
+                this.db.TryUpdate(key, value, old);
+            }
+            else
+            {
+                this.db.TryAdd(key, value);
+            }
         }
 
         public void Remove(Key key)
