@@ -15,8 +15,8 @@ namespace MineralNode.CommandLine.Attributes
 
         public DefaultAttribute()
         {
-            this.name = string.Empty;
-            this.description = string.Empty;
+            this.name = "";
+            this.description = "";
         }
     }
 }

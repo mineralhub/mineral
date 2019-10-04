@@ -9,7 +9,8 @@ namespace Mineral
 {
     public enum LogLevel
     {
-        ERROR = 0,
+        REFACTORING,
+        ERROR,
         WARNING,
         INFO,
         DEBUG,
@@ -23,14 +24,14 @@ namespace Mineral
         public string Message;
         public override string ToString()
         {
-            return String.Format("{0} [{1}] {2}", TimeStamp.ToString("s"), LogType, Message);
+            return string.Format("{0} [{1}] {2}", TimeStamp.ToString("s"), LogType, Message);
         }
     }
 
     public static class Logger
     {
         public static bool WriteConsole { get; set; } = true;
-        public static LogLevel WriteLogLevel { get; set; } = LogLevel.INFO;
+        public static LogLevel WriteLogLevel { get; set; } = LogLevel.ERROR;
         private static ConcurrentQueue<TypedLog> _queue = new ConcurrentQueue<TypedLog>();
         private static Thread _thread;
 
@@ -51,6 +52,11 @@ namespace Mineral
             }
         }
 
+        public static void Refactoring(string log)
+        {
+            Log(log, LogLevel.REFACTORING);
+        }
+
         public static void Info(string log)
         {
             Log(log, LogLevel.INFO);
@@ -61,9 +67,29 @@ namespace Mineral
             Log(log, LogLevel.WARNING);
         }
 
+        public static void Warning(string log, System.Exception exception)
+        {
+            Log(log, LogLevel.WARNING);
+            Log(exception.Message, LogLevel.WARNING);
+            Log(exception.StackTrace, LogLevel.WARNING);
+        }
+
         public static void Error(string log)
         {
             Log(log, LogLevel.ERROR);
+        }
+
+        public static void Error(System.Exception exception)
+        {
+            Log(exception.Message, LogLevel.ERROR);
+            Log(exception.StackTrace, LogLevel.ERROR);
+        }
+
+        public static void Error(string log, System.Exception exception)
+        {
+            Log(log, LogLevel.ERROR);
+            Log(exception.Message, LogLevel.ERROR);
+            Log(exception.StackTrace, LogLevel.ERROR);
         }
 
         public static void Debug(string log)

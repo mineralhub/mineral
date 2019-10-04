@@ -1,34 +1,59 @@
-﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
+﻿using FluentAssertions;
+using LevelDB;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System;
 using System.Collections.Generic;
-using System.Text;
-using Mineral.Database.LevelDB;
-using FluentAssertions;
+using System.IO;
 using System.Linq;
+using System.Text;
 
 namespace Mineral.UnitTests.Database
 {
     [TestClass]
     public class UT_LevelDB
     {
-        private DB _db = null;
-        private byte _prefix = 0x02;
-        private byte[] _key = Encoding.Default.GetBytes("mineral");
-        private byte[] _value = Encoding.Default.GetBytes("LevelDB Test");
-        private WriteOptions _write_option = WriteOptions.Default;
-        private ReadOptions _read_option = ReadOptions.Default;
+        private DB db = null;
+        private string db_name = "UT_LevelDB";
+        private byte[] default_key = Encoding.Default.GetBytes("default_mineral");
+        private byte[] default_value = Encoding.Default.GetBytes("default_mineral_value");
+        private byte[] key = Encoding.Default.GetBytes("mineral");
+        private byte[] value = Encoding.Default.GetBytes("mineral_value");
+        private WriteOptions write_option = new WriteOptions();
+        private ReadOptions read_option = new ReadOptions();
+
+        private readonly CompressionLevel DEFAULT_COMPRESSION_TYPE = CompressionLevel.SnappyCompression;
+        private readonly int DEFAULT_BLOCK_SIZE = 4 * 1024;
+        private readonly int DEFAULT_WRITE_BUFFER_SIZE = 10 * 1024 * 1024;
+        private readonly long DEFAULT_CACHE_SIZE = 10 * 1024 * 1024L;
+        private readonly int DEFAULT_MAX_OPEN_FILES = 100;
 
         [TestInitialize]
         public void TestSetup()
         {
-            _db = DB.Open("./output-database", new Options { CreateIfMissing = true });
-            _db.Put(_write_option, SliceBuilder.Begin(_prefix).Add(_key), _value);
+            Options option = new Options()
+            {
+                CreateIfMissing = true,
+                ParanoidChecks = true,
+
+                CompressionLevel = CompressionLevel.SnappyCompression,
+                BlockSize = DEFAULT_BLOCK_SIZE,
+                WriteBufferSize = DEFAULT_WRITE_BUFFER_SIZE,
+                Cache = new LevelDB.Cache((int)DEFAULT_CACHE_SIZE),
+                MaxOpenFiles = DEFAULT_MAX_OPEN_FILES
+            };
+
+            this.db = new DB(option, this.db_name);
+            this.db.Put(this.default_key, this.default_value, this.write_option);
         }
 
         [TestCleanup]
-        public void TestClean()
+        public void CleanUp()
         {
-            _db.Dispose();
+            this.db.Dispose();
+
+            DirectoryInfo di = new DirectoryInfo(this.db_name);
+            if (di.Exists)
+                di.Delete(true);
         }
 
         [TestMethod]
@@ -37,27 +62,8 @@ namespace Mineral.UnitTests.Database
             bool result = false;
             try
             {
-                _db.Put(_write_option, SliceBuilder.Begin(_prefix).Add(_key), _value);
+                this.db.Put(this.key, this.value, this.write_option);
                 result = true;
-            }
-            catch
-            {
-                result = false;
-            }
-            result.Should().BeTrue();
-        }
-
-        [TestMethod]
-        public void TryGet()
-        {
-            bool result = false;
-            try
-            {
-                Slice slice;
-                if (_db.TryGet(_read_option, SliceBuilder.Begin(_prefix).Add(_key), out slice))
-                {
-                    result = _value.SequenceEqual(slice.ToArray());
-                }
             }
             catch
             {
@@ -69,61 +75,75 @@ namespace Mineral.UnitTests.Database
         [TestMethod]
         public void Get()
         {
-            bool result = false;
+            byte[] result = null;
             try
             {
-                Slice slice = _db.Get(_read_option, SliceBuilder.Begin(_prefix).Add(_key));
-                result = _value.SequenceEqual(slice.ToArray());
+                result = this.db.Get(this.default_key, this.read_option);
             }
-            catch
+            catch (System.Exception e)
             {
-                result = false;
+                e.Should().BeNull();
             }
-            result.Should().BeTrue();
+
+            result.Should().NotBeNull();
+            result.SequenceEqual(this.default_value).Should().BeTrue();
         }
 
         [TestMethod]
         public void Delete()
         {
-            bool result = false;
             try
             {
-                _db.Delete(_write_option, SliceBuilder.Begin(_prefix).Add(_key));
-                result = true;
+                this.db.Delete(this.default_key, this.write_option);
             }
-            catch
+            catch (System.Exception e)
             {
-                result = false;
+                e.Should().BeNull();
             }
-            result.Should().BeTrue();
+
+            this.db.Get(this.default_key).Should().BeNull();
         }
 
         [TestMethod]
-        public void Find()
+        public void CreateIterator()
         {
-            IEnumerable<byte[]> result = _db.Find<byte[]>(_read_option, SliceBuilder.Begin(_prefix).Add(_key), (k, v) =>
+            using (Iterator it = this.db.CreateIterator(this.read_option))
             {
-                return v.ToArray();
-            }).ToArray();
-            result.Should().NotBeNull();
+                it.SeekToFirst();
+                it.Key().SequenceEqual(this.default_key).Should().BeTrue();
+                it.Value().SequenceEqual(this.default_value).Should().BeTrue();
+            }
+        }
+
+        [TestMethod]
+        public void Enumerator()
+        {
+            IEnumerator<KeyValuePair<byte[], byte[]>> it = this.db.GetEnumerator();
+
+            byte[] result = null;
+            while (it.MoveNext())
+            {
+                result = it.Current.Value;
+            }
+
+            result.SequenceEqual(this.default_value).Should().BeTrue();
         }
 
         [TestMethod]
         public void WriteBatch()
         {
-            bool result = false;
             try
             {
                 WriteBatch batch = new WriteBatch();
-                batch.Put(SliceBuilder.Begin(_prefix).Add(_key), _value);
-                _db.Write(_write_option, batch);
-                result = true;
+
+                batch.Put(key, value);
+                this.db.Write(batch, this.write_option);
             }
             catch
             {
-                result = false;
             }
-            result.Should().BeTrue();
+
+            this.db.Get(key, this.read_option).Should().NotBeNull();
         }
     }
 }

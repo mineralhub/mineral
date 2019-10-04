@@ -10,12 +10,19 @@ using System.Numerics;
 using System.Globalization;
 using Mineral.Utils;
 using System.Reflection;
+using System.Diagnostics;
 
 namespace Mineral
 {
     public static class Helper
     {
         private static readonly DateTime unixEpoch = new DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc);
+
+        public static void IsNotNull(object obj, string message)
+        {
+            if (obj == null)
+                throw new ArgumentNullException(message);
+        }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         unsafe internal static int ToInt32(this byte[] value, int startIndex)
@@ -83,9 +90,32 @@ namespace Mineral
             return sb.ToString();
         }
 
+        public static string ToHexString(byte value)
+        {
+            return string.Format("{0:x2}", value);
+        }
+
         public static uint ToTimestamp(this DateTime time)
         {
             return (uint)(time.ToUniversalTime() - unixEpoch).TotalSeconds;
+        }
+
+        public static DateTime ToDateTime(this long timestamp)
+        {
+            return unixEpoch.AddMilliseconds(timestamp);
+        }
+
+        public static long CurrentTimeMillis()
+        {
+            return (long)(DateTime.UtcNow - unixEpoch).TotalMilliseconds;
+        }
+
+        public static long NanoTime()
+        {
+            long nano = 10000L * Stopwatch.GetTimestamp();
+            nano /= TimeSpan.TicksPerMillisecond;
+            nano *= 100L;
+            return nano;
         }
 
         public static byte[] HexToBytes(this string value)
@@ -418,24 +448,6 @@ namespace Mineral
             {
                 return reader.ReadSerializableArray<T>(maxCount);
             }
-        }
-
-        public static Fixed8 Sum<T>(this IEnumerable<T> source, Func<T, Fixed8> selector)
-        {
-            return source.Select(selector).Sum();
-        }
-
-        public static Fixed8 Sum(this IEnumerable<Fixed8> source)
-        {
-            long sum = 0;
-            checked
-            {
-                foreach (Fixed8 item in source)
-                {
-                    sum += item.Value;
-                }
-            }
-            return new Fixed8(sum);
         }
 
         public unsafe static uint InterlockedExchange(ref uint location, uint value)

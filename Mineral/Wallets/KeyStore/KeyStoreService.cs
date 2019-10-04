@@ -11,9 +11,29 @@ namespace Mineral.Wallets.KeyStore
 {
     public class KeyStoreService
     {
+        #region Field
         public static readonly string KDF_SCRYPT = "scrypt";
         public static readonly string AES128CTR = "aes-128-ctr";
+        #endregion
 
+
+        #region Property
+        #endregion
+
+
+        #region Contructor
+        #endregion
+
+
+        #region Event Method
+        #endregion
+
+
+        #region Internal Method
+        #endregion
+
+
+        #region External Method
         public static bool GenerateKeyStore(string path, string password, byte[] privatekey, string address)
         {
             KdfParam param = KdfParam.GetDefaultParam();
@@ -36,6 +56,7 @@ namespace Mineral.Wallets.KeyStore
             byte[] cipherkey = KeyStoreCrypto.GenerateCipherKey(derivedkey);
             byte[] iv = RandomGenerator.GenerateRandomBytes(16);
             byte[] ciphertext = new byte[32];
+
             using (var am = new Aes128CounterMode(iv.Clone() as byte[]))
             using (var ict = am.CreateEncryptor(cipherkey, null))
             {
@@ -69,6 +90,7 @@ namespace Mineral.Wallets.KeyStore
             };
 
             string json = JsonConvert.SerializeObject(keystore, Formatting.Indented);
+            path += "\\" + DateTime.UtcNow.ToString("yyyy-MM-ddTHH-mm-ss.ffff") + "__" + keystore.Address + ".keystore";
             using (var file = File.CreateText(path))
             {
                 file.Write(json);
@@ -119,5 +141,38 @@ namespace Mineral.Wallets.KeyStore
             }
             return true;
         }
+
+        public static bool CheckPassword(string password, KeyStore keystore)
+        {
+            byte[] derivedkey = new byte[32];
+
+            KeyStoreKdfInfo kdf = keystore.Crypto.Kdf;
+            KeyStoreAesInfo aes = keystore.Crypto.Aes;
+
+            if (!KeyStoreCrypto.EncryptScrypt(password
+                                            , kdf.Params.N
+                                            , kdf.Params.R
+                                            , kdf.Params.P
+                                            , kdf.Params.Dklen
+                                            , kdf.Params.Salt
+                                            , out derivedkey))
+            {
+                Console.WriteLine("fail to generate scrypt.");
+                return false;
+            }
+
+            byte[] iv = aes.Params.Iv;
+            byte[] ciphertext = aes.Text;
+            byte[] mac = keystore.Crypto.Mac;
+
+            if (!KeyStoreCrypto.VerifyMac(derivedkey, ciphertext, mac))
+            {
+                Console.WriteLine("Password do not match.");
+                return false;
+            }
+
+            return true;
+        }
+        #endregion
     }
 }

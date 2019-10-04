@@ -92,13 +92,13 @@ namespace MineralNode
             AssemblyName assembly = Assembly.GetEntryAssembly().GetName();
 
             // VERSION
-            string message = string.Empty
+            string message = ""
                 + "\n"
                 + (assembly.Name + "".PadLeft(2) + assembly.Version.ToString())
                 ;
 
             // USAGE
-            message += string.Empty
+            message += ""
                 + "\n"
                 + "\n" + "".PadLeft(0) + "USAGE : "
                 + "\n" + "".PadLeft(10) + string.Format("Mineral.dll {0} <dir> {1} <password> [options]", OptionName.KeyStoreDir, OptionName.KeyStorePassword)
@@ -106,7 +106,7 @@ namespace MineralNode
                 ;
 
             // DEFAULT OPTIONS
-            message += string.Empty
+            message += ""
                 + "\n"
                 + "\n" + "".PadLeft(1) + "--DEFAULT OPTIONS : ";
             foreach (PropertyInfo info in typeof(OptionDefault).GetProperties())
@@ -120,7 +120,7 @@ namespace MineralNode
             }
 
             // WALLET OPTIONS
-            message += string.Empty
+            message += ""
                 + "\n"
                 + "\n" + "".PadLeft(1) + "--WALLET OPTIONS : ";
             foreach (PropertyInfo info in typeof(OptionWallet).GetProperties())
@@ -133,7 +133,7 @@ namespace MineralNode
                 }
             }
 
-            message += string.Empty
+            message += ""
                 + "\n"
                 + "\n" + "".PadLeft(0) + "MISC OPTION :"
                 + "\n" + "".PadLeft(4) + "-h   -help"

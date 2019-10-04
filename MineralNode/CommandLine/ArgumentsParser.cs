@@ -15,7 +15,7 @@ namespace MineralNode.CommandLine
                 if (arg.IndexOf(indicator) == 0)
                     return arg;
             }
-            return string.Empty;
+            return "";
         }
 
         public static ParseArgumentResult ParseArguments(string[] args, string[] arg_indicators)
@@ -33,14 +33,14 @@ namespace MineralNode.CommandLine
                     {
                         if (!string.IsNullOrEmpty(FindArgument(args[i + 1], arg_indicators)))
                         {
-                            result.Add(key, string.Empty);
+                            result.Add(key, "");
                             continue;
                         }
                         result.Add(key, args[++i]);
                     }
                     else
                     {
-                        result.Add(key, string.Empty);
+                        result.Add(key, "");
                     }
                 }
             }
