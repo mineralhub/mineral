@@ -651,7 +651,7 @@ namespace MineralCLI.Commands
         public static bool FreezeBalance(string command, string[] parameters)
         {
             string[] usage = new string[] {
-                string.Format("{0} [command option] <amount> <duration> || [<energy/bandwidth>}] || [<address>]\n", command) };
+                string.Format("{0} [command option] <amount> <duration> || [<energy/bandwidth>] || [<address>]\n", command) };
 
             string[] command_option = new string[] { HelpCommandOption.Help };
 
