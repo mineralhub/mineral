@@ -504,7 +504,8 @@ namespace MineralCLI.Network
                 if (!ret.Result)
                 {
                     Console.WriteLine("Code : " + ret.Code);
-                    Console.WriteLine("Message : " + ret.Message);
+                    Console.WriteLine("Message : " + ret.Message.ToStringUtf8());
+                    return new RpcApiResult(false, RpcMessage.INVALID_REQUEST, ret.Message.ToStringUtf8());
                 }
             }
             catch (System.Exception e)
