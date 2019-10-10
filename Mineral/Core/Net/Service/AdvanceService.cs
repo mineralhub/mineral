@@ -109,7 +109,7 @@ namespace Mineral.Core.Net.Service
                                       fetch.Key.Hash));
 
                     this.inventory_fetch.TryRemove(fetch.Key, out _);
-                    RemoveInventoryFetchCache(fetch.Key);
+                    this.inventory_fetch_cache.Remove(fetch.Key.ToString());
                     return;
                 }
 
@@ -193,7 +193,7 @@ namespace Mineral.Core.Net.Service
             }
 
 
-            AddInventoryFetchCache(item, Helper.CurrentTimeMillis());
+            this.inventory_fetch_cache.Add(item.ToString(), Helper.CurrentTimeMillis());
             this.inventory_fetch.TryAdd(item, Helper.CurrentTimeMillis());
 
             if (item.Type == InventoryType.Block)
@@ -204,60 +204,15 @@ namespace Mineral.Core.Net.Service
             return true;
         }
 
-        public void AddInventoryFetchCache(Item key, long value)
-        {
-            this.inventory_fetch_cache.Add(key.ToString(), value);
-        }
-
-        public void AddBlockCache(Item key, Message value)
-        {
-            this.block_cache.Add(key.ToString(), value);
-        }
-
-        public void AddTransactionCache(Item key, Message value)
-        {
-            this.transaction_cache.Add(key.ToString(), value);
-        }
-
-        public object GetInventoryFetchCache(Item key)
-        {
-            return this.inventory_fetch_cache.Get(key.ToString());
-        }
-
-        public object GetBlockCache(Item key)
-        {
-            return this.block_cache.Get(key.ToString());
-        }
-
-        public object GetTransactionCache(Item key)
-        {
-            return this.transaction_cache.Get(key.ToString());
-        }
-
-        public void RemoveInventoryFetchCache(Item key)
-        {
-            this.inventory_fetch_cache.Remove(key.ToString());
-        }
-
-        public void RemoveBlockCache(Item key)
-        {
-            this.block_cache.Remove(key.ToString());
-        }
-
-        public void RemoveTransactionCache(Item key)
-        {
-            this.transaction_cache.Remove(key.ToString());
-        }
-
         public Message GetMessage(Item item)
         {
             if (item.Type == InventoryType.Trx)
             {
-                return (Message)GetTransactionCache(item);
+                return (Message)this.transaction_cache.Get(item.ToString());
             }
             else
             {
-                return (Message)GetBlockCache(item);
+                return (Message)this.block_cache.Get(item.ToString());
             }
         }
 
@@ -292,11 +247,11 @@ namespace Mineral.Core.Net.Service
                     if (!find.Equals(default(KeyValuePair<Item, long>)))
                     {
                         this.inventory_spread.TryRemove(find.Key, out _);
-                        AddTransactionCache(new Item(find.Key.Hash, InventoryType.Trx), new TransactionMessage(tx.Instance));
+                        this.transaction_cache.Add(new Item(find.Key.Hash, InventoryType.Trx).ToString(), new TransactionMessage(tx.Instance));
                     }
                 });
 
-                AddBlockCache(item, message);
+                this.block_cache.Add(item.ToString(), message);
             }
             else if (message is TransactionMessage)
             {
@@ -304,7 +259,7 @@ namespace Mineral.Core.Net.Service
                 item = new Item(tx_message.MessageId, InventoryType.Trx);
 
                 this.tx_count.Add();
-                AddTransactionCache(item, new TransactionMessage(((TransactionMessage)message).Transaction.Instance));
+                this.transaction_cache.Add(item.ToString(), new TransactionMessage(((TransactionMessage)message).Transaction.Instance));
             }
             else
             {
@@ -331,7 +286,7 @@ namespace Mineral.Core.Net.Service
                     }
                     else
                     {
-                        RemoveInventoryFetchCache(item);
+                        this.inventory_fetch_cache.Remove(item.ToString());
                     }
                 }
             }
