@@ -71,8 +71,7 @@ namespace Mineral.Core.Net.MessageHandler
         {
             BlockId unfork_id = null;
 
-            //for (int i = block_ids.Count - 1; i >= 0; i--)
-            for (int i = 0; i < block_ids.Count; i++)
+            for (int i = block_ids.Count - 1; i >= 0; i--)
             {
                 if (Manager.Instance.NetDelegate.ContainBlockInMainChain(block_ids[i]))
                 {
