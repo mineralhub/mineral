@@ -19,7 +19,7 @@ namespace Mineral.Core.Database2.Core
         private string db_name = "";
         private ISnapshot head = null;
         private ThreadLocal<bool?> mode = new ThreadLocal<bool?>();
-        object lock_db = new object();
+        private object lock_db = new object();
         #endregion
 
 
