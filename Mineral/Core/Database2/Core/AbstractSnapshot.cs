@@ -59,9 +59,10 @@ namespace Mineral.Core.Database2.Core
             return result;
         }
 
+        // TODO : Exception
         IEnumerator<KeyValuePair<byte[], byte[]>> IEnumerable<KeyValuePair<byte[], byte[]>>.GetEnumerator()
         {
-            return (IEnumerator<KeyValuePair<byte[], byte[]>>)this.GetEnumerator();
+            return (IEnumerator<KeyValuePair<byte[], byte[]>>)this.db.GetEnumerator();
         }
 
         public IEnumerator GetEnumerator()
