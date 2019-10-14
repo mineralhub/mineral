@@ -19,6 +19,7 @@ namespace Mineral.Core.Database2.Core
     {
         public class RefreshData
         {
+            public int FlushCount { get; set; }
             public ManualResetEvent MRE { get; set; }
             public RevokingDBWithCaching DB { get; set; }
         }
@@ -114,6 +115,7 @@ namespace Mineral.Core.Database2.Core
                     handles[i] = new ManualResetEvent(false);
                     RefreshData data = new RefreshData()
                     {
+                        FlushCount = this.flush_count,
                         MRE = handles[i],
                         DB = db
                     };
@@ -123,7 +125,7 @@ namespace Mineral.Core.Database2.Core
                         RefreshData item = (RefreshData)state;
                         try
                         {
-                            RefreshOne(item.DB);
+                            RefreshOne(item);
                         }
                         catch(System.Exception e)
                         {
@@ -147,7 +149,10 @@ namespace Mineral.Core.Database2.Core
 
         private static void RefreshOne(object state)
         {
-            RevokingDBWithCaching db = (RevokingDBWithCaching)state;
+            RefreshData data = (RefreshData)state;
+
+            int flush_count = data.FlushCount;
+            RevokingDBWithCaching db = data.DB;
 
             if (Snapshot.IsRoot(db.GetHead()))
                 return;
@@ -156,7 +161,7 @@ namespace Mineral.Core.Database2.Core
 
             SnapshotRoot root = (SnapshotRoot)db.GetHead().GetRoot();
             ISnapshot next = root;
-            for (int i = 0; i < this.flush_count; ++i)
+            for (int i = 0; i < flush_count; ++i)
             {
                 next = next.GetNext();
                 snapshots.Add(next);
