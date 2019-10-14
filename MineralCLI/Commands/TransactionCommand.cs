@@ -34,6 +34,44 @@ namespace MineralCLI.Commands
 
         #region External Method
         /// <summary>
+        /// Get transaction information by id
+        /// </summary>
+        /// <param name="parameters"></param>
+        /// /// Parameter Index
+        /// [0] : Transaction id
+        /// <returns></returns>
+        public static bool GetTransactionById(string command, string[] parameters)
+        {
+            string[] usage = new string[] {
+                string.Format("{0} [command option] <transaction id>\n", command) };
+
+            string[] command_option = new string[] { HelpCommandOption.Help };
+
+            if (parameters == null || parameters.Length != 1)
+            {
+                OutputHelpMessage(usage, null, command_option, null);
+                return true;
+            }
+
+            try
+            {
+                RpcApiResult result = RpcApi.GetTransactionById(parameters[0], out TransactionExtention transaction);
+                if (result.Result)
+                {
+                    Console.WriteLine(PrintUtil.PrintTransaction(transaction));
+                }
+
+                OutputResultMessage(command, result.Result, result.Code, result.Message);
+            }
+            catch (System.Exception e)
+            {
+                Console.WriteLine(e.Message + "\n\n" + e.StackTrace);
+            }
+
+            return true;
+        }
+
+        /// <summary>
         /// Create account
         /// </summary>
         /// <param name="parameters"></param>
@@ -651,7 +689,7 @@ namespace MineralCLI.Commands
         public static bool FreezeBalance(string command, string[] parameters)
         {
             string[] usage = new string[] {
-                string.Format("{0} [command option] <amount> <duration> || [<energy/bandwidth>] || [<address>]\n", command) };
+                string.Format("{0} [command option] <amount> <duration> || [<energy/bandwidth>}] || [<address>]\n", command) };
 
             string[] command_option = new string[] { HelpCommandOption.Help };
 

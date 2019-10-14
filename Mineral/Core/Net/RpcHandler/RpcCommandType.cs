@@ -96,6 +96,12 @@ namespace Mineral.Core.Net.RpcHandler
 
         public static class Transaction
         {
+            [CommandLineAttribute(Name = "GetTransactionById", Description = "")]
+            public static readonly string GetTransactionById = "gettransactionbyid";
+
+            [CommandLineAttribute(Name = "GetTransactionSignWeight", Description = "")]
+            public static readonly string GetTransactionSignWeight = "gettransactionsignweight";
+
             [CommandLineAttribute(Name = "CreateAccount", Description = "")]
             public static readonly string CreateAccount = "createaccount";
 
@@ -125,9 +131,6 @@ namespace Mineral.Core.Net.RpcHandler
 
             [CommandLineAttribute(Name = "DeleteProposal", Description = "")]
             public static readonly string DeleteProposal = "deleteproposal";
-
-            [CommandLineAttribute(Name = "GetTransactionSignWeight", Description = "")]
-            public static readonly string GetTransactionSignWeight = "gettransactionsignweight";
 
             [CommandLineAttribute(Name = "BroadcastTransaction", Description = "")]
             public static readonly string BroadcastTransaction = "broadcasttransaction";

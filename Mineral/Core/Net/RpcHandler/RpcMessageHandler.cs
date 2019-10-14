@@ -30,8 +30,9 @@ namespace Mineral.Core.Net.RpcHandler
             { RpcCommand.Block.GetBlockById, new RpcHandler(OnGetBlockById) },
             { RpcCommand.Block.GetBlockByLimitNext, new RpcHandler(OnGetBlockByLimitNext) },
 
-            { RpcCommand.Transaction.CreateTransaction, new RpcHandler(OnCreateContract) },
+            { RpcCommand.Transaction.GetTransactionById, new RpcHandler(OnGetTransactionById) },
             { RpcCommand.Transaction.GetTransactionSignWeight, new RpcHandler(OnGetTransactionSignWeight) },
+            { RpcCommand.Transaction.CreateTransaction, new RpcHandler(OnCreateContract) },
             { RpcCommand.Transaction.BroadcastTransaction, new RpcHandler(OnBroadcastTransaction) },
             { RpcCommand.Transaction.ListProposal, new RpcHandler(OnListProposal) },
             { RpcCommand.Transaction.ListProposalPaginated, new RpcHandler(OnListProposalPaginated) },
@@ -298,6 +299,33 @@ namespace Mineral.Core.Net.RpcHandler
         #endregion
 
         #region Transaction
+        public static bool OnGetTransactionById(JToken id, string method, JArray parameters, out JToken result)
+        {
+            result = new JObject();
+
+            if (parameters == null || parameters.Count != 1)
+            {
+                result = RpcMessage.CreateErrorResult(id, RpcMessage.INVALID_PARAMS, "Invalid parameters");
+                return false;
+            }
+
+            try
+            {
+                SHA256Hash hash = SHA256Hash.Wrap(parameters[0].ToString().HexToBytes());
+                Transaction transaction = Manager.Instance.DBManager.GetTransactionById(hash);
+                TransactionExtention transaction_extention = RpcApiService.CreateTransactionExtention(new TransactionCapsule(transaction));
+
+                result = JToken.FromObject(transaction_extention.ToByteArray());
+            }
+            catch (System.Exception e)
+            {
+                result = RpcMessage.CreateErrorResult(id, RpcMessage.UNKNOWN_ERROR, e.Message);
+                return false;
+            }
+
+            return true;
+        }
+
         public static bool OnGetTransactionSignWeight(JToken id, string method, JArray parameters, out JToken result)
         {
             result = new JObject();

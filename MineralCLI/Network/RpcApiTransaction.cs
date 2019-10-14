@@ -89,6 +89,22 @@ namespace MineralCLI.Network
 
 
         #region External Method
+        public static RpcApiResult GetTransactionById(string transaction_id, out TransactionExtention transaction)
+        {
+            transaction = null;
+
+            JObject receive = SendCommand(RpcCommand.Transaction.GetTransactionById, new JArray() { transaction_id });
+            if (receive.TryGetValue("error", out JToken value))
+            {
+                return new RpcApiResult(false, value["code"].ToObject<int>(), value["message"].ToObject<string>());
+            }
+
+            transaction = TransactionExtention.Parser.ParseFrom(receive["result"].ToObject<byte[]>());
+
+            return RpcApiResult.Success;
+
+        }
+
         public static RpcApiResult CreateAccountContract(byte[] owner_address,
                                                          byte[] create_address,
                                                          out AccountCreateContract contract)
