@@ -17,6 +17,12 @@ namespace Mineral.Core.Database2.Core
 {
     public class SnapshotManager : IRevokingDatabase
     {
+        public class RefreshData
+        {
+            public ManualResetEvent MRE { get; set; }
+            public RevokingDBWithCaching DB { get; set; }
+        }
+
         #region Field
         private static readonly int DEFAULT_STACK_MAX_SIZE = 256;
         public static readonly int DEFAULT_MAX_FLUSH_COUNT = 500;
@@ -97,21 +103,52 @@ namespace Mineral.Core.Database2.Core
             //}
 
             // TODO : Thread 로 변경해야함 (Task 문제발생)
+
             try
             {
+                int i = 0;
+                ManualResetEvent[] handles = new ManualResetEvent[this.databases.Count];
+
                 foreach (RevokingDBWithCaching db in this.databases)
                 {
-                    RefreshOne(db);
+                    handles[i] = new ManualResetEvent(false);
+                    RefreshData data = new RefreshData()
+                    {
+                        MRE = handles[i],
+                        DB = db
+                    };
+
+                    ThreadPool.QueueUserWorkItem((object state) =>
+                    {
+                        RefreshData item = (RefreshData)state;
+                        try
+                        {
+                            RefreshOne(item.DB);
+                        }
+                        catch(System.Exception e)
+                        {
+                            throw e;
+                        }
+                        finally
+                        {
+                            item.MRE.Set();
+                        }
+                    }, data);
+                    i++;
                 }
+
+                WaitHandle.WaitAll(handles);
             }
             catch (System.Exception e)
             {
-                Logger.Error("");
+                Logger.Error(e.Message, e);
             }
         }
 
-        private void RefreshOne(RevokingDBWithCaching db)
+        private static void RefreshOne(object state)
         {
+            RevokingDBWithCaching db = (RevokingDBWithCaching)state;
+
             if (Snapshot.IsRoot(db.GetHead()))
                 return;
 
