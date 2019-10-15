@@ -151,7 +151,7 @@ namespace Mineral.Core.Database2.Core
                     if (!((Snapshot)(snapshot)).DB.IsEmpty)
                     {
                         --temp;
-                        IEnumerator<KeyValuePair<Key, Value>> it = ((Snapshot)(snapshot)).GetEnumerator();
+                        IEnumerator<KeyValuePair<Key, Value>> it = (IEnumerator<KeyValuePair<Key, Value>>)((Snapshot)(snapshot)).GetEnumerator();
                         while (it.MoveNext())
                         {
                             result.Add(it.Current.Value.Data);
