@@ -448,7 +448,7 @@ namespace Mineral.Common.Storage
                     long i = 0;
 
                     it.Seek(key);
-                    it.Next();
+                    //it.Next();
                     for (; it.IsValid() && i++ < limit; it.Next())
                     {
                         result.Add(it.Key(), it.Value());

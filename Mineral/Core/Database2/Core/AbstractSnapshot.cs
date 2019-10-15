@@ -55,7 +55,12 @@ namespace Mineral.Core.Database2.Core
 
         public ISnapshot GetNext()
         {
-            this.next.TryGetTarget(out ISnapshot result);
+            ISnapshot result = null;
+            if (this.next != null)
+            {
+                this.next.TryGetTarget(out result);
+            }
+
             return result;
         }
 
