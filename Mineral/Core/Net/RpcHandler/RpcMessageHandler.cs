@@ -30,7 +30,13 @@ namespace Mineral.Core.Net.RpcHandler
             { RpcCommand.Block.GetBlockById, new RpcHandler(OnGetBlockById) },
             { RpcCommand.Block.GetBlockByLimitNext, new RpcHandler(OnGetBlockByLimitNext) },
 
+            { RpcCommand.Transaction.GetTotalTransaction, new RpcHandler(OnGetTotalTransaction) },
+            { RpcCommand.Transaction.GetTransactionApprovedList, new RpcHandler(OnGetTransactionApprovedList) },
             { RpcCommand.Transaction.GetTransactionById, new RpcHandler(OnGetTransactionById) },
+            { RpcCommand.Transaction.GetTransactionInfoById, new RpcHandler(OnGetTransactionInfoById) },
+            { RpcCommand.Transaction.GetTransactionCountByBlockNum, new RpcHandler(OnGetTransactionCountByBlockNum) },
+            { RpcCommand.Transaction.GetTransactionsFromThis, new RpcHandler(OnGetTransactionsFromThis) },
+            { RpcCommand.Transaction.GetTransactionsToThis, new RpcHandler(OnGetTransactionsToThis) },
             { RpcCommand.Transaction.GetTransactionSignWeight, new RpcHandler(OnGetTransactionSignWeight) },
             { RpcCommand.Transaction.CreateTransaction, new RpcHandler(OnCreateContract) },
             { RpcCommand.Transaction.BroadcastTransaction, new RpcHandler(OnBroadcastTransaction) },
@@ -299,6 +305,57 @@ namespace Mineral.Core.Net.RpcHandler
         #endregion
 
         #region Transaction
+        public static bool OnGetTotalTransaction(JToken id, string method, JArray parameters, out JToken result)
+        {
+            result = new JObject();
+
+            if (parameters == null || parameters.Count != 0)
+            {
+                result = RpcMessage.CreateErrorResult(id, RpcMessage.INVALID_PARAMS, "Invalid parameters");
+                return false;
+            }
+
+            try
+            {
+                NumberMessage message = RpcApiService.GetTotalTransaction();
+
+                result = JToken.FromObject(message.ToByteArray());
+            }
+            catch (System.Exception e)
+            {
+                result = RpcMessage.CreateErrorResult(id, RpcMessage.UNKNOWN_ERROR, e.Message);
+                return false;
+            }
+
+            return true;
+        }
+
+        public static bool OnGetTransactionApprovedList(JToken id, string method, JArray parameters, out JToken result)
+        {
+            result = new JObject();
+
+            if (parameters == null || parameters.Count != 1)
+            {
+                result = RpcMessage.CreateErrorResult(id, RpcMessage.INVALID_PARAMS, "Invalid parameters");
+                return false;
+            }
+
+            try
+            {
+                Transaction transaction = Transaction.Parser.ParseFrom(parameters[0].ToObject<byte[]>());
+                TransactionApprovedList approved = RpcApiService.GetTransactionApprovedList(transaction);
+
+                result = JToken.FromObject(approved.ToByteArray());
+            }
+            catch (System.Exception e)
+            {
+                result = RpcMessage.CreateErrorResult(id, RpcMessage.UNKNOWN_ERROR, e.Message);
+                return false;
+            }
+
+            return true;
+        }
+
         public static bool OnGetTransactionById(JToken id, string method, JArray parameters, out JToken result)
         {
             result = new JObject();
@@ -312,16 +369,102 @@ namespace Mineral.Core.Net.RpcHandler
             try
             {
                 SHA256Hash hash = SHA256Hash.Wrap(parameters[0].ToString().HexToBytes());
-                Transaction transaction = Manager.Instance.DBManager.GetTransactionById(hash);
-                TransactionExtention transaction_extention = RpcApiService.CreateTransactionExtention(new TransactionCapsule(transaction));
+                TransactionExtention transaction_extention = RpcApiService.GetTransactionById(hash);
 
                 result = JToken.FromObject(transaction_extention.ToByteArray());
+            }
+            catch (ItemNotFoundException e)
+            {
+                result = RpcMessage.CreateErrorResult(id, RpcMessage.NOT_FOUN_ITEM, e.Message);
+                return false;
             }
             catch (System.Exception e)
             {
                 result = RpcMessage.CreateErrorResult(id, RpcMessage.UNKNOWN_ERROR, e.Message);
                 return false;
             }
+
+            return true;
+        }
+
+        public static bool OnGetTransactionInfoById(JToken id, string method, JArray parameters, out JToken result)
+        {
+            result = new JObject();
+
+            if (parameters == null || parameters.Count != 1)
+            {
+                result = RpcMessage.CreateErrorResult(id, RpcMessage.INVALID_PARAMS, "Invalid parameters");
+                return false;
+            }
+
+            try
+            {
+                SHA256Hash hash = SHA256Hash.Wrap(parameters[0].ToString().HexToBytes());
+                TransactionInfo transaction = RpcApiService.GetTransactionInfoById(hash);
+
+                result = JToken.FromObject(transaction.ToByteArray());
+            }
+            catch (ItemNotFoundException e)
+            {
+                result = RpcMessage.CreateErrorResult(id, RpcMessage.NOT_FOUN_ITEM, e.Message);
+                return false;
+            }
+            catch (System.Exception e)
+            {
+                result = RpcMessage.CreateErrorResult(id, RpcMessage.UNKNOWN_ERROR, e.Message);
+                return false;
+            }
+
+            return true;
+        }
+
+        public static bool OnGetTransactionCountByBlockNum(JToken id, string method, JArray parameters, out JToken result)
+        {
+            result = new JObject();
+
+            if (parameters == null || parameters.Count != 1)
+            {
+                result = RpcMessage.CreateErrorResult(id, RpcMessage.INVALID_PARAMS, "Invalid parameters");
+                return false;
+            }
+
+            try
+            {
+                long block_num = parameters[0].ToObject<long>();
+                int count = RpcApiService.GetTransactionCountByBlockNum(block_num);
+                NumberMessage message = new NumberMessage()
+                {
+                    Num = count
+                };
+
+                result = JToken.FromObject(message.ToByteArray());
+            }
+            catch (ItemNotFoundException e)
+            {
+                result = RpcMessage.CreateErrorResult(id, RpcMessage.NOT_FOUN_ITEM, e.Message);
+                return false;
+            }
+            catch (System.Exception e)
+            {
+                result = RpcMessage.CreateErrorResult(id, RpcMessage.UNKNOWN_ERROR, e.Message);
+                return false;
+            }
+
+            return true;
+        }
+
+        public static bool OnGetTransactionsFromThis(JToken id, string method, JArray parameters, out JToken result)
+        {
+            result = new JObject();
+            result = RpcMessage.CreateErrorResult(id, RpcMessage.NOT_SUPPORTED, "Not supported method");
+
+            return true;
+        }
+
+        public static bool OnGetTransactionsToThis(JToken id, string method, JArray parameters, out JToken result)
+        {
+            result = new JObject();
+            result = RpcMessage.CreateErrorResult(id, RpcMessage.NOT_SUPPORTED, "Not supported method");
 
             return true;
         }

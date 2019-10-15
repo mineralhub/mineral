@@ -89,20 +89,163 @@ namespace MineralCLI.Network
 
 
         #region External Method
+        public static RpcApiResult GetTotalTransaction(out NumberMessage message)
+        {
+            message = null;
+
+            try
+            {
+                JObject receive = SendCommand(RpcCommand.Transaction.GetTotalTransaction, new JArray() { });
+                if (receive.TryGetValue("error", out JToken value))
+                {
+                    return new RpcApiResult(false, value["code"].ToObject<int>(), value["message"].ToObject<string>());
+                }
+
+                message = NumberMessage.Parser.ParseFrom(receive["result"].ToObject<byte[]>());
+            }
+            catch (System.Exception e)
+            {
+                throw e;
+            }
+
+            return RpcApiResult.Success;
+        }
+
+        public static RpcApiResult GetTransactionApprovedList(Transaction transaction, out TransactionApprovedList transaction_list)
+        {
+            transaction_list = null;
+
+            try
+            {
+                JObject receive = SendCommand(RpcCommand.Transaction.GetTransactionApprovedList, new JArray() { transaction.ToByteArray() });
+                if (receive.TryGetValue("error", out JToken value))
+                {
+                    return new RpcApiResult(false, value["code"].ToObject<int>(), value["message"].ToObject<string>());
+                }
+
+                transaction_list = TransactionApprovedList.Parser.ParseFrom(receive["result"].ToObject<byte[]>());
+
+            }
+            catch (System.Exception e)
+            {
+                throw e;
+            }
+
+            return RpcApiResult.Success;
+        }
+
         public static RpcApiResult GetTransactionById(string transaction_id, out TransactionExtention transaction)
         {
             transaction = null;
 
-            JObject receive = SendCommand(RpcCommand.Transaction.GetTransactionById, new JArray() { transaction_id });
-            if (receive.TryGetValue("error", out JToken value))
+            try
             {
-                return new RpcApiResult(false, value["code"].ToObject<int>(), value["message"].ToObject<string>());
+                JObject receive = SendCommand(RpcCommand.Transaction.GetTransactionById, new JArray() { transaction_id });
+                if (receive.TryGetValue("error", out JToken value))
+                {
+                    return new RpcApiResult(false, value["code"].ToObject<int>(), value["message"].ToObject<string>());
+                }
+
+                transaction = TransactionExtention.Parser.ParseFrom(receive["result"].ToObject<byte[]>());
+            }
+            catch (System.Exception e)
+            {
+                throw e;
             }
 
-            transaction = TransactionExtention.Parser.ParseFrom(receive["result"].ToObject<byte[]>());
+            return RpcApiResult.Success;
+        }
+
+        public static RpcApiResult GetTransactionInfoById(string transaction_id, out TransactionInfo transaction)
+        {
+            transaction = null;
+
+            try
+            {
+                JObject receive = SendCommand(RpcCommand.Transaction.GetTransactionInfoById, new JArray() { transaction_id });
+                if (receive.TryGetValue("error", out JToken value))
+                {
+                    return new RpcApiResult(false, value["code"].ToObject<int>(), value["message"].ToObject<string>());
+                }
+
+                transaction = TransactionInfo.Parser.ParseFrom(receive["result"].ToObject<byte[]>());
+
+            }
+            catch (System.Exception e)
+            {
+                throw e;
+            }
 
             return RpcApiResult.Success;
+        }
 
+        public static RpcApiResult GetTransactionCountByBlockNum(long block_num, out int count)
+        {
+            count = -1;
+
+            try
+            {
+                JObject receive = SendCommand(RpcCommand.Transaction.GetTransactionCountByBlockNum, new JArray() { block_num });
+                if (receive.TryGetValue("error", out JToken value))
+                {
+                    return new RpcApiResult(false, value["code"].ToObject<int>(), value["message"].ToObject<string>());
+                }
+
+                count = receive["result"].ToObject<int>();
+
+            }
+            catch (System.Exception e)
+            {
+                throw e;
+            }
+
+            return RpcApiResult.Success;
+        }
+
+        public static RpcApiResult GetTransactionsFromThis(byte[] address, int offset, int limit, out TransactionListExtention transactions)
+        {
+            transactions = null;
+
+            try
+            {
+                JObject receive = SendCommand(RpcCommand.Transaction.GetTransactionsFromThis, new JArray() { address, offset, limit });
+                if (receive.TryGetValue("error", out JToken value))
+                {
+                    return new RpcApiResult(false, value["code"].ToObject<int>(), value["message"].ToObject<string>());
+                }
+
+                transactions = TransactionListExtention.Parser.ParseFrom(receive["result"].ToObject<byte[]>());
+
+            }
+            catch (System.Exception e)
+            {
+                throw e;
+            }
+
+            return RpcApiResult.Success;
+        }
+
+        public static RpcApiResult GetTransactionsToThis(byte[] address, int offset, int limit, out TransactionListExtention transactions)
+        {
+            transactions = null;
+
+            try
+            {
+                JObject receive = SendCommand(RpcCommand.Transaction.GetTransactionsFromThis, new JArray() { address, offset, limit });
+                if (receive.TryGetValue("error", out JToken value))
+                {
+                    return new RpcApiResult(false, value["code"].ToObject<int>(), value["message"].ToObject<string>());
+                }
+
+                transactions = TransactionListExtention.Parser.ParseFrom(receive["result"].ToObject<byte[]>());
+
+            }
+            catch (System.Exception e)
+            {
+                throw e;
+            }
+
+            return RpcApiResult.Success;
         }
 
         public static RpcApiResult CreateAccountContract(byte[] owner_address,

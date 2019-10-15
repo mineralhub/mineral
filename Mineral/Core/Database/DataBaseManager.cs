@@ -86,6 +86,7 @@ namespace Mineral.Core.Database
         public BlockStore Block => this.block_store;
         public BlockIndexStore BlockIndex => this.block_index_store;
         public TransactionStore Transaction => this.transaction_store;
+        public TransactionHistoryStore TransactionHistory => this.transaction_history_store;
         public AccountStore Account => this.account_store;
         public AccountIndexStore AccountIndex => this.account_index_store;
         public AccountIdIndexStore AccountIdIndex => this.account_id_index_store;
