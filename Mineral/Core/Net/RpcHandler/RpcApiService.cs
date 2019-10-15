@@ -310,37 +310,6 @@ namespace Mineral.Core.Net.RpcHandler
             return count;
         }
 
-        public static TransactionList GetTransactionFromThis(byte[] address, int offset, int limit)
-        {
-            TransactionList transactions = null;
-            try
-            {
-                if (address != null && offset >= 0 && limit >= 0)
-                {
-                    Indexhelper
-                    Index.Iface<Transaction> index = indexHelper.getTransactionIndex();
-                    try (ResultSet < Transaction > resultSet =
-                        index.retrieve(
-                            equal(TransactionIndex.OWNERS, address),
-                            queryOptions(
-                                orderBy(ascending(TransactionIndex.TIMESTAMP))))) {
-                        if (limit > TRANSACTIONS_COUNT_LIMIT_MAX)
-                        {
-                            limit = TRANSACTIONS_COUNT_LIMIT_MAX;
-                        }
-                        return ImmutableList.copyOf(Streams.stream(resultSet).skip(offset).limit(limit).iterator());
-                    }
-                    }
-                
-            }
-            catch (System.Exception e)
-            {
-                throw e;
-            }
-
-            return count;
-        }
-
         public static TransactionSignWeight GetTransactionSignWeight(Transaction transaction)
         {
             TransactionSignWeight weight = new TransactionSignWeight();
