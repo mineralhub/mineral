@@ -146,7 +146,7 @@ namespace Mineral.Core.Database2.Core
 
                 long temp = limit;
                 ISnapshot snapshot = this.head;
-                for (; limit > 0 && snapshot.GetPrevious() != null; snapshot = snapshot.GetPrevious())
+                for (; temp > 0 && snapshot.GetPrevious() != null; snapshot = snapshot.GetPrevious())
                 {
                     if (!((Snapshot)(snapshot)).DB.IsEmpty)
                     {
