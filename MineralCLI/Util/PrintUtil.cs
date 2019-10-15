@@ -489,7 +489,7 @@ namespace MineralCLI.Util
             string result = "";
             result += "txid: ";
             result += "\n";
-            result += extension.Txid.ToByteArray();
+            result += extension.Txid.ToByteArray().ToHexString();
             result += "\n";
 
             Transaction transaction = extension.Transaction;
