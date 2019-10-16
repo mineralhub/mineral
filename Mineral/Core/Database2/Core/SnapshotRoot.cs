@@ -152,7 +152,7 @@ namespace Mineral.Core.Database2.Core
             this.solidity = this.solidity.GetNext();
         }
 
-        public override IEnumerator GetEnumerator()
+        public override IEnumerator<KeyValuePair<byte[], byte[]>> GetEnumerator()
         {
             return this.db.GetEnumerator();
         }

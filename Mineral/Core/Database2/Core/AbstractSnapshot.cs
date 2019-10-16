@@ -64,9 +64,9 @@ namespace Mineral.Core.Database2.Core
             return result;
         }
 
-        IEnumerator<KeyValuePair<byte[], byte[]>> IEnumerable<KeyValuePair<byte[], byte[]>>.GetEnumerator()
+        IEnumerator IEnumerable.GetEnumerator()
         {
-            return (IEnumerator <KeyValuePair<byte[], byte[]>>)this.GetEnumerator();
+            return GetEnumerator();
         }
 
         #region Abstract - ISnapshot
@@ -81,7 +81,7 @@ namespace Mineral.Core.Database2.Core
         public abstract void ResetSolidity();
         public abstract void UpdateSolidity();
         public abstract void Close();
-        public abstract IEnumerator GetEnumerator();
+        public abstract IEnumerator<KeyValuePair<byte[], byte[]>> GetEnumerator();
         #endregion
         #endregion
     }

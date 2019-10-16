@@ -142,16 +142,15 @@ namespace Mineral.Core.Database2.Core
             ISnapshot next = GetRoot().GetNext();
             while (next != null)
             {
-                IEnumerator<KeyValuePair<Key, Value>> values = (IEnumerator<KeyValuePair<Key, Value>>)((Snapshot)next).GetEnumerator();
-                while (values.MoveNext())
+                foreach (var data in ((Snapshot)next).DB)
                 {
-                    collect.Add(WrappedByteArray.Of(values.Current.Key.Data), WrappedByteArray.Of(values.Current.Value.Data));
+                    collect.Add(WrappedByteArray.Of(data.Key.Data), WrappedByteArray.Of(data.Value.Data));
                 }
                 next = next.GetNext();
             }
         }
 
-        public override IEnumerator GetEnumerator()
+        public override IEnumerator<KeyValuePair<byte[], byte[]>> GetEnumerator()
         {
             Dictionary<WrappedByteArray, WrappedByteArray> all = new Dictionary<WrappedByteArray, WrappedByteArray>();
             Collect(all);
@@ -165,10 +164,10 @@ namespace Mineral.Core.Database2.Core
                 }
             }
 
-            return (IEnumerator)Enumerable.Concat(
+           return Enumerable.Concat(
                 Enumerable.Select(all, val => new KeyValuePair<byte[], byte[]>(val.Key.Data, val.Value.Data)),
                 Enumerable.Where(GetRoot(), val => keys.Contains(WrappedByteArray.Of(val.Key)))
-                );
+                ).GetEnumerator();
         }
         #endregion
     }

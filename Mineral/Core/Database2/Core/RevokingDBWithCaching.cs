@@ -151,10 +151,10 @@ namespace Mineral.Core.Database2.Core
                     if (!((Snapshot)(snapshot)).DB.IsEmpty)
                     {
                         --temp;
-                        IEnumerator<KeyValuePair<Key, Value>> it = (IEnumerator<KeyValuePair<Key, Value>>)((Snapshot)(snapshot)).GetEnumerator();
+                        IEnumerator<KeyValuePair<byte[], byte[]>> it = ((Snapshot)(snapshot)).GetEnumerator();
                         while (it.MoveNext())
                         {
-                            result.Add(it.Current.Value.Data);
+                            result.Add(it.Current.Value);
                         }
                     }
                 }
@@ -266,7 +266,7 @@ namespace Mineral.Core.Database2.Core
 
         IEnumerator IEnumerable.GetEnumerator()
         {
-            return this.head.GetEnumerator();
+            return GetEnumerator();
         }
         #endregion
     }
