@@ -84,27 +84,6 @@ namespace Mineral.Core.Database2.Core
 
         private void Refresh()
         {
-            //try
-            //{
-            //    int num = new Random().Next(0, 1000000);
-            //    Logger.Refactoring("[" + num + "]" + "Task start  ");
-
-            //    List<Task> tasks = new List<Task>();
-            //    foreach (RevokingDBWithCaching db in this.databases)
-            //    {
-            //        tasks.Add(Task.Factory.StartNew(() => RefreshOne(db)));
-            //    }
-
-            //    Task.WaitAll(tasks.ToArray());
-            //    Logger.Refactoring("[" + num + "]" + "Task end");
-            //}
-            //catch (System.Exception e)
-            //{
-            //    Logger.Error(e.Message);
-            //}
-
-            // TODO : Thread 로 변경해야함 (Task 문제발생)
-
             try
             {
                 int i = 0;
@@ -127,7 +106,7 @@ namespace Mineral.Core.Database2.Core
                         {
                             RefreshOne(item);
                         }
-                        catch(System.Exception e)
+                        catch (System.Exception e)
                         {
                             throw e;
                         }

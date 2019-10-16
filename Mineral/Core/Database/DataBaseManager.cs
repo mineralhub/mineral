@@ -1743,40 +1743,40 @@ namespace Mineral.Core.Database
                 return;
             }
 
-            CountdownEvent cde = new CountdownEvent(tx_size);
-            List<Task<bool>> tasks = new List<Task<bool>>(tx_size);
+            int i = 0;
+            ManualResetEvent[] handles = new ManualResetEvent[tx_size];
 
             foreach (TransactionCapsule tx in block.Transactions)
             {
-                tasks.Add(
-                    Task.Factory.StartNew(() =>
-                    {
-                        try
-                        {
-                            tx.ValidateSignature(this);
-                        }
-                        catch (System.Exception e)
-                        {
-                            throw e;
-                        }
-                        finally
-                        {
-                            cde.Signal();
-                        }
+                handles[i] = new ManualResetEvent(false);
 
-                        return true;
-                    }));
-            }
-
-            cde.Wait();
-
-            foreach (Task<bool> result in tasks)
-            {
-                if (!result.Result)
+                ThreadPool.QueueUserWorkItem((object state) =>
                 {
-                    throw new ValidateSignatureException();
-                }
+                    object[] parameter = state as object[];
+
+                    DatabaseManager manager = (DatabaseManager)parameter[0];
+                    TransactionCapsule transaction = (TransactionCapsule)parameter[1];
+                    ManualResetEvent mre = (ManualResetEvent)parameter[2];
+
+                    try
+                    {
+                        if (!transaction.ValidateSignature(manager))
+                        {
+                            throw new ValidateSignatureException();
+                        }
+                    }
+                    catch (System.Exception e)
+                    {
+                        throw e;
+                    }
+                    finally
+                    {
+                        mre.Set();
+                    }
+                }, new object[] { this, tx, handles[i] } );
             }
+
+            WaitHandle.WaitAll(handles);
         }
 
         public void ValidateTapos(TransactionCapsule transaction)
