@@ -23,7 +23,8 @@ namespace Mineral.Common.Overlay.Server
 
         private List<Node> nodes = Args.Instance.Node.FastForward;
         private byte[] witness_address = Args.Instance.LocalWitness.GetWitnessAccountAddress();
-        private int key_size = Args.Instance.LocalWitness.GetPrivateKey().Length;
+        private int key_size = (Args.Instance.LocalWitness.GetPrivateKey().IsNotNullOrEmpty()) ?
+                            Args.Instance.LocalWitness.GetPrivateKey().Length : 0;
         #endregion
 
 
