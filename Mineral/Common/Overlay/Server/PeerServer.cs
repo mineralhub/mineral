@@ -47,12 +47,20 @@ namespace Mineral.Common.Overlay.Server
                 ServerBootstrap bootstrap = new ServerBootstrap();
 
                 bootstrap.Group(boss_group, worker_group);
-                bootstrap.Channel<TcpServerSocketChannelEx>();
-                bootstrap.Option(ChannelOption.SoKeepalive, true);
-                bootstrap.Option(ChannelOption.MessageSizeEstimator, DefaultMessageSizeEstimator.Default);
-                bootstrap.Option(ChannelOption.ConnectTimeout, TimeSpan.FromSeconds(Args.Instance.Node.ConnectionTimeout));
-                bootstrap.Handler(new LoggingHandler());
-                bootstrap.ChildHandler(new NettyChannelInitializer("", false));
+                bootstrap.Channel<TcpServerSocketChannel>();
+                //bootstrap.Option(ChannelOption.SoKeepalive, true);
+                //bootstrap.Option(ChannelOption.MessageSizeEstimator, DefaultMessageSizeEstimator.Default);
+                //bootstrap.Option(ChannelOption.ConnectTimeout, TimeSpan.FromSeconds(Args.Instance.Node.ConnectionTimeout));
+                bootstrap.Handler(new LoggingHandler("SRV-LTSN"));
+                bootstrap.ChildHandler(new ActionChannelInitializer<IChannel>(channel =>
+                {
+                    channel.Pipeline.AddLast(new LoggingHandler("SRV-CONN"));
+                    channel.Pipeline.AddLast("framing-enc", new LengthFieldPrepender(2));
+                    channel.Pipeline.AddLast("framing-dec", new LengthFieldBasedFrameDecoder(ushort.MaxValue, 0, 2, 0, 2));
+                    channel.Pipeline.AddLast("echo", new EchoServerHandler());
+                }));
+
+                //bootstrap.ChildHandler(new NettyChannelInitializer("", false));
 
                 Logger.Info("Tcp listener started, bind port : " + port);
 

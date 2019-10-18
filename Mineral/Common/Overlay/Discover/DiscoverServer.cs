@@ -73,12 +73,13 @@ namespace Mineral.Common.Overlay.Discover
                         Bootstrap bootstrap = new Bootstrap();
                         bootstrap.Group(group);
                         bootstrap.Channel<SocketDatagramChannel>();
+                        bootstrap.Option(ChannelOption.SoBroadcast, true);
                         bootstrap.Handler(new ActionChannelInitializer<SocketDatagramChannel>(channel =>
                         {
-                            channel.Pipeline.AddLast(Manager.Instance.TrafficStats.UDP);
-                            channel.Pipeline.AddLast(new ProtobufVarint32LengthFieldPrepender());
-                            channel.Pipeline.AddLast(new ProtobufVarint32FrameDecoder());
-                            channel.Pipeline.AddLast(new PacketDecoder());
+                            //channel.Pipeline.AddLast(Manager.Instance.TrafficStats.UDP);
+                            //channel.Pipeline.AddLast(new ProtobufVarint32LengthFieldPrepender());
+                            //channel.Pipeline.AddLast(new ProtobufVarint32FrameDecoder());
+                            //channel.Pipeline.AddLast(new PacketDecoder());
                             MessageHandler message_handler = new MessageHandler(channel, Manager.Instance.NodeManager);
                             Manager.Instance.NodeManager.MessageSender = message_handler;
                             channel.Pipeline.AddLast(message_handler);
