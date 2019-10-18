@@ -49,7 +49,7 @@ namespace Mineral.Common.Overlay.Client
 
                 Bootstrap bootstrap = new Bootstrap();
                 bootstrap.Group(this.worker_group);
-                bootstrap.Channel<TcpSocketChannel>();
+                bootstrap.Channel<TcpSocketChannelEx>();
                 bootstrap.Option(ChannelOption.SoKeepalive, true);
                 bootstrap.Option(ChannelOption.MessageSizeEstimator, DefaultMessageSizeEstimator.Default);
                 bootstrap.Option(ChannelOption.ConnectTimeout, TimeSpan.FromSeconds(Args.Instance.Node.ConnectionTimeout));

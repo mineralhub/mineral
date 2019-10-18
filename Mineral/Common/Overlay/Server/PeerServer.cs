@@ -47,7 +47,7 @@ namespace Mineral.Common.Overlay.Server
                 ServerBootstrap bootstrap = new ServerBootstrap();
 
                 bootstrap.Group(boss_group, worker_group);
-                bootstrap.Channel<TcpServerSocketChannel>();
+                bootstrap.Channel<TcpServerSocketChannelEx>();
                 bootstrap.Option(ChannelOption.SoKeepalive, true);
                 bootstrap.Option(ChannelOption.MessageSizeEstimator, DefaultMessageSizeEstimator.Default);
                 bootstrap.Option(ChannelOption.ConnectTimeout, TimeSpan.FromSeconds(Args.Instance.Node.ConnectionTimeout));
