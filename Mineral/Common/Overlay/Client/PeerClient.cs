@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Net;
 using System.Text;
 using System.Threading.Tasks;
+using DotNetty.Codecs;
 using DotNetty.Transport.Bootstrapping;
 using DotNetty.Transport.Channels;
 using DotNetty.Transport.Channels.Sockets;
@@ -45,15 +46,21 @@ namespace Mineral.Common.Overlay.Client
 
             try
             {
-                NettyChannelInitializer initializer = new NettyChannelInitializer(remote_id, discovery_mode);
+                //NettyChannelInitializer initializer = new NettyChannelInitializer(remote_id, discovery_mode);
 
                 Bootstrap bootstrap = new Bootstrap();
                 bootstrap.Group(this.worker_group);
                 bootstrap.Channel<TcpSocketChannel>();
-                bootstrap.Option(ChannelOption.SoKeepalive, true);
-                bootstrap.Option(ChannelOption.MessageSizeEstimator, DefaultMessageSizeEstimator.Default);
-                bootstrap.Option(ChannelOption.ConnectTimeout, TimeSpan.FromSeconds(Args.Instance.Node.ConnectionTimeout));
-                bootstrap.Handler(initializer);
+                bootstrap.Option(ChannelOption.TcpNodelay, true);
+                //bootstrap.Option(ChannelOption.SoKeepalive, true);
+                //bootstrap.Option(ChannelOption.MessageSizeEstimator, DefaultMessageSizeEstimator.Default);
+                //bootstrap.Option(ChannelOption.ConnectTimeout, TimeSpan.FromSeconds(Args.Instance.Node.ConnectionTimeout));
+                bootstrap.Handler(new ActionChannelInitializer<ISocketChannel>(channel =>
+                {
+                    channel.Pipeline.AddLast("framing-enc", new LengthFieldPrepender(2));
+                    channel.Pipeline.AddLast("framing-dec", new LengthFieldBasedFrameDecoder(ushort.MaxValue, 0, 2, 0, 2));
+                    channel.Pipeline.AddLast(new EchoClientHandler());
+                }));
 
                 return await bootstrap.ConnectAsync(new IPEndPoint(IPAddress.Parse(host), port));
             }

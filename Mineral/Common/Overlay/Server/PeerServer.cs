@@ -40,7 +40,7 @@ namespace Mineral.Common.Overlay.Server
         public async void Start(int port)
         {
             IEventLoopGroup boss_group = new MultithreadEventLoopGroup(1);
-            IEventLoopGroup worker_group = new MultithreadEventLoopGroup(Args.Instance.Node.TcpNettyWorkThreadNum);
+            IEventLoopGroup worker_group = new MultithreadEventLoopGroup();
 
             try
             {
@@ -48,11 +48,20 @@ namespace Mineral.Common.Overlay.Server
 
                 bootstrap.Group(boss_group, worker_group);
                 bootstrap.Channel<TcpServerSocketChannel>();
-                bootstrap.Option(ChannelOption.SoKeepalive, true);
-                bootstrap.Option(ChannelOption.MessageSizeEstimator, DefaultMessageSizeEstimator.Default);
-                bootstrap.Option(ChannelOption.ConnectTimeout, TimeSpan.FromSeconds(Args.Instance.Node.ConnectionTimeout));
-                bootstrap.Handler(new LoggingHandler());
-                bootstrap.ChildHandler(new NettyChannelInitializer("", false));
+                bootstrap.Option(ChannelOption.SoBacklog, 100);
+                //bootstrap.Option(ChannelOption.SoKeepalive, true);
+                //bootstrap.Option(ChannelOption.MessageSizeEstimator, DefaultMessageSizeEstimator.Default);
+                //bootstrap.Option(ChannelOption.ConnectTimeout, TimeSpan.FromSeconds(Args.Instance.Node.ConnectionTimeout));
+                bootstrap.Handler(new LoggingHandler("SRV-LTSN"));
+                bootstrap.ChildHandler(new ActionChannelInitializer<IChannel>(channel =>
+                {
+                    channel.Pipeline.AddLast(new LoggingHandler("SRV-CONN"));
+                    channel.Pipeline.AddLast("framing-enc", new LengthFieldPrepender(2));
+                    channel.Pipeline.AddLast("framing-dec", new LengthFieldBasedFrameDecoder(ushort.MaxValue, 0, 2, 0, 2));
+                    channel.Pipeline.AddLast("echo", new EchoServerHandler());
+                }));
+
+                //bootstrap.ChildHandler(new NettyChannelInitializer("", false));
 
                 Logger.Info("Tcp listener started, bind port : " + port);
 
