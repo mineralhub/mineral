@@ -75,11 +75,6 @@ namespace Mineral.Common.Storage
                 {
                     Monitor.Enter(this.lock_wirte);
 
-                    if (!Directory.Exists(DataBasePath))
-                    {
-                        Directory.CreateDirectory(DataBasePath);
-                    }
-
                     Options options = Args.Instance.Storage.GetOptionsByDbName(DataBaseName);
                     this.db = new DB(options, DataBasePath);
                     IsAlive = this.db != null ? true : false;
