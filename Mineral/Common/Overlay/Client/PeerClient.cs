@@ -59,6 +59,7 @@ namespace Mineral.Common.Overlay.Client
                 {
                     channel.Pipeline.AddLast("framing-enc", new LengthFieldPrepender(2));
                     channel.Pipeline.AddLast("framing-dec", new LengthFieldBasedFrameDecoder(ushort.MaxValue, 0, 2, 0, 2));
+                    channel.Pipeline.AddLast(new EchoClientHandler());
                 }));
 
                 return await bootstrap.ConnectAsync(new IPEndPoint(IPAddress.Parse(host), port));

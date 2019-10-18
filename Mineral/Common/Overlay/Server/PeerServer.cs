@@ -40,7 +40,7 @@ namespace Mineral.Common.Overlay.Server
         public async void Start(int port)
         {
             IEventLoopGroup boss_group = new MultithreadEventLoopGroup(1);
-            IEventLoopGroup worker_group = new MultithreadEventLoopGroup(Args.Instance.Node.TcpNettyWorkThreadNum);
+            IEventLoopGroup worker_group = new MultithreadEventLoopGroup();
 
             try
             {
@@ -48,6 +48,7 @@ namespace Mineral.Common.Overlay.Server
 
                 bootstrap.Group(boss_group, worker_group);
                 bootstrap.Channel<TcpServerSocketChannel>();
+                bootstrap.Option(ChannelOption.SoBacklog, 100);
                 //bootstrap.Option(ChannelOption.SoKeepalive, true);
                 //bootstrap.Option(ChannelOption.MessageSizeEstimator, DefaultMessageSizeEstimator.Default);
                 //bootstrap.Option(ChannelOption.ConnectTimeout, TimeSpan.FromSeconds(Args.Instance.Node.ConnectionTimeout));

@@ -11,6 +11,7 @@ namespace Mineral.Common.Overlay
 
         public EchoClientHandler()
         {
+            this.initialMessage = Unpooled.Buffer(256);
             byte[] messageBytes = Encoding.UTF8.GetBytes("Hello world");
             this.initialMessage.WriteBytes(messageBytes);
         }
