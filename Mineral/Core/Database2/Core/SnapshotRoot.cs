@@ -108,10 +108,10 @@ namespace Mineral.Core.Database2.Core
         {
             Dictionary<WrappedByteArray, WrappedByteArray> batch = new Dictionary<WrappedByteArray, WrappedByteArray>();
 
-            IEnumerator<KeyValuePair<Key, Value>> datas = (IEnumerator<KeyValuePair<Key, Value>>)((Snapshot)snapshot).GetEnumerator();
+            IEnumerator<KeyValuePair<byte[], byte[]>> datas = (IEnumerator<KeyValuePair<byte[], byte[]>>)((Snapshot)snapshot).GetEnumerator();
             while (datas.MoveNext())
             {
-                batch.Add(WrappedByteArray.Of(datas.Current.Key.Data), WrappedByteArray.Of(datas.Current.Value.Data));
+                batch.Add(WrappedByteArray.Of(datas.Current.Key), WrappedByteArray.Of(datas.Current.Value));
             }
             ((Flusher)this.db).Flush(batch);
         }
