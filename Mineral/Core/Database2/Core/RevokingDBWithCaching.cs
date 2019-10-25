@@ -19,7 +19,7 @@ namespace Mineral.Core.Database2.Core
         private string db_name = "";
         private ISnapshot head = null;
         private ThreadLocal<bool?> mode = new ThreadLocal<bool?>();
-        object lock_db = new object();
+        private object lock_db = new object();
         #endregion
 
 
@@ -146,15 +146,15 @@ namespace Mineral.Core.Database2.Core
 
                 long temp = limit;
                 ISnapshot snapshot = this.head;
-                for (; limit > 0 && snapshot.GetPrevious() != null; snapshot = snapshot.GetPrevious())
+                for (; temp > 0 && snapshot.GetPrevious() != null; snapshot = snapshot.GetPrevious())
                 {
                     if (!((Snapshot)(snapshot)).DB.IsEmpty)
                     {
                         --temp;
-                        IEnumerator<KeyValuePair<Key, Value>> it = ((Snapshot)(snapshot)).GetEnumerator();
+                        IEnumerator<KeyValuePair<byte[], byte[]>> it = ((Snapshot)(snapshot)).GetEnumerator();
                         while (it.MoveNext())
                         {
-                            result.Add(it.Current.Value.Data);
+                            result.Add(it.Current.Value);
                         }
                     }
                 }
@@ -266,7 +266,7 @@ namespace Mineral.Core.Database2.Core
 
         IEnumerator IEnumerable.GetEnumerator()
         {
-            return this.head.GetEnumerator();
+            return GetEnumerator();
         }
         #endregion
     }

@@ -2,6 +2,7 @@
 using Mineral;
 using Mineral.Common.Utils;
 using Mineral.Core;
+using Mineral.Utils;
 using Protocol;
 using System;
 using System.Collections.Generic;
@@ -488,7 +489,7 @@ namespace MineralCLI.Util
             string result = "";
             result += "txid: ";
             result += "\n";
-            result += extension.Txid.ToByteArray();
+            result += extension.Txid.ToByteArray().ToHexString();
             result += "\n";
 
             Transaction transaction = extension.Transaction;
@@ -584,6 +585,182 @@ namespace MineralCLI.Util
             return result;
         }
 
+        public static string PrintTransactionApprovedList(TransactionApprovedList transaction_list)
+        {
+            string result = "";
+            result += "result:";
+            result += "\n";
+            result += "{";
+            result += "\n";
+            result += PrintResult(transaction_list.Result);
+            result += "}";
+            result += "\n";
+            if (transaction_list.ApprovedList.Count > 0)
+            {
+                result += "approved_list:";
+                result += "\n";
+                result += "[";
+                result += "\n";
+                foreach (ByteString approved in transaction_list.ApprovedList)
+                {
+                    result += Wallet.AddressToBase58(approved.ToByteArray());
+                    result += "\n";
+                }
+                result += "]";
+                result += "\n";
+            }
+            result += "transaction:";
+            result += "\n";
+            result += "{";
+            result += "\n";
+            result += PrintTransaction(transaction_list.Transaction);
+            result += "}";
+            result += "\n";
+            return result;
+        }
+
+        public static string PrintTransactionInfo(TransactionInfo transaction_info)
+        {
+            string result = "";
+            result += "txid: ";
+            result += "\n";
+            result += transaction_info.Id.ToByteArray().ToHexString();
+            result += "\n";
+            result += "fee: ";
+            result += "\n";
+            result += transaction_info.Fee;
+            result += "\n";
+            result += "blockNumber: ";
+            result += "\n";
+            result += transaction_info.BlockNumber;
+            result += "\n";
+            result += "blockTimeStamp: ";
+            result += "\n";
+            result += transaction_info.BlockTimeStamp;
+            result += "\n";
+            result += "result: ";
+            result += "\n";
+            if (transaction_info.Result == TransactionInfo.Types.code.Sucess)
+            {
+                result += "SUCCESS";
+            }
+            else
+            {
+                result += "FAILED";
+            }
+            result += "\n";
+            result += "resMessage: ";
+            result += "\n";
+            result += transaction_info.ResMessage.ToStringUtf8();
+            result += "\n";
+            result += "contractResult: ";
+            result += "\n";
+            result += transaction_info.ContractResult[0].ToByteArray().ToHexString();
+            result += "\n";
+            result += "contractAddress: ";
+            result += "\n";
+            result += Wallet.AddressToBase58(transaction_info.ContractAddress.ToByteArray());
+            result += "\n";
+            result += "logList: ";
+            result += "\n";
+            result += PrintLogList(new List<TransactionInfo.Types.Log>(transaction_info.Log));
+            result += "\n";
+            result += "receipt: ";
+            result += "\n";
+            result += PrintReceipt(transaction_info.Receipt);
+            result += "\n";
+            if (transaction_info.UnfreezeAmount != 0)
+            {
+                result += "UnfreezeAmount: ";
+                result += transaction_info.UnfreezeAmount;
+                result += "\n";
+            }
+            if (transaction_info.WithdrawAmount != 0)
+            {
+                result += "WithdrawAmount: ";
+                result += transaction_info.WithdrawAmount;
+                result += "\n";
+            }
+            if (transaction_info.ExchangeReceivedAmount != 0)
+            {
+                result += "ExchangeReceivedAmount: ";
+                result += transaction_info.ExchangeReceivedAmount;
+                result += "\n";
+            }
+            if (transaction_info.ExchangeInjectAnotherAmount != 0)
+            {
+                result += "ExchangeInjectAnotherAmount: ";
+                result += transaction_info.ExchangeInjectAnotherAmount;
+                result += "\n";
+            }
+            if (transaction_info.ExchangeWithdrawAnotherAmount != 0)
+            {
+                result += "ExchangeWithdrawAnotherAmount: ";
+                result += transaction_info.ExchangeWithdrawAnotherAmount;
+                result += "\n";
+            }
+            if (transaction_info.ExchangeId != 0)
+            {
+                result += "ExchangeId: ";
+                result += transaction_info.ExchangeId;
+                result += "\n";
+            }
+            result += "InternalTransactionList: ";
+            result += "\n";
+            result += PrintInternalTransactionList(new List<InternalTransaction>(transaction_info.InternalTransactions));
+            result += "\n";
+            return result;
+        }
+
+        public static string PrintInternalTransactionList(List<InternalTransaction> internal_transactions)
+        {
+            string result = "";
+            foreach (var internal_transaction in internal_transactions)
+            {
+                result += "[\n";
+                result += "  hash:\n";
+                result += "  " + internal_transaction.Hash.ToByteArray().ToHexString();
+                result += "  \n";
+                result += "  caller_address:\n";
+                result += "  " + internal_transaction.CallerAddress.ToByteArray().ToHexString();
+                result += "  \n";
+                result += "  transfer to_address:\n";
+                result += "  " + internal_transaction.TransferToAddress.ToByteArray().ToHexString();
+                result += "  \n";
+                result += "  CallValueInfo:\n";
+                string callValueInfo = "";
+
+                foreach (var token in internal_transaction.CallValueInfo)
+                {
+                    callValueInfo += "  [\n";
+                    callValueInfo += "    TokenName(Default trx):\n";
+                    if (null == token.TokenId || token.TokenId.Length == 0)
+                    {
+                        callValueInfo += "    TRX(SUN)";
+                    }
+                    else
+                    {
+                        callValueInfo += "    " + token.TokenId;
+                    }
+                    callValueInfo += "    \n";
+                    callValueInfo += "    callValue:\n";
+                    callValueInfo += "    " + token.CallValue;
+                    callValueInfo += "  \n";
+                    callValueInfo += "  ]\n";
+                    callValueInfo += "    \n";
+                }
+                result += callValueInfo;
+                result += "  note:\n";
+                result += "  " + Encoding.UTF8.GetString(internal_transaction.Note.ToByteArray());
+                result += "  \n";
+                result += "  rejected:\n";
+                result += "  " + internal_transaction.Rejected;
+                result += "  \n";
+                result += "]\n";
+            }
+            return result;
+        }
+
         public static string PrintTransactionSignWeight(TransactionSignWeight weight)
         {
             string result = "";
@@ -627,6 +804,75 @@ namespace MineralCLI.Util
             result += "}";
             result += "\n";
 
+            return result;
+        }
+
+        public static string PrintResult(TransactionApprovedList.Types.Result transaction_result)
+        {
+            string result ="";
+            result += "code: ";
+            result += transaction_result.Code;
+            result += "\n";
+            if (transaction_result.Message.IsNotNullOrEmpty())
+            {
+                result += "message: ";
+                result += transaction_result.Message;
+                result += "\n";
+            }
+            return result;
+        }
+
+        public static string PrintLogList(List<TransactionInfo.Types.Log> logs)
+        {
+            string result = "";
+            foreach (var log in logs)
+            {
+                result += "address:\n";
+                result += log.Address.ToByteArray().ToHexString();
+                result += "\n";
+                result += "data:\n";
+                result += log.Data.ToByteArray().ToHexString();
+                result += "\n";
+                result += "TopicsList\n";
+                string topics = "";
+
+                foreach (var topic in log.Topics)
+                {
+                    topics += topic.ToByteArray().ToHexString();
+                    topics += "\n";
+                }
+                result += topics;
+            }
+            return result;
+        }
+
+        public static string PrintReceipt(ResourceReceipt receipt)
+        {
+            string result = "";
+            result += "EnergyUsage: ";
+            result += "\n";
+            result += receipt.EnergyUsage;
+            result += "\n";
+            result += "EnergyFee(SUN): ";
+            result += "\n";
+            result += receipt.EnergyFee;
+            result += "\n";
+            result += "OriginEnergyUsage: ";
+            result += "\n";
+            result += receipt.OriginEnergyUsage;
+            result += "\n";
+            result += "EnergyUsageTotal: ";
+            result += "\n";
+            result += receipt.EnergyUsageTotal;
+            result += "\n";
+            result += "NetUsage: ";
+            result += "\n";
+            result += receipt.NetUsage;
+            result += "\n";
+            result += "NetFee: ";
+            result += "\n";
+            result += receipt.NetFee;
+            result += "\n";
             return result;
         }
 

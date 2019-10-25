@@ -55,18 +55,18 @@ namespace Mineral.Core.Database2.Core
 
         public ISnapshot GetNext()
         {
-            this.next.TryGetTarget(out ISnapshot result);
+            ISnapshot result = null;
+            if (this.next != null)
+            {
+                this.next.TryGetTarget(out result);
+            }
+
             return result;
         }
 
-        IEnumerator<KeyValuePair<byte[], byte[]>> IEnumerable<KeyValuePair<byte[], byte[]>>.GetEnumerator()
+        IEnumerator IEnumerable.GetEnumerator()
         {
-            return (IEnumerator<KeyValuePair<byte[], byte[]>>)this.GetEnumerator();
-        }
-
-        public IEnumerator GetEnumerator()
-        {
-            return this.db.GetEnumerator();
+            return GetEnumerator();
         }
 
         #region Abstract - ISnapshot
@@ -81,6 +81,7 @@ namespace Mineral.Core.Database2.Core
         public abstract void ResetSolidity();
         public abstract void UpdateSolidity();
         public abstract void Close();
+        public abstract IEnumerator<KeyValuePair<byte[], byte[]>> GetEnumerator();
         #endregion
         #endregion
     }

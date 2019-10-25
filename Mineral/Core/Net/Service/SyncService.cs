@@ -105,16 +105,23 @@ namespace Mineral.Core.Net.Service
         [MethodImpl(MethodImplOptions.Synchronized)]
         private void HandleSyncBlock()
         {
-            foreach (var received in this.block_just_receive)
+            lock (this.block_just_receive)
             {
-                this.block_wait_process.TryAdd(received.Key, received.Value);
+                foreach (var received in this.block_just_receive)
+                {
+                    this.block_wait_process.TryAdd(received.Key, received.Value);
+                }
+                this.block_just_receive.Clear();
             }
-            this.block_just_receive.Clear();
 
             bool is_processed = true;
             while (is_processed)
             {
                 is_processed = false;
+
+                Logger.Refactoring("HandleSyncBlock()");
+                Logger.Refactoring(
+                    string.Format("block wait process {0}", this.block_wait_process.Count));
 
                 foreach (KeyValuePair<BlockMessage, PeerConnection> process in this.block_wait_process.OrderBy(block => block.Key.Block.Num))
                 {
@@ -137,8 +144,8 @@ namespace Mineral.Core.Net.Service
 
                     foreach (PeerConnection p in peers)
                     {
-                        peer.SyncBlockFetch.TryPopLeft(out _);
-                        peer.SyncBlockProcess.Add(message.Block.Id);
+                        p.SyncBlockFetch.TryPopLeft(out _);
+                        p.SyncBlockProcess.Add(message.Block.Id);
                         is_found = true;
                     }
 
@@ -199,8 +206,10 @@ namespace Mineral.Core.Net.Service
 
             long sync_begin = Manager.Instance.NetDelegate.SyncBeginNumber;
             long low = sync_begin < 0 ? 0 : sync_begin;
-            long hight_no_fork = 0; ;
+            long hight_no_fork = 0;
             long high = 0;
+
+            Logger.Refactoring("sync_begin : " + sync_begin);
 
             if (begin_id.Num == 0)
             {
@@ -354,7 +363,7 @@ namespace Mineral.Core.Net.Service
                 }
                 else
                 {
-                    this.IsFetch = true;
+                    this.is_fetch = true;
                 }
             }
         }

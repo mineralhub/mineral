@@ -17,6 +17,13 @@ namespace Mineral.Core.Database2.Core
 {
     public class SnapshotManager : IRevokingDatabase
     {
+        public class RefreshData
+        {
+            public int FlushCount { get; set; }
+            public ManualResetEvent MRE { get; set; }
+            public RevokingDBWithCaching DB { get; set; }
+        }
+
         #region Field
         private static readonly int DEFAULT_STACK_MAX_SIZE = 256;
         public static readonly int DEFAULT_MAX_FLUSH_COUNT = 500;
@@ -77,29 +84,55 @@ namespace Mineral.Core.Database2.Core
 
         private void Refresh()
         {
-            List<Task> tasks = new List<Task>();
-            foreach (RevokingDBWithCaching db in this.databases)
-            {
-                tasks.Add(new Task((() => RefreshOne(db))));
-            }
-
-            foreach (Task task in tasks)
-            {
-                task.Start();
-            }
-
             try
             {
-                Task.WaitAll(tasks.ToArray());
+                int i = 0;
+                ManualResetEvent[] handles = new ManualResetEvent[this.databases.Count];
+
+                foreach (RevokingDBWithCaching db in this.databases)
+                {
+                    handles[i] = new ManualResetEvent(false);
+                    RefreshData data = new RefreshData()
+                    {
+                        FlushCount = this.flush_count,
+                        MRE = handles[i],
+                        DB = db
+                    };
+
+                    ThreadPool.QueueUserWorkItem((object state) =>
+                    {
+                        RefreshData item = (RefreshData)state;
+                        try
+                        {
+                            RefreshOne(item);
+                        }
+                        catch (System.Exception e)
+                        {
+                            throw e;
+                        }
+                        finally
+                        {
+                            item.MRE.Set();
+                        }
+                    }, data);
+                    i++;
+                }
+
+                WaitHandle.WaitAll(handles);
             }
-            catch (AggregateException e)
+            catch (System.Exception e)
             {
-                Logger.Error(e.Message);
+                Logger.Error(e.Message, e);
             }
         }
 
-        private void RefreshOne(RevokingDBWithCaching db)
+        private static void RefreshOne(object state)
         {
+            RefreshData data = (RefreshData)state;
+
+            int flush_count = data.FlushCount;
+            RevokingDBWithCaching db = data.DB;
+
             if (Snapshot.IsRoot(db.GetHead()))
                 return;
 
@@ -107,7 +140,7 @@ namespace Mineral.Core.Database2.Core
 
             SnapshotRoot root = (SnapshotRoot)db.GetHead().GetRoot();
             ISnapshot next = root;
-            for (int i = 0; i < this.flush_count; ++i)
+            for (int i = 0; i < flush_count; ++i)
             {
                 next = next.GetNext();
                 snapshots.Add(next);

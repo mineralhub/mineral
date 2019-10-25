@@ -67,7 +67,7 @@ namespace Mineral.Core.Net.Messages
         public override string ToString()
         {
             return new StringBuilder().Append(base.ToString())
-                                      .Append(block.Id.ToString())
+                                      .Append(block.Id.GetString())
                                       .Append(", tx size: ")
                                       .Append(block.Transactions.Count)
                                       .Append("\n")

@@ -1,4 +1,5 @@
-﻿using Mineral.Core;
+﻿using Mineral;
+using Mineral.Core;
 using Mineral.Core.Net.RpcHandler;
 using MineralCLI.Network;
 using MineralCLI.Util;
@@ -33,6 +34,295 @@ namespace MineralCLI.Commands
 
 
         #region External Method
+        /// <summary>
+        /// Get total transaction
+        /// </summary>
+        /// <param name="parameters"></param>
+        /// /// Parameter Index
+        /// <returns></returns>
+        public static bool GetTotalTransaction(string command, string[] parameters)
+        {
+            string[] usage = new string[] {
+                string.Format("{0} [command option] \n", command) };
+
+            string[] command_option = new string[] { HelpCommandOption.Help };
+
+            if (parameters == null || parameters.Length != 0)
+            {
+                OutputHelpMessage(usage, null, command_option, null);
+                return true;
+            }
+
+            try
+            {
+                RpcApiResult result = RpcApi.GetTotalTransaction(out NumberMessage message);
+                if (result.Result)
+                {
+                    Console.WriteLine("The num of total transaction is " + message.Num);
+                }
+
+                OutputResultMessage(command, result.Result, result.Code, result.Message);
+            }
+            catch (System.Exception e)
+            {
+                Console.WriteLine(e.Message + "\n\n" + e.StackTrace);
+            }
+
+            return true;
+        }
+
+        /// <summary>
+        /// Get approved transaction list
+        /// </summary>
+        /// <param name="parameters"></param>
+        /// /// Parameter Index
+        /// [0] : Transaction binary data
+        /// <returns></returns>
+        public static bool GetTransactionApprovedList(string command, string[] parameters)
+        {
+            string[] usage = new string[] {
+                string.Format("{0} [command option] <transaction>\n", command) };
+
+            string[] command_option = new string[] { HelpCommandOption.Help };
+
+            if (parameters == null || parameters.Length != 1)
+            {
+                OutputHelpMessage(usage, null, command_option, null);
+                return true;
+            }
+
+            try
+            {
+                Transaction transaction = Transaction.Parser.ParseFrom(parameters[0].HexToBytes());
+                RpcApiResult result = RpcApi.GetTransactionApprovedList(transaction, out TransactionApprovedList transaction_list);
+                if (result.Result)
+                {
+                    Console.WriteLine(PrintUtil.PrintTransactionApprovedList(transaction_list));
+                }
+
+                OutputResultMessage(command, result.Result, result.Code, result.Message);
+            }
+            catch (System.Exception e)
+            {
+                Console.WriteLine(e.Message + "\n\n" + e.StackTrace);
+            }
+
+            return true;
+        }
+
+        /// <summary>
+        /// Get transaction information by id
+        /// </summary>
+        /// <param name="parameters"></param>
+        /// /// Parameter Index
+        /// [0] : Transaction id
+        /// <returns></returns>
+        public static bool GetTransactionById(string command, string[] parameters)
+        {
+            string[] usage = new string[] {
+                string.Format("{0} [command option] <transaction id>\n", command) };
+
+            string[] command_option = new string[] { HelpCommandOption.Help };
+
+            if (parameters == null || parameters.Length != 1)
+            {
+                OutputHelpMessage(usage, null, command_option, null);
+                return true;
+            }
+
+            try
+            {
+                RpcApiResult result = RpcApi.GetTransactionById(parameters[0], out TransactionExtention transaction);
+                if (result.Result)
+                {
+                    Console.WriteLine(PrintUtil.PrintTransaction(transaction));
+                }
+
+                OutputResultMessage(command, result.Result, result.Code, result.Message);
+            }
+            catch (System.Exception e)
+            {
+                Console.WriteLine(e.Message + "\n\n" + e.StackTrace);
+            }
+
+            return true;
+        }
+
+        /// <summary>
+        /// Get transaction information by id
+        /// </summary>
+        /// <param name="parameters"></param>
+        /// /// Parameter Index
+        /// [0] : Transaction id
+        /// <returns></returns>
+        public static bool GetTransactionInfoById(string command, string[] parameters)
+        {
+            string[] usage = new string[] {
+                string.Format("{0} [command option] <transaction id>\n", command) };
+
+            string[] command_option = new string[] { HelpCommandOption.Help };
+
+            if (parameters == null || parameters.Length != 1)
+            {
+                OutputHelpMessage(usage, null, command_option, null);
+                return true;
+            }
+
+            try
+            {
+                RpcApiResult result = RpcApi.GetTransactionInfoById(parameters[0], out TransactionInfo transaction);
+                if (result.Result)
+                {
+                    Console.WriteLine(PrintUtil.PrintTransactionInfo(transaction));
+                }
+
+                OutputResultMessage(command, result.Result, result.Code, result.Message);
+            }
+            catch (System.Exception e)
+            {
+                Console.WriteLine(e.Message + "\n\n" + e.StackTrace);
+            }
+
+            return true;
+        }
+
+        /// <summary>
+        /// Get transaction count in block
+        /// </summary>
+        /// <param name="parameters"></param>
+        /// /// Parameter Index
+        /// [0] : Block number
+        /// <returns></returns>
+        public static bool GetTransactionCountByBlockNum(string command, string[] parameters)
+        {
+            string[] usage = new string[] {
+                string.Format("{0} [command option] <block number>\n", command) };
+
+            string[] command_option = new string[] { HelpCommandOption.Help };
+
+            if (parameters == null || parameters.Length != 1)
+            {
+                OutputHelpMessage(usage, null, command_option, null);
+                return true;
+            }
+
+            try
+            {
+                long block_num = long.Parse(parameters[0]);
+                RpcApiResult result = RpcApi.GetTransactionCountByBlockNum(block_num, out int count);
+                if (result.Result)
+                {
+                    Console.WriteLine("The block contain " + count + "transactions");
+                }
+
+                OutputResultMessage(command, result.Result, result.Code, result.Message);
+            }
+            catch (System.Exception e)
+            {
+                Console.WriteLine(e.Message + "\n\n" + e.StackTrace);
+            }
+
+            return true;
+        }
+
+        /// <summary>
+        /// Get transaction information by id
+        /// </summary>
+        /// <param name="parameters"></param>
+        /// /// Parameter Index
+        /// [0] : Transaction id
+        /// <returns></returns>
+        public static bool GetTransactionsFromThis(string command, string[] parameters)
+        {
+            string[] usage = new string[] {
+                string.Format("{0} [command option] <transaction id>\n", command) };
+
+            string[] command_option = new string[] { HelpCommandOption.Help };
+
+            if (parameters == null || parameters.Length != 3)
+            {
+                OutputHelpMessage(usage, null, command_option, null);
+                return true;
+            }
+
+            try
+            {
+                byte[] address = Wallet.Base58ToAddress(parameters[0]);
+                int offset = int.Parse(parameters[1]);
+                int limit = int.Parse(parameters[2]);
+
+                RpcApiResult result = RpcApi.GetTransactionsFromThis(address, offset, limit, out TransactionListExtention transactions);
+                if (result.Result)
+                {
+                    if (transactions != null)
+                    {
+                        Console.WriteLine(PrintUtil.PrintTransactionExtentionList(new List<TransactionExtention>(transactions.Transaction)));
+                    }
+                    else
+                    {
+                        Console.WriteLine("No transaction from " + Wallet.AddressToBase58(address));
+                    }
+                }
+
+                OutputResultMessage(command, result.Result, result.Code, result.Message);
+            }
+            catch (System.Exception e)
+            {
+                Console.WriteLine(e.Message + "\n\n" + e.StackTrace);
+            }
+
+            return true;
+        }
+
+        /// <summary>
+        /// Get transaction information by id
+        /// </summary>
+        /// <param name="parameters"></param>
+        /// /// Parameter Index
+        /// [0] : Transaction id
+        /// <returns></returns>
+        public static bool GetTransactionsToThis(string command, string[] parameters)
+        {
+            string[] usage = new string[] {
+                string.Format("{0} [command option] <transaction id>\n", command) };
+
+            string[] command_option = new string[] { HelpCommandOption.Help };
+
+            if (parameters == null || parameters.Length != 3)
+            {
+                OutputHelpMessage(usage, null, command_option, null);
+                return true;
+            }
+
+            try
+            {
+                byte[] address = Wallet.Base58ToAddress(parameters[0]);
+                int offset = int.Parse(parameters[1]);
+                int limit = int.Parse(parameters[2]);
+
+                RpcApiResult result = RpcApi.GetTransactionsToThis(address, offset, limit, out TransactionListExtention transactions);
+                if (result.Result)
+                {
+                    if (transactions != null)
+                    {
+                        Console.WriteLine(PrintUtil.PrintTransactionExtentionList(new List<TransactionExtention>(transactions.Transaction)));
+                    }
+                    else
+                    {
+                        Console.WriteLine("No transaction from " + Wallet.AddressToBase58(address));
+                    }
+                }
+
+                OutputResultMessage(command, result.Result, result.Code, result.Message);
+            }
+            catch (System.Exception e)
+            {
+                Console.WriteLine(e.Message + "\n\n" + e.StackTrace);
+            }
+
+            return true;
+        }
+
         /// <summary>
         /// Create account
         /// </summary>

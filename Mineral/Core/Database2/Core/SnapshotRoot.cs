@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Text;
 using Mineral.Core.Database2.Common;
@@ -107,10 +108,10 @@ namespace Mineral.Core.Database2.Core
         {
             Dictionary<WrappedByteArray, WrappedByteArray> batch = new Dictionary<WrappedByteArray, WrappedByteArray>();
 
-            IEnumerator<KeyValuePair<Key, Value>> datas = ((Snapshot)snapshot).GetEnumerator();
+            IEnumerator<KeyValuePair<byte[], byte[]>> datas = (IEnumerator<KeyValuePair<byte[], byte[]>>)((Snapshot)snapshot).GetEnumerator();
             while (datas.MoveNext())
             {
-                batch.Add(WrappedByteArray.Of(datas.Current.Key.Data), WrappedByteArray.Of(datas.Current.Value.Data));
+                batch.Add(WrappedByteArray.Of(datas.Current.Key), WrappedByteArray.Of(datas.Current.Value));
             }
             ((Flusher)this.db).Flush(batch);
         }
@@ -149,6 +150,11 @@ namespace Mineral.Core.Database2.Core
         public override void UpdateSolidity()
         {
             this.solidity = this.solidity.GetNext();
+        }
+
+        public override IEnumerator<KeyValuePair<byte[], byte[]>> GetEnumerator()
+        {
+            return this.db.GetEnumerator();
         }
         #endregion
     }

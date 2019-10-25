@@ -36,37 +36,37 @@ namespace Mineral.Core.Net.Service
         #region External Method
         public void Add(KeyValuePair<SHA256Hash, InventoryType> id, PeerConnection peer)
         {
-            if (send.ContainsKey(peer) && !send[peer].ContainsKey(id.Value))
+            if (this.send.ContainsKey(peer) && !this.send[peer].ContainsKey(id.Value))
             {
-                send[peer].Add(id.Value, new LinkedList<SHA256Hash>());
+                this.send[peer].Add(id.Value, new LinkedList<SHA256Hash>());
             }
-            else if (!send.ContainsKey(peer))
+            else if (!this.send.ContainsKey(peer))
             {
-                send.Add(peer, new Dictionary<InventoryType, LinkedList<SHA256Hash>>());
-                send[peer].Add(id.Value, new LinkedList<SHA256Hash>());
+                this.send.Add(peer, new Dictionary<InventoryType, LinkedList<SHA256Hash>>());
+                this.send[peer].Add(id.Value, new LinkedList<SHA256Hash>());
             }
-            send[peer][id.Value].AddLast(id.Key);
+            this.send[peer][id.Value].AddLast(id.Key);
         }
 
         public void Add(Item id, PeerConnection peer)
         {
-            if (send.ContainsKey(peer) && !send[peer].ContainsKey(id.Type))
+            if (this.send.ContainsKey(peer) && !this.send[peer].ContainsKey(id.Type))
             {
-                send[peer].Add(id.Type, new LinkedList<SHA256Hash>());
+                this.send[peer].Add(id.Type, new LinkedList<SHA256Hash>());
             }
-            else if (!send.ContainsKey(peer))
+            else if (!this.send.ContainsKey(peer))
             {
-                send.Add(peer, new Dictionary<InventoryType, LinkedList<SHA256Hash>>());
-                send[peer].Add(id.Type, new LinkedList<SHA256Hash>());
+                this.send.Add(peer, new Dictionary<InventoryType, LinkedList<SHA256Hash>>());
+                this.send[peer].Add(id.Type, new LinkedList<SHA256Hash>());
             }
-            send[peer][id.Type].AddLast(id.Hash);
+            this.send[peer][id.Type].AddLast(id.Hash);
         }
 
         public int GetSize(PeerConnection peer)
         {
-            if (send.ContainsKey(peer))
+            if (this.send.ContainsKey(peer))
             {
-                return send[peer].Values.Select(hashes => hashes.Count).Sum();
+                return this.send[peer].Values.Select(hashes => hashes.Count).Sum();
             }
             return 0;
         }

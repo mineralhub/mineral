@@ -96,6 +96,30 @@ namespace Mineral.Core.Net.RpcHandler
 
         public static class Transaction
         {
+            [CommandLineAttribute(Name = "GetTotalTransaction", Description = "")]
+            public static readonly string GetTotalTransaction = "gettotaltransaction";
+
+            [CommandLineAttribute(Name = "GetTransactionApprovedList", Description = "")]
+            public static readonly string GetTransactionApprovedList = "gettransactionapprovedlist";
+
+            [CommandLineAttribute(Name = "GetTransactionById", Description = "")]
+            public static readonly string GetTransactionById = "gettransactionbyid";
+
+            [CommandLineAttribute(Name = "GetTransactionInfoById", Description = "")]
+            public static readonly string GetTransactionInfoById = "gettransactioninfobyid";
+
+            [CommandLineAttribute(Name = "GetTransactionCountByBlockNum", Description = "")]
+            public static readonly string GetTransactionCountByBlockNum = "gettransactioncountbyblocknum";
+
+            [CommandLineAttribute(Name = "GetTransactionsFromThis", Description = "")]
+            public static readonly string GetTransactionsFromThis = "gettransactionsfromthis";
+
+            [CommandLineAttribute(Name = "GetTransactionsToThis", Description = "")]
+            public static readonly string GetTransactionsToThis = "gettransactionstothis";
+
+            [CommandLineAttribute(Name = "GetTransactionSignWeight", Description = "")]
+            public static readonly string GetTransactionSignWeight = "gettransactionsignweight";
+
             [CommandLineAttribute(Name = "CreateAccount", Description = "")]
             public static readonly string CreateAccount = "createaccount";
 
@@ -125,9 +149,6 @@ namespace Mineral.Core.Net.RpcHandler
 
             [CommandLineAttribute(Name = "DeleteProposal", Description = "")]
             public static readonly string DeleteProposal = "deleteproposal";
-
-            [CommandLineAttribute(Name = "GetTransactionSignWeight", Description = "")]
-            public static readonly string GetTransactionSignWeight = "gettransactionsignweight";
 
             [CommandLineAttribute(Name = "BroadcastTransaction", Description = "")]
             public static readonly string BroadcastTransaction = "broadcasttransaction";

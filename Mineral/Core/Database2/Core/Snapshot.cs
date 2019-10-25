@@ -1,6 +1,8 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Text;
 using Mineral.Core.Database2.Common;
 
@@ -49,11 +51,6 @@ namespace Mineral.Core.Database2.Core
         public static bool IsImplement(ISnapshot snapshot)
         {
             return snapshot != null && snapshot.GetType() == typeof(Snapshot);
-        }
-
-        public IEnumerator<KeyValuePair<Key, Value>> GetEnumerator()
-        {
-            return ((HashDB)(this.db)).GetEnumerator();
         }
 
         public override ISnapshot GetRoot()
@@ -145,13 +142,32 @@ namespace Mineral.Core.Database2.Core
             ISnapshot next = GetRoot().GetNext();
             while (next != null)
             {
-                IEnumerator<KeyValuePair<Key, Value>> values = ((Snapshot)next).GetEnumerator();
-                while (values.MoveNext())
+                foreach (var data in ((Snapshot)next).DB)
                 {
-                    collect.Add(WrappedByteArray.Of(values.Current.Key.Data), WrappedByteArray.Of(values.Current.Value.Data));
+                    collect.Add(WrappedByteArray.Of(data.Key.Data), WrappedByteArray.Of(data.Value.Data));
                 }
                 next = next.GetNext();
             }
+        }
+
+        public override IEnumerator<KeyValuePair<byte[], byte[]>> GetEnumerator()
+        {
+            Dictionary<WrappedByteArray, WrappedByteArray> all = new Dictionary<WrappedByteArray, WrappedByteArray>();
+            Collect(all);
+
+            List<WrappedByteArray> keys = new List<WrappedByteArray>(all.Keys);
+            foreach (var item in all)
+            {
+                if (item.Value == null || item.Value.Data == null)
+                {
+                    all.Remove(item.Key);
+                }
+            }
+
+           return Enumerable.Concat(
+                Enumerable.Select(all, val => new KeyValuePair<byte[], byte[]>(val.Key.Data, val.Value.Data)),
+                Enumerable.Where(GetRoot(), val => keys.Contains(WrappedByteArray.Of(val.Key)))
+                ).GetEnumerator();
         }
         #endregion
     }

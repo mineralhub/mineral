@@ -75,6 +75,11 @@ namespace Mineral.Common.Storage
                 {
                     Monitor.Enter(this.lock_wirte);
 
+                    if (!Directory.Exists(DataBasePath))
+                    {
+                        Directory.CreateDirectory(DataBasePath);
+                    }
+
                     Options options = Args.Instance.Storage.GetOptionsByDbName(DataBaseName);
                     this.db = new DB(options, DataBasePath);
                     IsAlive = this.db != null ? true : false;
@@ -448,7 +453,7 @@ namespace Mineral.Common.Storage
                     long i = 0;
 
                     it.Seek(key);
-                    it.Next();
+                    //it.Next();
                     for (; it.IsValid() && i++ < limit; it.Next())
                     {
                         result.Add(it.Key(), it.Value());

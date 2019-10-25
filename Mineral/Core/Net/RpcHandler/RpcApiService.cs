@@ -17,6 +17,7 @@ using System.Linq;
 using Mineral.Common.Overlay.Messages;
 using Mineral.Core.Config;
 using Mineral.Common.Overlay.Discover.Node;
+using Mineral.Cryptography;
 
 namespace Mineral.Core.Net.RpcHandler
 {
@@ -161,6 +162,152 @@ namespace Mineral.Core.Net.RpcHandler
             }
 
             return extention;
+        }
+
+        public static NumberMessage GetTotalTransaction()
+        {
+            NumberMessage message = new NumberMessage();
+            //message.Num = Manager.Instance.DBManager.Transaction.GetTotalTransaction();
+            message.Num = 0;
+
+            return message;
+        }
+
+        public static TransactionApprovedList GetTransactionApprovedList(Transaction transaction)
+        {
+            TransactionExtention transaction_extention = new TransactionExtention()
+            {
+                Transaction = transaction,
+                Txid = ByteString.CopyFrom(SHA256Hash.ToHash(transaction.RawData.ToByteArray())),
+                Result = new Return()
+                {
+                    Result = true,
+                    Code = Return.Types.response_code.Success
+                }
+            };
+
+            TransactionApprovedList approved = new TransactionApprovedList()
+            {
+                Transaction = transaction_extention
+            };
+
+            try
+            {
+                Contract contract = transaction.RawData.Contract[0];
+                byte[] owner_address = TransactionCapsule.GetOwner(contract);
+                AccountCapsule account = Manager.Instance.DBManager.Account.Get(owner_address);
+                if (account == null)
+                {
+                    throw new PermissionException("Account is not exist.");
+                }
+
+                if (transaction.Signature.Count > 0)
+                {
+                    byte[] hash = SHA256Hash.ToHash(transaction.RawData.ToByteArray());
+                    foreach (var signature in transaction.Signature)
+                    {
+                        if (signature.Count() < 65)
+                        {
+                            throw new SignatureFormatException("Signature size is " + signature.Count());
+                        }
+
+                        byte[] signature_address = ECKey.SignatureToAddress(hash, ECDSASignature.ExtractECDSASignature(signature.ToByteArray()));
+                        approved.ApprovedList.Add(ByteString.CopyFrom(signature_address));
+                    }
+                }
+                approved.Result = new TransactionApprovedList.Types.Result()
+                {
+                    Code = TransactionApprovedList.Types.Result.Types.response_code.Success
+                };
+            }
+            catch (SignatureFormatException e)
+            {
+                approved.Result = new TransactionApprovedList.Types.Result()
+                {
+                    Code = TransactionApprovedList.Types.Result.Types.response_code.SignatureFormatError,
+                    Message = e.Message
+                };
+            }
+            catch (SignatureException e)
+            {
+                approved.Result = new TransactionApprovedList.Types.Result()
+                {
+                    Code = TransactionApprovedList.Types.Result.Types.response_code.ComputeAddressError,
+                    Message = e.Message
+                };
+            }
+            catch (System.Exception e)
+            {
+                approved.Result = new TransactionApprovedList.Types.Result()
+                {
+                    Code = TransactionApprovedList.Types.Result.Types.response_code.OtherError,
+                    Message = e.Message
+                };
+            }
+
+            return approved;
+        }
+
+        public static TransactionExtention GetTransactionById(SHA256Hash hash)
+        {
+            TransactionExtention transaction_extention = null;
+            try
+            {
+                Transaction transaction = Manager.Instance.DBManager.GetTransactionById(hash);
+                if (transaction != null)
+                {
+                    transaction_extention = CreateTransactionExtention(new TransactionCapsule(transaction));
+                }
+                else
+                {
+                    throw new ItemNotFoundException("Not found transaction");
+                }
+            }
+            catch (System.Exception e)
+            {
+                throw e;
+            }
+
+            return transaction_extention;
+        }
+
+        public static TransactionInfo GetTransactionInfoById(SHA256Hash hash)
+        {
+            TransactionInfo transaction_info = null;
+            try
+            {
+                TransactionInfoCapsule transaction = Manager.Instance.DBManager.TransactionHistory.Get(hash.Hash);
+                transaction_info = transaction != null ? transaction.Instance : throw new ItemNotFoundException("Not found transaction info");
+            }
+            catch (System.Exception e)
+            {
+                throw e;
+            }
+
+            return transaction_info;
+        }
+
+        public static int GetTransactionCountByBlockNum(long block_num)
+        {
+            int count = 0;
+            try
+            {
+                BlockCapsule block = Manager.Instance.DBManager.GetBlockByNum(block_num);
+                if (block != null)
+                {
+                    count = block.Transactions.Count;
+                }
+                else
+                {
+                    throw new ItemNotFoundException("Not found block");
+                }
+            }
+            catch (System.Exception e)
+            {
+                throw e;
+            }
+
+            return count;
         }
 
         public static TransactionSignWeight GetTransactionSignWeight(Transaction transaction)

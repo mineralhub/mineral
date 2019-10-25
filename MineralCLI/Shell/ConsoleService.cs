@@ -28,6 +28,13 @@ namespace MineralCLI.Shell
             { RpcCommand.Wallet.ListWitness, new CommandHandler(WalletCommand.ListWitness) },
 
             // TransactionCommands
+            { RpcCommand.Transaction.GetTotalTransaction, new CommandHandler(TransactionCommand.GetTotalTransaction) },
+            { RpcCommand.Transaction.GetTransactionApprovedList, new CommandHandler(TransactionCommand.GetTransactionApprovedList) },
+            { RpcCommand.Transaction.GetTransactionById, new CommandHandler(TransactionCommand.GetTransactionById) },
+            { RpcCommand.Transaction.GetTransactionInfoById, new CommandHandler(TransactionCommand.GetTransactionInfoById) },
+            { RpcCommand.Transaction.GetTransactionCountByBlockNum, new CommandHandler(TransactionCommand.GetTransactionCountByBlockNum) },
+            { RpcCommand.Transaction.GetTransactionsFromThis, new CommandHandler(TransactionCommand.GetTransactionsFromThis) },
+            { RpcCommand.Transaction.GetTransactionsToThis, new CommandHandler(TransactionCommand.GetTransactionsToThis) },
             { RpcCommand.Transaction.CreateAccount, new CommandHandler(TransactionCommand.CreateAccount) },
             { RpcCommand.Transaction.CreateProposal, new CommandHandler(TransactionCommand.CreateProposal) },
             { RpcCommand.Transaction.CreateWitness, new CommandHandler(TransactionCommand.CreateWitness) },

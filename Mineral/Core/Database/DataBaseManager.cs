@@ -32,7 +32,7 @@ namespace Mineral.Core.Database
 {
     using Node = Mineral.Common.Overlay.Discover.Node.Node;
 
-    public class DatabaseManager
+    public partial class DatabaseManager
     {
         #region Field
         private IRevokingDatabase revoking_store = null;
@@ -86,6 +86,7 @@ namespace Mineral.Core.Database
         public BlockStore Block => this.block_store;
         public BlockIndexStore BlockIndex => this.block_index_store;
         public TransactionStore Transaction => this.transaction_store;
+        public TransactionHistoryStore TransactionHistory => this.transaction_history_store;
         public AccountStore Account => this.account_store;
         public AccountIndexStore AccountIndex => this.account_index_store;
         public AccountIdIndexStore AccountIdIndex => this.account_id_index_store;
@@ -1115,27 +1116,6 @@ namespace Mineral.Core.Database
             this.account_store.Put(account.CreateDatabaseKey(), account);
         }
 
-        public BlockCapsule GetBlockById(SHA256Hash hash)
-        {
-            BlockCapsule block = this.khaos_database.GetBlock(hash);
-            if (block == null)
-            {
-                block = this.block_store.Get(hash.Hash);
-            }
-
-            return block;
-        }
-
-        public BlockCapsule GetBlockByNum(long num)
-        {
-            return GetBlockById(GetBlockIdByNum(num));
-        }
-
-        public BlockId GetBlockIdByNum(long num)
-        {
-            return this.block_index_store.Get(num);
-        }
-
         public AssetIssueStore GetAssetIssueStoreFinal()
         {
             if (DynamicProperties.GetAllowSameTokenName() == 0)
@@ -1763,40 +1743,40 @@ namespace Mineral.Core.Database
                 return;
             }
 
-            CountdownEvent cde = new CountdownEvent(tx_size);
-            List<Task<bool>> tasks = new List<Task<bool>>(tx_size);
+            int i = 0;
+            ManualResetEvent[] handles = new ManualResetEvent[tx_size];
 
             foreach (TransactionCapsule tx in block.Transactions)
             {
-                tasks.Add(
-                    Task.Factory.StartNew(() =>
-                    {
-                        try
-                        {
-                            tx.ValidateSignature(this);
-                        }
-                        catch (System.Exception e)
-                        {
-                            throw e;
-                        }
-                        finally
-                        {
-                            cde.Signal();
-                        }
+                handles[i] = new ManualResetEvent(false);
 
-                        return true;
-                    }));
-            }
-
-            cde.Wait();
-
-            foreach (Task<bool> result in tasks)
-            {
-                if (!result.Result)
+                ThreadPool.QueueUserWorkItem((object state) =>
                 {
-                    throw new ValidateSignatureException();
-                }
+                    object[] parameter = state as object[];
+
+                    DatabaseManager manager = (DatabaseManager)parameter[0];
+                    TransactionCapsule transaction = (TransactionCapsule)parameter[1];
+                    ManualResetEvent mre = (ManualResetEvent)parameter[2];
+
+                    try
+                    {
+                        if (!transaction.ValidateSignature(manager))
+                        {
+                            throw new ValidateSignatureException();
+                        }
+                    }
+                    catch (System.Exception e)
+                    {
+                        throw e;
+                    }
+                    finally
+                    {
+                        mre.Set();
+                    }
+                }, new object[] { this, tx, handles[i] } );
             }
+
+            WaitHandle.WaitAll(handles);
         }
 
         public void ValidateTapos(TransactionCapsule transaction)

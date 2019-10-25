@@ -89,20 +89,7 @@ namespace Mineral.Core.Net.MessageHandler
                     {
                         if (this.contract_queue.TryDequeue(out TxEvent tx_event))
                         {
-                            this.wait_queue.Enqueue(tx_event);
-                        }
-                    }
-
-                    while (this.cde.CurrentCount <= Args.Instance.Node.ValidateSignThreadNum)
-                    {
-                        if (this.wait_queue.TryDequeue(out TxEvent tx_event))
-                        {
-                            Task.Run(() =>
-                            {
-                                this.cde.AddCount();
-                                HandleTransaction(tx_event.Peer, tx_event.Message);
-                                this.cde.Signal();
-                            });
+                            ThreadPool.QueueUserWorkItem(new WaitCallback(HandleTransaction), new object[] { tx_event.Peer, tx_event.Message });
                         }
                     }
                 }
@@ -113,8 +100,12 @@ namespace Mineral.Core.Net.MessageHandler
             }, 1000, 20);
         }
 
-        private void HandleTransaction(PeerConnection peer, TransactionMessage message)
+        private static void HandleTransaction(object state)
         {
+            object[] parameter = state as object[];
+            PeerConnection peer = (PeerConnection)parameter[0];
+            TransactionMessage message = (TransactionMessage)parameter[1];
+
             if (peer.IsDisconnect)
             {
                 Logger.Warning(
@@ -161,6 +152,11 @@ namespace Mineral.Core.Net.MessageHandler
 
 
         #region External Method
+        public void Init()
+        {
+            HandleSmartContract();
+        }
+
         public void ProcessMessage(PeerConnection peer, MineralMessage message)
         {
             TransactionsMessage tx_message = (TransactionsMessage)message;
@@ -172,27 +168,13 @@ namespace Mineral.Core.Net.MessageHandler
 
                 if (type == ContractType.TriggerSmartContract || type == ContractType.CreateSmartContract)
                 {
-                    if (this.contract_queue.Count >= MAX_TX_SIZE)
-                    {
-                        Logger.Warning(
-                            string.Format("Add smart contract failed, queueSize {0}:{1}",
-                                          this.contract_queue.Count, wait_queue.Count));
-                    }
-                    else
-                    {
-                        this.contract_queue.Enqueue(new TxEvent(peer, new TransactionMessage(tx)));
-                    }
+                    this.contract_queue.Enqueue(new TxEvent(peer, new TransactionMessage(tx)));
                 }
                 else
                 {
-                    this.wait_queue.Enqueue(new TxEvent(peer, new TransactionMessage(tx)));
+                    ThreadPool.QueueUserWorkItem(new WaitCallback(HandleTransaction), new object[] { peer, new TransactionMessage(tx) });
                 }
             }
-        }
-
-        public void Init()
-        {
-            HandleSmartContract();
         }
 
         public void Close()

@@ -156,7 +156,7 @@ namespace Mineral.Common.Overlay.Server
                                 else
                                 {
                                     Logger.Debug(
-                                        string.Format("Send reqeust message {0}", message.Type.ToString()));
+                                        string.Format("Send message {0}", message.Type.ToString()));
                                 }
                             });
                         }

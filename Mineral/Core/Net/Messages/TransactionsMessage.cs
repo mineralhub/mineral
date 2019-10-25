@@ -27,6 +27,7 @@ namespace Mineral.Core.Net.Messages
         #region Constructor
         public TransactionsMessage(List<Transaction> txs)
         {
+            this.transactions = new Transactions();
             txs.ForEach(tx => this.transactions.Transactions_.Add(tx));
             this.type = (byte)MessageTypes.MsgType.TXS;
             this.data = this.transactions.ToByteArray();
