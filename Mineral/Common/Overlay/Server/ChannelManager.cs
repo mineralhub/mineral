@@ -6,6 +6,7 @@ using System.Runtime.Caching;
 using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading;
+using System.Threading.Tasks;
 using Mineral.Common.Overlay.Client;
 using Mineral.Common.Overlay.Discover.Node;
 using Mineral.Core;
@@ -80,10 +81,10 @@ namespace Mineral.Common.Overlay.Server
         {
             if (Args.Instance.Node.ListenPort > 0)
             {
-                new Thread(new ThreadStart(() =>
+                Task.Run(() =>
                 {
                     Manager.Instance.PeerServer.Start(Args.Instance.Node.ListenPort);
-                })).Start();
+                });
             }
 
             IPAddress address;

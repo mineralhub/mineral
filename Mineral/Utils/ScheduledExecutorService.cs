@@ -48,7 +48,6 @@ namespace Mineral.Utils
                         func();
                         duration = stop_watch.ElapsedMilliseconds - start;
 
-                        Thread.Sleep((int)(this.period - duration));
                         Thread.Sleep((int)(Math.Max(0, (this.period - duration))));
                     }
                 }
@@ -90,7 +89,7 @@ namespace Mineral.Utils
         public static ScheduledExecutorHandle Scheduled(Action action, int due_time, int period)
         {
             ScheduledExecutorHandle handle = new ScheduledExecutorHandle(due_time, period);
-            ThreadPool.QueueUserWorkItem(handle.Process, action);
+            new Thread(handle.Process).Start(action);
 
             return handle;
         }
