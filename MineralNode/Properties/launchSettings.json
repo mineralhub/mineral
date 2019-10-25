@@ -1,8 +1,0 @@
-{
-  "profiles": {
-    "MineralNode": {
-      "commandName": "Project",
-      "commandLineArgs": "-p 7b7bd9d74cefa1fad771bb18f8f305adb27a7eb4606cb3ea7885f3d4b3b19d8e --witness -c config.json"
-    }
-  }
-}
