@@ -229,7 +229,7 @@ namespace Mineral.Core.Witness
             {
                 Logger.Warning(
                     string.Format(
-                        "Witness is out of order, scheduledWitness[{0}],blockWitnessAddress[{1}],blockTimeStamp[{2}],slot[{3}]",
+                        "Witness is out of order, scheduled Witness[{0}],BlockWitnessAddress[{1}], BlockTimeStamp[{2}], Slot[{3}]",
                         scheduled_witness.ToByteArray().ToHexString(),
                         witness_address.ToByteArray().ToHexString(),
                         timestamp.ToDateTime().ToLocalTime(),
@@ -240,7 +240,7 @@ namespace Mineral.Core.Witness
 
             Logger.Debug(
                 string.Format(
-                    "Validate witnessSchedule successfully,scheduledWitness:{0}",
+                    "Validate witness schedule successfully, scheduled witness:{0}",
                     witness_address.ToByteArray().ToHexString()));
 
             return true;
@@ -358,7 +358,7 @@ namespace Mineral.Core.Witness
                     AccountCapsule account = this.db_manager.Account.Get(pair.Key.ToByteArray());
                     if (account == null)
                     {
-                        Logger.Warning("witnessAccount[" + pair.Key.ToByteArray().ToHexString() + "] not exists");
+                        Logger.Warning("Witness account[" + pair.Key.ToByteArray().ToHexString() + "] not exists");
                     }
                     else
                     {
@@ -410,9 +410,11 @@ namespace Mineral.Core.Witness
                 }
 
                 Logger.Info(
-                    string.Format("Update Witness, before:{0},\nafter:{1}  ",
-                        active_witness.Select(x => x.ToByteArray().ToHexString()).ToList(),
-                        new_active_witness.Select(x => x.ToByteArray().ToHexString()).ToList()));
+                    string.Format("Update witness, before:{0},\nafter:{1}  ",
+                                  string.Join(", ", active_witness.Select(x => x.ToByteArray().ToHexString()).ToList()),
+                                  string.Join(", ", new_active_witness.Select(x => x.ToByteArray().ToHexString()).ToList()))
+                );
+
             }
         }
 
