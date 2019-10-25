@@ -52,7 +52,7 @@ namespace Mineral.Common.Overlay.Discover.Node
         private NodeHandler replace_candidate = null;
 
         private readonly static int PingTimeout = 15000;
-        private readonly int ping_trials = 3;
+        private int ping_trials = 3;
         private volatile bool wait_pong = false;
         private volatile bool wait_neighbors = false;
         private long ping_sent = 0;

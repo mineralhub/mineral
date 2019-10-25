@@ -58,7 +58,7 @@ namespace Mineral.Core.Net.Service
             CacheItemPolicy policy = new CacheItemPolicy()
             {
                 AbsoluteExpiration = DateTime.Now.AddHours(1),
-            }
+            };
 
             this.request_ids.Add(key.ToString(), value, policy);
         }
