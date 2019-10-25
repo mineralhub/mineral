@@ -13,8 +13,12 @@
     <ProjectReference Include="..\Mineral\Mineral.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="Api\" />
+  </ItemGroup>
+
   <Target Name="PreBuild" BeforeTargets="PreBuildEvent">
-    <Exec Command="copy /y $(ProjectDir)config.json $(TargetDir)config.json" Condition=" '$(OS)' == 'Windows_NT' " />
+    <Exec Command="if not exist &quot;$(TargetDir)config.json&quot; copy /y $(ProjectDir)config.json $(TargetDir)config.json" Condition=" '$(OS)' == 'Windows_NT' " />
     <Exec Command="cp $(ProjectDir)config.json $(TargetDir)config.json" Condition=" '$(OS)' != 'Windows_NT' " />
   </Target>
 

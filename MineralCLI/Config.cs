@@ -49,7 +49,7 @@ namespace MineralCLI
                     result = true;
                 }
             }
-            catch (Exception e)
+            catch (System.Exception e)
             {
                 Console.WriteLine("Json invalid format. " + e.Message);
             }

@@ -8,12 +8,21 @@ using System.Security.Cryptography;
 using System.Text;
 using System.Numerics;
 using System.Globalization;
+using Mineral.Utils;
+using System.Reflection;
+using System.Diagnostics;
 
 namespace Mineral
 {
     public static class Helper
     {
         private static readonly DateTime unixEpoch = new DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc);
+
+        public static void IsNotNull(object obj, string message)
+        {
+            if (obj == null)
+                throw new ArgumentNullException(message);
+        }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         unsafe internal static int ToInt32(this byte[] value, int startIndex)
@@ -81,9 +90,32 @@ namespace Mineral
             return sb.ToString();
         }
 
-        public static int ToTimestamp(this DateTime time)
+        public static string ToHexString(byte value)
         {
-            return (int)(time.ToUniversalTime() - unixEpoch).TotalSeconds;
+            return string.Format("{0:x2}", value);
+        }
+
+        public static uint ToTimestamp(this DateTime time)
+        {
+            return (uint)(time.ToUniversalTime() - unixEpoch).TotalSeconds;
+        }
+
+        public static DateTime ToDateTime(this long timestamp)
+        {
+            return unixEpoch.AddMilliseconds(timestamp);
+        }
+
+        public static long CurrentTimeMillis()
+        {
+            return (long)(DateTime.UtcNow - unixEpoch).TotalMilliseconds;
+        }
+
+        public static long NanoTime()
+        {
+            long nano = 10000L * Stopwatch.GetTimestamp();
+            nano /= TimeSpan.TicksPerMillisecond;
+            nano *= 100L;
+            return nano;
         }
 
         public static byte[] HexToBytes(this string value)
@@ -269,66 +301,111 @@ namespace Mineral
 
         public static HashSet<string> ReadStringHashSet(this BinaryReader reader, int maxCount = int.MaxValue)
         {
-            int count = reader.ReadInt32();
-            if (maxCount < count)
-                count = maxCount;
+            HashSet<string> list = null;
+            try
+            {
+                int count = reader.ReadInt32();
+                if (maxCount < count)
+                    count = maxCount;
 
-            HashSet<string> list = new HashSet<string>(count);
-            for (int i = 0; i < count; ++i)
-                list.Add(reader.ReadString());
+                list = new HashSet<string>(count);
+                for (int i = 0; i < count; ++i)
+                    list.Add(reader.ReadString());
+            }
+            catch (Exception e)
+            {
+                Logger.Warning("[Warning] " + MethodBase.GetCurrentMethod().Name + " : " + e.Message);
+                list = null;
+            }
             return list;
         }
 
         public static List<T> ReadSerializableArray<T>(this BinaryReader reader, int maxCount = int.MaxValue) where T : ISerializable, new()
         {
-            int count = reader.ReadInt32();
-            if (maxCount < count)
-                count = maxCount;
-
-            List<T> list = new List<T>(count);
-            for (int i = 0; i < count; ++i)
+            List<T> list = null;
+            try
             {
-                list.Add(new T());
-                list[i].Deserialize(reader);
+                int count = reader.ReadInt32();
+                if (maxCount < count)
+                    count = maxCount;
+
+                list = new List<T>(count);
+                for (int i = 0; i < count; ++i)
+                {
+                    list.Add(new T());
+                    list[i].Deserialize(reader);
+                }
+            }
+            catch (Exception e)
+            {
+                Logger.Warning("[Warning] " + MethodBase.GetCurrentMethod().Name + " : " + e.Message);
+                list = null;
             }
             return list;
         }
 
         public static Dictionary<TKey, TValue> ReadSerializableDictionary<TKey, TValue>(this BinaryReader reader, int maxCount = int.MaxValue) where TKey : ISerializable, new() where TValue : ISerializable, new()
         {
-            int count = reader.ReadInt32();
-            if (maxCount < count)
-                count = maxCount;
-
-            Dictionary<TKey, TValue> list = new Dictionary<TKey, TValue>(count);
-            for (int i = 0; i < count; ++i)
+            Dictionary<TKey, TValue> list = null;
+            try
             {
-                TKey k = new TKey();
-                TValue v = new TValue();
-                k.Deserialize(reader);
-                v.Deserialize(reader);
-                list.Add(k, v);
+                int count = reader.ReadInt32();
+                if (maxCount < count)
+                    count = maxCount;
+
+                list = new Dictionary<TKey, TValue>(count);
+                for (int i = 0; i < count; ++i)
+                {
+                    TKey k = new TKey();
+                    TValue v = new TValue();
+                    k.Deserialize(reader);
+                    v.Deserialize(reader);
+                    list.Add(k, v);
+                }
+            }
+            catch (Exception e)
+            {
+                Logger.Warning("[Warning] " + MethodBase.GetCurrentMethod().Name + " : " + e.Message);
+                list = null;
             }
             return list;
         }
 
         public static T ReadSerializable<T>(this BinaryReader reader) where T : ISerializable, new()
         {
-            T obj = new T();
-            obj.Deserialize(reader);
+            T obj = default(T);
+            try
+            {
+                obj = new T();
+                obj.Deserialize(reader);
+            }
+            catch (Exception e)
+            {
+                Logger.Warning("[Warning] " + MethodBase.GetCurrentMethod().Name + " : " + e.Message);
+                obj = default(T);
+            }
             return obj;
         }
 
         public static byte[] ReadByteArray(this BinaryReader reader)
         {
-            int count = reader.ReadInt32();
-            if (count == 0)
-                return null;
-
-            byte[] array = new byte[count];
-            for (int i = 0; i < array.Length; ++i)
+            byte[] array = null;
+            try
             {
-                array[i] = reader.ReadByte();
+                int count = reader.ReadInt32();
+                if (count == 0)
+                    return null;
+
+                array = new byte[count];
+                for (int i = 0; i < array.Length; ++i)
+                {
+                    array[i] = reader.ReadByte();
+                }
+            }
+            catch (Exception e)
+            {
+                Logger.Warning("[Warning] " + MethodBase.GetCurrentMethod().Name + " : " + e.Message);
+                array = null;
             }
             return array;
         }
@@ -373,22 +450,20 @@ namespace Mineral
             }
         }
 
-        public static Fixed8 Sum<T>(this IEnumerable<T> source, Func<T, Fixed8> selector)
+        public unsafe static uint InterlockedExchange(ref uint location, uint value)
         {
-            return source.Select(selector).Sum();
+            fixed (uint* ptr = &location)
+            {
+                return (uint)System.Threading.Interlocked.Exchange(ref *(int*)ptr, (int)value);
+            }
         }
 
-        public static Fixed8 Sum(this IEnumerable<Fixed8> source)
+        public unsafe static uint InterlockedCompareExchange(ref uint location, uint value, uint comparand)
         {
-            long sum = 0;
-            checked
+            fixed (uint* ptr = &location)
             {
-                foreach (Fixed8 item in source)
-                {
-                    sum += item.Value;
-                }
+                return (uint)System.Threading.Interlocked.CompareExchange(ref *(int*)ptr, (int)value, (int)comparand);
             }
-            return new Fixed8(sum);
         }
     }
 }

@@ -2,6 +2,10 @@
 using System.Text;
 using System.IO;
 using Mineral;
+using Mineral.Core.Config.Arguments;
+using Mineral.Core;
+using Mineral.Common.Application;
+using Mineral.Core.Service;
 
 namespace MineralNode
 {
@@ -22,9 +26,23 @@ namespace MineralNode
         {
             AppDomain.CurrentDomain.UnhandledException += UnhandledException;
 
-            MainService service = new MainService();
-            if (service.Initialize(args))
-                service.Run();
+            Logger.Info("Mineral full-node Start...........");
+
+            if (Args.Instance.SetParam(args, DefineParameter.CONF_FILE))
+            {
+                Manager.Instance.Init();
+
+                Application app = new Application();
+
+                if (Args.Instance.IsWitness)
+                    app.AddService(new WitnessService(Manager.Instance));
+
+                app.AddService(new RpcService());
+
+                app.InitService(Args.Instance);
+                app.StartService();
+                app.Startup();
+            }
         }
     }
 }

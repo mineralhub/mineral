@@ -32,3 +32,4 @@ Tester/error-log
 /MineralCLI/bin
 /MineralNode/obj
 /MineralNode/bin
+/MineralNode/Properties/launchSettings.json

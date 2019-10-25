@@ -22,7 +22,27 @@ namespace Mineral.Wallets.KeyStore
             }
         }
 
+        #region Field
+        #endregion
 
+
+        #region Property
+        #endregion
+
+
+        #region Contructor
+        #endregion
+
+
+        #region Event Method
+        #endregion
+
+
+        #region Internal Method
+        #endregion
+
+
+        #region External Method
         public static bool GenerateScrypt(string password, int n, int r, int p, int dklen, out byte[] salt, out byte[] derivedkey)
         {
             bool result = false;
@@ -99,5 +119,6 @@ namespace Mineral.Wallets.KeyStore
             byte[] generateMac = GenerateMac(derivedkey, ciphertext);
             return generateMac.ToHexString().Equals(mac.ToHexString());
         }
+        #endregion
     }
 }

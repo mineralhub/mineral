@@ -42,7 +42,7 @@ namespace MineralNode
         {
             if (data == null)
             {
-                Logger.Log("option data not loaded.");
+                Logger.Warning("option data not loaded.");
                 return false;
             }
 
@@ -51,14 +51,14 @@ namespace MineralNode
                 System.Collections.IEnumerator em = error.Keys.GetEnumerator();
                 em.MoveNext();
                 string message = "Invalid option : " + em.Current;
-                Logger.Log(message);
+                Logger.Warning(message);
                 return false;
             }
 
             if (data.ContainsKey(OptionName.KeyStoreDir) && data.ContainsKey(OptionName.PrivateKey))
             {
                 string message = OptionName.KeyStoreDir + "and " + OptionName.PrivateKey + "can't used together.";
-                Logger.Log(message);
+                Logger.Warning(message);
                 return false;
             }
             return true;
@@ -92,13 +92,13 @@ namespace MineralNode
             AssemblyName assembly = Assembly.GetEntryAssembly().GetName();
 
             // VERSION
-            string message = string.Empty
+            string message = ""
                 + "\n"
                 + (assembly.Name + "".PadLeft(2) + assembly.Version.ToString())
                 ;
 
             // USAGE
-            message += string.Empty
+            message += ""
                 + "\n"
                 + "\n" + "".PadLeft(0) + "USAGE : "
                 + "\n" + "".PadLeft(10) + string.Format("Mineral.dll {0} <dir> {1} <password> [options]", OptionName.KeyStoreDir, OptionName.KeyStorePassword)
@@ -106,7 +106,7 @@ namespace MineralNode
                 ;
 
             // DEFAULT OPTIONS
-            message += string.Empty
+            message += ""
                 + "\n"
                 + "\n" + "".PadLeft(1) + "--DEFAULT OPTIONS : ";
             foreach (PropertyInfo info in typeof(OptionDefault).GetProperties())
@@ -120,7 +120,7 @@ namespace MineralNode
             }
 
             // WALLET OPTIONS
-            message += string.Empty
+            message += ""
                 + "\n"
                 + "\n" + "".PadLeft(1) + "--WALLET OPTIONS : ";
             foreach (PropertyInfo info in typeof(OptionWallet).GetProperties())
@@ -133,7 +133,7 @@ namespace MineralNode
                 }
             }
 
-            message += string.Empty
+            message += ""
                 + "\n"
                 + "\n" + "".PadLeft(0) + "MISC OPTION :"
                 + "\n" + "".PadLeft(4) + "-h   -help"
@@ -143,4 +143,3 @@ namespace MineralNode
         }
     }
 }
-

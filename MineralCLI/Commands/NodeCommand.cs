@@ -1,42 +1,48 @@
-﻿using System;
+﻿using MineralCLI.Network;
+using MineralCLI.Util;
+using Protocol;
+using System;
 using System.Collections.Generic;
 using System.Text;
-using Newtonsoft.Json.Linq;
-using Mineral;
-using Mineral.Network.RPC.Command;
-using MineralCLI.Network;
 
 namespace MineralCLI.Commands
 {
     public class NodeCommand : BaseCommand
     {
-        public static bool OnNodeList(string[] parameters)
+        /// <summary>
+        /// Get information node list
+        /// </summary>
+        /// <param name="parameters">
+        /// Parameter Index
+        /// </param>
+        /// <returns></returns>
+        public static bool ListNode(string command, string[] parameters)
         {
-            string[] usage = new string[] { string.Format(
-                "{0} [command option]\n"
-                , RpcCommand.Node.NodeList) };
-            string[] command_option = new string[] { HelpCommandOption.Help };;
+            string[] usage = new string[] {
+                string.Format("{0} [command option] \n", command) };
 
-            if (parameters.Length > 2)
+            string[] command_option = new string[] { HelpCommandOption.Help };
+
+            if (parameters != null)
             {
                 OutputHelpMessage(usage, null, command_option, null);
                 return true;
             }
 
-            int index = 1;
-            if (parameters.Length > index)
+            try
             {
-                string option = parameters[index];
-                if (option.ToLower().Equals("-help") || option.ToLower().Equals("-h"))
+                RpcApiResult result = RpcApi.ListNode(out NodeList nodes);
+                if (result.Result)
                 {
-                    OutputHelpMessage(usage, null, command_option, null);
-                    index++;
-                    return true;
+                    Console.WriteLine(PrintUtil.PrintNodeList(nodes));
                 }
-            }
 
-            JArray param = new JArray(new ArraySegment<string>(parameters, index, parameters.Length - index));
-            SendCommand(Config.Instance.BlockVersion, RpcCommand.Node.NodeList, new JArray());
+                OutputResultMessage(command, result.Result, result.Code, result.Message);
+            }
+            catch (System.Exception e)
+            {
+                Console.WriteLine(e.Message + "\n\n" + e.StackTrace);
+            }
 
             return true;
         }
