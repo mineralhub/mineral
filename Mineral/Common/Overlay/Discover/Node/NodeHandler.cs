@@ -307,7 +307,7 @@ namespace Mineral.Common.Overlay.Discover.Node
                 {
                     Logger.Error("Unhandled exception " + e.Message);
                 }
-            }, 0, (int)PingTimeout);
+            }, (int)PingTimeout, (int)PingTimeout);
         }
 
         public void SendPong(long sequence)
