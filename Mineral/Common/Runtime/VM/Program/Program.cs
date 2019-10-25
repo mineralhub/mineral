@@ -301,10 +301,12 @@ namespace Mineral.Common.Runtime.VM.Program
             IDeposit deposit = this.contract_state.NewDepositChild();
             long old_balance = deposit.GetBalance(new_address);
 
-            SmartContract smart_contract = new SmartContract();
-            smart_contract.ContractAddress = ByteString.CopyFrom(new_address);
-            smart_contract.ConsumeUserResourcePercent = 100;
-            smart_contract.OriginAddress = ByteString.CopyFrom(sender_address);
+            SmartContract smart_contract = new SmartContract()
+            {
+                ContractAddress = ByteString.CopyFrom(new_address),
+                ConsumeUserResourcePercent = 100,
+                OriginAddress = ByteString.CopyFrom(sender_address),
+            };
 
             deposit.CreateContract(new_address, new ContractCapsule(smart_contract));
             deposit.CreateAccount(new_address, "CreatedByContract", Protocol.AccountType.Contract);
@@ -364,8 +366,11 @@ namespace Mineral.Common.Runtime.VM.Program
             else if (program_code.IsNotNullOrEmpty())
             {
                 VM vm = new VM();
-                Program program = new Program(program_code, program_invoke, internal_transaction, this.block);
-                program.RootTransactionId = this.root_transaction_id;
+                Program program = new Program(program_code, program_invoke, internal_transaction, this.block)
+                {
+                    RootTransactionId = this.root_transaction_id,
+                };
+
                 vm.Play(program);
                 create_result = program.Result;
                 this.trace.Merge(program.Trace);
@@ -841,8 +846,10 @@ namespace Mineral.Common.Runtime.VM.Program
                                                             msg.Energy.ToLongSafety());
 
                 VM vm = new VM();
-                Program program = new Program(program_code, program_invoke, internal_transaction, this.block);
-                program.RootTransactionId = this.root_transaction_id;
+                Program program = new Program(program_code, program_invoke, internal_transaction, this.block)
+                {
+                    RootTransactionId = this.root_transaction_id,
+                };
                 vm.Play(program);
                 call_result = program.result;
 

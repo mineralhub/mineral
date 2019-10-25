@@ -56,9 +56,12 @@ namespace Mineral.Common.Runtime.VM
 
         public static TransactionInfo.Types.Log BuildLog(LogInfo info)
         {
-            TransactionInfo.Types.Log log = new TransactionInfo.Types.Log();
-            log.Address = ByteString.CopyFrom(info.Address);
-            log.Data = ByteString.CopyFrom(info.Data);
+            TransactionInfo.Types.Log log = new TransactionInfo.Types.Log()
+            {
+                Address = ByteString.CopyFrom(info.Address),
+                Data = ByteString.CopyFrom(info.Data),
+            };
+
             log.Topics.AddRange(log.Topics);
 
             return log;

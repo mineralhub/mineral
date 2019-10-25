@@ -111,7 +111,7 @@ namespace Mineral.Core.Database
 
         public BlockId GenesisBlockId
         {
-            get { return this.genesis_block != null ? this.genesis_block.Id : null; }
+            get { return this.genesis_block?.Id; }
         }
 
         public BlockId SolidBlockId
@@ -329,8 +329,10 @@ namespace Mineral.Core.Database
                 account.IsWitness = true;
                 this.account_store.Put(w.Address, account);
 
-                WitnessCapsule witness = new WitnessCapsule(address, w.VoteCount, w.Url);
-                witness.IsJobs = true;
+                WitnessCapsule witness = new WitnessCapsule(address, w.VoteCount, w.Url)
+                {
+                    IsJobs = true,
+                };
                 this.witness_store.Put(w.Address, witness);
 
             });
@@ -1245,8 +1247,10 @@ namespace Mineral.Core.Database
 
             long postponed_tx_count = 0;
 
-            BlockCapsule block = new BlockCapsule(number + 1, prev_hash, when, witness.Address);
-            block.IsGenerateMyself = true;
+            BlockCapsule block = new BlockCapsule(number + 1, prev_hash, when, witness.Address)
+            {
+                IsGenerateMyself = true
+            };
             this.session.Reset();
             this.session.SetValue(this.revoking_store.BuildSession());
 
@@ -1788,7 +1792,7 @@ namespace Mineral.Core.Database
             {
                 BytesCapsule recent_block = this.recent_block_store.Get(ref_bytes);
 
-                byte[] hash = recent_block != null ? recent_block.Data : null;
+                byte[] hash = recent_block?.Data;
                 if (!hash.SequenceEqual(ref_hash))
                 {
                     string msg = string.Format("Tapos failed, different block hash, {0}, {1} , recent block {2}, solid block {3} head block {4}",

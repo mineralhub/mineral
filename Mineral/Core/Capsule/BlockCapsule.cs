@@ -158,8 +158,10 @@ namespace Mineral.Core.Capsule
             header.RawData.Version = Parameter.ChainParameters.BLOCK_VERSION;
             header.RawData.WitnessAddress = witness_address;
 
-            this.block = new Block();
-            this.block.BlockHeader = header;
+            this.block = new Block()
+            {
+                BlockHeader = header,
+            };
 
             InitTransaction();
         }

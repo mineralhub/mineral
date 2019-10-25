@@ -405,8 +405,7 @@ namespace Mineral.Core.Config.Arguments
                         KeyStore keystore = new KeyStore();
                         keystore = JsonConvert.DeserializeObject<KeyStore>(json.ToString());
 
-                        byte[] privatekey = null;
-                        if (!KeyStoreService.DecryptKeyStore(password, keystore, out privatekey))
+                        if (!KeyStoreService.DecryptKeyStore(password, keystore, out byte[] privatekey))
                         {
                             throw new KeyStoreException(
                                 "Fail to decrypt keystore file."

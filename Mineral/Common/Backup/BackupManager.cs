@@ -24,8 +24,8 @@ namespace Mineral.Common.Backup
         }
 
         #region Field
-        private int priority = (int)Args.Instance.Node.Backup.Priority;
-        private int port = (int)Args.Instance.Node.Backup.Port;
+        private readonly int priority = (int)Args.Instance.Node.Backup.Priority;
+        private readonly int port = (int)Args.Instance.Node.Backup.Port;
         private string local_ip = "";
         private BlockingCollection<string> members = new BlockingCollection<string>();
         private ScheduledExecutorHandle service_handler = null;

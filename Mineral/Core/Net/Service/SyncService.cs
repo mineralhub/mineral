@@ -55,8 +55,10 @@ namespace Mineral.Core.Net.Service
         #region Internal Method
         private void AddRequestBlockIds(BlockId key, long value)
         {
-            CacheItemPolicy policy = new CacheItemPolicy();
-            policy.AbsoluteExpiration = DateTime.Now.AddHours(1);
+            CacheItemPolicy policy = new CacheItemPolicy()
+            {
+                AbsoluteExpiration = DateTime.Now.AddHours(1),
+            }
 
             this.request_ids.Add(key.ToString(), value, policy);
         }

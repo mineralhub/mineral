@@ -13,7 +13,7 @@ namespace Mineral.Common.Overlay.Discover
     {
         #region Field
         private byte[] node_id = null;
-        private NodeManager node_manager = null;
+        private readonly NodeManager node_manager = null;
         #endregion
 
 

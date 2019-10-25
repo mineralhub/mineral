@@ -26,10 +26,10 @@ namespace Mineral.Core.Service
         private static volatile bool need_sync_check = (bool)Args.Instance.Block.NeedSyncCheck;
 
         private Thread thread_generate = null;
-        private DatabaseManager db_manager = null;
-        private BackupManager backup_manager = null;
-        private MineralNetService net_service = null;
-        private BackupServer backup_server = null;
+        private readonly DatabaseManager db_manager = null;
+        private readonly BackupManager backup_manager = null;
+        private readonly MineralNetService net_service = null;
+        private readonly BackupServer backup_server = null;
 
         private Dictionary<ByteString, byte[]> privatekeys = new Dictionary<ByteString, byte[]>();
         private Dictionary<byte[], byte[]> privatekey_addresses = new Dictionary<byte[], byte[]>();
