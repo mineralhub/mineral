@@ -240,7 +240,7 @@ namespace Mineral.Common.Overlay.Server
                     this.thread_send_message.Join(20);
                     this.thread_send_message = null;
                 }
-                catch (Exception e)
+                catch
                 {
                     Logger.Warning(
                         string.Format("Join send thread failed, peer {0}", this.context.Channel.RemoteAddress));

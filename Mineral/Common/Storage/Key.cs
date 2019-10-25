@@ -49,6 +49,11 @@ namespace Mineral.Common.Storage
             return new Key(data);
         }
 
+        public override int GetHashCode()
+        {
+            return base.GetHashCode();
+        }
+
         public override bool Equals(object obj)
         {
             if (this == obj)

@@ -170,7 +170,7 @@ namespace Mineral.Core.Actuator
                 }
                 catch (ItemNotFoundException e)
                 {
-                    throw new ContractValidateException("Exchange[" + contract.ExchangeId + "] not exists");
+                    throw new ContractValidateException("Exchange[" + contract.ExchangeId + "] not exists", e);
                 }
 
                 if (!account.Address.Equals(exchange.CreatorAddress))

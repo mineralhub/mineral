@@ -51,7 +51,7 @@ namespace Mineral.Common.Net.Udp.Handler
                 UdpEvent udp_event = new UdpEvent(Message.Message.Parse(encoded), (IPEndPoint)message.Sender);
                 output.Add(udp_event);
             }
-            catch (Exception e)
+            catch
             {
                 Logger.Error(
                     string.Format("Parse msg failed, type {0}, length {1}, address {2}", encoded[0], encoded.Length, message.Sender));

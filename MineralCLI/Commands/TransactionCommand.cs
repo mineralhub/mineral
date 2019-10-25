@@ -970,7 +970,7 @@ namespace MineralCLI.Commands
                     {
                         resource_code = int.Parse(parameters[2]);
                     }
-                    catch (System.Exception e)
+                    catch
                     {
                         address = Wallet.Base58ToAddress(parameters[3]);
                     }
@@ -1046,7 +1046,7 @@ namespace MineralCLI.Commands
                     {
                         resource_code = int.Parse(parameters[0]);
                     }
-                    catch (System.Exception e)
+                    catch (System.Exception)
                     {
                         address = Wallet.Base58ToAddress(parameters[0]);
                     }

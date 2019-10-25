@@ -319,7 +319,7 @@ namespace Mineral.Common.Runtime.VM.Program
                 }
                 catch (ContractValidateException e)
                 {
-                    throw new ByteCodeExecutionException(VALIDATE_FOR_SMART_CONTRACT_FAILURE);
+                    throw new ByteCodeExecutionException(VALIDATE_FOR_SMART_CONTRACT_FAILURE, e);
                 }
                 deposit.AddBalance(sender_address, -endowment);
                 new_balance = deposit.AddBalance(new_address, endowment);
@@ -637,7 +637,7 @@ namespace Mineral.Common.Runtime.VM.Program
                     }
                     catch (ContractValidateException e)
                     {
-                        throw new ByteCodeExecutionException("transfer failure");
+                        throw new ByteCodeExecutionException("transfer failure", e);
                     }
                 }
                 else
@@ -648,7 +648,7 @@ namespace Mineral.Common.Runtime.VM.Program
                     }
                     catch (ContractValidateException e)
                     {
-                        throw new ByteCodeExecutionException(VALIDATE_FOR_SMART_CONTRACT_FAILURE);
+                        throw new ByteCodeExecutionException(VALIDATE_FOR_SMART_CONTRACT_FAILURE, e);
                     }
                     deposit.AddTokenBalance(sender_address, token_id, -endowment);
                     deposit.AddTokenBalance(context_address, token_id, endowment);

@@ -81,7 +81,6 @@ namespace Mineral.Common.Overlay.Discover.Node
 
         private IMessageHandler message_sender = null;
         private NodeTable table = null;
-        private Node node = null;
         private Node home_node = null;
         private Dictionary<string, NodeHandler> node_handlers = new Dictionary<string, NodeHandler>();
         private Dictionary<IDiscoverListener, ListenerHandler> listeners = new Dictionary<IDiscoverListener, ListenerHandler>();
@@ -214,7 +213,7 @@ namespace Mineral.Common.Overlay.Discover.Node
                 {
                     handler.CheckAll();
                 }
-                catch (Exception e)
+                catch
                 {
                     Logger.Error("Exception processing listener: " + handler);
                 }

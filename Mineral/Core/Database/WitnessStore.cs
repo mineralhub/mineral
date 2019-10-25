@@ -48,7 +48,7 @@ namespace Mineral.Core.Database
 
 
         #region External Method
-        public WitnessCapsule Get(byte[] key)
+        public override WitnessCapsule Get(byte[] key)
         {
             byte[] value = this.revoking_db.GetUnchecked(key);
             return value.IsNotNullOrEmpty() ? new WitnessCapsule(value) : null;

@@ -125,7 +125,7 @@ namespace Mineral.Core.Config.Arguments
         private string storage_transaction_history_switch = "";
 
         [Parameter("--storage-db-version", Description = "Storage db version.(1 or 2)")]
-        private String storage_version = "";
+        private string storage_version = "";
 
         [Parameter("--support-constant")]
         private bool support_constanct = false;

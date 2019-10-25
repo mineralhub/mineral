@@ -370,13 +370,13 @@ namespace Mineral.Core.Database
                         catch (ItemNotFoundException e)
                         {
                             Logger.Info("initilaize transaction cache error.");
-                            throw new IllegalStateException("initilaize transaction cache error.");
+                            throw new IllegalStateException("initilaize transaction cache error.", e);
 
                         }
                         catch (BadItemException e)
                         {
                             Logger.Info("initilaize transaction cache error.");
-                            throw new IllegalStateException("initilaize transaction cache error.");
+                            throw new IllegalStateException("initilaize transaction cache error.", e);
                         }
 
                     }).Wait();
@@ -1019,7 +1019,7 @@ namespace Mineral.Core.Database
             {
                 this.khaos_database.Start(GetBlockById(this.dynamic_properties_store.GetLatestBlockHeaderHash()));
             }
-            catch (ItemNotFoundException e)
+            catch (ItemNotFoundException)
             {
                 Logger.Error(
                     string.Format(
@@ -1034,7 +1034,7 @@ namespace Mineral.Core.Database
 
                 Environment.Exit(1);
             }
-            catch (BadItemException e)
+            catch (BadItemException)
             {
                 Logger.Error("DB data broken!");
                 Logger.Error(
@@ -1174,7 +1174,7 @@ namespace Mineral.Core.Database
                 return this.khaos_database.ContainInMiniStore(hash)
                     || this.block_store.Get(hash.Hash) != null;
             }
-            catch (ArgumentException e)
+            catch (ArgumentException)
             {
                 return false;
             }
@@ -1191,7 +1191,7 @@ namespace Mineral.Core.Database
             {
                 return this.block_store.Get(blockId.Hash) != null;
             }
-            catch (ItemNotFoundException e)
+            catch (ItemNotFoundException)
             {
                 return false;
             }
@@ -1310,31 +1310,31 @@ namespace Mineral.Core.Database
                 PushBlock(block);
                 return block;
             }
-            catch (TaposException e)
+            catch (TaposException)
             {
                 Logger.Info("contract not processed during TaposException");
             }
-            catch (TooBigTransactionException e)
+            catch (TooBigTransactionException)
             {
                 Logger.Info("contract not processed during TooBigTransactionException");
             }
-            catch (DupTransactionException e)
+            catch (DupTransactionException)
             {
                 Logger.Info("contract not processed during DupTransactionException");
             }
-            catch (TransactionExpirationException e)
+            catch (TransactionExpirationException)
             {
                 Logger.Info("contract not processed during TransactionExpirationException");
             }
-            catch (BadNumberBlockException e)
+            catch (BadNumberBlockException)
             {
                 Logger.Info("generate block using wrong number");
             }
-            catch (BadBlockException e)
+            catch (BadBlockException)
             {
                 Logger.Info("block exception");
             }
-            catch (NonCommonBlockException e)
+            catch (NonCommonBlockException)
             {
                 Logger.Info("non common exception");
             }
@@ -1347,7 +1347,7 @@ namespace Mineral.Core.Database
             {
                 Logger.Warning(e.Message);
             }
-            catch (TooBigTransactionResultException e)
+            catch (TooBigTransactionResultException)
             {
                 Logger.Info("contract not processed during TooBigTransactionResultException");
             }
@@ -1599,7 +1599,7 @@ namespace Mineral.Core.Database
                 {
                     PreValidateTransactionSign(block);
                 }
-                catch (ThreadInterruptedException e)
+                catch (ThreadInterruptedException)
                 {
                     Logger.Error("parallel check sign interrupted exception! block info : " + block.ToString());
                     Thread.CurrentThread.Interrupt();
@@ -1811,7 +1811,7 @@ namespace Mineral.Core.Database
                                             HeadBlockId.GetString());
 
                 Logger.Info(msg);
-                throw new TaposException(msg);
+                throw new TaposException(msg, e);
             }
         }
 

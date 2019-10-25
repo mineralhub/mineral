@@ -287,7 +287,7 @@ namespace Mineral.Core.Net.Service
                         StartFetchSyncBlock();
                     }
                 }
-                catch (System.Exception e)
+                catch (System.Exception)
                 {
                     Logger.Error("Fetch sync block error.");
                 }
@@ -303,7 +303,7 @@ namespace Mineral.Core.Net.Service
                         HandleSyncBlock();
                     }
                 }
-                catch (System.Exception e)
+                catch (System.Exception)
                 {
                     Logger.Error("Handle sync block error.");
                 }

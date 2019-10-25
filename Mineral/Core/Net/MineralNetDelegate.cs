@@ -140,7 +140,8 @@ namespace Mineral.Core.Net
             catch (StoreException e)
             {
                 throw new P2pException(Exception.P2pException.ErrorType.DB_ITEM_NOT_FOUND,
-                    "type: " + type + ", hash: " + hash.Hash.ToHexString());
+                    "type: " + type + ", hash: " + hash.Hash.ToHexString(),
+                    e);
             }
 
             return result;

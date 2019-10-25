@@ -64,7 +64,7 @@ namespace Mineral.Common.Runtime.VM
             return log;
         }
 
-        public string ToString()
+        public override string ToString()
         {
             StringBuilder result = new StringBuilder();
             result.Append("[");

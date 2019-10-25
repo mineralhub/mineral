@@ -14,7 +14,6 @@ namespace Mineral.Common.Application
         private DatabaseManager db_manager = Manager.Instance.DBManager;
         private BlockStore block_store = null;
         private ServiceContainer services = null;
-        private bool is_producer = false;
         #endregion
 
 

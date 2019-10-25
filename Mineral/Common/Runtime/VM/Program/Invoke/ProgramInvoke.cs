@@ -235,7 +235,7 @@ namespace Mineral.Common.Runtime.VM.Program.Invoke
             }
             catch (System.Exception e)
             {
-                throw new ArgumentException("cannot find block num");
+                throw new ArgumentException("cannot find block num", e);
             }
         }
 

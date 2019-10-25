@@ -83,7 +83,7 @@ namespace Mineral.Common.Backup
 
                 this.local_ip = address.ToString();
             }
-            catch (Exception e)
+            catch
             {
                 Logger.Warning("Get local ip failed.");
             }

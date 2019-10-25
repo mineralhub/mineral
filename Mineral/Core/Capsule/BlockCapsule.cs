@@ -186,7 +186,7 @@ namespace Mineral.Core.Capsule
             }
             catch (System.Exception e)
             {
-                throw new ArgumentException("Block proto data parse exception");
+                throw new ArgumentException("Block proto data parse exception", e);
             }
         }
 

@@ -248,6 +248,11 @@ namespace Mineral.Cryptography.zksnark
             return string.Format("({0}; {1}; {2})", x.ToString(), y.ToString(), z.ToString());
         }
 
+        public override int GetHashCode()
+        {
+            return base.GetHashCode();
+        }
+
         public override bool Equals(object o)
         {
             if (this == o)

@@ -140,7 +140,7 @@ namespace Mineral.Core.Net.MessageHandler
                     peer.Disconnect(ReasonCode.BadTx);
                 }
             }
-            catch (System.Exception e)
+            catch
             {
                 Logger.Error(
                     string.Format("Tx {0} from peer {1} process failed.",

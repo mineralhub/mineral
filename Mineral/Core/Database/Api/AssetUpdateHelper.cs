@@ -103,7 +103,7 @@ namespace Mineral.Core.Database.Api
                 }
                 catch (System.Exception e)
                 {
-                    throw new System.Exception("Block not exists,num:" + block_num);
+                    throw new System.Exception("Block not exists,num:" + block_num, e);
                 }
 
                 block_num++;
