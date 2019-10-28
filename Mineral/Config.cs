@@ -36,13 +36,14 @@ namespace Mineral
         public string Type { get; set; }
     }
 
-    public class WitnessConfig
+    public class LocalWitnessConfig
     {
-        [JsonProperty("local_witness")]
-        public List<string> LocalWitness { get; set; }
-        [JsonProperty("local_witness_account_address")]
+        [JsonProperty("witness")]
+        [JsonConverter(typeof(JsonListByteArrayConverter))]
+        public List<byte[]> LocalWitness { get; set; }
+        [JsonProperty("address")]
         public string LocalWitnessAccountAddress { get; set; }
-        [JsonProperty("local_witness_keystore")]
+        [JsonProperty("keystore")]
         public List<string> LocalWitnessKeyStore { get; set; }
     }
 
@@ -319,8 +320,8 @@ namespace Mineral
         public LogConfig Log { get; set; }
         [JsonProperty("net")]
         public NetConfig Net { get; set; }
-        [JsonProperty("witness")]
-        public WitnessConfig Witness { get; set; }
+        [JsonProperty("local_witness")]
+        public LocalWitnessConfig LocalWitness { get; set; }
         [JsonProperty("stroage")]
         public StorageConfig Storage { get; set; }
         [JsonProperty("seed_node")]

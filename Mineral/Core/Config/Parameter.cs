@@ -12,6 +12,7 @@ namespace Mineral.Core.Config
             public static readonly int WITNESS_STANDBY_LENGTH = 127;
             public static readonly int SOLIDIFIED_THRESHOLD = 70;
             public static readonly int PRIVATE_KEY_LENGTH = 64;
+            public static readonly int PRIVATE_KEY_BYTE_LENGTH = 32;
             public static readonly int MAX_ACTIVE_WITNESS_NUM = 27;
             public static readonly int BLOCK_SIZE = 2_000_000;
             public static readonly int BLOCK_PRODUCED_INTERVAL = 3000;

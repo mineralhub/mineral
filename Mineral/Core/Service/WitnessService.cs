@@ -358,7 +358,7 @@ namespace Mineral.Core.Service
             if (Args.Instance.LocalWitness.GetPrivateKey().IsNullOrEmpty())
                 return;
 
-            byte[] privatekey = Helper.HexToBytes(Args.Instance.LocalWitness.GetPrivateKey());
+            byte[] privatekey = Args.Instance.LocalWitness.GetPrivateKey();
             byte[] witness_address = Args.Instance.LocalWitness.GetWitnessAccountAddress();
             byte[] privatekey_address = Wallet.PublickKeyToAddress(ECKey.FromPrivateKey(privatekey).PublicKey);
 
