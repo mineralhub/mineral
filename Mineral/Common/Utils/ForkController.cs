@@ -169,21 +169,22 @@ namespace Mineral.Common.Utils
                 string.Format(
                     "*******update hard fork:{0}, witness size:{1}, solt:{2}, witness:{3}, version:{4}",
 
-                    Enumerable.Zip<ByteString, byte, KeyValuePair<ByteString, byte>>(
-                                    witnesses,
-                                    stats,
-                                    (ByteString key, byte value) =>
+                    string.Join(", ",
+                        Enumerable.Zip<ByteString, byte, KeyValuePair<ByteString, byte>>(
+                                        witnesses,
+                                        stats,
+                                        (ByteString key, byte value) =>
+                                        {
+                                            return new KeyValuePair<ByteString, byte>(key, value);
+                                        })
+                                    .Select(pair =>
                                     {
-                                        return new KeyValuePair<ByteString, byte>(key, value);
+                                        string address = Wallet.AddressToBase58(pair.Key.ToByteArray());
+                                        address = address.Substring(address.Length - 4);
+                                        return new KeyValuePair<string, byte>(address, pair.Value);
                                     })
-                                .Select(pair =>
-                                {
-                                    string address = Wallet.AddressToBase58(pair.Key.ToByteArray());
-                                    address = address.Substring(address.Length - 4);
-                                    return new KeyValuePair<string, byte>(address, pair.Value);
-                                })
-                                .ToList()
-                                .ToString(),
+                                    .ToList()
+                                    .ToString()),
                     witnesses.Count,
                     slot,
                     Wallet.AddressToBase58(witness.ToByteArray()),
