@@ -183,7 +183,7 @@ namespace Mineral.Core.Database2.Core
             if (limit <= 0)
                 return result;
 
-            Dictionary<WrappedByteArray, WrappedByteArray> collection = new Dictionary<WrappedByteArray, WrappedByteArray>();
+            Dictionary<WrappedByteArray, WrappedByteArray> collection = new Dictionary<WrappedByteArray, WrappedByteArray>(new WrapperdByteArrayEqualComparer());
             if (snapshot.GetPrevious() != null)
             {
                 ((Snapshot)(snapshot)).Collect(collection);
@@ -208,7 +208,7 @@ namespace Mineral.Core.Database2.Core
 
         public HashSet<byte[]> GetValuesPrevious(byte[] key, long limit)
         {
-            Dictionary<WrappedByteArray, WrappedByteArray> collection = new Dictionary<WrappedByteArray, WrappedByteArray>();
+            Dictionary<WrappedByteArray, WrappedByteArray> collection = new Dictionary<WrappedByteArray, WrappedByteArray>(new WrapperdByteArrayEqualComparer());
 
             if (this.head.GetPrevious() != null)
             {
@@ -243,7 +243,7 @@ namespace Mineral.Core.Database2.Core
 
         public Dictionary<byte[], byte[]> GetAllValues()
         {
-            Dictionary<WrappedByteArray, WrappedByteArray> collection = new Dictionary<WrappedByteArray, WrappedByteArray>();
+            Dictionary<WrappedByteArray, WrappedByteArray> collection = new Dictionary<WrappedByteArray, WrappedByteArray>(new WrapperdByteArrayEqualComparer());
             if (this.head.GetPrevious() != null)
             {
                 ((Snapshot)this.head).Collect(collection);

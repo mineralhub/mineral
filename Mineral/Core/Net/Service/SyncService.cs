@@ -342,7 +342,7 @@ namespace Mineral.Core.Net.Service
             catch (System.Exception e)
             {
                 Logger.Error(
-                    string.Format("Peer {0} sync failed, reason: {1}", peer.Address, e.Message));
+                    string.Format("Peer {0} sync failed", peer.Address, e));
 
                 peer.Disconnect(Protocol.ReasonCode.SyncFail);
             }

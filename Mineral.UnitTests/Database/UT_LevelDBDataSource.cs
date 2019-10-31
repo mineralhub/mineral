@@ -1,6 +1,7 @@
 ﻿using FluentAssertions;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Mineral.Common.Storage;
+using Mineral.Utils;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -17,7 +18,7 @@ namespace Mineral.UnitTests.Database
         private string parnet_name = "database";
         private string database_name = "UT_LevelDBDataSource";
 
-        private Dictionary<byte[], byte[]> default_data = new Dictionary<byte[], byte[]>()
+        private Dictionary<byte[], byte[]> default_data = new Dictionary<byte[], byte[]>(new ByteArrayEqualComparer())
         {
             { Encoding.Default.GetBytes("key_1"),  Encoding.Default.GetBytes("value_1") },
             { Encoding.Default.GetBytes("key_2"),  Encoding.Default.GetBytes("value_2") },

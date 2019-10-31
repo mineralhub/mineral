@@ -1,6 +1,7 @@
 ﻿using Mineral;
 using Mineral.Core;
 using Mineral.Core.Net.RpcHandler;
+using Mineral.Utils;
 using MineralCLI.Network;
 using MineralCLI.Util;
 using Protocol;
@@ -1111,7 +1112,7 @@ namespace MineralCLI.Commands
             try
             {
                 byte[] owner_address = Wallet.Base58ToAddress(RpcApi.KeyStore.Address);
-                Dictionary<byte[], long> votes = new Dictionary<byte[], long>();
+                Dictionary<byte[], long> votes = new Dictionary<byte[], long>(new ByteArrayEqualComparer());
 
                 for (int i = 0; i < parameters.Length; i += 2)
                 {

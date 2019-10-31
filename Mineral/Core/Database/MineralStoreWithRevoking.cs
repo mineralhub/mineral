@@ -7,6 +7,7 @@ using Mineral.Core.Config.Arguments;
 using Mineral.Core.Database2.Common;
 using Mineral.Core.Database2.Core;
 using Mineral.Core.Exception;
+using Mineral.Utils;
 
 namespace Mineral.Core.Database
 {
@@ -125,7 +126,6 @@ namespace Mineral.Core.Database
 
         public IEnumerator<KeyValuePair<byte[], T>> GetEnumerator()
         {
-            Dictionary<byte[], T> result = new Dictionary<byte[], T>();
             IEnumerator<KeyValuePair<byte[], byte[]>> it = this.revoking_db.GetEnumerator();
             while (it.MoveNext())
             {

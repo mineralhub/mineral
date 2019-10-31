@@ -32,7 +32,7 @@ namespace Mineral.Core.Service
         private readonly BackupServer backup_server = null;
 
         private Dictionary<ByteString, byte[]> privatekeys = new Dictionary<ByteString, byte[]>();
-        private Dictionary<byte[], byte[]> privatekey_addresses = new Dictionary<byte[], byte[]>();
+        private Dictionary<byte[], byte[]> privatekey_addresses = new Dictionary<byte[], byte[]>(new ByteArrayEqualComparer());
         protected Dictionary<ByteString, WitnessCapsule> local_witness_states = new Dictionary<ByteString, WitnessCapsule>();
 
         private WitnessController controller;

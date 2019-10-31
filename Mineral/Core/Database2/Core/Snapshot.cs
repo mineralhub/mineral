@@ -5,6 +5,7 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using Mineral.Core.Database2.Common;
+using Mineral.Utils;
 
 namespace Mineral.Core.Database2.Core
 {
@@ -144,7 +145,7 @@ namespace Mineral.Core.Database2.Core
             {
                 foreach (var data in ((Snapshot)next).DB)
                 {
-                    collect.Add(WrappedByteArray.Of(data.Key.Data), WrappedByteArray.Of(data.Value.Data));
+                    collect.Put(WrappedByteArray.Of(data.Key.Data), WrappedByteArray.Of(data.Value.Data));
                 }
                 next = next.GetNext();
             }
@@ -152,7 +153,7 @@ namespace Mineral.Core.Database2.Core
 
         public override IEnumerator<KeyValuePair<byte[], byte[]>> GetEnumerator()
         {
-            Dictionary<WrappedByteArray, WrappedByteArray> all = new Dictionary<WrappedByteArray, WrappedByteArray>();
+            Dictionary<WrappedByteArray, WrappedByteArray> all = new Dictionary<WrappedByteArray, WrappedByteArray>(new WrapperdByteArrayEqualComparer());
             Collect(all);
 
             List<WrappedByteArray> keys = new List<WrappedByteArray>(all.Keys);

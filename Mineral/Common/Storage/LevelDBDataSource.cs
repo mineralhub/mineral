@@ -360,7 +360,7 @@ namespace Mineral.Common.Storage
         public Dictionary<byte[], byte[]> GetValuesPrevious(byte[] key, long limit, int precision)
         {
             Helper.IsNotNull(key, "Key must be not null.");
-            Dictionary<byte[], byte[]> result = new Dictionary<byte[], byte[]>();
+            Dictionary<byte[], byte[]> result = new Dictionary<byte[], byte[]>(new ByteArrayEqualComparer());
 
             if (limit <= 0 || key.Length < precision)
             {
@@ -405,7 +405,7 @@ namespace Mineral.Common.Storage
         public Dictionary<byte[], byte[]> GetPrevious(byte[] key, long limit)
         {
             Helper.IsNotNull(key, "Key must be not null.");
-            Dictionary<byte[], byte[]> result = new Dictionary<byte[], byte[]>();
+            Dictionary<byte[], byte[]> result = new Dictionary<byte[], byte[]>(new ByteArrayEqualComparer());
             Monitor.Enter(this.lock_read);
 
             try
@@ -440,7 +440,7 @@ namespace Mineral.Common.Storage
         public Dictionary<byte[], byte[]> GetNext(byte[] key, long limit)
         {
             Helper.IsNotNull(key, "Key must be not null.");
-            Dictionary<byte[], byte[]> result = new Dictionary<byte[], byte[]>();
+            Dictionary<byte[], byte[]> result = new Dictionary<byte[], byte[]>(new ByteArrayEqualComparer());
             Monitor.Enter(this.lock_read);
 
             try
@@ -474,7 +474,7 @@ namespace Mineral.Common.Storage
 
         public Dictionary<byte[], byte[]> GetAll()
         {
-            Dictionary<byte[], byte[]> result = new Dictionary<byte[], byte[]>();
+            Dictionary<byte[], byte[]> result = new Dictionary<byte[], byte[]>(new ByteArrayEqualComparer());
             Monitor.Enter(this.lock_read);
 
             try

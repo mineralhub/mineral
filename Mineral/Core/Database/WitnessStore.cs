@@ -48,6 +48,11 @@ namespace Mineral.Core.Database
 
 
         #region External Method
+        public override void Put(byte[] key, WitnessCapsule item)
+        {
+            base.Put(key, item);
+        }
+
         public override WitnessCapsule Get(byte[] key)
         {
             byte[] value = this.revoking_db.GetUnchecked(key);

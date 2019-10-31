@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using Mineral.Core.Exception;
+using Mineral.Cryptography;
 using Mineral.Utils;
 using Org.BouncyCastle.Math;
 
@@ -381,10 +382,29 @@ namespace Mineral.Common.Runtime.VM
             return ToShortHex(this.data);
         }
 
-
         public override string ToString()
         {
             return this.data.ToHexString();
+        }
+
+        public override int GetHashCode()
+        {
+            return Hash.SHA256(this.data).ToInt32(0);
+        }
+
+        public override bool Equals(object obj)
+        {
+            if (this == obj)
+            {
+                return true;
+            }
+            if (obj == null || this.GetType() != obj.GetType())
+            {
+                return false;
+            }
+            DataWord compare = (DataWord)obj;
+
+            return this.data.SequenceEqual(compare.data);
         }
 
         public int CompareTo(DataWord obj)
