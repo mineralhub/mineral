@@ -153,21 +153,15 @@ namespace Mineral.Core.Database2.Core
 
         public override IEnumerator<KeyValuePair<byte[], byte[]>> GetEnumerator()
         {
-            Dictionary<WrappedByteArray, WrappedByteArray> all = new Dictionary<WrappedByteArray, WrappedByteArray>(new WrapperdByteArrayEqualComparer());
+            Dictionary<WrappedByteArray, WrappedByteArray> all =
+                new Dictionary<WrappedByteArray, WrappedByteArray>(new WrapperdByteArrayEqualComparer());
+
             Collect(all);
+            all = all.Where(item => item.Value != null && item.Value.Data != null).ToDictionary(p => p.Key, p => p.Value);
 
-            List<WrappedByteArray> keys = new List<WrappedByteArray>(all.Keys);
-            foreach (var item in all)
-            {
-                if (item.Value == null || item.Value.Data == null)
-                {
-                    all.Remove(item.Key);
-                }
-            }
-
-           return Enumerable.Concat(
+            return Enumerable.Concat(
                 Enumerable.Select(all, val => new KeyValuePair<byte[], byte[]>(val.Key.Data, val.Value.Data)),
-                Enumerable.Where(GetRoot(), val => !keys.Contains(WrappedByteArray.Of(val.Key)))
+                Enumerable.Where(GetRoot(), val => !all.Keys.Contains(WrappedByteArray.Of(val.Key)))
                 ).GetEnumerator();
         }
         #endregion
