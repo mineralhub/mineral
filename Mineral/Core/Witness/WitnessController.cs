@@ -45,8 +45,6 @@ namespace Mineral.Core.Witness
         private void SortWitness(ref List<ByteString> item)
         {
             item.OrderBy(address => GetWitnessesByAddress(address).VoteCount)
-                .Reverse()
-                .OrderBy(address => address.GetHashCode())
                 .Reverse();
         }
 
