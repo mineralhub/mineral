@@ -375,7 +375,7 @@ namespace Mineral.Core.Witness
                 SortWitness(ref witness_address);
                 if (witness_address.Count > Parameter.ChainParameters.MAX_ACTIVE_WITNESS_NUM)
                 {
-                    SetActiveWitnesses(witness_address.GetRange(0, Parameter.ChainParameters.WITNESS_STANDBY_LENGTH));
+                    SetActiveWitnesses(witness_address.GetRange(0, Parameter.ChainParameters.MAX_ACTIVE_WITNESS_NUM));
                 }
                 else
                 {
