@@ -219,7 +219,14 @@ namespace Mineral.Common.Storage
                 WriteBatch batch = new WriteBatch();
                 foreach (KeyValuePair<byte[], byte[]> row in rows)
                 {
-                    batch.Put(row.Key, row.Value);
+                    if (row.Value == null)
+                    {
+                        batch.Delete(row.Key);
+                    }
+                    else
+                    {
+                        batch.Put(row.Key, row.Value);
+                    }
                 }
                 this.db.Write(batch, new WriteOptions());
             }

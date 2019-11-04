@@ -333,7 +333,7 @@ namespace Mineral.Core.Witness
             TryRemovePowerOfGr();
             Dictionary<ByteString, long> count_witness = GetVoteCount(this.db_manager.Votes);
 
-            if (count_witness.Count > 0)
+            if (count_witness.IsNullOrEmpty())
             {
                 Logger.Info("No vote, no change to witness.");
             }
