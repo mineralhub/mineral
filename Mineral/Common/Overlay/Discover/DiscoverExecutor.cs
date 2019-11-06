@@ -47,7 +47,7 @@ namespace Mineral.Common.Overlay.Discover
 
             this.refresh = ScheduledExecutorService.Scheduled(() =>
             {
-                new DiscoverTask(this.node_manager);
+                new RefreshTask(this.node_manager);
             }, 1, (int)KademliaOptions.BUCKET_REFRESH);
         }
 
