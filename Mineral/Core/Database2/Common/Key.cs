@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
+using Mineral.Cryptography;
 
 namespace Mineral.Core.Database2.Common
 {
@@ -58,7 +59,7 @@ namespace Mineral.Core.Database2.Common
 
         public override int GetHashCode()
         {
-            return this.data.GetHashCode();
+            return Hash.SHA256(this.data.Data).ToInt32(0);
         }
 
         public override bool Equals(object obj)

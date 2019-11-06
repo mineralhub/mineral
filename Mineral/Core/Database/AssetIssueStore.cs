@@ -61,7 +61,7 @@ namespace Mineral.Core.Database
 
 
         #region External Method
-        public AssetIssueCapsule Get(byte[] key)
+        public override AssetIssueCapsule Get(byte[] key)
         {
             return GetUnchecked(key);
         }

@@ -55,8 +55,10 @@ namespace Mineral.Core.Net.Service
         #region Internal Method
         private void AddRequestBlockIds(BlockId key, long value)
         {
-            CacheItemPolicy policy = new CacheItemPolicy();
-            policy.AbsoluteExpiration = DateTime.Now.AddHours(1);
+            CacheItemPolicy policy = new CacheItemPolicy()
+            {
+                AbsoluteExpiration = DateTime.Now.AddHours(1),
+            };
 
             this.request_ids.Add(key.ToString(), value, policy);
         }
@@ -287,7 +289,7 @@ namespace Mineral.Core.Net.Service
                         StartFetchSyncBlock();
                     }
                 }
-                catch (System.Exception e)
+                catch (System.Exception)
                 {
                     Logger.Error("Fetch sync block error.");
                 }
@@ -303,7 +305,7 @@ namespace Mineral.Core.Net.Service
                         HandleSyncBlock();
                     }
                 }
-                catch (System.Exception e)
+                catch (System.Exception)
                 {
                     Logger.Error("Handle sync block error.");
                 }
@@ -340,7 +342,7 @@ namespace Mineral.Core.Net.Service
             catch (System.Exception e)
             {
                 Logger.Error(
-                    string.Format("Peer {0} sync failed, reason: {1}", peer.Address, e.Message));
+                    string.Format("Peer {0} sync failed", peer.Address, e));
 
                 peer.Disconnect(Protocol.ReasonCode.SyncFail);
             }

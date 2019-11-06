@@ -11,7 +11,6 @@ namespace Mineral.Common.Runtime.VM.Program
         #region Field
         private Stack<DataWord> stack = new Stack<DataWord>();
 
-        private static readonly long serial_version_uid = 1;
         [NonSerialized]
         private IProgramListener program_listener = null;
         #endregion

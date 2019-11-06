@@ -26,13 +26,13 @@ namespace Mineral.Core.Service
         private static volatile bool need_sync_check = (bool)Args.Instance.Block.NeedSyncCheck;
 
         private Thread thread_generate = null;
-        private DatabaseManager db_manager = null;
-        private BackupManager backup_manager = null;
-        private MineralNetService net_service = null;
-        private BackupServer backup_server = null;
+        private readonly DatabaseManager db_manager = null;
+        private readonly BackupManager backup_manager = null;
+        private readonly MineralNetService net_service = null;
+        private readonly BackupServer backup_server = null;
 
         private Dictionary<ByteString, byte[]> privatekeys = new Dictionary<ByteString, byte[]>();
-        private Dictionary<byte[], byte[]> privatekey_addresses = new Dictionary<byte[], byte[]>();
+        private Dictionary<byte[], byte[]> privatekey_addresses = new Dictionary<byte[], byte[]>(new ByteArrayEqualComparer());
         protected Dictionary<ByteString, WitnessCapsule> local_witness_states = new Dictionary<ByteString, WitnessCapsule>();
 
         private WitnessController controller;
@@ -358,7 +358,7 @@ namespace Mineral.Core.Service
             if (Args.Instance.LocalWitness.GetPrivateKey().IsNullOrEmpty())
                 return;
 
-            byte[] privatekey = Helper.HexToBytes(Args.Instance.LocalWitness.GetPrivateKey());
+            byte[] privatekey = Args.Instance.LocalWitness.GetPrivateKey();
             byte[] witness_address = Args.Instance.LocalWitness.GetWitnessAccountAddress();
             byte[] privatekey_address = Wallet.PublickKeyToAddress(ECKey.FromPrivateKey(privatekey).PublicKey);
 

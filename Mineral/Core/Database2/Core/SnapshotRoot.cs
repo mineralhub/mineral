@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Text;
 using Mineral.Core.Database2.Common;
+using Mineral.Utils;
 
 namespace Mineral.Core.Database2.Core
 {
@@ -106,26 +107,26 @@ namespace Mineral.Core.Database2.Core
 
         public override void Merge(ISnapshot snapshot)
         {
-            Dictionary<WrappedByteArray, WrappedByteArray> batch = new Dictionary<WrappedByteArray, WrappedByteArray>();
+            Dictionary<WrappedByteArray, WrappedByteArray> batch = new Dictionary<WrappedByteArray, WrappedByteArray>(new WrapperdByteArrayEqualComparer());
 
             IEnumerator<KeyValuePair<byte[], byte[]>> datas = (IEnumerator<KeyValuePair<byte[], byte[]>>)((Snapshot)snapshot).GetEnumerator();
             while (datas.MoveNext())
             {
-                batch.Add(WrappedByteArray.Of(datas.Current.Key), WrappedByteArray.Of(datas.Current.Value));
+                batch.Put(WrappedByteArray.Of(datas.Current.Key), WrappedByteArray.Of(datas.Current.Value));
             }
             ((Flusher)this.db).Flush(batch);
         }
 
-        public void Merge(List<ISnapshot> snapshots)
+        public void Merge(List<ISnapshot> snapshots, string db_name)
         {
-            Dictionary<WrappedByteArray, WrappedByteArray> batch = new Dictionary<WrappedByteArray, WrappedByteArray>();
+            Dictionary<WrappedByteArray, WrappedByteArray> batch = new Dictionary<WrappedByteArray, WrappedByteArray>(new WrapperdByteArrayEqualComparer());
             foreach (ISnapshot snapshot in snapshots)
             {
                 Snapshot from = (Snapshot)snapshot;
                 IEnumerator<KeyValuePair<Key, Value>> it = from.DB.GetEnumerator();
                 while (it.MoveNext())
                 {
-                    batch.Add(WrappedByteArray.Of(it.Current.Key.Data), WrappedByteArray.Of(it.Current.Value.Data));
+                    batch.Put(WrappedByteArray.Of(it.Current.Key.Data), WrappedByteArray.Of(it.Current.Value.Data));
                 }
             }
 

@@ -155,10 +155,10 @@ namespace Mineral.Core.Actuator
                         this.db_manager.Proposal.Get(BitConverter.GetBytes(contract.ProposalId))
                         : Deposit.GetProposalCapsule(BitConverter.GetBytes(contract.ProposalId));
                 }
-                catch (ItemNotFoundException ex)
+                catch (ItemNotFoundException e)
                 {
                     throw new ContractValidateException(
-                        ActuatorParameter.PROPOSAL_EXCEPTION_STR + contract.ProposalId + ActuatorParameter.NOT_EXIST_STR);
+                        ActuatorParameter.PROPOSAL_EXCEPTION_STR + contract.ProposalId + ActuatorParameter.NOT_EXIST_STR, e);
                 }
 
                 if (now >= proposal.ExpirationTime)

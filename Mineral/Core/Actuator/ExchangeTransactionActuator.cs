@@ -153,9 +153,9 @@ namespace Mineral.Core.Actuator
                 {
                     exchange = this.db_manager.ExchangeFinal.Get(BitConverter.GetBytes(contract.ExchangeId));
                 }
-                catch (ItemNotFoundException ex)
+                catch (ItemNotFoundException e)
                 {
-                    throw new ContractValidateException("Exchange[" + contract.ExchangeId + "] not exists");
+                    throw new ContractValidateException("Exchange[" + contract.ExchangeId + "] not exists", e);
                 }
 
                 byte[] first_token_id = exchange.FirstTokenId.ToByteArray();

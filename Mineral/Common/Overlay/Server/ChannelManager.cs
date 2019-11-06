@@ -24,7 +24,7 @@ namespace Mineral.Common.Overlay.Server
         private Cache<ReasonCode> bad_peers = new Cache<ReasonCode>("badpeers").ExpireTime(TimeSpan.FromHours(1)).MaxCapacity(10000);
         private Cache<ReasonCode> recently_disconnected = new Cache<ReasonCode>("recently_disconnected").ExpireTime(TimeSpan.FromSeconds(30)).MaxCapacity(1000);
 
-        private ConcurrentDictionary<byte[], Channel> active_peers = new ConcurrentDictionary<byte[], Channel>();
+        private ConcurrentDictionary<byte[], Channel> active_peers = new ConcurrentDictionary<byte[], Channel>(new ByteArrayEqualComparer());
         private ConcurrentDictionary<IPAddress, Node> trust_nodes = new ConcurrentDictionary<IPAddress, Node>();
         private ConcurrentDictionary<IPAddress, Node> active_nodes = new ConcurrentDictionary<IPAddress, Node>();
         private ConcurrentDictionary<IPAddress, Node> fast_forward_nodes = new ConcurrentDictionary<IPAddress, Node>();

@@ -44,15 +44,13 @@ namespace Mineral.Core.Witness
         #region Internal Method
         private void SortWitness(ref List<ByteString> item)
         {
-            item.OrderBy(address => GetWitnessesByAddress(address).VoteCount)
-                .Reverse()
-                .OrderBy(address => address.GetHashCode())
-                .Reverse();
+            item = item.OrderBy(address => GetWitnessesByAddress(address).VoteCount)
+                       .Reverse().ToList();
         }
 
         private static bool WitnessSetChanged(List<ByteString> list1, List<ByteString> list2)
         {
-            return ArrayUtil.IsEqualCollection(list1, list2);
+            return !ArrayUtil.IsEqualCollection(list1, list2);
         }
 
         #endregion
@@ -229,7 +227,7 @@ namespace Mineral.Core.Witness
             {
                 Logger.Warning(
                     string.Format(
-                        "Witness is out of order, scheduledWitness[{0}],blockWitnessAddress[{1}],blockTimeStamp[{2}],slot[{3}]",
+                        "Witness is out of order, scheduled Witness[{0}],BlockWitnessAddress[{1}], BlockTimeStamp[{2}], Slot[{3}]",
                         scheduled_witness.ToByteArray().ToHexString(),
                         witness_address.ToByteArray().ToHexString(),
                         timestamp.ToDateTime().ToLocalTime(),
@@ -240,7 +238,7 @@ namespace Mineral.Core.Witness
 
             Logger.Debug(
                 string.Format(
-                    "Validate witnessSchedule successfully,scheduledWitness:{0}",
+                    "Validate witness schedule successfully, scheduled witness:{0}",
                     witness_address.ToByteArray().ToHexString()));
 
             return true;
@@ -294,11 +292,11 @@ namespace Mineral.Core.Witness
                     if (count_witness.ContainsKey(vote_address))
                     {
                         count_witness.TryGetValue(vote_address, out long value);
-                        count_witness.Add(vote_address, value - vote_count);
+                        count_witness.Put(vote_address, value - vote_count);
                     }
                     else
                     {
-                        count_witness.Add(vote_address, -vote_count);
+                        count_witness.Put(vote_address, -vote_count);
                     }
                 });
 
@@ -310,11 +308,11 @@ namespace Mineral.Core.Witness
                     if (count_witness.ContainsKey(vote_address))
                     {
                         count_witness.TryGetValue(vote_address, out long value);
-                        count_witness.Add(vote_address, value - vote_count);
+                        count_witness.Put(vote_address, value - vote_count);
                     }
                     else
                     {
-                        count_witness.Add(vote_address, vote_count);
+                        count_witness.Put(vote_address, vote_count);
                     }
                 });
 
@@ -333,7 +331,7 @@ namespace Mineral.Core.Witness
             TryRemovePowerOfGr();
             Dictionary<ByteString, long> count_witness = GetVoteCount(this.db_manager.Votes);
 
-            if (count_witness.Count > 0)
+            if (count_witness.IsNullOrEmpty())
             {
                 Logger.Info("No vote, no change to witness.");
             }
@@ -358,7 +356,7 @@ namespace Mineral.Core.Witness
                     AccountCapsule account = this.db_manager.Account.Get(pair.Key.ToByteArray());
                     if (account == null)
                     {
-                        Logger.Warning("witnessAccount[" + pair.Key.ToByteArray().ToHexString() + "] not exists");
+                        Logger.Warning("Witness account[" + pair.Key.ToByteArray().ToHexString() + "] not exists");
                     }
                     else
                     {
@@ -375,7 +373,7 @@ namespace Mineral.Core.Witness
                 SortWitness(ref witness_address);
                 if (witness_address.Count > Parameter.ChainParameters.MAX_ACTIVE_WITNESS_NUM)
                 {
-                    SetActiveWitnesses(witness_address.GetRange(0, Parameter.ChainParameters.WITNESS_STANDBY_LENGTH));
+                    SetActiveWitnesses(witness_address.GetRange(0, Parameter.ChainParameters.MAX_ACTIVE_WITNESS_NUM));
                 }
                 else
                 {
@@ -410,9 +408,11 @@ namespace Mineral.Core.Witness
                 }
 
                 Logger.Info(
-                    string.Format("Update Witness, before:{0},\nafter:{1}  ",
-                        active_witness.Select(x => x.ToByteArray().ToHexString()).ToList(),
-                        new_active_witness.Select(x => x.ToByteArray().ToHexString()).ToList()));
+                    string.Format("Update witness, before:{0},\nafter:{1}  ",
+                                  string.Join(", ", active_witness.Select(x => x.ToByteArray().ToHexString()).ToList()),
+                                  string.Join(", ", new_active_witness.Select(x => x.ToByteArray().ToHexString()).ToList()))
+                );
+
             }
         }
 

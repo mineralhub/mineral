@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using Mineral.Core.Capsule;
+using Mineral.Cryptography;
 using Mineral.Utils;
 
 namespace Mineral.Common.Storage
@@ -122,6 +123,11 @@ namespace Mineral.Common.Storage
         public Value Clone()
         {
             return new Value(this);
+        }
+
+        public override int GetHashCode()
+        {
+            return Hash.SHA256(this.data).ToInt32(0);
         }
 
         public override bool Equals(object obj)

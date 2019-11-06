@@ -213,7 +213,6 @@ namespace Mineral.Core.Actuator
             if (deposit == null)
                 throw new ContractValidateException("No deposit!");
 
-            long fee = 0;
             byte[] token_id_leading_zero = ByteUtil.StripLeadingZeroes(token_id);
 
             if (!Wallet.IsValidAddress(owner_address))

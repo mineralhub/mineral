@@ -146,7 +146,7 @@ namespace Mineral.Core.Database2.Core
                 snapshots.Add(next);
             }
 
-            root.Merge(snapshots);
+            root.Merge(snapshots, data.DB.DBName);
             root.ResetSolidity();
 
             if (db.GetHead() == next)
@@ -188,6 +188,7 @@ namespace Mineral.Core.Database2.Core
 
         private void CreateCheckPoint()
         {
+            // Do not use compare
             Dictionary<byte[], byte[]> batch = new Dictionary<byte[], byte[]>();
             foreach (RevokingDBWithCaching db in this.databases)
             {
@@ -213,7 +214,7 @@ namespace Mineral.Core.Database2.Core
                 }
             }
 
-            // TODO : temp 계속 저장만 하는지 확인해야봐야함 용량 문제 발생
+            // TODO : temp 계속 저장만 하는지 확인해야봐야함
             CheckTempStore.Instance.DBSource.UpdateByBatch(batch, new WriteOptions() { Sync = Args.Instance.Storage.Sync });
         }
 

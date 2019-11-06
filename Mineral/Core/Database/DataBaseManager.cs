@@ -111,7 +111,7 @@ namespace Mineral.Core.Database
 
         public BlockId GenesisBlockId
         {
-            get { return this.genesis_block != null ? this.genesis_block.Id : null; }
+            get { return this.genesis_block?.Id; }
         }
 
         public BlockId SolidBlockId
@@ -329,8 +329,10 @@ namespace Mineral.Core.Database
                 account.IsWitness = true;
                 this.account_store.Put(w.Address, account);
 
-                WitnessCapsule witness = new WitnessCapsule(address, w.VoteCount, w.Url);
-                witness.IsJobs = true;
+                WitnessCapsule witness = new WitnessCapsule(address, w.VoteCount, w.Url)
+                {
+                    IsJobs = true,
+                };
                 this.witness_store.Put(w.Address, witness);
 
             });
@@ -370,13 +372,13 @@ namespace Mineral.Core.Database
                         catch (ItemNotFoundException e)
                         {
                             Logger.Info("initilaize transaction cache error.");
-                            throw new IllegalStateException("initilaize transaction cache error.");
+                            throw new IllegalStateException("initilaize transaction cache error.", e);
 
                         }
                         catch (BadItemException e)
                         {
                             Logger.Info("initilaize transaction cache error.");
-                            throw new IllegalStateException("initilaize transaction cache error.");
+                            throw new IllegalStateException("initilaize transaction cache error.", e);
                         }
 
                     }).Wait();
@@ -1019,7 +1021,7 @@ namespace Mineral.Core.Database
             {
                 this.khaos_database.Start(GetBlockById(this.dynamic_properties_store.GetLatestBlockHeaderHash()));
             }
-            catch (ItemNotFoundException e)
+            catch (ItemNotFoundException)
             {
                 Logger.Error(
                     string.Format(
@@ -1034,7 +1036,7 @@ namespace Mineral.Core.Database
 
                 Environment.Exit(1);
             }
-            catch (BadItemException e)
+            catch (BadItemException)
             {
                 Logger.Error("DB data broken!");
                 Logger.Error(
@@ -1174,7 +1176,7 @@ namespace Mineral.Core.Database
                 return this.khaos_database.ContainInMiniStore(hash)
                     || this.block_store.Get(hash.Hash) != null;
             }
-            catch (ArgumentException e)
+            catch (ArgumentException)
             {
                 return false;
             }
@@ -1191,7 +1193,7 @@ namespace Mineral.Core.Database
             {
                 return this.block_store.Get(blockId.Hash) != null;
             }
-            catch (ItemNotFoundException e)
+            catch (ItemNotFoundException)
             {
                 return false;
             }
@@ -1245,8 +1247,10 @@ namespace Mineral.Core.Database
 
             long postponed_tx_count = 0;
 
-            BlockCapsule block = new BlockCapsule(number + 1, prev_hash, when, witness.Address);
-            block.IsGenerateMyself = true;
+            BlockCapsule block = new BlockCapsule(number + 1, prev_hash, when, witness.Address)
+            {
+                IsGenerateMyself = true
+            };
             this.session.Reset();
             this.session.SetValue(this.revoking_store.BuildSession());
 
@@ -1310,31 +1314,31 @@ namespace Mineral.Core.Database
                 PushBlock(block);
                 return block;
             }
-            catch (TaposException e)
+            catch (TaposException)
             {
                 Logger.Info("contract not processed during TaposException");
             }
-            catch (TooBigTransactionException e)
+            catch (TooBigTransactionException)
             {
                 Logger.Info("contract not processed during TooBigTransactionException");
             }
-            catch (DupTransactionException e)
+            catch (DupTransactionException)
             {
                 Logger.Info("contract not processed during DupTransactionException");
             }
-            catch (TransactionExpirationException e)
+            catch (TransactionExpirationException)
             {
                 Logger.Info("contract not processed during TransactionExpirationException");
             }
-            catch (BadNumberBlockException e)
+            catch (BadNumberBlockException)
             {
                 Logger.Info("generate block using wrong number");
             }
-            catch (BadBlockException e)
+            catch (BadBlockException)
             {
                 Logger.Info("block exception");
             }
-            catch (NonCommonBlockException e)
+            catch (NonCommonBlockException)
             {
                 Logger.Info("non common exception");
             }
@@ -1347,7 +1351,7 @@ namespace Mineral.Core.Database
             {
                 Logger.Warning(e.Message);
             }
-            catch (TooBigTransactionResultException e)
+            catch (TooBigTransactionResultException)
             {
                 Logger.Info("contract not processed during TooBigTransactionResultException");
             }
@@ -1599,7 +1603,7 @@ namespace Mineral.Core.Database
                 {
                     PreValidateTransactionSign(block);
                 }
-                catch (ThreadInterruptedException e)
+                catch (ThreadInterruptedException)
                 {
                     Logger.Error("parallel check sign interrupted exception! block info : " + block.ToString());
                     Thread.CurrentThread.Interrupt();
@@ -1788,7 +1792,7 @@ namespace Mineral.Core.Database
             {
                 BytesCapsule recent_block = this.recent_block_store.Get(ref_bytes);
 
-                byte[] hash = recent_block != null ? recent_block.Data : null;
+                byte[] hash = recent_block?.Data;
                 if (!hash.SequenceEqual(ref_hash))
                 {
                     string msg = string.Format("Tapos failed, different block hash, {0}, {1} , recent block {2}, solid block {3} head block {4}",
@@ -1811,7 +1815,7 @@ namespace Mineral.Core.Database
                                             HeadBlockId.GetString());
 
                 Logger.Info(msg);
-                throw new TaposException(msg);
+                throw new TaposException(msg, e);
             }
         }
 

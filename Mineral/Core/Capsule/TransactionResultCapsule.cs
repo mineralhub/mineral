@@ -89,7 +89,7 @@ namespace Mineral.Core.Capsule
             }
             catch (InvalidProtocolBufferException e)
             {
-                throw new BadItemException("TransactionResult proto data parse exception");
+                throw new BadItemException("TransactionResult proto data parse exception", e);
             }
         }
 

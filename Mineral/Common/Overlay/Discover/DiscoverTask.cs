@@ -12,8 +12,8 @@ namespace Mineral.Common.Overlay.Discover
     public class DiscoverTask : Runnable
     {
         #region Field
-        private byte[] node_id;
-        private NodeManager node_manager = null;
+        private byte[] node_id = null;
+        private readonly NodeManager node_manager = null;
         #endregion
 
 

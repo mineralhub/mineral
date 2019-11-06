@@ -10,7 +10,7 @@ namespace Mineral.Core.Config.Arguments
     public class LocalWitness
     {
         #region Field
-        private List<string> privatekeys = new List<string>();
+        private List<byte[]> privatekeys = new List<byte[]>();
         private byte[] witness_account_address = null;
         #endregion
 
@@ -24,12 +24,12 @@ namespace Mineral.Core.Config.Arguments
         {
         }
 
-        public LocalWitness(string privatekey)
+        public LocalWitness(byte[] privatekey)
         {
             AddPrivateKeys(privatekey);
         }
 
-        public LocalWitness(List<string> privatekeys)
+        public LocalWitness(List<byte[]> privatekeys)
         {
             SetPrivateKeys(privatekeys);
         }
@@ -41,15 +41,12 @@ namespace Mineral.Core.Config.Arguments
 
 
         #region Internal Method
-        private bool IsValidate(string key)
+        private bool IsValidate(byte[] key)
         {
-            if (key.StartsWith("0x"))
-                key = key.Substring(2);
-
-            if (!string.IsNullOrEmpty(key) && 
-                key.Length != Parameter.ChainParameters.PRIVATE_KEY_LENGTH)
+            if (key.IsNotNullOrEmpty()
+                && key.Length != Parameter.ChainParameters.PRIVATE_KEY_BYTE_LENGTH)
             {
-                Logger.Warning("Private key [" + key + "] must be " + Parameter.ChainParameters.PRIVATE_KEY_LENGTH + "bits");
+                Logger.Warning("Private key [" + key + "] must be " + Parameter.ChainParameters.PRIVATE_KEY_BYTE_LENGTH + "bits");
                 return false;
             }
 
@@ -63,7 +60,7 @@ namespace Mineral.Core.Config.Arguments
         {
             if (this.witness_account_address == null)
             {
-                ECKey key = ECKey.FromPrivateKey(GetPrivateKey().HexToBytes());
+                ECKey key = ECKey.FromPrivateKey(GetPrivateKey());
                 this.witness_account_address = Wallet.PublickKeyToAddress(key.PublicKey);
             }
         }
@@ -77,10 +74,10 @@ namespace Mineral.Core.Config.Arguments
         {
             if (this.witness_account_address == null)
             {
-                string privatekey = GetPrivateKey();
-                if (!privatekey.IsNullOrEmpty())
+                byte[] privatekey = GetPrivateKey();
+                if (privatekey.IsNotNullOrEmpty())
                 {
-                    ECKey key = ECKey.FromPrivateKey(privatekey.HexToBytes());
+                    ECKey key = ECKey.FromPrivateKey(privatekey);
                     this.witness_account_address = Wallet.PublickKeyToAddress(key.PublicKey);
                 }
             }
@@ -88,7 +85,7 @@ namespace Mineral.Core.Config.Arguments
             return this.witness_account_address;
         }
 
-        public void AddPrivateKeys(string privatekey)
+        public void AddPrivateKeys(byte[] privatekey)
         {
             if (IsValidate(privatekey))
             {
@@ -96,19 +93,19 @@ namespace Mineral.Core.Config.Arguments
             }
         }
 
-        public void SetPrivateKeys(List<string> keys)
+        public void SetPrivateKeys(List<byte[]> keys)
         {
             if (keys.IsNullOrEmpty()) return;
 
-            foreach (string key in keys)
+            foreach (byte[] key in keys)
             {
-                if (IsValidate(key)) return;
+                if (!IsValidate(key)) return;
             }
 
-            this.privatekeys = new List<string>(keys);
+            this.privatekeys = new List<byte[]>(keys);
         }
 
-        public string GetPrivateKey()
+        public byte[] GetPrivateKey()
         {
             if (this.privatekeys.IsNullOrEmpty())
             {
