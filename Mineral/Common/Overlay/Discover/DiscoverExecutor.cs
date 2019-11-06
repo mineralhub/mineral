@@ -40,15 +40,11 @@ namespace Mineral.Common.Overlay.Discover
         #region External Method
         public void Start()
         {
-            this.discover = ScheduledExecutorService.Scheduled(() =>
-            {
-                new DiscoverTask(this.node_manager);
-            }, 1, (int)KademliaOptions.DISCOVER_CYCLE * 1000);
+            this.discover = ScheduledExecutorService.Scheduled(
+                    new DiscoverTask(this.node_manager), 1, (int)KademliaOptions.DISCOVER_CYCLE * 1000);
 
-            this.refresh = ScheduledExecutorService.Scheduled(() =>
-            {
-                new RefreshTask(this.node_manager);
-            }, 1, (int)KademliaOptions.BUCKET_REFRESH);
+            this.refresh = ScheduledExecutorService.Scheduled(
+                new RefreshTask(this.node_manager), 1, (int)KademliaOptions.BUCKET_REFRESH);
         }
 
         public void Close()
