@@ -91,6 +91,8 @@ namespace Mineral.Common.Overlay.Discover.Node
         private bool is_inited = false;
         private bool is_inbound_known_node = false;
         private bool is_enable_discovery = false;
+
+        private List<Node> neighbours_nodes = new List<Node>();
         #endregion
 
 
@@ -223,6 +225,14 @@ namespace Mineral.Common.Overlay.Discover.Node
 
 
         #region External Method
+        public void AddNeighBoursNode(Node node)
+        {
+            if (!this.neighbours_nodes.Contains(node))
+            {
+                this.neighbours_nodes.Add(node);
+            }
+        }
+
         public bool IsNodeAlive(NodeHandler handler)
         {
             return handler.State == NodeHandler.NodeHandlerState.Alive
@@ -244,6 +254,15 @@ namespace Mineral.Common.Overlay.Discover.Node
                 {
                     ProcessListeners();
                 }, null, LISTENER_REFRESH_RATE, LISTENER_REFRESH_RATE);
+
+                new Timer((object obj) =>
+                {
+                    foreach (Node node in this.neighbours_nodes)
+                    {
+                        GetNodeHandler(node);
+                    }
+
+                }, null, 1000, 15000);
 
                 if (Args.Instance.Node.Discovery.Persist == true)
                 {

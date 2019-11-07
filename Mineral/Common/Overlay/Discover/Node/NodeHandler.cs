@@ -161,12 +161,6 @@ namespace Mineral.Common.Overlay.Discover.Node
                     {
                         this.node_manager.Table.AddNode(node);
                     }
-                    else if (old_state == NodeHandlerState.EvictCandidate)
-                    {
-                    }
-                    else
-                    {
-                    }
                 }
 
                 if (new_state == NodeHandlerState.NonActive)
@@ -175,12 +169,6 @@ namespace Mineral.Common.Overlay.Discover.Node
                     {
                         this.node_manager.Table.DropNode(node);
                         this.replace_candidate.ChangeState(NodeHandlerState.Active);
-                    }
-                    else if (old_state == NodeHandlerState.Alive)
-                    {
-                    }
-                    else
-                    {
                     }
                 }
             }
@@ -245,7 +233,8 @@ namespace Mineral.Common.Overlay.Discover.Node
             {
                 if (!this.node_manager.PublicHomeNode.Id.ToHexString().Equals(node.Id.ToHexString()))
                 {
-                    this.node_manager.GetNodeHandler(node);
+                    //this.node_manager.GetNodeHandler(node);
+                    this.node_manager.AddNeighBoursNode(node);
                 }
             }
         }
@@ -272,9 +261,6 @@ namespace Mineral.Common.Overlay.Discover.Node
                 else if (this.state == NodeHandlerState.EvictCandidate)
                 {
                     ChangeState(NodeHandlerState.NonActive);
-                }
-                else
-                {
                 }
             }
         }

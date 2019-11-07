@@ -104,6 +104,7 @@ namespace Mineral.Common.Overlay.Discover
 
                     Logger.Trace("{}\n{}" + 
                         string.Format("Nodes discovered {0} ", this.node_manager.Table.GetNodesCount()) + DumpNodes());
+
                     return;
                 }
 
