@@ -103,6 +103,11 @@ namespace Mineral.Common.Overlay.Discover.Node
                 .Append(Port).ToString();
         }
 
+        public string GetIdString()
+        {
+            return Id == null ? null : Id.ToHexString();
+        }
+
         public override bool Equals(object obj)
         {
             if (obj == null)
@@ -118,10 +123,7 @@ namespace Mineral.Common.Overlay.Discover.Node
             if (obj.GetType() == GetType())
             {
                 Node n = ((Node)obj);
-
-                return string.Equals(Id.ToString(), n.Id.ToString())
-                    && string.Equals(Host, n.Host)
-                    && string.Equals(Port, n.Port);
+                return string.Equals(GetIdString(), n.GetIdString());
             }
 
             return false;
