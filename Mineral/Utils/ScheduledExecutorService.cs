@@ -51,6 +51,24 @@ namespace Mineral.Utils
                         Thread.Sleep((int)(Math.Max(0, (this.period - duration))));
                     }
                 }
+                else if (handle is IRunnable)
+                {
+                    IRunnable cmd = handle as IRunnable;
+                    Stopwatch stop_watch = new Stopwatch();
+                    long start = 0;
+                    long duration = 0;
+
+                    Thread.Sleep(this.due_time);
+
+                    while (!is_canceled)
+                    {
+                        start = stop_watch.ElapsedMilliseconds;
+                        cmd.Run();
+                        duration = stop_watch.ElapsedMilliseconds - start;
+
+                        Thread.Sleep((int)(Math.Max(0, (this.period - duration))));
+                    }
+                }
             }
 
             public void Cancel()
@@ -90,6 +108,14 @@ namespace Mineral.Utils
         {
             ScheduledExecutorHandle handle = new ScheduledExecutorHandle(due_time, period);
             new Thread(handle.Process).Start(action);
+
+            return handle;
+        }
+
+        public static ScheduledExecutorHandle Scheduled(IRunnable command, int due_time, int period)
+        {
+            ScheduledExecutorHandle handle = new ScheduledExecutorHandle(due_time, period);
+            new Thread(handle.Process).Start(command);
 
             return handle;
         }

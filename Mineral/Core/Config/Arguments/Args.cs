@@ -348,7 +348,9 @@ namespace Mineral.Core.Config.Arguments
                 }
                 instance.LocalWitness.InitWitnessAccountAddress();
             }
-            else if (Utils.CollectionUtil.IsNotNullOrEmpty(Config.Instance.LocalWitness.LocalWitness))
+            else if (Config.Instance.LocalAddresses != null
+                && Config.Instance.LocalWitness.LocalWitness != null
+                && Utils.CollectionUtil.IsNotNullOrEmpty(Config.Instance.LocalWitness.LocalWitness))
             {
                 instance.LocalWitness = new LocalWitness();
 
@@ -375,7 +377,9 @@ namespace Mineral.Core.Config.Arguments
                 }
                 instance.LocalWitness.InitWitnessAccountAddress();
             }
-            else if (Utils.CollectionUtil.IsNotNullOrEmpty(Config.Instance.LocalWitness.LocalWitnessKeyStore))
+            else if (Config.Instance.LocalAddresses != null
+                && Config.Instance.LocalWitness.LocalWitnessKeyStore != null
+                && Utils.CollectionUtil.IsNotNullOrEmpty(Config.Instance.LocalWitness.LocalWitnessKeyStore))
             {
                 List<byte[]> privatekeys = new List<byte[]>();
 
