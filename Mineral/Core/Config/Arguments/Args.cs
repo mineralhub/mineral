@@ -348,7 +348,7 @@ namespace Mineral.Core.Config.Arguments
                 }
                 instance.LocalWitness.InitWitnessAccountAddress();
             }
-            else if (Config.Instance.LocalAddresses != null
+            else if (Config.Instance.LocalWitness != null
                 && Config.Instance.LocalWitness.LocalWitness != null
                 && Utils.CollectionUtil.IsNotNullOrEmpty(Config.Instance.LocalWitness.LocalWitness))
             {
@@ -377,7 +377,7 @@ namespace Mineral.Core.Config.Arguments
                 }
                 instance.LocalWitness.InitWitnessAccountAddress();
             }
-            else if (Config.Instance.LocalAddresses != null
+            else if (Config.Instance.LocalWitness != null
                 && Config.Instance.LocalWitness.LocalWitnessKeyStore != null
                 && Utils.CollectionUtil.IsNotNullOrEmpty(Config.Instance.LocalWitness.LocalWitnessKeyStore))
             {
