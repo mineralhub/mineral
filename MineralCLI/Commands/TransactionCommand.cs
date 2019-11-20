@@ -942,7 +942,7 @@ namespace MineralCLI.Commands
         public static bool FreezeBalance(string command, string[] parameters)
         {
             string[] usage = new string[] {
-                string.Format("{0} [command option] <amount> <duration> || [<energy/bandwidth>}] || [<address>]\n", command) };
+                string.Format("{0} [command option] <amount> <duration> || [<energy/bandwidth>] || [<address>]\n", command) };
 
             string[] command_option = new string[] { HelpCommandOption.Help };
 
@@ -1103,7 +1103,7 @@ namespace MineralCLI.Commands
 
             string[] command_option = new string[] { HelpCommandOption.Help };
 
-            if (parameters == null || parameters.Length < 2 || parameters.Length % 2 == 0)
+            if (parameters == null || parameters.Length < 2 || parameters.Length % 2 != 0)
             {
                 OutputHelpMessage(usage, null, command_option, null);
                 return true;
