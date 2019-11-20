@@ -71,8 +71,9 @@ namespace Mineral.Common.Overlay.Messages
             return new StringBuilder().Append(base.ToString())
                                       .Append("reason : ")
                                       .Append(this.message.Reason)
+                                      .Append(", ")
                                       .Append("message : ")
-                                      .Append(this.reason_message)
+                                      .Append(this.reason_message ?? "")
                                       .ToString();
         }
         #endregion
