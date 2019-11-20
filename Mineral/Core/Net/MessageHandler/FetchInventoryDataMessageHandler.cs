@@ -146,7 +146,7 @@ namespace Mineral.Core.Net.MessageHandler
                                           item,
                                           hash,
                                           e.Message));
-                        peer.Disconnect(ReasonCode.FetchFail);
+                        peer.Disconnect(ReasonCode.FetchFail, e.Message);
 
                         return;
                     }

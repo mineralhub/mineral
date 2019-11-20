@@ -84,6 +84,7 @@ namespace Mineral.Core.Net
 
         private void ProcessException(PeerConnection peer, Messages.MineralMessage message, System.Exception exception)
         {
+            string reason_message = "";
             ReasonCode code = ReasonCode.Unknown;
 
             if (exception is P2pException) {
@@ -112,20 +113,23 @@ namespace Mineral.Core.Net
                         break;
                 }
 
-                Logger.Error(
-                    string.Format("Message from {0} process failed, {1} \n type: {2}, detail: {3}.",
-                                  peer.Address, message, type, exception.Message));
+                reason_message = string.Format("Message from {0} process failed, {1} \n type: {2}, detail: {3}.",
+                                               peer.Address,
+                                               message,
+                                               type,
+                                               exception.Message);
+                Logger.Error(reason_message);
             }
             else
             {
                 code = ReasonCode.Unknown;
-                Logger.Error(
-                    string.Format("Message from {0} process failed, {1}",
-                                  peer.Address,
-                                  message));
+                reason_message  = string.Format("Message from {0} process failed, {1}",
+                                                peer.Address,
+                                                message);
+                Logger.Error(reason_message);
             }
 
-            peer.Disconnect(code);
+            peer.Disconnect(code, reason_message);
         }
         #endregion
 

@@ -223,12 +223,12 @@ namespace Mineral.Common.Overlay.Server
             Close();
         }
 
-        public void Disconnect(ReasonCode reason)
+        public void Disconnect(ReasonCode reason, string message)
         {
             this.is_disconnect = true;
             Manager.Instance.ChannelManager.ProcessDisconnect(this, reason);
 
-            Messages.DisconnectMessage msg = new Messages.DisconnectMessage(reason);
+            Messages.DisconnectMessage msg = new Messages.DisconnectMessage(reason, message);
             Logger.Info(
                 string.Format("Send to {0} online-time {1}s, {2}",
                               this.context.Channel.RemoteAddress.ToString(),

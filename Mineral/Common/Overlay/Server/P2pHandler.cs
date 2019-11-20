@@ -61,10 +61,12 @@ namespace Mineral.Common.Overlay.Server
                         int count = message_statistics.P2pInPing.GetCount(10);
                         if (count > 3)
                         {
-                            Logger.Warning(
-                                string.Format("TCP attack found: {0} with ping count({1})", context.Channel.RemoteAddress, count));
+                            string reason = string.Format("TCP attack found: {0} with ping count({1})",
+                                                          context.Channel.RemoteAddress,
+                                                          count);
+                            Logger.Warning(reason);
+                            this.channel.Disconnect(Protocol.ReasonCode.BadProtocol, reason);
 
-                            this.channel.Disconnect(Protocol.ReasonCode.BadProtocol);
                             return;
                         }
 
@@ -75,13 +77,13 @@ namespace Mineral.Common.Overlay.Server
                     {
                         if (message_statistics.P2pInPong.TotalCount > message_statistics.P2pOutPing.TotalCount)
                         {
-                            Logger.Warning(
-                                string.Format("TCP attack found: {0} with ping count({1}), pong count({2})",
-                                              context.Channel.RemoteAddress,
-                                              message_statistics.P2pOutPing.TotalCount,
-                                              message_statistics.P2pInPong.TotalCount));
+                            string reason = string.Format("TCP attack found: {0} with ping count({1}), pong count({2})",
+                                                          context.Channel.RemoteAddress,
+                                                          message_statistics.P2pOutPing.TotalCount,
+                                                          message_statistics.P2pInPong.TotalCount);
+                            Logger.Warning(reason);
+                            this.channel.Disconnect(Protocol.ReasonCode.BadProtocol, reason);
 
-                            this.channel.Disconnect(Protocol.ReasonCode.BadProtocol);
                             return;
                         }
 

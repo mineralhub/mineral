@@ -79,7 +79,7 @@ namespace Mineral.Core.Net.Peer
 
                 if (is_disconnected)
                 {
-                    peer.Disconnect(Protocol.ReasonCode.TimeOut);
+                    peer.Disconnect(Protocol.ReasonCode.TimeOut, "");
                 }
             });
         }
