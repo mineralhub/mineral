@@ -193,7 +193,7 @@ namespace Mineral.Core.Net.Service
                     }
                     else
                     {
-                        peer.Disconnect(Protocol.ReasonCode.BadBlock);
+                        peer.Disconnect(Protocol.ReasonCode.BadBlock, exception.Message);
                     }
                 }
             }
@@ -344,7 +344,7 @@ namespace Mineral.Core.Net.Service
                 Logger.Error(
                     string.Format("Peer {0} sync failed", peer.Address, e));
 
-                peer.Disconnect(Protocol.ReasonCode.SyncFail);
+                peer.Disconnect(Protocol.ReasonCode.SyncFail, e.Message);
             }
         }
 

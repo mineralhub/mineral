@@ -126,54 +126,58 @@ namespace Mineral.Common.Overlay.Server
                 IPAddress address = ((IPEndPoint)context.Channel.RemoteAddress).Address;
                 if (!this.channel_manager.TrustNodes.ContainsKey(address) && !this.sync_pool.IsCanConnect)
                 {
-                    this.channel.Disconnect(Protocol.ReasonCode.TooManyPeers);
+                    this.channel.Disconnect(Protocol.ReasonCode.TooManyPeers, "");
                     return;
                 }
             }
 
             if (message.Version != Args.Instance.Node.P2P.Version)
             {
-                Logger.Info(
-                    string.Format("Peer {0} different p2p version, peer->{1}, me->{2}",
-                                  context.Channel.RemoteAddress, message.Version, Args.Instance.Node.P2P.Version));
+                string reason = string.Format("Peer {0} different p2p version, peer->{1}, me->{2}",
+                                  context.Channel.RemoteAddress, message.Version, Args.Instance.Node.P2P.Version);
 
-                this.channel.Disconnect(Protocol.ReasonCode.IncompatibleVersion);
+                Logger.Info(reason);
+                this.channel.Disconnect(Protocol.ReasonCode.IncompatibleVersion, reason);
+
                 return;
             }
 
             if (!this.db_manager.GenesisBlockId.Hash.SequenceEqual(message.GenesisBlockId.Hash))
             {
-                Logger.Info(
-                    string.Format("Peer {0} different genesis block, peer->{1}, me->{2}",
-                                  context.Channel.RemoteAddress,
-                                  message.GenesisBlockId.ToString(),
-                                  this.db_manager.GenesisBlockId.ToString()));
+                string reason = string.Format("Peer {0} different genesis block, peer->{1}, me->{2}",
+                                              context.Channel.RemoteAddress,
+                                              message.GenesisBlockId.ToString(),
+                                              this.db_manager.GenesisBlockId.ToString());
 
-                this.channel.Disconnect(Protocol.ReasonCode.IncompatibleChain);
+                Logger.Info(reason);
+                this.channel.Disconnect(Protocol.ReasonCode.IncompatibleChain, reason);
+
                 return;
             }
 
             if (this.db_manager.SolidBlockId.Num >= message.SolidBlockId.Num
                 && !this.db_manager.ContainBlockInMainChain(message.SolidBlockId))
             {
-                Logger.Info(
-                    string.Format("Peer {0} different solid block, peer->{1}, me->{2}",
-                                  context.Channel.RemoteAddress,
-                                  message.SolidBlockId.ToString(),
-                                  this.db_manager.SolidBlockId.ToString()));
+                string reason = string.Format("Peer {0} different solid block, peer->{1}, me->{2}",
+                                              context.Channel.RemoteAddress,
+                                              message.SolidBlockId.ToString(),
+                                              this.db_manager.SolidBlockId.ToString());
 
-                this.channel.Disconnect(Protocol.ReasonCode.Forked);
+
+                Logger.Info(reason);
+                this.channel.Disconnect(Protocol.ReasonCode.Forked, reason);
+
                 return;
             }
 
-          ((PeerConnection)this.channel).HelloMessage = message;
+            ((PeerConnection)this.channel).HelloMessage = message;
 
             this.channel.NodeStatistics.MessageStatistics.AddTcpInMessage(message);
             this.channel.PublicHandshakeFinished(context, message);
 
             if (!this.channel_manager.ProcessPeer(channel))
             {
-                this.channel.Disconnect(Protocol.ReasonCode.RecentlyDisconnected);
+                this.channel.Disconnect(Protocol.ReasonCode.RecentlyDisconnected, "");
                 return;
             }
 

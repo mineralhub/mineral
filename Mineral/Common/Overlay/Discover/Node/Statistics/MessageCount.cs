@@ -44,7 +44,7 @@ namespace Mineral.Common.Overlay.Discover.Node.Statistics
             {
                 for (int i = 1; i <= k; i++)
                 {
-                    this.message_count[(index + i) % SIZE] = 0;
+                    this.message_count[(this.index + i) % SIZE] = 0;
                 }
                 this.index = (int)(time % SIZE);
                 this.index_time = time;
