@@ -61,7 +61,7 @@ namespace Mineral.Common.Overlay.Server
                 {
                     if (channel.Node.Equals(node))
                     {
-                        channel.Disconnect(ReasonCode.Reset);
+                        channel.Disconnect(ReasonCode.Reset, "");
                     }
                 }
             });

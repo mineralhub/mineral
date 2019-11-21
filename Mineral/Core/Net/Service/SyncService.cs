@@ -67,7 +67,7 @@ namespace Mineral.Core.Net.Service
         {
             Dictionary<PeerConnection, List<BlockId>> send = new Dictionary<PeerConnection, List<BlockId>>();
 
-            foreach  (PeerConnection peer in Manager.Instance.NetDelegate.ActivePeers.Where(peer => peer.IsNeedSyncPeer && peer.IsIdle))
+            foreach  (PeerConnection peer in Manager.Instance.NetDelegate.ActivePeers.Where(peer => peer.IsNeedSyncFromPeer && peer.IsIdle))
             {
                 if (!send.ContainsKey(peer))
                 {
@@ -193,7 +193,7 @@ namespace Mineral.Core.Net.Service
                     }
                     else
                     {
-                        peer.Disconnect(Protocol.ReasonCode.BadBlock);
+                        peer.Disconnect(Protocol.ReasonCode.BadBlock, exception.Message);
                     }
                 }
             }
@@ -316,7 +316,7 @@ namespace Mineral.Core.Net.Service
         public void StartSync(PeerConnection peer)
         {
             peer.State = MineralState.SYNCING;
-            peer.IsNeedSyncPeer = true;
+            peer.IsNeedSyncFromPeer = true;
             peer.SyncBlockFetch.Clear();
             peer.RemainNum = 0;
             peer.BlockBothHave = Manager.Instance.NetDelegate.GenesisBlockId;
@@ -344,7 +344,7 @@ namespace Mineral.Core.Net.Service
                 Logger.Error(
                     string.Format("Peer {0} sync failed", peer.Address, e));
 
-                peer.Disconnect(Protocol.ReasonCode.SyncFail);
+                peer.Disconnect(Protocol.ReasonCode.SyncFail, e.Message);
             }
         }
 

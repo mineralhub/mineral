@@ -424,7 +424,7 @@ namespace Mineral.Core.Net.RpcHandler
 
                     int count = (Manager.Instance.NetDelegate.ActivePeers.Where(peer =>
                     {
-                        return !peer.IsNeedSyncUs && !peer.IsNeedSyncPeer;
+                        return !peer.IsNeedSyncUs && !peer.IsNeedSyncFromPeer;
                     })).Count();
 
                     if (count < min_effective_connection)

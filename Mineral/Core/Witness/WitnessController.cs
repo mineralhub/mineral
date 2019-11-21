@@ -44,8 +44,7 @@ namespace Mineral.Core.Witness
         #region Internal Method
         private void SortWitness(ref List<ByteString> item)
         {
-            item = item.OrderBy(address => GetWitnessesByAddress(address).VoteCount)
-                       .Reverse().ToList();
+            item = item.OrderBy(address => GetWitnessesByAddress(address), new WitnessSortComparer()).ToList();
         }
 
         private static bool WitnessSetChanged(List<ByteString> list1, List<ByteString> list2)

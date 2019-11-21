@@ -115,7 +115,7 @@ namespace Mineral.Core.Net.Peer
             set { this.remain_num = value; }
         }
 
-        public bool IsNeedSyncPeer
+        public bool IsNeedSyncFromPeer
         {
             get { return this.need_sync_peer; }
             set { this.need_sync_peer = value; }
@@ -253,7 +253,7 @@ namespace Mineral.Core.Net.Peer
                 (int)base.PeerStatistics.AverageLatency,
                 (now - base.StartTime) / 1000,
                 this.block_both_have.Num,
-                IsNeedSyncPeer,
+                IsNeedSyncFromPeer,
                 IsNeedSyncUs,
                 this.sync_block_fetch.Count,
                 this.sync_block_fetch.Count > 0 ? id.Num : -1,

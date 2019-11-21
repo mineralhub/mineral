@@ -129,15 +129,15 @@ namespace Mineral.Core.Database2.Core
             GetHead().Remove(key);
         }
 
-        public HashSet<byte[]> GetLatestValues(long limit)
+        public List<byte[]> GetLatestValues(long limit)
         {
             return GetLatestValues(GetHead(), limit);
         }
 
         [MethodImpl(MethodImplOptions.Synchronized)]
-        public HashSet<byte[]> GetLatestValues(ISnapshot head, long limit)
+        public List<byte[]> GetLatestValues(ISnapshot head, long limit)
         {
-            HashSet<byte[]> result = new HashSet<byte[]>();
+            List<byte[]> result = new List<byte[]>();
 
             lock (lock_db)
             {
@@ -151,11 +151,8 @@ namespace Mineral.Core.Database2.Core
                     if (!((Snapshot)(snapshot)).DB.IsEmpty)
                     {
                         --temp;
-                        IEnumerator<KeyValuePair<byte[], byte[]>> it = ((Snapshot)(snapshot)).GetEnumerator();
-                        while (it.MoveNext())
-                        {
-                            result.Add(it.Current.Value);
-                        }
+
+                        result.AddRange(((Snapshot)(snapshot)).DB.Select(data => data.Value.Data).ToList());
                     }
                 }
 
@@ -171,14 +168,14 @@ namespace Mineral.Core.Database2.Core
             return result;
         }
 
-        public HashSet<byte[]> GetValuesNext(byte[] key, long limit)
+        public List<byte[]> GetValuesNext(byte[] key, long limit)
         {
             return GetValuesNext(GetHead(), key, limit);
         }
 
-        public HashSet<byte[]> GetValuesNext(ISnapshot snapshot, byte[] key, long limit)
+        public List<byte[]> GetValuesNext(ISnapshot snapshot, byte[] key, long limit)
         {
-            HashSet<byte[]> result = new HashSet<byte[]>();
+            List<byte[]> result = new List<byte[]>();
 
             if (limit <= 0)
                 return result;
@@ -203,10 +200,10 @@ namespace Mineral.Core.Database2.Core
                     .Where(y => ByteUtil.Compare(y.Key, key) >= 0)
                     .Take((int)limit)
                     .Select(z => z.Value)
-                    .ToHashSet();
+                    .ToList();
         }
 
-        public HashSet<byte[]> GetValuesPrevious(byte[] key, long limit)
+        public List<byte[]> GetValuesPrevious(byte[] key, long limit)
         {
             Dictionary<WrappedByteArray, WrappedByteArray> collection = new Dictionary<WrappedByteArray, WrappedByteArray>(new WrapperdByteArrayEqualComparer());
 
@@ -216,7 +213,7 @@ namespace Mineral.Core.Database2.Core
             }
 
             int precision = sizeof(long) / sizeof(byte);
-            HashSet<byte[]> result = new HashSet<byte[]>();
+            List<byte[]> result = new List<byte[]>();
 
             foreach (WrappedByteArray array in collection.Keys)
             {
@@ -238,7 +235,7 @@ namespace Mineral.Core.Database2.Core
                 result.Add(array);
             }
 
-            return result.Take((int)limit).ToHashSet();
+            return result.Take((int)limit).ToList();
         }
 
         public Dictionary<byte[], byte[]> GetAllValues()

@@ -10,6 +10,7 @@ namespace Mineral.Common.Overlay.Messages
     {
         #region Field
         private Protocol.DisconnectMessage message = null;
+        private string reason_message = "";
         #endregion
 
 
@@ -22,6 +23,11 @@ namespace Mineral.Common.Overlay.Messages
         public override Type AnswerMessage
         {
             get { return null; }
+        }
+
+        public string ReasonMessage
+        {
+            get { return this.reason_message; }
         }
         #endregion
 
@@ -40,12 +46,13 @@ namespace Mineral.Common.Overlay.Messages
             }
         }
 
-        public DisconnectMessage(Protocol.ReasonCode code)
+        public DisconnectMessage(Protocol.ReasonCode code, string message)
         {
             this.message = new Protocol.DisconnectMessage();
             this.message.Reason = code;
             this.type = (byte)MessageTypes.MsgType.P2P_DISCONNECT;
             this.data = this.message.ToByteArray();
+            this.reason_message = message;
         }
         #endregion
 
@@ -61,7 +68,13 @@ namespace Mineral.Common.Overlay.Messages
         #region External Method
         public override string ToString()
         {
-            return new StringBuilder().Append(base.ToString()).Append("reason: ").Append(this.message.Reason).ToString();
+            return new StringBuilder().Append(base.ToString())
+                                      .Append("reason : ")
+                                      .Append(this.message.Reason)
+                                      .Append(", ")
+                                      .Append("message : ")
+                                      .Append(this.reason_message ?? "")
+                                      .ToString();
         }
         #endregion
     }
