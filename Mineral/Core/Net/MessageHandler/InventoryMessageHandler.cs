@@ -34,7 +34,7 @@ namespace Mineral.Core.Net.MessageHandler
             InventoryType type = message.InventoryType;
             int size = message.GetHashList().Count;
 
-            if (peer.IsNeedSyncPeer || peer.IsNeedSyncUs)
+            if (peer.IsNeedSyncFromPeer || peer.IsNeedSyncUs)
             {
                 Logger.Warning(
                     string.Format("Drop inv: {0} size: {1} from Peer {2}, syncFromUs: {3}, syncFromPeer: {4}.",
@@ -42,7 +42,7 @@ namespace Mineral.Core.Net.MessageHandler
                                   size,
                                   peer.Address.ToString(),
                                   peer.IsNeedSyncUs,
-                                  peer.IsNeedSyncPeer));
+                                  peer.IsNeedSyncFromPeer));
 
                 return false;
             }

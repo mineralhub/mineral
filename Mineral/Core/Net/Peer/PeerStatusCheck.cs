@@ -56,7 +56,7 @@ namespace Mineral.Core.Net.Peer
             {
                 bool is_disconnected = false;
 
-                if (peer.IsNeedSyncPeer
+                if (peer.IsNeedSyncFromPeer
                     && peer.BlockBothHaveTimestamp < now - this.block_update_timeout)
                 {
                     Logger.Warning(

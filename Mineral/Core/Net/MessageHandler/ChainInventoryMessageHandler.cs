@@ -103,20 +103,20 @@ namespace Mineral.Core.Net.MessageHandler
             ChainInventoryMessage chain_inventory_message = (ChainInventoryMessage)message;
             Check(peer, chain_inventory_message);
 
-            peer.IsNeedSyncPeer = true;
+            peer.IsNeedSyncFromPeer = true;
             peer.SyncChainRequest = default(KeyValuePair<DequeNet.Deque<Capsule.BlockCapsule.BlockId>, long>);
 
             Deque<BlockId> block_id = new Deque<BlockId>(chain_inventory_message.Ids);
 
             if (block_id.Count == 1 && Manager.Instance.NetDelegate.ContainBlock(block_id.FirstOrDefault()))
             {
-                peer.IsNeedSyncPeer = false;
+                peer.IsNeedSyncFromPeer = false;
                 return;
             }
 
             while (!peer.SyncBlockFetch.IsEmpty)
             {
-                if (peer.SyncBlockFetch.LastOrDefault().Equals(block_id.LastOrDefault()))
+                if (peer.SyncBlockFetch.Last().Equals(block_id.First()))
                 {
                     break;
                 }

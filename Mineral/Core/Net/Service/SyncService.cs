@@ -67,7 +67,7 @@ namespace Mineral.Core.Net.Service
         {
             Dictionary<PeerConnection, List<BlockId>> send = new Dictionary<PeerConnection, List<BlockId>>();
 
-            foreach  (PeerConnection peer in Manager.Instance.NetDelegate.ActivePeers.Where(peer => peer.IsNeedSyncPeer && peer.IsIdle))
+            foreach  (PeerConnection peer in Manager.Instance.NetDelegate.ActivePeers.Where(peer => peer.IsNeedSyncFromPeer && peer.IsIdle))
             {
                 if (!send.ContainsKey(peer))
                 {
@@ -316,7 +316,7 @@ namespace Mineral.Core.Net.Service
         public void StartSync(PeerConnection peer)
         {
             peer.State = MineralState.SYNCING;
-            peer.IsNeedSyncPeer = true;
+            peer.IsNeedSyncFromPeer = true;
             peer.SyncBlockFetch.Clear();
             peer.RemainNum = 0;
             peer.BlockBothHave = Manager.Instance.NetDelegate.GenesisBlockId;
