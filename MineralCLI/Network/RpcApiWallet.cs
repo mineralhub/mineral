@@ -112,6 +112,10 @@ namespace MineralCLI.Network
         public static RpcApiResult Login()
         {
             KeyStore keystore = RpcApi.SelectKeyStore();
+            if (keystore == null)
+            {
+                return new RpcApiResult(false, RpcMessage.NOT_FOUN_ITEM, "Please first Registerwallet"); ;
+            }
 
             string password = CommandLineUtil.ReadPasswordString("Please input your password.");
             if (!KeyStoreService.CheckPassword(password, keystore))
