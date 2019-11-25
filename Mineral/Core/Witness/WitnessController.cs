@@ -307,7 +307,7 @@ namespace Mineral.Core.Witness
                     if (count_witness.ContainsKey(vote_address))
                     {
                         count_witness.TryGetValue(vote_address, out long value);
-                        count_witness.Put(vote_address, value - vote_count);
+                        count_witness.Put(vote_address, value + vote_count);
                     }
                     else
                     {
