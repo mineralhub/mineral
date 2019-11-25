@@ -280,7 +280,7 @@ namespace Mineral.Core.Net.Service
             {
                 foreach (Item item in peer.InventoryRequest.Keys)
                 {
-                    if (Manager.Instance.NetDelegate.ActivePeers.First(p => p != peer && p.GetInventoryReceive(item) != null) != null)
+                    if (Manager.Instance.NetDelegate.ActivePeers.FirstOrDefault(p => p != peer && p.GetInventoryReceive(item) != null) != null)
                     {
                         this.inventory_fetch.TryAdd(item, Helper.CurrentTimeMillis());
                     }
