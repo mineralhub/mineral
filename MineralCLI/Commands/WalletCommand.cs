@@ -24,7 +24,7 @@ namespace MineralCLI.Commands
         public static bool ImportWallet(string command, string[] parameters)
         {
             string[] usage = new string[] {
-                string.Format("{0} [command option] <path>\n", command) };
+                string.Format("{0} [command option] \n", command) };
 
             string[] command_option = new string[] { HelpCommandOption.Help };
 

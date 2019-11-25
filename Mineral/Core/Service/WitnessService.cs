@@ -123,7 +123,7 @@ namespace Mineral.Core.Service
                 }
                 catch (System.Exception e)
                 {
-                    Logger.Error("unknown throwable happened in witness loop" + e.Message);
+                    Logger.Error("Unknown throwable happened in witness loop" + e.Message);
                 }
             }
         }
@@ -159,7 +159,7 @@ namespace Mineral.Core.Service
                 else
                 {
                     Logger.Debug(
-                        string.Format("Not sync ,now:{0},headBlockTime:{1},headBlockNumber:{2},headBlockId:{3}",
+                        string.Format("Not sync, Now : {0}, HeadBlockTime:{1}, HeadBlockNumber : {2}, HeadBlockId:{3}",
                                       now.ToDateTime().ToLocalTime(),
                                       this.db_manager.DynamicProperties.GetLatestBlockHeaderTimestamp().ToDateTime().ToLocalTime(),
                                       this.db_manager.DynamicProperties.GetLatestBlockHeaderNumber(),
@@ -183,8 +183,10 @@ namespace Mineral.Core.Service
             if (participation < MIN_PARTICIPATION_RATE)
             {
                 Logger.Warning(
-                    "Participation[" + participation + "] <  MIN_PARTICIPATION_RATE[" + MIN_PARTICIPATION_RATE
-                        + "]");
+                    string.Format("Participation[{0}] > MIN_PARTICIPATION_RATE[{1}]",
+                                  participation,
+                                  MIN_PARTICIPATION_RATE));
+
                 this.controller.DumpParticipationLog();
 
                 return BlockProductionCondition.LOW_PARTICIPATION;
@@ -216,7 +218,7 @@ namespace Mineral.Core.Service
                     if (slot == 0)
                     {
                         Logger.Info(
-                            string.Format("Not time yet, now:{0},headBlockTime:{1},headBlockNumber:{2},headBlockId:{3}",
+                            string.Format("Not time yet, Now : {0}, HeadBlockTime : {1}, HeadBlockNumber : {2}, HeadBlockId:{3}",
                                           now.ToDateTime().ToLocalTime(),
                                           this.db_manager.DynamicProperties.GetLatestBlockHeaderTimestamp().ToDateTime().ToLocalTime(),
                                           this.db_manager.DynamicProperties.GetLatestBlockHeaderNumber(),
@@ -228,7 +230,7 @@ namespace Mineral.Core.Service
                     if (now < this.db_manager.DynamicProperties.GetLatestBlockHeaderTimestamp())
                     {
                         Logger.Warning(
-                            string.Format("have a timestamp:{0} less than or equal to the previous block:{1}",
+                            string.Format("timestamp : {0} less than or equal to the previous block timestamp : {1}",
                                           now.ToDateTime().ToLocalTime(),
                                           this.db_manager.DynamicProperties.GetLatestBlockHeaderTimestamp().ToDateTime().ToLocalTime()));
 
@@ -239,8 +241,8 @@ namespace Mineral.Core.Service
                     if (!this.local_witness_states.ContainsKey(scheduled_witness))
                     {
                         Logger.Info(
-                            string.Format("It's not my turn, ScheduledWitness[{0}],slot[{1}],abSlot[{2}],",
-                                          scheduled_witness.ToByteArray().ToHexString(),
+                            string.Format("It's not my turn, ScheduledWitness[{0}], Slot[{1}], AbsSlot[{2}],",
+                                          Wallet.AddressToBase58(scheduled_witness.ToByteArray()),
                                           slot,
                                           controller.GetAbsSlotAtTime(now)));
 
@@ -263,7 +265,7 @@ namespace Mineral.Core.Service
 
                     if (block == null)
                     {
-                        Logger.Warning("exception when generate block");
+                        Logger.Warning("Exception when generate block");
                         return BlockProductionCondition.EXCEPTION_PRODUCING_BLOCK;
                     }
 
@@ -287,7 +289,7 @@ namespace Mineral.Core.Service
 
                 Logger.Info(
                     string.Format(
-                        "Produce block successfully, blockNumber:{0}, abSlot[{1}], blockId:{2}, transactionSize:{3}, blockTime:{4}, parentBlockId:{5}",
+                        "Produce block successfully, BlockNumber:{0}, AbsSlot[{1}], BlockId:{2}, TransactionSize:{3}, BlockTime:{4}, ParentBlockId:{5}",
                         block.Num,
                         controller.GetAbsSlotAtTime(now),
                         block.Id,
@@ -365,7 +367,10 @@ namespace Mineral.Core.Service
             WitnessCapsule witness = Manager.Instance.DBManager.Witness.Get(witness_address);
             if (witness == null)
             {
-                Logger.Warning("WitnessCapsule[" + witness_address + "] is not in witnessStore");
+                Logger.Warning(
+                    string.Format("WitnessCapsule[{0}] is not in witnessStore",
+                                  witness_address));
+
                 witness = new WitnessCapsule(ByteString.CopyFrom(witness_address));
             }
 
@@ -433,7 +438,7 @@ namespace Mineral.Core.Service
 
             Interlocked.Exchange(ref this.block_time, Helper.CurrentTimeMillis());
 
-            Logger.Warning("Dup block produced : " + block.ToString());
+            Logger.Warning("Duplicate block produced : " + block.ToString());
         }
         #endregion
     }

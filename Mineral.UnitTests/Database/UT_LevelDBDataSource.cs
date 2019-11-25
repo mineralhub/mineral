@@ -141,7 +141,7 @@ namespace Mineral.UnitTests.Database
             result.Should().NotBeNull();
             result.Count.Should().Be((int)limit);
 
-            result.First().Key.SequenceEqual(keys[index + 1]).Should().BeTrue();
+            result.First().Key.SequenceEqual(keys[index]).Should().BeTrue();
         }
 
         [TestMethod]

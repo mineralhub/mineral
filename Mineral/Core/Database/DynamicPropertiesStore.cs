@@ -698,7 +698,7 @@ namespace Mineral.Core.Database
 
         public void PutBlockFilledSlots(int[] block_filled_slots)
         {
-            Logger.Debug("blockFilledSlots:" + block_filled_slots.IntToString());
+            Logger.Debug("BlockFilledSlots:" + block_filled_slots.IntToString());
             Put(BLOCK_FILLED_SLOTS, new BytesCapsule(block_filled_slots.IntToString().ToBytes()));
         }
 

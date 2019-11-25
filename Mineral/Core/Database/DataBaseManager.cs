@@ -371,14 +371,14 @@ namespace Mineral.Core.Database
                         }
                         catch (ItemNotFoundException e)
                         {
-                            Logger.Info("initilaize transaction cache error.");
-                            throw new IllegalStateException("initilaize transaction cache error.", e);
+                            Logger.Info("Initilaize transaction cache error.");
+                            throw new IllegalStateException("Initilaize transaction cache error.", e);
 
                         }
                         catch (BadItemException e)
                         {
-                            Logger.Info("initilaize transaction cache error.");
-                            throw new IllegalStateException("initilaize transaction cache error.", e);
+                            Logger.Info("Initilaize transaction cache error.");
+                            throw new IllegalStateException("Initilaize transaction cache error.", e);
                         }
 
                     }).Wait();
@@ -391,7 +391,7 @@ namespace Mineral.Core.Database
 
             Logger.Info(
                 string.Format(
-                    "end to init txs cache. trxids:{0}, block count:{1}, empty block count:{2}, cost:{3}",
+                    "end to init txs cache. tx ids : {0}, block count : {1}, empty block count : {2}, cost : {3}",
                     this.transaction_cache.Count(),
                     Interlocked.Read(ref block_count),
                     Interlocked.Read(ref empty_block_count),
@@ -425,7 +425,7 @@ namespace Mineral.Core.Database
                 }
                 catch (System.Exception e)
                 {
-                    Logger.Error("unknown exception happened in repush loop", e);
+                    Logger.Error("Unknown exception happened in repush loop", e);
                 }
                 finally
                 {
@@ -459,27 +459,27 @@ namespace Mineral.Core.Database
                 }
                 else if (e is DupTransactionException)
                 {
-                    Logger.Debug("pending manager: dup trans");
+                    Logger.Debug("Pending manager: dup trans");
                 }
                 else if (e is TaposException)
                 {
-                    Logger.Debug("pending manager: tapos exception");
+                    Logger.Debug("Pending manager: tapos exception");
                 }
                 else if (e is TooBigTransactionException)
                 {
-                    Logger.Debug("too big transaction");
+                    Logger.Debug("Too big transaction");
                 }
                 else if (e is TransactionExpirationException)
                 {
-                    Logger.Debug("expiration transaction");
+                    Logger.Debug("Expiration transaction");
                 }
                 else if (e is ReceiptCheckErrorException)
                 {
-                    Logger.Debug("outOfSlotTime transaction");
+                    Logger.Debug("OutOfSlotTime transaction");
                 }
                 else if (e is TooBigTransactionResultException)
                 {
-                    Logger.Debug("too big transaction result");
+                    Logger.Debug("Too big transaction result");
                 }
             }
         }
@@ -574,47 +574,47 @@ namespace Mineral.Core.Database
             }
             catch (ContractExeException e)
             {
-                Logger.Info("contract not processed during execute");
+                Logger.Info("Contract not processed during execute");
                 Logger.Debug(e.Message);
             }
             catch (ContractValidateException e)
             {
-                Logger.Info("contract not processed during validate");
+                Logger.Info("Contract not processed during validate");
                 Logger.Debug(e.Message);
             }
             catch (TaposException e)
             {
-                Logger.Info("contract not processed during TaposException");
+                Logger.Info("Contract not processed during TaposException");
                 Logger.Debug(e.Message);
             }
             catch (DupTransactionException e)
             {
-                Logger.Info("contract not processed during DupTransactionException");
+                Logger.Info("Contract not processed during DupTransactionException");
                 Logger.Debug(e.Message);
             }
             catch (TooBigTransactionException e)
             {
-                Logger.Info("contract not processed during TooBigTransactionException");
+                Logger.Info("Contract not processed during TooBigTransactionException");
                 Logger.Debug(e.Message);
             }
             catch (TooBigTransactionResultException e)
             {
-                Logger.Info("contract not processed during TooBigTransactionResultException");
+                Logger.Info("Contract not processed during TooBigTransactionResultException");
                 Logger.Debug(e.Message);
             }
             catch (TransactionExpirationException e)
             {
-                Logger.Info("contract not processed during TransactionExpirationException");
+                Logger.Info("Contract not processed during TransactionExpirationException");
                 Logger.Debug(e.Message);
             }
             catch (AccountResourceInsufficientException e)
             {
-                Logger.Info("contract not processed during AccountResourceInsufficientException");
+                Logger.Info("Contract not processed during AccountResourceInsufficientException");
                 Logger.Debug(e.Message);
             }
             catch (ValidateSignatureException e)
             {
-                Logger.Info("contract not processed during ValidateSignatureException");
+                Logger.Info("Contract not processed during ValidateSignatureException");
                 Logger.Debug(e.Message);
             }
             catch (ReceiptCheckErrorException e)
@@ -732,7 +732,7 @@ namespace Mineral.Core.Database
             catch (NonCommonBlockException e)
             {
                 Logger.Info(
-                    "there is not the most recent common ancestor, need to remove all blocks in the fork chain.");
+                    "There is not the most recent common ancestor, need to remove all blocks in the fork chain.");
 
                 BlockCapsule tmp = new_head;
                 while (tmp != null)
@@ -796,7 +796,7 @@ namespace Mineral.Core.Database
                     {
                         if (exception != null)
                         {
-                            Logger.Warning("switch back because exception thrown while switching forks. " + exception.Message);
+                            Logger.Warning("Switch back because exception thrown while switching forks. " + exception.Message);
                             first.ForEach(khaos_block => this.khaos_database.RemoveBlock(khaos_block.Block.Id));
                             this.khaos_database.SetHead(block_tree.Value.Last());
 
@@ -873,8 +873,8 @@ namespace Mineral.Core.Database
             }
 
             Logger.Debug(
-                string.Format("UpdateSignedWitness. Witness address:{0}, Block num:{1}, Total produced:{2}",
-                              witness.ToHexString(),
+                string.Format("UpdateSignedWitness. Witness address : {0}, Block num : {1}, Total produced : {2}",
+                              Wallet.AddressToBase58(witness.Address.ToByteArray()),
                               block.Num,
                               witness.TotalProduced));
         }
@@ -964,10 +964,10 @@ namespace Mineral.Core.Database
 
             if (slot <= 0)
             {
-                Logger.Warning("missedBlocks [" + slot + "] is illegal");
+                Logger.Warning("MissedBlocks [" + slot + "] is illegal");
             }
 
-            Logger.Info("update head, num = " + block.Num);
+            Logger.Info("Update head, num = " + block.Num);
             this.dynamic_properties_store.PutLatestBlockHeaderHash(ByteString.CopyFrom(block.Id.Hash));
             this.dynamic_properties_store.PutLatestBlockHeaderNumber(block.Num);
             this.dynamic_properties_store.PutLatestBlockHeaderTimestamp(block.Timestamp);
@@ -992,18 +992,18 @@ namespace Mineral.Core.Database
 
         private void CloseStore(IDB database)
         {
-            Logger.Info("begin to close " + database.Name + " ********");
+            Logger.Info("Begin to close " + database.Name + " ********");
             try
             {
                 database.Close();
             }
             catch (System.Exception e)
             {
-                Logger.Info("failed to close  " + database.Name + ". " + e);
+                Logger.Info("Failed to close  " + database.Name + ". " + e);
             }
             finally
             {
-                Logger.Info("******** end to close " + database.Name + " ********");
+                Logger.Info("******** End to close " + database.Name + " ********");
             }
         }
         #endregion
@@ -1128,9 +1128,9 @@ namespace Mineral.Core.Database
 
         public long GetSyncBeginNumber()
         {
-            Logger.Info("headNumber:" + this.dynamic_properties_store.GetLatestBlockHeaderNumber());
-            Logger.Info("syncBeginNumber:" + (this.dynamic_properties_store.GetLatestBlockHeaderNumber() - this.revoking_store.Size));
-            Logger.Info("solidBlockNumber:" + this.dynamic_properties_store.GetLatestSolidifiedBlockNum());
+            Logger.Info("HeadNumber:" + this.dynamic_properties_store.GetLatestBlockHeaderNumber());
+            Logger.Info("SyncBeginNumber:" + (this.dynamic_properties_store.GetLatestBlockHeaderNumber() - this.revoking_store.Size));
+            Logger.Info("SolidBlockNumber:" + this.dynamic_properties_store.GetLatestSolidifiedBlockNum());
 
             return this.dynamic_properties_store.GetLatestBlockHeaderNumber() - this.revoking_store.Size;
         }
@@ -1144,7 +1144,7 @@ namespace Mineral.Core.Database
 
             if (blocks.IsNullOrEmpty())
             {
-                Logger.Info("empty branch " + hash);
+                Logger.Info("Empty branch " + hash);
                 return new List<BlockId>();
             }
 
@@ -1228,7 +1228,7 @@ namespace Mineral.Core.Database
                     + "and the first block after the maintenance period has just been processed.");
 
                 Logger.Info(
-                    string.Format("when:{0},lastHeadBlockIsMaintenanceBefore:{1},lastHeadBlockIsMaintenanceAfter:{2}",
+                    string.Format("When : {0}, LastHeadBlockIsMaintenanceBefore : {1}, LastHeadBlockIsMaintenanceAfter:{2}",
                                   when,
                                   is_maintenance_before,
                                   LastHeadBlockIsMaintenance()));
@@ -1303,8 +1303,8 @@ namespace Mineral.Core.Database
             }
 
             Logger.Info(
-                "postponedTrxCount[" + postponed_tx_count + "],TrxLeft[" + this.pending_transactions.Count
-                    + "],repushTrxCount[" + this.repush_transactions.Count + "]");
+                "PostponedTxCount[" + postponed_tx_count + "],TxLeft[" + this.pending_transactions.Count
+                    + "],RepushTxCount[" + this.repush_transactions.Count + "]");
 
             block.SetMerkleTree();
             block.Sign(privatekey);
@@ -1316,31 +1316,31 @@ namespace Mineral.Core.Database
             }
             catch (TaposException)
             {
-                Logger.Info("contract not processed during TaposException");
+                Logger.Info("Contract not processed during TaposException");
             }
             catch (TooBigTransactionException)
             {
-                Logger.Info("contract not processed during TooBigTransactionException");
+                Logger.Info("Contract not processed during TooBigTransactionException");
             }
             catch (DupTransactionException)
             {
-                Logger.Info("contract not processed during DupTransactionException");
+                Logger.Info("Contract not processed during DupTransactionException");
             }
             catch (TransactionExpirationException)
             {
-                Logger.Info("contract not processed during TransactionExpirationException");
+                Logger.Info("Contract not processed during TransactionExpirationException");
             }
             catch (BadNumberBlockException)
             {
-                Logger.Info("generate block using wrong number");
+                Logger.Info("Generate block using wrong number");
             }
             catch (BadBlockException)
             {
-                Logger.Info("block exception");
+                Logger.Info("Block exception");
             }
             catch (NonCommonBlockException)
             {
-                Logger.Info("non common exception");
+                Logger.Info("Non common exception");
             }
             catch (ReceiptCheckErrorException e)
             {
@@ -1353,7 +1353,7 @@ namespace Mineral.Core.Database
             }
             catch (TooBigTransactionResultException)
             {
-                Logger.Info("contract not processed during TooBigTransactionResultException");
+                Logger.Info("Contract not processed during TooBigTransactionResultException");
             }
 
             return null;
@@ -1409,47 +1409,47 @@ namespace Mineral.Core.Database
                         if (!new_block.ParentId.Equals(this.dynamic_properties_store.GetLatestBlockHeaderHash()))
                         {
                             Logger.Warning(
-                                string.Format("switch fork! new head num = {0}, blockid = {1}",
+                                string.Format("Switch fork! new head num = {0}, blockid = {1}",
                                               new_block.Num,
                                               new_block.Id.ToString()));
 
                             Logger.Warning(
-                                "******** before switchFork ******* push block: "
+                                "******** Before SwitchFork ******* Push Block: "
                                     + block.ToString()
-                                    + ", new block:"
+                                    + ", New block:"
                                     + new_block.ToString()
-                                    + ", dynamic head num: "
+                                    + ", Dynamic head num: "
                                     + this.dynamic_properties_store.GetLatestBlockHeaderNumber()
-                                    + ", dynamic head hash: "
+                                    + ", Dynamic head hash: "
                                     + this.dynamic_properties_store.GetLatestBlockHeaderHash()
-                                    + ", dynamic head timestamp: "
+                                    + ", Dynamic head timestamp: "
                                     + this.dynamic_properties_store.GetLatestBlockHeaderTimestamp()
-                                    + ", khaosDb head: "
+                                    + ", KhaosDb head: "
                                     + this.khaos_database.GetHead().ToString()
-                                    + ", khaosDb miniStore size: "
+                                    + ", KhaosDb MiniStore size: "
                                     + this.khaos_database.MiniStore.Size
-                                    + ", khaosDb unlinkMiniStore size: "
+                                    + ", KhaosDb MiniUnlinkedStore size: "
                                     + this.khaos_database.MiniUnlinkedStore.Size);
 
                             SwitchFork(new_block);
-                            Logger.Info("save block: " + new_block);
+                            Logger.Info("Save block: " + new_block);
 
                             Logger.Warning(
-                                "******** after switchFork ******* push block: "
+                                "******** After SwitchFork ******* Push Block: "
                                     + block.ToString()
-                                    + ", new block:"
+                                    + ", New block:"
                                     + new_block.ToString()
-                                    + ", dynamic head num: "
+                                    + ", Dynamic head num: "
                                     + this.dynamic_properties_store.GetLatestBlockHeaderNumber()
-                                    + ", dynamic head hash: "
+                                    + ", Dynamic head hash: "
                                     + this.dynamic_properties_store.GetLatestBlockHeaderHash()
-                                    + ", dynamic head timestamp: "
+                                    + ", Dynamic head timestamp: "
                                     + this.dynamic_properties_store.GetLatestBlockHeaderTimestamp()
-                                    + ", khaosDb head: "
+                                    + ", KhaosDb head: "
                                     + this.khaos_database.GetHead()
-                                    + ", khaosDb miniStore size: "
+                                    + ", KhaosDb miniStore size: "
                                     + this.khaos_database.MiniStore.Size
-                                    + ", khaosDb unlinkMiniStore size: "
+                                    + ", KhaosDb unlinkMiniStore size: "
                                     + this.khaos_database.MiniUnlinkedStore.Size);
 
                             return;
@@ -1472,10 +1472,7 @@ namespace Mineral.Core.Database
                         }
                     }
 
-                    Logger.Info("save block: " + new_block);
-
-                    Logger.Refactoring(
-                        string.Format("Push block : {0} IsGenerateMyself : {1}", new_block.Num, new_block.IsGenerateMyself));
+                    Logger.Info("Save block: " + new_block);
                 }
             }
             catch
@@ -1506,8 +1503,9 @@ namespace Mineral.Core.Database
             }
 
             Logger.Info(
-                string.Format("pushBlock block number:{0}, cost/txs:{1}/{2}",
+                string.Format("PushBlock block number:{0}, IsGenerateMyself : {1} cost/txs:{2}/{3}",
                               block.Num,
+                              block.IsGenerateMyself,
                               Helper.CurrentTimeMillis() - start,
                               block.Transactions.Count));
         }
@@ -1524,7 +1522,7 @@ namespace Mineral.Core.Database
             {
                 if (!transaction.ValidateSignature(this))
                 {
-                    throw new ValidateSignatureException("trans sig validate failed");
+                    throw new ValidateSignatureException("Transaction signature validate failed");
                 }
 
                 lock (this)
@@ -1568,10 +1566,10 @@ namespace Mineral.Core.Database
             {
                 BlockCapsule old_head_block = GetBlockById(this.dynamic_properties_store.GetLatestBlockHeaderHash());
 
-                Logger.Info("begin to erase block :" + old_head_block);
+                Logger.Info("Begin to erase block :" + old_head_block);
                 this.khaos_database.Pop();
                 this.revoking_store.FastPop();
-                Logger.Info("end to erase block:" + old_head_block);
+                Logger.Info("End to erase block:" + old_head_block);
 
                 foreach (var transaction in old_head_block.Transactions)
                 {
@@ -1592,7 +1590,7 @@ namespace Mineral.Core.Database
         {
             if (!this.witness_controller.ValidateWitnessSchedule(block))
             {
-                throw new ValidateScheduleException("validateWitnessSchedule error");
+                throw new ValidateScheduleException("ValidateWitnessSchedule error");
             }
 
             this.dynamic_properties_store.PutBlockEnergyUsage(0);
@@ -1605,7 +1603,7 @@ namespace Mineral.Core.Database
                 }
                 catch (ThreadInterruptedException)
                 {
-                    Logger.Error("parallel check sign interrupted exception! block info : " + block.ToString());
+                    Logger.Error("Parallel check sign interrupted exception! block info : " + block.ToString());
                     Thread.CurrentThread.Interrupt();
                 }
             }
@@ -1671,14 +1669,14 @@ namespace Mineral.Core.Database
 
             if (transaction.Instance.RawData.Contract.Count != 1)
             {
-                throw new ContractSizeNotEqualToOneException("act size should be exactly 1, this is extend feature");
+                throw new ContractSizeNotEqualToOneException("Act size should be exactly 1, this is extend feature");
             }
 
             ValidateDup(transaction);
 
             if (!transaction.ValidateSignature(this))
             {
-                throw new ValidateSignatureException("trans sig validate failed");
+                throw new ValidateSignatureException("Transaction signature validate failed");
             }
 
             TransactionTrace trace = new TransactionTrace(transaction, this);
@@ -1709,7 +1707,7 @@ namespace Mineral.Core.Database
                         trace.Execute();
                         trace.SetResult();
                         Logger.Info(
-                            string.Format("Retry result for tx id: {0}, tx resultCode in receipt: {1}",
+                            string.Format("Retry result for tx id: {0}, tx result code in receipt: {1}",
                                           tx_id,
                                           trace.Receipt.Result));
                     }
@@ -1740,7 +1738,7 @@ namespace Mineral.Core.Database
 
         public void PreValidateTransactionSign(BlockCapsule block)
         {
-            Logger.Info("PreValidate Transaction Sign, size:" + block.Transactions.Count + ",block num:" + block.Num);
+            Logger.Info("PreValidate Transaction Signature, size : " + block.Transactions.Count + ", block num : " + block.Num);
             int tx_size = block.Transactions.Count;
             if (tx_size <= 0)
             {
@@ -1824,15 +1822,15 @@ namespace Mineral.Core.Database
             if (transaction.Data.Length > DefineParameter.TRANSACTION_MAX_BYTE_SIZE)
             {
                 throw new TooBigTransactionException(
-                    "too big transaction, the size is " + transaction.Data.Length + " bytes");
+                    "Too big transaction, the size is " + transaction.Data.Length + " bytes");
             }
             long head_block_time = GetHeadBlockTimestamp();
             if (transaction.Expiration <= head_block_time ||
                 transaction.Expiration > head_block_time + DefineParameter.MAXIMUM_TIME_UNTIL_EXPIRATION)
             {
                 throw new TransactionExpirationException(
-                    "transaction expiration, transaction expiration time is " + transaction.Expiration
-                        + ", but headBlockTime is " + head_block_time);
+                    "Transaction expiration, transaction expiration time is " + transaction.Expiration
+                        + ", but HeadBlockTime is " + head_block_time);
             }
         }
 
@@ -1841,7 +1839,7 @@ namespace Mineral.Core.Database
             if (ContainsTransaction(transaction))
             {
                 Logger.Debug(transaction.Id.Hash.ToHexString());
-                throw new DupTransactionException("dup trans");
+                throw new DupTransactionException("Duplicate transaction");
             }
         }
 
@@ -1869,7 +1867,7 @@ namespace Mineral.Core.Database
                     catch (BalanceInsufficientException)
                     {
                         throw new AccountResourceInsufficientException(
-                            "Account Insufficient  balance[" + fee + "] to MultiSign");
+                            "Account Insufficient  balance[" + fee + "] to MultiSignature");
                     }
                 }
 

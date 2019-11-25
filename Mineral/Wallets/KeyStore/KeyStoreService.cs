@@ -34,14 +34,23 @@ namespace Mineral.Wallets.KeyStore
 
 
         #region External Method
-        public static bool GenerateKeyStore(string path, string password, byte[] privatekey, string address)
+        public static bool GenerateKeyStore(string path, string password, byte[] privatekey, string address, out string file_name)
         {
             KdfParam param = KdfParam.GetDefaultParam();
-            return GenerateKeyStore(path, password, privatekey, address, param.N, param.R, param.P, param.Dklen);
+            return GenerateKeyStore(path, password, privatekey, address, param.N, param.R, param.P, param.Dklen, out file_name);
         }
 
-        public static bool GenerateKeyStore(string path, string password, byte[] privatekey, string address, int n, int r, int p, int dklen)
+        public static bool GenerateKeyStore(string path,
+                                            string password,
+                                            byte[] privatekey,
+                                            string address,
+                                            int n,
+                                            int r,
+                                            int p,
+                                            int dklen,
+                                            out string file_name)
         {
+            file_name = null;
             KdfParam kdf_param = new KdfParam() { Dklen = dklen, N = n, R = r, P = p };
 
             byte[] salt;
@@ -89,8 +98,14 @@ namespace Mineral.Wallets.KeyStore
                 },
             };
 
+            if (!Directory.Exists(path))
+            {
+                Directory.CreateDirectory(path);
+            }
+
             string json = JsonConvert.SerializeObject(keystore, Formatting.Indented);
-            path += "\\" + DateTime.UtcNow.ToString("yyyy-MM-ddTHH-mm-ss.ffff") + "__" + keystore.Address + ".keystore";
+            file_name = DateTime.UtcNow.ToString("yyyy-MM-ddTHH-mm-ss.ffff") + "__" + keystore.Address + ".keystore";
+            path += Path.DirectorySeparatorChar + file_name;
             using (var file = File.CreateText(path))
             {
                 file.Write(json);

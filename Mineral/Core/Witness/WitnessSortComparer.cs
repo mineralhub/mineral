@@ -22,11 +22,11 @@ namespace Mineral.Core.Witness
             }
             else
             {
-                if (witness1.GetHashCode() > witness2.GetHashCode())
+                if (witness1.Address.GetHashCode() > witness2.Address.GetHashCode())
                 {
                     result = -1;
                 }
-                else if (witness1.GetHashCode() < witness2.GetHashCode())
+                else if (witness1.Address.GetHashCode() < witness2.Address.GetHashCode())
                 {
                     result = 1;
                 }

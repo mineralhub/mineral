@@ -15,7 +15,8 @@ namespace Mineral.UnitTests.Wallet
     {
         private readonly byte[] privatekey = "d86007eabbcbbe43d101bdc6fcded3419ecd01d1f626c50389e419237489dedd".HexToBytes();
         private readonly string base85_address = "MM7aZ42XMFDvWrhLGZDdv7pDawVfc99zTj";
-        public readonly string keystore_file = "mineral.keystore";
+        private readonly string keystore_path = "wallet";
+        public string keystore_file = "mineral.keystore";
         public readonly string password = "mineral_password";
         //public readonly byte[] password_encryt = "";
 
@@ -24,10 +25,11 @@ namespace Mineral.UnitTests.Wallet
         {
             if (!File.Exists(this.keystore_file))
             {
-                KeyStoreService.GenerateKeyStore(this.keystore_file,
+                KeyStoreService.GenerateKeyStore(this.keystore_path,
                                                  this.password,
                                                  this.privatekey,
-                                                 this.base85_address);
+                                                 this.base85_address,
+                                                 out keystore_file);
             }
         }
 
@@ -44,17 +46,18 @@ namespace Mineral.UnitTests.Wallet
                 File.Delete(this.keystore_file);
             }
 
-            KeyStoreService.GenerateKeyStore(this.keystore_file,
+            KeyStoreService.GenerateKeyStore(this.keystore_path,
                                              this.password,
                                              this.privatekey,
-                                             this.base85_address).Should().BeTrue();
+                                             this.base85_address,
+                                             out _).Should().BeTrue();
         }
 
         [TestMethod]
         public void DecryptKeyStore()
         {
             JObject json = null;
-            using (var file = File.OpenText(this.keystore_file))
+            using (var file = File.OpenText(this.keystore_path + Path.DirectorySeparatorChar + this.keystore_file))
             {
                 json = JObject.Parse(file.ReadToEnd());
             }
