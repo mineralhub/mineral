@@ -8,6 +8,7 @@ using Mineral.Core.Config;
 using Mineral.Core.Config.Arguments;
 using Mineral.Core.Database;
 using Mineral.Core.Exception;
+using Mineral.Core.Service;
 using Protocol;
 using static Protocol.Transaction.Types.Result.Types;
 
@@ -35,7 +36,7 @@ namespace Mineral.Core.Actuator
         #region Internal Method
         private bool ValidKey(long index)
         {
-            int parameter_count = System.Enum.GetValues(typeof(Parameter.ProposalParameters)).Length;
+            int parameter_count = System.Enum.GetValues(typeof(ProposalService.ProposalParameters)).Length;
 
             return index >= 0 && index < parameter_count;
         }
@@ -153,12 +154,12 @@ namespace Mineral.Core.Actuator
                         if (entry.Value != 1)
                         {
                             throw new ContractValidateException(
-                                "This value[ALLOW_TVM_TRANSFER_TRC10] is only allowed to be 1");
+                                "This value[ALLOW_VM_TRANSFER_TRC10] is only allowed to be 1");
                         }
                         if (this.db_manager.DynamicProperties.GetAllowSameTokenName() == 0)
                         {
                             throw new ContractValidateException("[ALLOW_SAME_TOKEN_NAME] proposal must be approved "
-                                + "before [ALLOW_TVM_TRANSFER_TRC10] can be proposed");
+                                + "before [ALLOW_VM_TRANSFER_TRC10] can be proposed");
                         }
                         break;
                     }
@@ -259,13 +260,13 @@ namespace Mineral.Core.Actuator
                         if (entry.Value != 1)
                         {
                             throw new ContractValidateException(
-                                "This value[ALLOW_TVM_CONSTANTINOPLE] is only allowed to be 1");
+                                "This value[ALLOW_VM_CONSTANTINOPLE] is only allowed to be 1");
                         }
-                        if (this.db_manager.DynamicProperties.GetAllowTvmTransferTrc10() == 0)
+                        if (this.db_manager.DynamicProperties.GetAllowVmTransferTrc10() == 0)
                         {
                             throw new ContractValidateException(
-                                "[ALLOW_TVM_TRANSFER_TRC10] proposal must be approved "
-                                    + "before [ALLOW_TVM_CONSTANTINOPLE] can be proposed");
+                                "[ALLOW_VM_TRANSFER_TRC10] proposal must be approved "
+                                    + "before [ALLOW_VM_CONSTANTINOPLE] can be proposed");
                         }
                         break;
                     }

@@ -177,7 +177,7 @@ namespace Mineral.Common.Runtime
 
         private void Create()
         {
-            if (!this.deposit.DBManager.DynamicProperties.SupportVM())
+            if (!this.deposit.DBManager.DynamicProperties.SupporVm())
             {
                 throw new ContractValidateException("vm work is off, need to be opened by the committee");
             }
@@ -220,7 +220,7 @@ namespace Mineral.Common.Runtime
             long call_value = new_contract.CallValue;
             long token_value = 0;
             long token_id = 0;
-            if (VMConfig.AllowTvmTransferTrc10)
+            if (VMConfig.AllowVmTransferTrc10)
             {
                 token_value = contract.CallTokenValue;
                 token_id = contract.TokenId;
@@ -305,7 +305,7 @@ namespace Mineral.Common.Runtime
             this.deposit.CreateContract(contract_address, new ContractCapsule(new_contract));
             byte[] code = new_contract.Bytecode.ToByteArray();
 
-            if (!VMConfig.AllowTvmConstantinople)
+            if (!VMConfig.AllowVmConstantinople)
             {
                 deposit.SaveCode(contract_address, ProgramPrecompile.GetCode(code));
             }
@@ -314,7 +314,7 @@ namespace Mineral.Common.Runtime
             {
                 MUtil.Transfer(this.deposit, caller_address, contract_address, call_value);
             }
-            if (VMConfig.AllowTvmTransferTrc10)
+            if (VMConfig.AllowVmTransferTrc10)
             {
                 if (token_value > 0)
                 {
@@ -325,7 +325,7 @@ namespace Mineral.Common.Runtime
 
         private void Call()
         {
-            if (!this.deposit.DBManager.DynamicProperties.SupportVM())
+            if (!this.deposit.DBManager.DynamicProperties.SupporVm())
             {
                 Logger.Info("vm work is off, need to be opened by the committee");
                 throw new ContractValidateException("VM work is off, need to be opened by the committee");
@@ -352,7 +352,7 @@ namespace Mineral.Common.Runtime
             long call_value = contract.CallValue;
             long token_value = 0;
             long token_id = 0;
-            if (VMConfig.AllowTvmTransferTrc10)
+            if (VMConfig.AllowVmTransferTrc10)
             {
                 token_value = contract.CallTokenValue;
                 token_id = contract.TokenId;
@@ -440,7 +440,7 @@ namespace Mineral.Common.Runtime
                 MUtil.Transfer(this.deposit, caller_address, contract_address, call_value);
             }
 
-            if (VMConfig.AllowTvmTransferTrc10)
+            if (VMConfig.AllowVmTransferTrc10)
             {
                 if (token_value > 0)
                 {
@@ -708,7 +708,7 @@ namespace Mineral.Common.Runtime
                         else
                         {
                             this.result.SpendEnergy(save_code_energy);
-                            if (VMConfig.AllowTvmConstantinople)
+                            if (VMConfig.AllowVmConstantinople)
                             {
                                 this.deposit.SaveCode(this.program.ContractAddress.GetNoLeadZeroesData(), code);
                             }
@@ -831,7 +831,7 @@ namespace Mineral.Common.Runtime
 
         public void CheckTokenValueAndId(long token_value, long token_id)
         {
-            if (VMConfig.AllowTvmTransferTrc10)
+            if (VMConfig.AllowVmTransferTrc10)
             {
                 if (VMConfig.AllowMultiSign)
                 {

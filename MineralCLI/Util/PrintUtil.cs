@@ -1539,6 +1539,19 @@ namespace MineralCLI.Util
             return result;
         }
 
+        public static string PrintProposalParameter(ChainParameters parameters)
+        {
+            string result = "\n";
+            foreach (var parameter in parameters.ChainParameter)
+            {
+                result += parameter.Key;
+                result += "  :  ";
+                result += parameter.Value;
+                result += "\n";
+            }
+
+            return result;
+        }
         #endregion
 
         #region AssetIssue

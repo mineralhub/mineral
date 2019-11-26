@@ -225,7 +225,7 @@ namespace Mineral.Core.Witness
                         break;
                     case (18):
                         {
-                            this.db_manager.DynamicProperties.PutAllowTvmTransferTrc10((int)pair.Value);
+                            this.db_manager.DynamicProperties.PutAllowVmTransferTrc10((int)pair.Value);
                         }
                         break;
                     case (19):
@@ -271,7 +271,7 @@ namespace Mineral.Core.Witness
                         break;
                     case (26):
                         {
-                            this.db_manager.DynamicProperties.PutAllowTvmConstantinople((int)pair.Value);
+                            this.db_manager.DynamicProperties.PutAllowVmConstantinople((int)pair.Value);
                             this.db_manager.DynamicProperties.AddSystemContractAndSetPermission(48);
                         }
                         break;

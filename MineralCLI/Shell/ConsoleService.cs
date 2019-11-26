@@ -52,6 +52,7 @@ namespace MineralCLI.Shell
             { RpcCommand.Transaction.WithdrawBalance, new CommandHandler(TransactionCommand.WithdrawBalance) },
             { RpcCommand.Transaction.ListProposal, new CommandHandler(TransactionCommand.ListProposal) },
             { RpcCommand.Transaction.ListProposalPaginated, new CommandHandler(TransactionCommand.ListProposalPaginated) },
+            { RpcCommand.Transaction.GetParameters, new CommandHandler(TransactionCommand.GetParameters) },
             
             // BlockCommands
             { RpcCommand.Block.GetBlock, new CommandHandler(BlockCommand.GetBlock) },

@@ -18,6 +18,7 @@ using Mineral.Common.Overlay.Messages;
 using Mineral.Core.Config;
 using Mineral.Common.Overlay.Discover.Node;
 using Mineral.Cryptography;
+using Mineral.Core.Service;
 
 namespace Mineral.Core.Net.RpcHandler
 {
@@ -471,7 +472,7 @@ namespace Mineral.Core.Net.RpcHandler
                     Manager.Instance.DBManager.TransactionIdCache.Add(transaction.Id.ToString(), true);
                 }
 
-                if (Manager.Instance.DBManager.DynamicProperties.SupportVM())
+                if (Manager.Instance.DBManager.DynamicProperties.SupporVm())
                 {
                     transaction.ClearTransactionResult();
                 }
@@ -615,6 +616,11 @@ namespace Mineral.Core.Net.RpcHandler
             }
 
             return result;
+        }
+
+        public static ChainParameters GetParameters()
+        {
+            return ProposalService.GetProposalParameters();
         }
 
         public static bool CheckPermissionOprations(Permission permission, Contract contract)

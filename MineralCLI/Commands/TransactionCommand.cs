@@ -1309,7 +1309,7 @@ namespace MineralCLI.Commands
         public static bool ListProposalPaginated(string command, string[] parameters)
         {
             string[] usage = new string[] {
-                string.Format("{0} [command option] \n", command) };
+                string.Format("{0} [command option] <offset> <limit> \n", command) };
 
             string[] command_option = new string[] { HelpCommandOption.Help };
 
@@ -1330,6 +1330,44 @@ namespace MineralCLI.Commands
                 if (result.Result)
                 {
                     Console.WriteLine(PrintUtil.PrintProposalsList(proposals));
+                }
+
+                OutputResultMessage(command, result.Result, result.Code, result.Message);
+            }
+            catch (System.Exception e)
+            {
+                Console.WriteLine(e.Message + "\n\n" + e.StackTrace);
+            }
+
+            return true;
+        }
+
+        /// <summary>
+        /// Get proposal parameter
+        /// </summary>
+        /// <param name="parameters">
+        /// Parameter Index
+        /// </param>
+        /// <returns></returns>
+        public static bool GetParameters(string command, string[] parameters)
+        {
+            string[] usage = new string[] {
+                string.Format("{0} [command option] \n", command) };
+
+            string[] command_option = new string[] { HelpCommandOption.Help };
+
+            if (parameters == null || parameters.Length != 2)
+            {
+                OutputHelpMessage(usage, null, command_option, null);
+                return true;
+            }
+
+            try
+            {
+                RpcApiResult result = RpcApi.GetParameters(out ChainParameters chain_parameters);
+                if (result.Result)
+                {
+                    Console.WriteLine(PrintUtil.PrintProposalParameter(chain_parameters));
                 }
 
                 OutputResultMessage(command, result.Result, result.Code, result.Message);

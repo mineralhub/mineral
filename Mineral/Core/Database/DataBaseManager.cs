@@ -1685,10 +1685,10 @@ namespace Mineral.Core.Database
             ConsumeBandwidth(transaction, trace);
             ConsumeMultiSignFee(transaction, trace);
 
-            Common.Runtime.Config.VMConfig.InitVmHardFork();
+            Common.Runtime.Config.VMConfig.IniVmHardFork();
             Common.Runtime.Config.VMConfig.InitAllowMultiSign(this.dynamic_properties_store.GetAllowMultiSign());
-            Common.Runtime.Config.VMConfig.InitAllowTvmTransferTrc10(this.dynamic_properties_store.GetAllowTvmTransferTrc10());
-            Common.Runtime.Config.VMConfig.InitAllowTvmConstantinople(this.dynamic_properties_store.GetAllowTvmConstantinople());
+            Common.Runtime.Config.VMConfig.InitAllowVmTransferTrc10(this.dynamic_properties_store.GetAllowVmTransferTrc10());
+            Common.Runtime.Config.VMConfig.InitAllowVmConstantinople(this.dynamic_properties_store.GetAllowVmConstantinople());
             trace.Init(block, IsEventPluginLoaded);
             trace.CheckIsConstant();
             trace.Execute();
@@ -1716,7 +1716,7 @@ namespace Mineral.Core.Database
             }
 
             trace.Finalization();
-            if (block != null && this.dynamic_properties_store.SupportVM())
+            if (block != null && this.dynamic_properties_store.SupporVm())
             {
                 transaction.SetResultCode(trace.Receipt.Result);
             }

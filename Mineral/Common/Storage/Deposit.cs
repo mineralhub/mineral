@@ -853,7 +853,7 @@ namespace Mineral.Common.Storage
         {
             this.code_cache.Put(new Key(address), Value.Create(code, ValueType.VALUE_TYPE_CREATE));
 
-            if (VMConfig.AllowTvmConstantinople)
+            if (VMConfig.AllowVmConstantinople)
             {
                 ContractCapsule contract = GetContract(address);
                 contract.CodeHash = Hash.SHA3(code);

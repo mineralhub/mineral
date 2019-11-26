@@ -283,7 +283,7 @@ namespace Mineral.Core.Database
 
             long size = 0;
 
-            if (this.db_manager.DynamicProperties.SupportVM())
+            if (this.db_manager.DynamicProperties.SupporVm())
             {
                 tx.Instance.Ret.Clear();
                 size += tx.Instance.CalculateSize();
@@ -295,7 +295,7 @@ namespace Mineral.Core.Database
 
             foreach (Contract contract in contracts)
             {
-                if (this.db_manager.DynamicProperties.SupportVM())
+                if (this.db_manager.DynamicProperties.SupporVm())
                 {
                     size += DefineParameter.MAX_RESULT_SIZE_IN_TX;
                 }

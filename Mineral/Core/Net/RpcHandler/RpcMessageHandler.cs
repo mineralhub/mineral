@@ -42,6 +42,7 @@ namespace Mineral.Core.Net.RpcHandler
             { RpcCommand.Transaction.BroadcastTransaction, new RpcHandler(OnBroadcastTransaction) },
             { RpcCommand.Transaction.ListProposal, new RpcHandler(OnListProposal) },
             { RpcCommand.Transaction.ListProposalPaginated, new RpcHandler(OnListProposalPaginated) },
+            { RpcCommand.Transaction.GetParameters, new RpcHandler(OnGetParameters) },
 
             { RpcCommand.AssetIssue.AssetIssueByAccount, new RpcHandler(OnAssetIssueByAccount) },
             { RpcCommand.AssetIssue.AssetIssueById, new RpcHandler(OnAssetIssueById) },
@@ -551,6 +552,25 @@ namespace Mineral.Core.Net.RpcHandler
             {
                 result = RpcMessage.CreateErrorResult(id, RpcMessage.INVALID_PARAMS, e.Message);
                 return false;
+            }
+            catch (System.Exception e)
+            {
+                result = RpcMessage.CreateErrorResult(id, RpcMessage.UNKNOWN_ERROR, e.Message);
+                return false;
+            }
+
+            return true;
+        }
+
+        public static bool OnGetParameters(JToken id, string method, JArray parameters, out JToken result)
+        {
+            result = new JObject();
+
+            try
+            {
+                Protocol.ChainParameters chain_parameters = RpcApiService.GetParameters();
+
+                result = JToken.FromObject(chain_parameters.ToByteArray());
             }
             catch (System.Exception e)
             {

@@ -176,6 +176,9 @@ namespace Mineral.Core.Net.RpcHandler
 
             [CommandLineAttribute(Name = "ListProposalPaginated", Description = "")]
             public static readonly string ListProposalPaginated = "listproposalpaginated";
+
+            [CommandLineAttribute(Name = "GetParameters", Description = "")]
+            public static readonly string GetParameters = "getparameters";
         }
     }
 }

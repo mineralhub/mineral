@@ -723,6 +723,21 @@ namespace MineralCLI.Network
 
             return RpcApiResult.Success;
         }
+
+        public static RpcApiResult GetParameters(out ChainParameters parameters)
+        {
+            parameters = null;
+
+            JObject receive = SendCommand(RpcCommand.Transaction.GetParameters, new JArray() { });
+            if (receive.TryGetValue("error", out JToken value))
+            {
+                return new RpcApiResult(false, value["code"].ToObject<int>(), value["message"].ToObject<string>());
+            }
+
+            parameters = ChainParameters.Parser.ParseFrom(receive["result"].ToObject<byte[]>());
+
+            return RpcApiResult.Success;
+        }
         #endregion
     }
 }
