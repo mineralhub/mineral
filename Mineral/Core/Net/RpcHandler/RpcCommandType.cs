@@ -132,6 +132,9 @@ namespace Mineral.Core.Net.RpcHandler
             [CommandLineAttribute(Name = "CreateTransaction", Description = "")]
             public static readonly string CreateTransaction = "createtransaction";
 
+            [CommandLineAttribute(Name = "ApproveProposal", Description = "")]
+            public static readonly string ApproveProposal = "approveproposal";
+
             [CommandLineAttribute(Name = "UpdateAccount", Description = "")]
             public static readonly string UpdateAccount = "updateaccount";
 

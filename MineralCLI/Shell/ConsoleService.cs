@@ -38,6 +38,7 @@ namespace MineralCLI.Shell
             { RpcCommand.Transaction.CreateAccount, new CommandHandler(TransactionCommand.CreateAccount) },
             { RpcCommand.Transaction.CreateProposal, new CommandHandler(TransactionCommand.CreateProposal) },
             { RpcCommand.Transaction.CreateWitness, new CommandHandler(TransactionCommand.CreateWitness) },
+            { RpcCommand.Transaction.ApproveProposal, new CommandHandler(TransactionCommand.ApproveProposal) },
             { RpcCommand.Transaction.UpdateAccount, new CommandHandler(TransactionCommand.UpdateAccount) },
             { RpcCommand.Transaction.UpdateWitness, new CommandHandler(TransactionCommand.UpdateWitness) },
             { RpcCommand.Transaction.UpdateEnergyLimit, new CommandHandler(TransactionCommand.UpdateEnergyLimit) },

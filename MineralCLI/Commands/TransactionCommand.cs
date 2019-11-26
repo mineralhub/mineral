@@ -503,6 +503,66 @@ namespace MineralCLI.Commands
         }
 
         /// <summary>
+        /// Approve proposal
+        /// </summary>
+        /// <param name="parameters"></param>
+        /// /// Parameter Index
+        /// [0] : Proposal id
+        /// [1] : Proposal value
+        /// <returns></returns>
+        public static bool ApproveProposal(string command, string[] parameters)
+        {
+            string[] usage = new string[] {
+                string.Format("{0} [command option] <proposal id> <value>\n", command) };
+
+            string[] command_option = new string[] { HelpCommandOption.Help };
+
+            if (parameters == null || parameters.Length != 2)
+            {
+                OutputHelpMessage(usage, null, command_option, null);
+                return true;
+            }
+
+            if (!RpcApi.IsLogin)
+            {
+                return true;
+            }
+
+            try
+            {
+                byte[] owner_address = Wallet.Base58ToAddress(RpcApi.KeyStore.Address);
+                long id = long.Parse(parameters[0]);
+                bool value = bool.Parse(parameters[1]);
+
+                RpcApiResult result = RpcApi.CreateApproveProposalContract(owner_address,
+                                                                           id,
+                                                                           value,
+                                                                           out ProposalApproveContract contract);
+
+                TransactionExtention transaction_extention = null;
+                if (result.Result)
+                {
+                    result = RpcApi.CreateTransaction(contract,
+                                                      ContractType.ProposalApproveContract,
+                                                      out transaction_extention);
+                }
+
+                if (result.Result)
+                {
+                    result = RpcApi.ProcessTransactionExtention(transaction_extention);
+                }
+
+                OutputResultMessage(command, result.Result, result.Code, result.Message);
+            }
+            catch (System.Exception e)
+            {
+                Console.WriteLine(e.Message + "\n\n" + e.StackTrace);
+            }
+
+            return true;
+        }
+
+        /// <summary>
         /// Update account
         /// </summary>
         /// <param name="parameters"></param>

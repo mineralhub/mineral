@@ -391,6 +391,19 @@ namespace MineralCLI.Network
             return RpcApiResult.Success;
         }
 
+        public static RpcApiResult CreateApproveProposalContract(byte[] owner_address,
+                                                                 long id,
+                                                                 bool value,
+                                                                 out ProposalApproveContract contract)
+        {
+            contract = new ProposalApproveContract();
+            contract.OwnerAddress = ByteString.CopyFrom(owner_address);
+            contract.ProposalId = id;
+            contract.IsAddApproval = value;
+
+            return RpcApiResult.Success;
+        }
+
         public static RpcApiResult CreateUpdateAcountContract(byte[] owner_address,
                                                               byte[] name,
                                                               out AccountUpdateContract contract)
