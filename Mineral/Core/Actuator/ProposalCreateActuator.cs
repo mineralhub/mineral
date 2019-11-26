@@ -35,7 +35,7 @@ namespace Mineral.Core.Actuator
         #region Internal Method
         private bool ValidKey(long index)
         {
-            int parameter_count = System.Enum.GetValues(typeof(Parameter.ChainParameters)).Length;
+            int parameter_count = System.Enum.GetValues(typeof(Parameter.ProposalParameters)).Length;
 
             return index >= 0 && index < parameter_count;
         }

@@ -74,7 +74,7 @@ namespace Mineral.Core.Config
             public static readonly int LIMIT_MULTIPLIER = 1000;
         }
 
-        public enum ChainParameterType
+        public enum ProposalParameters
         {
             MAINTENANCE_TIME_INTERVAL, //ms  ,0
             ACCOUNT_UPGRADE_COST, //drop ,1
