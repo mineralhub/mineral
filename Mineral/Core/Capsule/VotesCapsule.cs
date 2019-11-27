@@ -24,16 +24,24 @@ namespace Mineral.Core.Capsule
             set { this.votes.Address = value; }
         }
 
-        public List<Vote> NewVotes
+        public IList<Vote> NewVotes
         {
-            get { return new List<Vote>(this.votes.NewVotes); }
-            set { this.votes.NewVotes.Clear(); this.votes.NewVotes.AddRange(value); }
+            get { return this.votes.NewVotes; }
+            set
+            {
+                this.votes.NewVotes.Clear();
+                this.votes.NewVotes.AddRange(value);
+            }
         }
 
-        public List<Vote> OldVotes
+        public IList<Vote> OldVotes
         {
-            get { return new List<Vote>(this.votes.OldVotes); }
-            set { this.votes.OldVotes.Clear(); this.votes.OldVotes.AddRange(value); }
+            get { return this.votes.OldVotes; }
+            set
+            {
+                this.votes.OldVotes.Clear();
+                this.votes.OldVotes.AddRange(value);
+            }
         }
         #endregion
 

@@ -18,12 +18,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Remove="Core\Api\**" />
-    <EmbeddedResource Remove="Core\Api\**" />
-    <None Remove="Core\Api\**" />
-  </ItemGroup>
-
-  <ItemGroup>
     <PackageReference Include="Commander.NET" Version="1.1.11" />
     <PackageReference Include="Cryptography.ECDSA.Secp256K1" Version="1.1.2" />
     <PackageReference Include="DequeNet" Version="1.0.2" />

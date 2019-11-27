@@ -52,9 +52,9 @@ namespace Mineral.Core.Actuator
 
                 ByteString committee_address = proposal_approve_contract.OwnerAddress;
                 if (proposal_approve_contract.IsAddApproval)
-                    proposal.AddApproval(committee_address);
+                    proposal.Approvals.Add(committee_address);
                 else
-                    proposal.RemoveApproval(committee_address);
+                    proposal.Approvals.Remove(committee_address);
 
                 if (Deposit == null)
                     this.db_manager.Proposal.Put(proposal.CreateDatabaseKey(), proposal);

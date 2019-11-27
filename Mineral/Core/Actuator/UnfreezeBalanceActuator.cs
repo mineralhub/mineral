@@ -149,7 +149,7 @@ namespace Mineral.Core.Actuator
 
                             account.Balance = old_balance + unfreeze_balance;
                             account.FrozenList.Clear();
-                            account.FrozenList.AddRange(frozens);
+                            frozens.ForEach(frozen => account.FrozenList.Add(frozen));
                         }
                         break;
                     case ResourceCode.Energy:

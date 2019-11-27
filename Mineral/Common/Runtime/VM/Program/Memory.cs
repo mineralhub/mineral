@@ -27,7 +27,7 @@ namespace Mineral.Common.Runtime.VM.Program
 
         public List<byte[]> Chunks
         {
-            get { return new List<byte[]>(this.chunks); }
+            get { return this.chunks; }
         }
         #endregion
 

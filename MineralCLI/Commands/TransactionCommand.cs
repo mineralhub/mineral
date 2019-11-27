@@ -1356,12 +1356,6 @@ namespace MineralCLI.Commands
 
             string[] command_option = new string[] { HelpCommandOption.Help };
 
-            if (parameters == null || parameters.Length != 2)
-            {
-                OutputHelpMessage(usage, null, command_option, null);
-                return true;
-            }
-
             try
             {
                 RpcApiResult result = RpcApi.GetParameters(out ChainParameters chain_parameters);

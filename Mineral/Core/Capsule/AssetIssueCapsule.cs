@@ -84,9 +84,9 @@ namespace Mineral.Core.Capsule
             get { return this.asset_issue.FrozenSupply.Count; }
         }
 
-        public List<AssetIssueContract.Types.FrozenSupply> FrozenSupplyList
+        public IList<AssetIssueContract.Types.FrozenSupply> FrozenSupplyList
         {
-            get { return new List<AssetIssueContract.Types.FrozenSupply>(this.asset_issue.FrozenSupply); }
+            get { return this.asset_issue.FrozenSupply; }
         }
 
         public long FrozenSupply

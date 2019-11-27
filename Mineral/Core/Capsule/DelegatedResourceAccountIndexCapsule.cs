@@ -23,9 +23,9 @@ namespace Mineral.Core.Capsule
             set { this.instance.Account = value; }
         }
 
-        public List<ByteString> FromAccounts
+        public IList<ByteString> FromAccounts
         {
-            get { return new List<ByteString>(this.instance.FromAccounts); }
+            get { return (IList<ByteString>)this.instance.FromAccounts; }
             set
             {
                 this.instance.FromAccounts.Clear();
@@ -33,9 +33,9 @@ namespace Mineral.Core.Capsule
             }
         }
 
-        public List<ByteString> ToAccounts
+        public IList<ByteString> ToAccounts
         {
-            get { return new List<ByteString>(this.instance.ToAccounts); }
+            get { return (IList<ByteString>)this.instance.ToAccounts; }
             set
             {
                 this.instance.ToAccounts.Clear();
@@ -83,16 +83,6 @@ namespace Mineral.Core.Capsule
         public byte[] CreateDatabaseKey()
         {
             return this.instance.Account.ToByteArray();
-        }
-
-        public void AddFromAccount(ByteString account)
-        {
-            this.instance.FromAccounts.Add(account);
-        }
-
-        public void AddToAccount(ByteString account)
-        {
-            this.instance.FromAccounts.Add(account);
         }
         #endregion
     }
