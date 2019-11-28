@@ -26,7 +26,7 @@ namespace Mineral.Core.Config
             public static readonly int BLOCK_FILLED_SLOTS_NUMBER = 128;
             public static readonly int MAX_VOTE_NUMBER = 30;
             public static readonly int MAX_FROZEN_NUMBER = 1;
-            public static readonly int BLOCK_VERSION = 8;
+            public static readonly int BLOCK_VERSION = 1;
         }
 
         public class NodeParameters
