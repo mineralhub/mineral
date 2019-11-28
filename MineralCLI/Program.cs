@@ -23,6 +23,8 @@ namespace MineralCLI
         {
             Config.Instance.Initialize();
             Console.WriteLine(Config.Instance.GetVersion());
+            Console.WriteLine("IP : " + Config.Instance.Network.ListenAddress);
+            Console.WriteLine("PORT : " + Config.Instance.Network.RpcPort);
             url = @"http:\\" + Config.Instance.Network.ListenAddress + ":" + Config.Instance.Network.RpcPort;
         }
     }
