@@ -101,7 +101,7 @@ namespace Mineral.Core.Net.RpcHandler
 
             try
             {
-                result = JToken.FromObject(RpcApiService.GetListNode());
+                result = JToken.FromObject(RpcApiService.GetListNode().ToByteArray());
             }
             catch (System.Exception e)
             {
