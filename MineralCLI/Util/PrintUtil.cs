@@ -1714,9 +1714,10 @@ namespace MineralCLI.Util
             {
                 result += "IP::";
                 result += node.Address.Host.ToStringUtf8();
-                result += "\n";
+                result += ",   ";
                 result += "Port::";
                 result += node.Address.Port;
+                result += "\n";
             }
             return result;
         }
