@@ -135,15 +135,18 @@ namespace Mineral.Core.Actuator
                     case ResourceCode.Bandwidth:
                         {
                             List<Frozen> frozens = new List<Frozen>();
-                            frozens.AddRange(account.FrozenList);
 
                             long now = this.db_manager.GetHeadBlockTimestamp();
-                            foreach (Frozen frozen in frozens)
+                            IEnumerator<Frozen> it = account.FrozenList.GetEnumerator();
+                            while (it.MoveNext())
                             {
-                                if (frozen.ExpireTime <= now)
+                                if (it.Current.ExpireTime <= now)
                                 {
-                                    unfreeze_balance += frozen.FrozenBalance;
-                                    frozens.Remove(frozen);
+                                    unfreeze_balance += it.Current.FrozenBalance;
+                                }
+                                else
+                                {
+                                    frozens.Add(it.Current);
                                 }
                             }
 
