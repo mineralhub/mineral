@@ -9,11 +9,11 @@ using Mineral.Utils;
 
 namespace Mineral.Common.Overlay.Discover
 {
-    public class DiscoverTask : Runnable
+    public class DiscoverTask : IRunnable
     {
         #region Field
-        private byte[] node_id;
-        private NodeManager node_manager = null;
+        private byte[] node_id = null;
+        private readonly NodeManager node_manager = null;
         #endregion
 
 
@@ -25,6 +25,7 @@ namespace Mineral.Common.Overlay.Discover
         public DiscoverTask(NodeManager node_manager)
         {
             this.node_manager = node_manager;
+            this.node_id = node_manager.PublicHomeNode.Id;
         }
         #endregion
 
@@ -47,7 +48,7 @@ namespace Mineral.Common.Overlay.Discover
 
 
         #region External Method
-        public override void Run()
+        public virtual void Run()
         {
             Discover(this.node_id, 0, new List<Node.Node>());
         }

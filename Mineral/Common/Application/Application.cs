@@ -11,10 +11,9 @@ namespace Mineral.Common.Application
     public class Application : IApplication
     {
         #region Field
-        private DatabaseManager db_manager = Manager.Instance.DBManager;
-        private BlockStore block_store = null;
+        private readonly DatabaseManager db_manager = Manager.Instance.DBManager;
+        private readonly BlockStore block_store = null;
         private ServiceContainer services = null;
-        private bool is_producer = false;
         #endregion
 
 

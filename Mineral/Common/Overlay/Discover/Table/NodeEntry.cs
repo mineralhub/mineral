@@ -139,6 +139,11 @@ namespace Mineral.Common.Overlay.Discover.Table
             return d;
         }
 
+        public override int GetHashCode()
+        {
+            return base.GetHashCode();
+        }
+
         public override bool Equals(object obj)
         {
             bool ret = false;

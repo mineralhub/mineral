@@ -128,19 +128,21 @@ namespace Mineral.Core.Net.MessageHandler
             }
             catch (P2pException e)
             {
-                Logger.Warning(
-                    string.Format("Tx {0} from peer {1} process failed. type: {2}, reason: {3}",
-                                  message.MessageId.ToString(),
-                                  peer.Address.ToString(),
-                                  e.Type.ToString(),
-                                  e.Message.ToString()));
+                string reason = string.Format("Tx {0} from peer {1} process failed. type: {2}, reason: {3}",
+                                              message.MessageId.ToString(),
+                                              peer.Address.ToString(),
+                                              e.Type.ToString(),
+                                              e.Message.ToString());
+
+
+                Logger.Warning(reason);
 
                 if (e.Type == P2pException.ErrorType.BAD_TRX)
                 {
-                    peer.Disconnect(ReasonCode.BadTx);
+                    peer.Disconnect(ReasonCode.BadTx, reason);
                 }
             }
-            catch (System.Exception e)
+            catch
             {
                 Logger.Error(
                     string.Format("Tx {0} from peer {1} process failed.",

@@ -4,13 +4,14 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Text;
 using Mineral.Core.Capsule;
+using Mineral.Utils;
 
 namespace Mineral.Core.Database2.Common
 {
     public class ConcurrentHashDB : IBaseDB<byte[], BytesCapsule>
     {
         #region Field
-        private ConcurrentDictionary<byte[], BytesCapsule> db = new ConcurrentDictionary<byte[], BytesCapsule>();
+        private ConcurrentDictionary<byte[], BytesCapsule> db = new ConcurrentDictionary<byte[], BytesCapsule>(new ByteArrayEqualComparer());
         #endregion
 
 

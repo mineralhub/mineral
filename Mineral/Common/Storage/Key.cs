@@ -2,6 +2,7 @@
 using System.Linq;
 using System.Collections.Generic;
 using System.Text;
+using Mineral.Cryptography;
 
 namespace Mineral.Common.Storage
 {
@@ -47,6 +48,11 @@ namespace Mineral.Common.Storage
         public static Key Create(byte[] data)
         {
             return new Key(data);
+        }
+
+        public override int GetHashCode()
+        {
+            return Hash.SHA256(this.data).ToInt32(0);
         }
 
         public override bool Equals(object obj)

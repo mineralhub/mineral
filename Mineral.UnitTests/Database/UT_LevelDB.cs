@@ -13,13 +13,13 @@ namespace Mineral.UnitTests.Database
     public class UT_LevelDB
     {
         private DB db = null;
-        private string db_name = "UT_LevelDB";
-        private byte[] default_key = Encoding.Default.GetBytes("default_mineral");
-        private byte[] default_value = Encoding.Default.GetBytes("default_mineral_value");
-        private byte[] key = Encoding.Default.GetBytes("mineral");
-        private byte[] value = Encoding.Default.GetBytes("mineral_value");
+        private readonly string db_name = "UT_LevelDB";
+        private readonly byte[] default_key = Encoding.Default.GetBytes("default_mineral");
+        private readonly byte[] default_value = Encoding.Default.GetBytes("default_mineral_value");
+        private readonly byte[] key = Encoding.Default.GetBytes("mineral");
+        private readonly byte[] value = Encoding.Default.GetBytes("mineral_value");
         private WriteOptions write_option = new WriteOptions();
-        private ReadOptions read_option = new ReadOptions();
+        private readonly ReadOptions read_option = new ReadOptions();
 
         private readonly CompressionLevel DEFAULT_COMPRESSION_TYPE = CompressionLevel.SnappyCompression;
         private readonly int DEFAULT_BLOCK_SIZE = 4 * 1024;

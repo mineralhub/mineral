@@ -147,7 +147,7 @@ namespace Mineral.Core.Actuator
                 catch (ItemNotFoundException e)
                 {
                     throw new ContractValidateException(
-                        ActuatorParameter.PROPOSAL_EXCEPTION_STR + contract.ProposalId + ActuatorParameter.NOT_EXIST_STR);
+                        ActuatorParameter.PROPOSAL_EXCEPTION_STR + contract.ProposalId + ActuatorParameter.NOT_EXIST_STR, e);
                 }
 
                 long now = this.db_manager.GetHeadBlockTimestamp();

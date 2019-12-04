@@ -60,7 +60,7 @@ namespace MineralCLI.Util
                 return int.Parse(data);
 
             }
-            catch (System.Exception e)
+            catch
             {
                 return -1;
             }

@@ -43,14 +43,15 @@ namespace Mineral.Common.Overlay.Discover.Node
         }
 
         #region Field
-        private static int PingTimeout = 15000;
         private Node source_node = null;
         private Node node = null;
         private NodeHandlerState state = NodeHandlerState.Discovered;
-        private NodeManager node_manager = null;
-        private NodeStatistics node_statistics = null;
+        private readonly NodeManager node_manager = null;
+        private readonly NodeStatistics node_statistics = null;
+        private readonly IPEndPoint socket_address = null;
         private NodeHandler replace_candidate = null;
-        private IPEndPoint socket_address = null;
+
+        private readonly static int PingTimeout = 15000;
         private int ping_trials = 3;
         private volatile bool wait_pong = false;
         private volatile bool wait_neighbors = false;
@@ -307,7 +308,7 @@ namespace Mineral.Common.Overlay.Discover.Node
                 {
                     Logger.Error("Unhandled exception " + e.Message);
                 }
-            }, 0, (int)PingTimeout);
+            }, (int)PingTimeout, (int)PingTimeout);
         }
 
         public void SendPong(long sequence)

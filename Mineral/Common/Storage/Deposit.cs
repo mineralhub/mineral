@@ -27,18 +27,18 @@ namespace Mineral.Common.Storage
         private DatabaseManager db_manager = null;
         private Deposit parent = null;
 
-        private Dictionary<Key, Value> account_cache = new Dictionary<Key, Value>();
-        private Dictionary<Key, Value> transaction_cache = new Dictionary<Key, Value>();
-        private Dictionary<Key, Value> block_cache = new Dictionary<Key, Value>();
-        private Dictionary<Key, Value> witness_cache = new Dictionary<Key, Value>();
-        private Dictionary<Key, Value> code_cache = new Dictionary<Key, Value>();
-        private Dictionary<Key, Value> contract_cache = new Dictionary<Key, Value>();
+        private Dictionary<Key, Value> account_cache = new Dictionary<Key, Value>(new KeyEqualComparer());
+        private Dictionary<Key, Value> transaction_cache = new Dictionary<Key, Value>(new KeyEqualComparer());
+        private Dictionary<Key, Value> block_cache = new Dictionary<Key, Value>(new KeyEqualComparer());
+        private Dictionary<Key, Value> witness_cache = new Dictionary<Key, Value>(new KeyEqualComparer());
+        private Dictionary<Key, Value> code_cache = new Dictionary<Key, Value>(new KeyEqualComparer());
+        private Dictionary<Key, Value> contract_cache = new Dictionary<Key, Value>(new KeyEqualComparer());
 
-        private Dictionary<Key, Value> votes_cache = new Dictionary<Key, Value>();
-        private Dictionary<Key, Value> proposal_cache = new Dictionary<Key, Value>();
-        private Dictionary<Key, Value> dynamic_properties_cache = new Dictionary<Key, Value>();
-        private Dictionary<Key, VMStorage> storage_cache = new Dictionary<Key, VMStorage>();
-        private Dictionary<Key, Value> asset_issue_cache = new Dictionary<Key, Value>();
+        private Dictionary<Key, Value> votes_cache = new Dictionary<Key, Value>(new KeyEqualComparer());
+        private Dictionary<Key, Value> proposal_cache = new Dictionary<Key, Value>(new KeyEqualComparer());
+        private Dictionary<Key, Value> dynamic_properties_cache = new Dictionary<Key, Value>(new KeyEqualComparer());
+        private Dictionary<Key, VMStorage> storage_cache = new Dictionary<Key, VMStorage>(new KeyEqualComparer());
+        private Dictionary<Key, Value> asset_issue_cache = new Dictionary<Key, Value>(new KeyEqualComparer());
         #endregion
 
 

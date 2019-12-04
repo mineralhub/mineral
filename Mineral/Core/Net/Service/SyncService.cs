@@ -55,8 +55,10 @@ namespace Mineral.Core.Net.Service
         #region Internal Method
         private void AddRequestBlockIds(BlockId key, long value)
         {
-            CacheItemPolicy policy = new CacheItemPolicy();
-            policy.AbsoluteExpiration = DateTime.Now.AddHours(1);
+            CacheItemPolicy policy = new CacheItemPolicy()
+            {
+                AbsoluteExpiration = DateTime.Now.AddHours(1),
+            };
 
             this.request_ids.Add(key.ToString(), value, policy);
         }
@@ -65,7 +67,7 @@ namespace Mineral.Core.Net.Service
         {
             Dictionary<PeerConnection, List<BlockId>> send = new Dictionary<PeerConnection, List<BlockId>>();
 
-            foreach  (PeerConnection peer in Manager.Instance.NetDelegate.ActivePeers.Where(peer => peer.IsNeedSyncPeer && peer.IsIdle))
+            foreach  (PeerConnection peer in Manager.Instance.NetDelegate.ActivePeers.Where(peer => peer.IsNeedSyncFromPeer && peer.IsIdle))
             {
                 if (!send.ContainsKey(peer))
                 {
@@ -191,7 +193,7 @@ namespace Mineral.Core.Net.Service
                     }
                     else
                     {
-                        peer.Disconnect(Protocol.ReasonCode.BadBlock);
+                        peer.Disconnect(Protocol.ReasonCode.BadBlock, exception.Message);
                     }
                 }
             }
@@ -287,7 +289,7 @@ namespace Mineral.Core.Net.Service
                         StartFetchSyncBlock();
                     }
                 }
-                catch (System.Exception e)
+                catch (System.Exception)
                 {
                     Logger.Error("Fetch sync block error.");
                 }
@@ -303,7 +305,7 @@ namespace Mineral.Core.Net.Service
                         HandleSyncBlock();
                     }
                 }
-                catch (System.Exception e)
+                catch (System.Exception)
                 {
                     Logger.Error("Handle sync block error.");
                 }
@@ -314,7 +316,7 @@ namespace Mineral.Core.Net.Service
         public void StartSync(PeerConnection peer)
         {
             peer.State = MineralState.SYNCING;
-            peer.IsNeedSyncPeer = true;
+            peer.IsNeedSyncFromPeer = true;
             peer.SyncBlockFetch.Clear();
             peer.RemainNum = 0;
             peer.BlockBothHave = Manager.Instance.NetDelegate.GenesisBlockId;
@@ -340,9 +342,9 @@ namespace Mineral.Core.Net.Service
             catch (System.Exception e)
             {
                 Logger.Error(
-                    string.Format("Peer {0} sync failed, reason: {1}", peer.Address, e.Message));
+                    string.Format("Peer {0} sync failed", peer.Address, e));
 
-                peer.Disconnect(Protocol.ReasonCode.SyncFail);
+                peer.Disconnect(Protocol.ReasonCode.SyncFail, e.Message);
             }
         }
 

@@ -24,7 +24,7 @@ namespace Mineral.Common.Runtime.VM
 
                 }
             }
-            catch (System.Exception e)
+            catch
             {
                 Logger.Error(string.Format("Can't wwrite to file {0}", file.FullName));
             }

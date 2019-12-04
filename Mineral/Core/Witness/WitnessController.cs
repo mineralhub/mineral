@@ -44,17 +44,13 @@ namespace Mineral.Core.Witness
         #region Internal Method
         private void SortWitness(ref List<ByteString> item)
         {
-            item.OrderBy(address => GetWitnessesByAddress(address).VoteCount)
-                .Reverse()
-                .OrderBy(address => address.GetHashCode())
-                .Reverse();
+            item = item.OrderBy(address => GetWitnessesByAddress(address), new WitnessSortComparer()).ToList();
         }
 
         private static bool WitnessSetChanged(List<ByteString> list1, List<ByteString> list2)
         {
-            return ArrayUtil.IsEqualCollection(list1, list2);
+            return !ArrayUtil.IsEqualCollection(list1, list2);
         }
-
         #endregion
 
 
@@ -192,13 +188,17 @@ namespace Mineral.Core.Witness
             int witness_Index = (int)current_slot % (active_witness_count * single_repeat);
             witness_Index /= single_repeat;
 
-            Logger.Debug("currentSlot:" + current_slot
-                    + ", witnessIndex" + witness_Index
-                    + ", currentActiveWitnesses size:" + active_witness_count);
-
+            Logger.Debug(
+                string.Format("Current Slot : {0}, Witness Index : {1}, CrrentActiveWitness Size : {2}",
+                              current_slot,
+                              witness_Index,
+                              active_witness_count));
+                
             ByteString scheduled_witness = GetActiveWitnesses()?[witness_Index];
-            Logger.Info("scheduledWitness:" + scheduled_witness.ToByteArray().ToHexString()
-                    + ", currentSlot:" + current_slot);
+            Logger.Info(
+                string.Format("Scheduled Witness : {0}, Current Slot : {1}",
+                              Wallet.AddressToBase58(scheduled_witness.ToByteArray()),
+                              current_slot));
 
             return scheduled_witness;
         }
@@ -229,9 +229,9 @@ namespace Mineral.Core.Witness
             {
                 Logger.Warning(
                     string.Format(
-                        "Witness is out of order, scheduledWitness[{0}],blockWitnessAddress[{1}],blockTimeStamp[{2}],slot[{3}]",
-                        scheduled_witness.ToByteArray().ToHexString(),
-                        witness_address.ToByteArray().ToHexString(),
+                        "Witness is out of order, scheduled Witness[{0}],BlockWitnessAddress[{1}], BlockTimeStamp[{2}], Slot[{3}]",
+                        Wallet.AddressToBase58(scheduled_witness.ToByteArray()),
+                        Wallet.AddressToBase58(witness_address.ToByteArray()),
                         timestamp.ToDateTime().ToLocalTime(),
                         slot));
 
@@ -240,8 +240,8 @@ namespace Mineral.Core.Witness
 
             Logger.Debug(
                 string.Format(
-                    "Validate witnessSchedule successfully,scheduledWitness:{0}",
-                    witness_address.ToByteArray().ToHexString()));
+                    "Validate witness schedule successfully, scheduled witness:{0}",
+                    Wallet.AddressToBase58(witness_address.ToByteArray())));
 
             return true;
         }
@@ -294,11 +294,11 @@ namespace Mineral.Core.Witness
                     if (count_witness.ContainsKey(vote_address))
                     {
                         count_witness.TryGetValue(vote_address, out long value);
-                        count_witness.Add(vote_address, value - vote_count);
+                        count_witness.Put(vote_address, value - vote_count);
                     }
                     else
                     {
-                        count_witness.Add(vote_address, -vote_count);
+                        count_witness.Put(vote_address, -vote_count);
                     }
                 });
 
@@ -310,11 +310,11 @@ namespace Mineral.Core.Witness
                     if (count_witness.ContainsKey(vote_address))
                     {
                         count_witness.TryGetValue(vote_address, out long value);
-                        count_witness.Add(vote_address, value - vote_count);
+                        count_witness.Put(vote_address, value + vote_count);
                     }
                     else
                     {
-                        count_witness.Add(vote_address, vote_count);
+                        count_witness.Put(vote_address, vote_count);
                     }
                 });
 
@@ -333,7 +333,7 @@ namespace Mineral.Core.Witness
             TryRemovePowerOfGr();
             Dictionary<ByteString, long> count_witness = GetVoteCount(this.db_manager.Votes);
 
-            if (count_witness.Count > 0)
+            if (count_witness.IsNullOrEmpty())
             {
                 Logger.Info("No vote, no change to witness.");
             }
@@ -351,14 +351,16 @@ namespace Mineral.Core.Witness
                     WitnessCapsule witness = this.db_manager.Witness.Get(pair.Key.ToByteArray());
                     if (witness == null)
                     {
-                        Logger.Warning(string.Format("WitnessCapsule is null address is {0}", pair.Key.ToByteArray().ToHexString()));
+                        Logger.Warning(
+                            string.Format("WitnessCapsule is null address is {0}", Wallet.AddressToBase58(pair.Key.ToByteArray())));
+
                         return;
                     }
 
                     AccountCapsule account = this.db_manager.Account.Get(pair.Key.ToByteArray());
                     if (account == null)
                     {
-                        Logger.Warning("witnessAccount[" + pair.Key.ToByteArray().ToHexString() + "] not exists");
+                        Logger.Warning("Witness account[" + Wallet.AddressToBase58(pair.Key.ToByteArray()) + "] not exists");
                     }
                     else
                     {
@@ -367,7 +369,7 @@ namespace Mineral.Core.Witness
                         Logger.Info(
                             string.Format(
                                 "Address is {0}  ,count vote is {1}",
-                                witness.ToHexString(),
+                                Wallet.AddressToBase58(witness.Address.ToByteArray()),
                                 witness.VoteCount));
                     }
                 }
@@ -375,7 +377,7 @@ namespace Mineral.Core.Witness
                 SortWitness(ref witness_address);
                 if (witness_address.Count > Parameter.ChainParameters.MAX_ACTIVE_WITNESS_NUM)
                 {
-                    SetActiveWitnesses(witness_address.GetRange(0, Parameter.ChainParameters.WITNESS_STANDBY_LENGTH));
+                    SetActiveWitnesses(witness_address.GetRange(0, Parameter.ChainParameters.MAX_ACTIVE_WITNESS_NUM));
                 }
                 else
                 {
@@ -410,9 +412,11 @@ namespace Mineral.Core.Witness
                 }
 
                 Logger.Info(
-                    string.Format("Update Witness, before:{0},\nafter:{1}  ",
-                        active_witness.Select(x => x.ToByteArray().ToHexString()).ToList(),
-                        new_active_witness.Select(x => x.ToByteArray().ToHexString()).ToList()));
+                    string.Format("Update Witness, Before:{0},\nAfter:{1}  ",
+                                  string.Join(", ", active_witness.Select(x => Wallet.AddressToBase58(x.ToByteArray())).ToList()),
+                                  string.Join(", ", new_active_witness.Select(x => Wallet.AddressToBase58(x.ToByteArray())).ToList()))
+                );
+
             }
         }
 
@@ -426,12 +430,12 @@ namespace Mineral.Core.Witness
             StringBuilder builder = new StringBuilder();
             int[] block_filled_slots = this.db_manager.DynamicProperties.GetBlockFilledSlots();
 
-            builder.Append("Dump participation log \n ")
-                .Append("block fiiled slots:")
+            builder.Append("Dump articipation log \n ")
+                .Append("block filled slots : ")
                 .Append(string.Join("", block_filled_slots))
                 .Append(",")
                 .Append("\n")
-                .Append(" headSlot:")
+                .Append(" Head slot:")
                 .Append(GetHeadSlot())
                 .Append(",");
 
@@ -440,13 +444,13 @@ namespace Mineral.Core.Witness
             {
                 WitnessCapsule witness = this.db_manager.Witness.Get(active.ToByteArray());
                 builder.Append("\n")
-                    .Append(" witness:")
+                    .Append(" Witness : ")
                     .Append(witness.ToHexString())
                     .Append(",")
-                    .Append("latestBlockNum:")
+                    .Append("LatestBlockNum : ")
                     .Append(witness.LatestBlockNum)
                     .Append(",")
-                    .Append("LatestSlotNum:")
+                    .Append("LatestSlotNum : ")
                     .Append(witness.LatestSlotNum)
                     .Append(".");
             });

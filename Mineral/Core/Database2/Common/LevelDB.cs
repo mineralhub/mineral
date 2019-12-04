@@ -7,6 +7,7 @@ using System.Text;
 using LevelDB;
 using Mineral.Common.Storage;
 using Mineral.Core.Config.Arguments;
+using Mineral.Utils;
 
 namespace Mineral.Core.Database2.Common
 {
@@ -55,7 +56,7 @@ namespace Mineral.Core.Database2.Common
 
         public void Flush(Dictionary<WrappedByteArray, WrappedByteArray> batch)
         {
-            Dictionary<byte[], byte[]> result = new Dictionary<byte[], byte[]>();
+            Dictionary<byte[], byte[]> result = new Dictionary<byte[], byte[]>(new ByteArrayEqualComparer());
             foreach (var pair in batch)
             {
                 result.Add(pair.Key.Data, pair.Value.Data);

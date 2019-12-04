@@ -172,9 +172,10 @@ namespace Mineral.Common.Overlay.Server
                             string.Format("Fail send to {0}, error info: {1}", this.context.Channel.RemoteAddress, e.Message));
                     }
                 }
-            }));
-
-            this.thread_send_message.Name = "sendMsgThread-" + this.context.Channel.RemoteAddress;
+            }))
+            {
+                Name = "SendMsgThread - " + this.context.Channel.RemoteAddress,
+            };
             this.thread_send_message.Start();
         }
 
@@ -240,7 +241,7 @@ namespace Mineral.Common.Overlay.Server
                     this.thread_send_message.Join(20);
                     this.thread_send_message = null;
                 }
-                catch (Exception e)
+                catch
                 {
                     Logger.Warning(
                         string.Format("Join send thread failed, peer {0}", this.context.Channel.RemoteAddress));

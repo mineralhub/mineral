@@ -10,7 +10,7 @@ namespace Mineral.Core.Database2.Common
     {
         #region Field
         private readonly int BLOCK_COUNT = 70000;
-        private Dictionary<byte[], long> db = new Dictionary<byte[], long>();
+        private Dictionary<byte[], long> db = new Dictionary<byte[], long>(new ByteArrayEqualComparer());
         private MultiSortedDictionary<long, byte[]> block_num = new MultiSortedDictionary<long, byte[]>();
         #endregion
 
@@ -64,7 +64,7 @@ namespace Mineral.Core.Database2.Common
 
         public IEnumerator<KeyValuePair<byte[], byte[]>> GetEnumerator()
         {
-            Dictionary<byte[], byte[]> result = new Dictionary<byte[], byte[]>();
+            Dictionary<byte[], byte[]> result = new Dictionary<byte[], byte[]>(new ByteArrayEqualComparer());
             Dictionary<byte[], long>.Enumerator it = this.db.GetEnumerator();
             while (it.MoveNext())
             {

@@ -158,8 +158,10 @@ namespace Mineral.Core.Capsule
             header.RawData.Version = Parameter.ChainParameters.BLOCK_VERSION;
             header.RawData.WitnessAddress = witness_address;
 
-            this.block = new Block();
-            this.block.BlockHeader = header;
+            this.block = new Block()
+            {
+                BlockHeader = header,
+            };
 
             InitTransaction();
         }
@@ -186,7 +188,7 @@ namespace Mineral.Core.Capsule
             }
             catch (System.Exception e)
             {
-                throw new ArgumentException("Block proto data parse exception");
+                throw new ArgumentException("Block proto data parse exception", e);
             }
         }
 

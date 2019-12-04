@@ -61,7 +61,8 @@ namespace MineralCLI.Network
                 if (!KeyStoreService.GenerateKeyStore(RpcApi.FILE_PATH,
                                                       password,
                                                       pk,
-                                                      address))
+                                                      address,
+                                                      out _))
                 {
                     Console.WriteLine();
                     return new RpcApiResult(false, RpcMessage.INTERNAL_ERROR, "Faild to generate keystore file.");
@@ -96,12 +97,12 @@ namespace MineralCLI.Network
         public static RpcApiResult RegisterWallet(string password)
         {
             ECKey key = new ECKey();
-            PathUtil.MakeDirectory(RpcApi.FILE_PATH);
 
             if (!KeyStoreService.GenerateKeyStore(RpcApi.FILE_PATH,
                                                   password,
                                                   key.PrivateKey,
-                                                  Wallet.AddressToBase58(Wallet.PublickKeyToAddress(key.PublicKey))))
+                                                  Wallet.AddressToBase58(Wallet.PublickKeyToAddress(key.PublicKey)),
+                                                  out _))
             {
                 return new RpcApiResult(false, RpcMessage.INTERNAL_ERROR, "Failed to generate keystore file.");
             }

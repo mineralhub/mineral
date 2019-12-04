@@ -50,16 +50,16 @@ namespace Mineral.Core.Config.Arguments
         #region Internal Method
         private Options CreateDefaultOption()
         {
-            Options options = new Options();
-
-            options.CreateIfMissing = true;
-            options.ParanoidChecks = true;
-
-            options.CompressionLevel = CompressionLevel.SnappyCompression;
-            options.BlockSize = DEFAULT_BLOCK_SIZE;
-            options.WriteBufferSize = DEFAULT_WRITE_BUFFER_SIZE;
-            options.Cache = new LevelDB.Cache((int)DEFAULT_CACHE_SIZE);
-            options.MaxOpenFiles = DEFAULT_MAX_OPEN_FILES;
+            Options options = new Options()
+            {
+                CreateIfMissing = true,
+                ParanoidChecks = true,
+                CompressionLevel = CompressionLevel.SnappyCompression,
+                BlockSize = DEFAULT_BLOCK_SIZE,
+                WriteBufferSize = DEFAULT_WRITE_BUFFER_SIZE,
+                Cache = new LevelDB.Cache((int)DEFAULT_CACHE_SIZE),
+                MaxOpenFiles = DEFAULT_MAX_OPEN_FILES,
+            };
 
             return options;
         }

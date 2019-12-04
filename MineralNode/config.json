@@ -30,7 +30,7 @@
 
     "seed_node": {
         "ip_list": [
-            "127.0.0.1:11256"
+            "133.186.217.155:11255"
         ]
     },
 
@@ -58,29 +58,29 @@
 
         "Witnesses": [
             {
-                "address": "MFzLdgcuDx4cCuLTRa6vk7fo5TCQ1pvx6Y",
+                "address": "MVQjwNDVuvXN4NhrygaJ6hB7GnLXyxTT4R",
                 "url": "http://1.com",
-                "vote_count": 0
+                "vote_count": 100005
             },
             {
-                "address": "MJmd7nygEt1yXxkthBGMYZAPeGczVmXSSx",
+                "address": "MHdqgG2YyYafUrKgzDcQeZHbGTERpKBRKT",
                 "url": "http://2.com",
-                "vote_count": 0
+                "vote_count": 100004
             },
             {
-                "address": "MDS7Y7LW8gQcJWVEWL3iEKtar3EgidSs6z",
+                "address": "MUhMn46Qcortx1Wae41xezFjaFf3wc73b9",
                 "url": "http://3.com",
-                "vote_count": 0
+                "vote_count": 100003
             },
             {
-                "address": "MNBVtrYskpU5uRPhTr6hJNBqxri7mqR1Mz",
+                "address": "MLtaz8vSsfSs1WTErMbWQK8wpyGPXeuUih",
                 "url": "http://4.com",
-                "vote_count": 0
+                "vote_count": 100002
             },
             {
-                "address": "MLXGzFruPQtW2xNK7hvYvaSVSQxgrk2eS9",
+                "address": "MFBvcsYU5NPTAHMJvtYeJEezwFsLduBrTs",
                 "url": "http://5.com",
-                "vote_count": 0
+                "vote_count": 100001
             }
         ],
 
@@ -133,7 +133,7 @@
         }
     },
     "block": {
-        "need_sync_check": false,
+        "need_sync_check": true,
         "maintenance_time_interval": 21600000,
         "ProposalExpireTime": 259200000
     },

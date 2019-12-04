@@ -24,7 +24,7 @@ namespace Mineral.Common.Overlay.Server
         private Cache<ReasonCode> bad_peers = new Cache<ReasonCode>("badpeers").ExpireTime(TimeSpan.FromHours(1)).MaxCapacity(10000);
         private Cache<ReasonCode> recently_disconnected = new Cache<ReasonCode>("recently_disconnected").ExpireTime(TimeSpan.FromSeconds(30)).MaxCapacity(1000);
 
-        private ConcurrentDictionary<byte[], Channel> active_peers = new ConcurrentDictionary<byte[], Channel>();
+        private ConcurrentDictionary<byte[], Channel> active_peers = new ConcurrentDictionary<byte[], Channel>(new ByteArrayEqualComparer());
         private ConcurrentDictionary<IPAddress, Node> trust_nodes = new ConcurrentDictionary<IPAddress, Node>();
         private ConcurrentDictionary<IPAddress, Node> active_nodes = new ConcurrentDictionary<IPAddress, Node>();
         private ConcurrentDictionary<IPAddress, Node> fast_forward_nodes = new ConcurrentDictionary<IPAddress, Node>();
@@ -152,19 +152,19 @@ namespace Mineral.Common.Overlay.Server
 
                 if (GetBadPeer(peer.Address) != null)
                 {
-                    peer.Disconnect((ReasonCode)peer.NodeStatistics.GetDisconnectReason());
+                    peer.Disconnect((ReasonCode)peer.NodeStatistics.GetDisconnectReason(), "");
                     return false;
                 }
 
                 if (!peer.IsActive && this.active_peers.Count >= Args.Instance.Node.MaxActiveNodes)
                 {
-                    peer.Disconnect(ReasonCode.TooManyPeers);
+                    peer.Disconnect(ReasonCode.TooManyPeers, "");
                     return false;
                 }
 
                 if (GetConnectionNum(peer.Address) >= Args.Instance.Node.MaxActiveNodeSameIP)
                 {
-                    peer.Disconnect(ReasonCode.TooManyPeersWithSameIp);
+                    peer.Disconnect(ReasonCode.TooManyPeersWithSameIp, "");
                     return false;
                 }
             }
@@ -175,11 +175,11 @@ namespace Mineral.Common.Overlay.Server
                 if (channel.StartTime > peer.StartTime)
                 {
                     Logger.Info("Disconnect connection established later, " + channel.Node.ToString());
-                    channel.Disconnect(ReasonCode.DuplicatePeer);
+                    channel.Disconnect(ReasonCode.DuplicatePeer, "");
                 }
                 else
                 {
-                    peer.Disconnect(ReasonCode.DuplicatePeer);
+                    peer.Disconnect(ReasonCode.DuplicatePeer, "");
                     return false;
                 }
             }

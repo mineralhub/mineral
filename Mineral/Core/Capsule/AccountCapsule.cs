@@ -45,7 +45,11 @@ namespace Mineral.Core.Capsule
         {
             get
             {
-                this.account.AccountResource = this.account.AccountResource ?? new Account.Types.AccountResource();
+                this.account.AccountResource = this.account.AccountResource ??
+                                    new Account.Types.AccountResource()
+                                    {
+                                        FrozenBalanceForEnergy = new Account.Types.Frozen()
+                                    };
                 return this.account.AccountResource;
             }
             set

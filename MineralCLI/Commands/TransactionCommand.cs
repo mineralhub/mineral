@@ -1,6 +1,7 @@
 ﻿using Mineral;
 using Mineral.Core;
 using Mineral.Core.Net.RpcHandler;
+using Mineral.Utils;
 using MineralCLI.Network;
 using MineralCLI.Util;
 using Protocol;
@@ -941,7 +942,7 @@ namespace MineralCLI.Commands
         public static bool FreezeBalance(string command, string[] parameters)
         {
             string[] usage = new string[] {
-                string.Format("{0} [command option] <amount> <duration> || [<energy/bandwidth>}] || [<address>]\n", command) };
+                string.Format("{0} [command option] <amount> <duration> || [<energy/bandwidth>] || [<address>]\n", command) };
 
             string[] command_option = new string[] { HelpCommandOption.Help };
 
@@ -970,7 +971,7 @@ namespace MineralCLI.Commands
                     {
                         resource_code = int.Parse(parameters[2]);
                     }
-                    catch (System.Exception e)
+                    catch
                     {
                         address = Wallet.Base58ToAddress(parameters[3]);
                     }
@@ -1046,7 +1047,7 @@ namespace MineralCLI.Commands
                     {
                         resource_code = int.Parse(parameters[0]);
                     }
-                    catch (System.Exception e)
+                    catch (System.Exception)
                     {
                         address = Wallet.Base58ToAddress(parameters[0]);
                     }
@@ -1102,7 +1103,7 @@ namespace MineralCLI.Commands
 
             string[] command_option = new string[] { HelpCommandOption.Help };
 
-            if (parameters == null || parameters.Length < 2 || parameters.Length % 2 == 0)
+            if (parameters == null || parameters.Length < 2 || parameters.Length % 2 != 0)
             {
                 OutputHelpMessage(usage, null, command_option, null);
                 return true;
@@ -1111,7 +1112,7 @@ namespace MineralCLI.Commands
             try
             {
                 byte[] owner_address = Wallet.Base58ToAddress(RpcApi.KeyStore.Address);
-                Dictionary<byte[], long> votes = new Dictionary<byte[], long>();
+                Dictionary<byte[], long> votes = new Dictionary<byte[], long>(new ByteArrayEqualComparer());
 
                 for (int i = 0; i < parameters.Length; i += 2)
                 {

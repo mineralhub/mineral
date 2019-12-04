@@ -218,7 +218,7 @@ namespace Mineral.Common.Overlay.Server
                 {
                     Logger.Error("Exception in sync worker", e);
                 }
-            }, 5 * 1000, 3600);
+            }, 30 * 1000, 3600);
 
             this.timer_log = ScheduledExecutorService.Scheduled(() =>
             {

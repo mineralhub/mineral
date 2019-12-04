@@ -132,7 +132,33 @@ namespace Mineral.Core.Capsule
 
         public int CompareTo(long witness1, long witness2)
         {
-            return (witness1 < witness2) ? -1 : ((witness1 == witness2) ? 0 : 1);
+            int result = 0;
+
+            if (witness1 > witness2)
+            {
+                result = 1;
+            }
+            else if (witness1 < witness2)
+            {
+                result = -1;
+            }
+            else
+            {
+                if (witness1.GetHashCode() > witness2.GetHashCode())
+                {
+                    result = 1;
+                }
+                else if (witness1.GetHashCode() < witness2.GetHashCode())
+                {
+                    result = -1;
+                }
+                else
+                {
+                    result = 0;
+                }
+            }
+
+            return result;
         }
         #endregion
     }

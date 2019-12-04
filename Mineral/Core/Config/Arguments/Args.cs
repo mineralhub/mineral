@@ -125,7 +125,7 @@ namespace Mineral.Core.Config.Arguments
         private string storage_transaction_history_switch = "";
 
         [Parameter("--storage-db-version", Description = "Storage db version.(1 or 2)")]
-        private String storage_version = "";
+        private string storage_version = "";
 
         [Parameter("--support-constant")]
         private bool support_constanct = false;
@@ -331,7 +331,7 @@ namespace Mineral.Core.Config.Arguments
             #region  Local witness
             if (instance.privatekey.Length > 0)
             {
-                instance.LocalWitness = new LocalWitness(instance.privatekey);
+                instance.LocalWitness = new LocalWitness(instance.privatekey.HexToBytes());
                 if (!string.IsNullOrEmpty(instance.witness_address))
                 {
                     byte[] address = Wallet.Base58ToAddress(instance.witness_address);
@@ -343,16 +343,18 @@ namespace Mineral.Core.Config.Arguments
                     else
                     {
                         instance.witness_address = "";
-                        Logger.Warning("local witness account address is incorrect.");
+                        Logger.Warning("Local witness account address is incorrect.");
                     }
                 }
                 instance.LocalWitness.InitWitnessAccountAddress();
             }
-            else if (Utils.CollectionUtil.IsNotNullOrEmpty(Config.Instance.Witness.LocalWitness))
+            else if (Config.Instance.LocalWitness != null
+                && Config.Instance.LocalWitness.LocalWitness != null
+                && Utils.CollectionUtil.IsNotNullOrEmpty(Config.Instance.LocalWitness.LocalWitness))
             {
                 instance.LocalWitness = new LocalWitness();
 
-                List<string> witness_list = new List<string>();
+                List<byte[]> witness_list = Config.Instance.LocalWitness.LocalWitness;
                 if (witness_list.Count > 1)
                 {
                     Logger.Warning("Local witness count must be one. get the first witness");
@@ -360,32 +362,34 @@ namespace Mineral.Core.Config.Arguments
                 }
                 instance.LocalWitness.SetPrivateKeys(witness_list);
 
-                if (Config.Instance.Witness.LocalWitnessAccountAddress.IsNotNullOrEmpty())
+                if (Config.Instance.LocalWitness.LocalWitnessAccountAddress.IsNotNullOrEmpty())
                 {
-                    byte[] address = Wallet.Base58ToAddress(Config.Instance.Witness.LocalWitnessAccountAddress);
+                    byte[] address = Wallet.Base58ToAddress(Config.Instance.LocalWitness.LocalWitnessAccountAddress);
                     if (address.IsNotNullOrEmpty())
                     {
                         instance.LocalWitness.SetWitnessAccountAddress(address);
-                        Logger.Debug("local witness account address from \'config.conf\' file.");
+                        Logger.Debug("Local witness account address from \'config.conf\' file.");
                     }
                     else
                     {
-                        Logger.Warning("local witness account address is incorrect.");
+                        Logger.Warning("Local witness account address is incorrect.");
                     }
                 }
                 instance.LocalWitness.InitWitnessAccountAddress();
             }
-            else if (Utils.CollectionUtil.IsNotNullOrEmpty(Config.Instance.Witness.LocalWitnessKeyStore))
+            else if (Config.Instance.LocalWitness != null
+                && Config.Instance.LocalWitness.LocalWitnessKeyStore != null
+                && Utils.CollectionUtil.IsNotNullOrEmpty(Config.Instance.LocalWitness.LocalWitnessKeyStore))
             {
-                List<string> privatekey_list = new List<string>();
+                List<byte[]> privatekeys = new List<byte[]>();
 
                 instance.LocalWitness = new LocalWitness();
                 if (instance.witness)
                 {
                     // TODO : Keystore 로드 CLI와 함께 정리해서 중복제거
-                    if (Config.Instance.Witness.LocalWitnessKeyStore.Count > 0)
+                    if (Config.Instance.LocalWitness.LocalWitnessKeyStore.Count > 0)
                     {
-                        string file_path = Config.Instance.Witness.LocalWitnessKeyStore[0];
+                        string file_path = Config.Instance.LocalWitness.LocalWitnessKeyStore[0];
 
                         JObject json;
                         using (var file = File.OpenText(file_path))
@@ -405,17 +409,16 @@ namespace Mineral.Core.Config.Arguments
                         KeyStore keystore = new KeyStore();
                         keystore = JsonConvert.DeserializeObject<KeyStore>(json.ToString());
 
-                        byte[] privatekey = null;
-                        if (!KeyStoreService.DecryptKeyStore(password, keystore, out privatekey))
+                        if (!KeyStoreService.DecryptKeyStore(password, keystore, out byte[] privatekey))
                         {
                             throw new KeyStoreException(
                                 "Fail to decrypt keystore file."
                                 );
                         }
-                        privatekey_list.Add(privatekey.ToHexString());
+                        privatekeys.Add(privatekey);
                     }
                 }
-                instance.LocalWitness.SetPrivateKeys(privatekey_list);
+                instance.LocalWitness.SetPrivateKeys(privatekeys);
                 Logger.Debug("local witness account address from keystore file.");
             }
 

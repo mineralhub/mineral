@@ -57,7 +57,7 @@ namespace Mineral.Core.Net.Service
         private void ConsumerInventoryToSpread()
         {
             List<PeerConnection> peers = 
-                Manager.Instance.NetDelegate.ActivePeers.Where(peer => !peer.IsNeedSyncPeer && !peer.IsNeedSyncUs).ToList();
+                Manager.Instance.NetDelegate.ActivePeers.Where(peer => !peer.IsNeedSyncFromPeer && !peer.IsNeedSyncUs).ToList();
 
             if (this.inventory_spread.IsEmpty || peers.IsNullOrEmpty())
             {
@@ -280,7 +280,7 @@ namespace Mineral.Core.Net.Service
             {
                 foreach (Item item in peer.InventoryRequest.Keys)
                 {
-                    if (Manager.Instance.NetDelegate.ActivePeers.First(p => p != peer && p.GetInventoryReceive(item) != null) != null)
+                    if (Manager.Instance.NetDelegate.ActivePeers.FirstOrDefault(p => p != peer && p.GetInventoryReceive(item) != null) != null)
                     {
                         this.inventory_fetch.TryAdd(item, Helper.CurrentTimeMillis());
                     }
