@@ -2,9 +2,15 @@
 using System.Collections.Generic;
 using System.Text;
 using System.Text.RegularExpressions;
+using Mineral;
 using Mineral.Common.Runtime.VM;
 using Mineral.Core;
+using Mineral.Cryptography;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
+using Protocol;
 using static MineralCLI.Util.AbiUtil.Coder;
+using static Protocol.SmartContract.Types;
 
 namespace MineralCLI.Util
 {
@@ -439,6 +445,113 @@ namespace MineralCLI.Util
             }
 
             return data;
+        }
+
+        public static ABI.Types.Entry.Types.StateMutabilityType GetStateMutability(string state)
+        {
+            switch (state)
+            {
+                case "pure":
+                    return ABI.Types.Entry.Types.StateMutabilityType.Pure;
+                case "view":
+                    return ABI.Types.Entry.Types.StateMutabilityType.View;
+                case "nonpayable":
+                    return ABI.Types.Entry.Types.StateMutabilityType.Nonpayable;
+                case "payable":
+                    return ABI.Types.Entry.Types.StateMutabilityType.Payable;
+                default:
+                    return ABI.Types.Entry.Types.StateMutabilityType.UnknownMutabilityType;
+            }
+        }
+
+        public static string ParseMethod(string method, string parameters)
+        {
+            return ParseMethod(method, parameters, false);
+        }
+
+        public static string ParseMethod(string method, string parameters, bool is_hex)
+        {
+            byte[] selector = new byte[4];
+            Array.Copy(Hash.SHA3(Encoding.UTF8.GetBytes(method)), 0, selector, 0, 4);
+            Console.WriteLine(method + ":" + selector.ToHexString());
+            if (parameters.Length == 0)
+            {
+                return selector.ToHexString();
+            }
+
+            if (is_hex)
+            {
+                return selector.ToHexString() + parameters;
+            }
+
+            byte[] encoded = EncodeInput(method, parameters);
+
+            return selector.ToHexString() + encoded.ToHexString();
+        }
+
+        public static ABI JsonToAbi(string json)
+        {
+            if (json == null)
+            {
+                throw new ArgumentNullException("json string is null.");
+            }
+
+            ABI abi = new ABI();
+
+            try
+            {
+                JArray array = JArray.Parse(json);
+                foreach (JToken item in array)
+                {
+                    AbiEntity entity = JsonConvert.DeserializeObject<AbiEntity>(item.ToString());
+
+                    if (entity.AbiType == null)
+                    {
+                        throw new ArgumentNullException("Abi type is null.");
+                    }
+
+                    if (!entity.AbiType.ToLower().Equals("fallback") && entity.Inputs == null)
+                    {
+                        throw new ArgumentException("Abi inputs is empty.");
+                    }
+
+                    ABI.Types.Entry abi_entity = new ABI.Types.Entry();
+                    abi_entity.Anonymous = entity.Anonymous;
+                    abi_entity.Constant = entity.Constant;
+                    if (entity.Name != null)
+                    {
+                        abi_entity.Name = entity.Name;
+                    }
+
+                    foreach (var input in entity.Inputs)
+                    {
+                        abi_entity.Inputs.Add(new ABI.Types.Entry.Types.Param()
+                        {
+                            Name = input.Name,
+                            Type = input.InOutType,
+                            Indexed = input.Indexed,
+                        });
+                    }
+
+                    foreach (var input in entity.Outputs)
+                    {
+                        abi_entity.Outputs.Add(new ABI.Types.Entry.Types.Param()
+                        {
+                            Name = input.Name,
+                            Type = input.InOutType,
+                            Indexed = input.Indexed,
+                        });
+                    }
+
+                    abi.Entrys.Add(abi_entity);
+                }
+            }
+            catch (System.Exception e)
+            {
+                throw e;
+            }
+
+            return abi;
         }
     }
 }

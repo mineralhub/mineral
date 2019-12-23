@@ -331,6 +331,77 @@ namespace MineralCLI.Commands
         /// /// Parameter Index
         /// [0] : Create account address
         /// <returns></returns>
+        public static bool GetContract(string command, string[] parameters)
+        {
+            string[] usage = new string[] {
+                string.Format("{0} [command option] <address>\n", command) };
+
+            string[] command_option = new string[] { HelpCommandOption.Help };
+
+            if (parameters == null || parameters.Length != 1)
+            {
+                OutputHelpMessage(usage, null, command_option, null);
+                return true;
+            }
+
+            try
+            {
+                RpcApiResult result = null;
+                BlockExtention block = null;
+                if (parameters == null)
+                {
+                    Console.WriteLine("Get current block.");
+                    result = RpcApi.GetBlockByLatestNum(out block);
+                }
+                else
+                {
+                    if (!long.TryParse(parameters[0], out long block_num))
+                    {
+                        Console.WriteLine("Invalid block number");
+                        return true;
+                    }
+                    result = RpcApi.GetBlock(block_num, out block);
+                }
+
+                if (result.Result)
+                {
+                    Console.WriteLine(PrintUtil.PrintBlockExtention(block));
+                }
+
+                OutputResultMessage(command, result.Result, result.Code, result.Message);
+            }
+            catch (System.Exception e)
+            {
+                Console.WriteLine(e.Message + "\n\n" + e.StackTrace);
+            }
+
+            try
+            {
+                byte[] contract_address = Wallet.Base58ToAddress(parameters[0]);
+
+                RpcApiResult result = RpcApi.GetContract(contract_address, out SmartContract contract);
+                if (result.Result)
+                {
+                    //Console.WriteLine(PrintUtil.PrintContract(contract));
+                }
+
+                OutputResultMessage(command, result.Result, result.Code, result.Message);
+            }
+            catch (System.Exception e)
+            {
+                Console.WriteLine(e.Message + "\n\n" + e.StackTrace);
+            }
+
+            return true;
+        }
+
+        /// <summary>
+        /// Create account
+        /// </summary>
+        /// <param name="parameters"></param>
+        /// /// Parameter Index
+        /// [0] : Create account address
+        /// <returns></returns>
         public static bool CreateAccount(string command, string[] parameters)
         {
             string[] usage = new string[] {
@@ -503,12 +574,250 @@ namespace MineralCLI.Commands
         }
 
         /// <summary>
+        /// Deploy contract
+        /// </summary>
+        /// <param name="parameters">
+        /// Parameter Index
+        // [0] : Owner address (optional)
+        // [1] : Contract name
+        // [2] : ABI
+        // [3] : Code
+        // [4] : Constructor
+        // [5] : Arguments
+        // [6] : Is Hex
+        // [7] : Fee limit
+        // [8] : Consume user resource percent
+        // [9] : Origin energy limit
+        // [10] : Token value
+        // [11] : Token id
+        // [12] : Library address pair
+        // [13] : Library version
+        /// </param>
+        /// <returns></returns>
+        public static bool DeployContract(string command, string[] parameters)
+        {
+            string[] usage = new string[] {
+                string.Format("{0} [command option] " +
+                                        " <address(optional)> <contract name> <abi> <code>" +
+                                        " <constructor> <args> <is Hex> <fee limit>" +
+                                        " <resource percent> <energy limit>" +
+                                        " <token value> <token id>" +
+                                        " <library address pair> <library version> \n", command) };
+
+            string[] command_option = new string[] { HelpCommandOption.Help };
+
+            if (parameters == null || parameters.Length < 10)
+            {
+                OutputHelpMessage(usage, null, command_option, null);
+                return true;
+            }
+
+            try
+            {
+                int index = 0;
+                byte[] owner_address = Wallet.Base58ToAddress(parameters[index]);
+                if (owner_address != null)
+                {
+                    index++;
+                }
+
+                string contract_name = parameters[index++];
+                string abi = parameters[index++];
+                string code = parameters[index++];
+                string constructor = parameters[index++];
+                string args = parameters[index++];
+                bool is_hex = bool.Parse(parameters[index++]);
+                long fee_limit = long.Parse(parameters[index++]);
+                long resource_percent = long.Parse(parameters[index++]);
+                long energy_limit = long.Parse(parameters[index++]);
+
+                if (resource_percent > 100 || resource_percent < 0)
+                {
+                    Console.WriteLine("Consume user resource percent should be >= 0 and <= 100");
+                    return true;
+                }
+                if (energy_limit <= 0)
+                {
+                    Console.WriteLine("Origin_energy_limit must > 0");
+                    return true;
+                }
+                if (!constructor.Equals("#"))
+                {
+                    if (is_hex)
+                    {
+                        code += args;
+                    }
+                    else
+                    {
+                        code += AbiUtil.EncodeInput(constructor, args).ToHexString();
+                    }
+                }
+
+                long value = long.Parse(parameters[index++]);
+                long token_value = long.Parse(parameters[index++]);
+                string token_id = parameters[index++];
+                if (token_id == "#")
+                {
+                    token_id = "";
+                }
+                string address_pair = null;
+                if (parameters.Length > index)
+                {
+                    address_pair = parameters[index++];
+                }
+
+                string version = null;
+                if (parameters.Length > index)
+                {
+                    version = parameters[index];
+                }
+
+                RpcApiResult result = RpcApi.CreateDeployContract(owner_address,
+                                                                  contract_name,
+                                                                  abi,
+                                                                  code,
+                                                                  value,
+                                                                  resource_percent,
+                                                                  energy_limit,
+                                                                  token_value,
+                                                                  token_id,
+                                                                  address_pair,
+                                                                  version,
+                                                                  out CreateSmartContract contract);
+
+                TransactionExtention transaction_extention = null;
+                if (result.Result)
+                {
+                    result = RpcApi.DeployContract(contract, out transaction_extention);
+                }
+
+                if (result.Result)
+                {
+                    transaction_extention.Transaction.RawData.FeeLimit = fee_limit;
+                    result = RpcApi.ProcessTransactionExtention(transaction_extention);
+                }
+
+                OutputResultMessage(command, result.Result, result.Code, result.Message);
+            }
+            catch (System.Exception e)
+            {
+                Console.WriteLine(e.Message + "\n\n" + e.StackTrace);
+            }
+
+            return true;
+        }
+
+        /// <summary>
+        /// Trigger contract
+        /// </summary>
+        /// <param name="parameters">
+        /// Parameter Index
+        // [0] : Owner address
+        // [1] : Contract address
+        // [2] : Mehtod
+        // [3] : Arguments
+        // [4] : Is Hex
+        // [5] : Fee limit
+        // [6] : Call value
+        // [7] : Token value
+        // [8] : Token Id
+        /// </param>
+        /// <returns></returns>
+        public static bool TriggerContract(string command, string[] parameters)
+        {
+            string[] usage = new string[] {
+                string.Format("{0} [command option] " +
+                                        " <address> <contract name> <abi> <code>" +
+                                        " <constructor> <args> <is Hex> <fee limit>" +
+                                        " <resource percent> <energy limit>" +
+                                        " <token value> <token id>" +
+                                        " <library address pair> <library version> \n", command) };
+
+            string[] command_option = new string[] { HelpCommandOption.Help };
+
+            if (parameters == null || parameters.Length > 8)
+            {
+                OutputHelpMessage(usage, null, command_option, null);
+                return true;
+            }
+
+            if (!RpcApi.IsLogin)
+            {
+                return true;
+            }
+
+            try
+            {
+                int index = 0;
+                byte[] owner_address = null;
+                if (parameters.Length == 5 || parameters.Length == 9)
+                {
+                    owner_address = Wallet.Base58ToAddress(parameters[index++]);
+                    if (owner_address == null)
+                    {
+                        throw new System.Exception("Invalid Owner address");
+                    }
+                }
+
+                byte[] contract_address = Wallet.Base58ToAddress(parameters[index++]);
+                string method = parameters[index++];
+                string args = parameters[index++];
+                bool is_hex = bool.Parse(parameters[index++]);
+                long fee_limit = long.Parse(parameters[index++]);
+                long call_value = long.Parse(parameters[index++]);
+                long token_value = long.Parse(parameters[index++]);
+                string token_id = parameters[index++];
+
+                if (args.Equals("#"))
+                {
+                    args = "";
+                }
+                if (token_id.Equals("#"))
+                {
+                    token_id = "";
+                }
+
+                byte[] input = AbiUtil.ParseMethod(method, args, is_hex).HexToBytes();
+
+                RpcApiResult result = RpcApi.CreateTriggerContract(owner_address,
+                                                                   contract_address,
+                                                                   input,
+                                                                   call_value,
+                                                                   token_value,
+                                                                   token_id,
+                                                                   out TriggerSmartContract contract);
+
+                TransactionExtention transaction_extention = null;
+                if (result.Result)
+                {
+                    result = RpcApi.CreateTransaction(contract,
+                                                      ContractType.TriggerSmartContract,
+                                                      out transaction_extention);
+                }
+
+                if (result.Result)
+                {
+                    result = RpcApi.ProcessTransactionExtention(transaction_extention);
+                }
+
+                OutputResultMessage(command, result.Result, result.Code, result.Message);
+            }
+            catch (System.Exception e)
+            {
+                Console.WriteLine(e.Message + "\n\n" + e.StackTrace);
+            }
+
+            return true;
+        }
+
+        /// <summary>
         /// Approve proposal
         /// </summary>
-        /// <param name="parameters"></param>
+        /// <param name="parameters">
         /// /// Parameter Index
         /// [0] : Proposal id
         /// [1] : Proposal value
+        /// </param>
         /// <returns></returns>
         public static bool ApproveProposal(string command, string[] parameters)
         {

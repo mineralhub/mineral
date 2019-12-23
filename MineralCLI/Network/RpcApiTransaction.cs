@@ -14,6 +14,7 @@ using Protocol;
 using System;
 using System.Collections.Generic;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading;
 using static Protocol.Transaction.Types.Contract.Types;
 
@@ -40,7 +41,7 @@ namespace MineralCLI.Network
 
 
         #region Internal Method
-        public static Permission JsonToPermission(JObject json)
+        private static Permission JsonToPermission(JObject json)
         {
             Permission permisstion = new Permission();
             if (json.ContainsKey("type"))
@@ -84,6 +85,57 @@ namespace MineralCLI.Network
             }
 
             return permisstion;
+        }
+
+        private static byte[] ReplaceLibraryAddress(string code, string address_pair, string version)
+        {
+            Regex regex = new Regex("[,]");
+            string[] library_addresses = regex.Split(address_pair);
+
+            for (int i = 0; i < library_addresses.Length; i++)
+            {
+                string current = library_addresses[i];
+
+                int last_pos = current.LastIndexOf(":");
+                if (-1 == last_pos)
+                {
+                    throw new System.Exception("Library address delimit by \':\'");
+                }
+
+                string library_name = current.Substring(0, last_pos);
+                string address = current.Substring(last_pos + 1);
+                string library_address_hex;
+
+                try
+                {
+                    library_address_hex = Wallet.Base58ToAddress(address).ToHexString();
+                }
+                catch (System.Exception e)
+                {
+                    throw e;
+                }
+
+                string replace;
+                if (version == null)
+                {
+                    string repeated = new string(new char[40 - library_name.Length - 2]).Replace("\0", "_");
+                    replace = "__" + library_name + repeated;
+                }
+                else if (version.ToLower().Equals("v5"))
+                {
+                    string library_name_keccak256 = Hash.SHA3(Encoding.UTF8.GetBytes(library_name)).ToHexString().Substring(0, 34);
+                    replace = "__\\$" + library_name_keccak256 + "\\$__";
+                }
+                else
+                {
+                    throw new System.Exception("unknown compiler version.");
+                }
+
+                Regex regex_code = new Regex(replace);
+                code = regex_code.Replace(code, library_address_hex);
+            }
+
+            return code.HexToBytes();
         }
         #endregion
 
@@ -248,6 +300,21 @@ namespace MineralCLI.Network
             return RpcApiResult.Success;
         }
 
+        public static RpcApiResult GetContract(byte[] contract_address, out SmartContract contract)
+        {
+            contract = null;
+
+            JObject receive = SendCommand(RpcCommand.Block.GetBlock, new JArray() { contract_address });
+            if (receive.TryGetValue("error", out JToken value))
+            {
+                return new RpcApiResult(false, value["code"].ToObject<int>(), value["message"].ToObject<string>());
+            }
+
+            contract = SmartContract.Parser.ParseFrom(receive["result"].ToObject<byte[]>());
+
+            return RpcApiResult.Success;
+        }
+
         public static RpcApiResult CreateAccountContract(byte[] owner_address,
                                                          byte[] create_address,
                                                          out AccountCreateContract contract)
@@ -391,6 +458,86 @@ namespace MineralCLI.Network
             return RpcApiResult.Success;
         }
 
+        public static RpcApiResult CreateDeployContract(byte[] owner_address,
+                                                        string contract_name,
+                                                        string abi,
+                                                        string code,
+                                                        long value,
+                                                        long resource_percent,
+                                                        long energy_limit,
+                                                        long token_value,
+                                                        string token_id,
+                                                        string address_pair,
+                                                        string version,
+                                                        out CreateSmartContract contract)
+        {
+            contract = null;
+
+            if (abi == null)
+            {
+                return new RpcApiResult(false, RpcMessage.INVALID_PARAMS, "abi is null");
+            }
+
+            contract.NewContract = new SmartContract()
+            {
+                Abi = AbiUtil.JsonToAbi(abi),
+                Name = contract_name,
+                OriginAddress = ByteString.CopyFrom(owner_address),
+                ConsumeUserResourcePercent = resource_percent,
+                OriginEnergyLimit = energy_limit,
+            };
+
+            contract.NewContract.Abi = AbiUtil.JsonToAbi(abi);
+            contract.NewContract.Name = contract_name;
+            contract.NewContract.OriginAddress = ByteString.CopyFrom(owner_address);
+            contract.NewContract.ConsumeUserResourcePercent = resource_percent;
+            contract.NewContract.OriginEnergyLimit = energy_limit;
+
+            if (contract.NewContract.Abi == null)
+            {
+                return new RpcApiResult(false, RpcMessage.INVALID_PARAMS, "Invalid ABI.");
+            }
+
+            if (value != 0)
+            {
+                contract.NewContract.CallValue = value;
+            }
+
+            if (address_pair != null)
+            {
+                contract.NewContract.Bytecode = ByteString.CopyFrom(ReplaceLibraryAddress(code, address_pair, version));
+            }
+
+            contract.OwnerAddress = ByteString.CopyFrom(owner_address);
+
+            return RpcApiResult.Success;
+        }
+
+        public static RpcApiResult CreateTriggerContract(byte[] owner_address,
+                                                 byte[] contract_address,
+                                                 byte[] data,
+                                                 long call_value,
+                                                 long token_value,
+                                                 string token_id,
+                                                 out TriggerSmartContract contract)
+        {
+            contract = new TriggerSmartContract()
+            {
+                OwnerAddress = ByteString.CopyFrom(owner_address),
+                ContractAddress = ByteString.CopyFrom(contract_address),
+                Data = ByteString.CopyFrom(data),
+                CallValue = call_value
+            };
+
+            if (token_id != null && token_id != "")
+            {
+                contract.TokenId = long.Parse(token_id);
+                contract.CallTokenValue = token_value;
+            }
+
+            return RpcApiResult.Success;
+        }
+
         public static RpcApiResult CreateApproveProposalContract(byte[] owner_address,
                                                                  long id,
                                                                  bool value,
@@ -530,6 +677,40 @@ namespace MineralCLI.Network
                                               new JArray()
                                               {
                                                   contract_type,
+                                                  contract.ToByteArray()
+                                              });
+
+                if (receive.TryGetValue("error", out JToken value))
+                {
+                    return new RpcApiResult(false, value["code"].ToObject<int>(), value["message"].ToObject<string>());
+                }
+
+                transaction_extention = TransactionExtention.Parser.ParseFrom(receive["result"].ToObject<byte[]>());
+
+                Return ret = transaction_extention.Result;
+                if (!ret.Result)
+                {
+                    OutputTransactionErrorMessage((int)ret.Code, ret.Message.ToStringUtf8());
+                    return new RpcApiResult(false, RpcMessage.TRANSACTION_ERROR, "");
+                }
+            }
+            catch (System.Exception e)
+            {
+                throw e;
+            }
+
+            return RpcApiResult.Success;
+        }
+
+        public static RpcApiResult DeployContract(IMessage contract, out TransactionExtention transaction_extention)
+        {
+            try
+            {
+                transaction_extention = null;
+
+                JObject receive = SendCommand(RpcCommand.Transaction.DeployContract,
+                                              new JArray()
+                                              {
                                                   contract.ToByteArray()
                                               });
 
