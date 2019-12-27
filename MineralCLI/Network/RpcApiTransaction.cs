@@ -304,7 +304,7 @@ namespace MineralCLI.Network
         {
             contract = null;
 
-            JObject receive = SendCommand(RpcCommand.Block.GetBlock, new JArray() { contract_address });
+            JObject receive = SendCommand(RpcCommand.Transaction.GetContract, new JArray() { contract_address });
             if (receive.TryGetValue("error", out JToken value))
             {
                 return new RpcApiResult(false, value["code"].ToObject<int>(), value["message"].ToObject<string>());
@@ -677,40 +677,6 @@ namespace MineralCLI.Network
                                               new JArray()
                                               {
                                                   contract_type,
-                                                  contract.ToByteArray()
-                                              });
-
-                if (receive.TryGetValue("error", out JToken value))
-                {
-                    return new RpcApiResult(false, value["code"].ToObject<int>(), value["message"].ToObject<string>());
-                }
-
-                transaction_extention = TransactionExtention.Parser.ParseFrom(receive["result"].ToObject<byte[]>());
-
-                Return ret = transaction_extention.Result;
-                if (!ret.Result)
-                {
-                    OutputTransactionErrorMessage((int)ret.Code, ret.Message.ToStringUtf8());
-                    return new RpcApiResult(false, RpcMessage.TRANSACTION_ERROR, "");
-                }
-            }
-            catch (System.Exception e)
-            {
-                throw e;
-            }
-
-            return RpcApiResult.Success;
-        }
-
-        public static RpcApiResult DeployContract(IMessage contract, out TransactionExtention transaction_extention)
-        {
-            try
-            {
-                transaction_extention = null;
-
-                JObject receive = SendCommand(RpcCommand.Transaction.DeployContract,
-                                              new JArray()
-                                              {
                                                   contract.ToByteArray()
                                               });
 

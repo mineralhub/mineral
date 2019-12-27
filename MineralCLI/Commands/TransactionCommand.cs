@@ -346,37 +346,6 @@ namespace MineralCLI.Commands
 
             try
             {
-                RpcApiResult result = null;
-                BlockExtention block = null;
-                if (parameters == null)
-                {
-                    Console.WriteLine("Get current block.");
-                    result = RpcApi.GetBlockByLatestNum(out block);
-                }
-                else
-                {
-                    if (!long.TryParse(parameters[0], out long block_num))
-                    {
-                        Console.WriteLine("Invalid block number");
-                        return true;
-                    }
-                    result = RpcApi.GetBlock(block_num, out block);
-                }
-
-                if (result.Result)
-                {
-                    Console.WriteLine(PrintUtil.PrintBlockExtention(block));
-                }
-
-                OutputResultMessage(command, result.Result, result.Code, result.Message);
-            }
-            catch (System.Exception e)
-            {
-                Console.WriteLine(e.Message + "\n\n" + e.StackTrace);
-            }
-
-            try
-            {
                 byte[] contract_address = Wallet.Base58ToAddress(parameters[0]);
 
                 RpcApiResult result = RpcApi.GetContract(contract_address, out SmartContract contract);
@@ -688,7 +657,9 @@ namespace MineralCLI.Commands
                 TransactionExtention transaction_extention = null;
                 if (result.Result)
                 {
-                    result = RpcApi.DeployContract(contract, out transaction_extention);
+                    result = RpcApi.CreateTransaction(contract,
+                                                      ContractType.CreateSmartContract,
+                                                      out transaction_extention);
                 }
 
                 if (result.Result)
