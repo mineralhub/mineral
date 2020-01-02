@@ -14,7 +14,7 @@ namespace Mineral.Common.Runtime.VM.Program.Listener
         #region Property
         public bool IsEmpty
         {
-            get { return this.IsEmpty; }
+            get { return this.listeners == null || this.listeners.Count == 0; }
         }
         #endregion
 

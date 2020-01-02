@@ -35,11 +35,11 @@ namespace Mineral.Common.Runtime.VM.Program
         private byte[] root_transaction_id = null;
         private InternalTransaction internal_transaction = null;
         private IProgramInvoke invoke = null;
-        private IProgramInvokeFactory invoke_factory = null;
+        private IProgramInvokeFactory invoke_factory = new ProgramInvokeFactory();
         private IProgramOutListener listener = null;
         private ProgramTraceListener trace_listener = null;
-        private ProgramStorageChangeListener storage_diff_listener = null;
-        private CompositeProgramListener program_listener = null;
+        private ProgramStorageChangeListener storage_diff_listener = new ProgramStorageChangeListener();
+        private CompositeProgramListener program_listener = new CompositeProgramListener();
 
         private DataWordStack stack = null;
         private Memory memory = null;
