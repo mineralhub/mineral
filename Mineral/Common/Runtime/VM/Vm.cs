@@ -129,7 +129,7 @@ namespace Mineral.Common.Runtime.VM
 
             try
             {
-                if (Enum.IsDefined(typeof(OpCode), program.CurrentOp))
+                if (!Enum.IsDefined(typeof(OpCode), (byte)program.CurrentOp))
                     throw VMExceptions.InvalidOpCode(program.CurrentOp);
 
                 OpCode op = (OpCode)program.CurrentOp;

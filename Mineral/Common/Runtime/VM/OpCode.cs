@@ -6,7 +6,7 @@ namespace Mineral.Common.Runtime.VM
 {
     //Instruction set for the Ethereum Virtual Machine See Yellow Paper:
     //http://www.gavwood.com/Paper.pdf - Appendix G. Virtual Machine Specification
-    public enum OpCode
+    public enum OpCode : byte
     {
         // TODO #POC9 Need to make tiers more accurate
         /**
