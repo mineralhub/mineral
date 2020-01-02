@@ -850,7 +850,7 @@ namespace Mineral.Core.Database
             return GetAllowDelegateResource() == 1L;
         }
 
-        public bool SupporVm()
+        public bool SupportVm()
         {
             return GetAllowCreationOfContracts() == 1L;
         }

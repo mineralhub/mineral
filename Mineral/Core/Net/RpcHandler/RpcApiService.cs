@@ -472,7 +472,7 @@ namespace Mineral.Core.Net.RpcHandler
                     Manager.Instance.DBManager.TransactionIdCache.Add(transaction.Id.ToString(), true);
                 }
 
-                if (Manager.Instance.DBManager.DynamicProperties.SupporVm())
+                if (Manager.Instance.DBManager.DynamicProperties.SupportVm())
                 {
                     transaction.ClearTransactionResult();
                 }

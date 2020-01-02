@@ -27,7 +27,7 @@ using static Protocol.Transaction.Types.Result.Types;
 namespace Mineral.Common.Runtime
 {
     using VMConfig = Config.VMConfig;
-    using Vm = VM.VM;
+    using Vm = VM.VM; 
     using InternalTransaction = VM.InternalTransaction;
 
     public class RunTime : IRunTime
@@ -177,7 +177,7 @@ namespace Mineral.Common.Runtime
 
         private void Create()
         {
-            if (!this.deposit.DBManager.DynamicProperties.SupporVm())
+            if (!this.deposit.DBManager.DynamicProperties.SupportVm())
             {
                 throw new ContractValidateException("vm work is off, need to be opened by the committee");
             }
@@ -196,7 +196,6 @@ namespace Mineral.Common.Runtime
             }
 
             byte[] contract_name = Encoding.UTF8.GetBytes(new_contract.Name);
-
             if (contract_name.Length > VMParameter.CONTRACT_NAME_LENGTH)
             {
                 throw new ContractValidateException("contractName's length cannot be greater than 32");
@@ -325,7 +324,7 @@ namespace Mineral.Common.Runtime
 
         private void Call()
         {
-            if (!this.deposit.DBManager.DynamicProperties.SupporVm())
+            if (!this.deposit.DBManager.DynamicProperties.SupportVm())
             {
                 Logger.Info("vm work is off, need to be opened by the committee");
                 throw new ContractValidateException("VM work is off, need to be opened by the committee");

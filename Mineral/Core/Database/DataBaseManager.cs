@@ -1716,7 +1716,7 @@ namespace Mineral.Core.Database
             }
 
             trace.Finalization();
-            if (block != null && this.dynamic_properties_store.SupporVm())
+            if (block != null && this.dynamic_properties_store.SupportVm())
             {
                 transaction.SetResultCode(trace.Receipt.Result);
             }
