@@ -120,7 +120,7 @@ namespace Mineral.Core.Database2.Core
                 throw new ItemNotFoundException();
             }
 
-            return GetUnchecked(key);
+            return result;
         }
 
         [MethodImpl(MethodImplOptions.Synchronized)]

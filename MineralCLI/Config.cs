@@ -39,7 +39,7 @@ namespace MineralCLI
 
             try
             {
-                string path = "./Config.json";
+                string path = "config.json";
                 if (File.Exists(path))
                 {
                     using (var file = File.OpenText(path))
@@ -48,6 +48,15 @@ namespace MineralCLI
                     }
                     result = true;
                 }
+                else
+                {
+                    throw new FileNotFoundException(
+                        string.Format("Not found {0} file.", path));
+                }
+            }
+            catch (FileNotFoundException e)
+            {
+                Console.WriteLine(e.Message);
             }
             catch (System.Exception e)
             {

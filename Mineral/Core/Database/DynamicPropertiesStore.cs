@@ -68,8 +68,8 @@ namespace Mineral.Core.Database
             try { GetStorageExchangeTaxRate(); } catch { PutStorageExchangeTaxRate(10); }
             try { GetRemoveThePowerOfTheGr(); } catch { PutRemoveThePowerOfTheGr(0); }
             try { GetAllowDelegateResource(); } catch { PutAllowDelegateResource((int)Args.Instance.Committe.AllowDelegateResource); }
-            try { GetAllowTvmTransferTrc10(); } catch { PutAllowTvmTransferTrc10((int)Args.Instance.Committe.AllowVMTransferTC10); }
-            try { GetAllowTvmConstantinople(); } catch { PutAllowTvmConstantinople((int)Args.Instance.Committe.AllowVMConstantinople); }
+            try { GetAllowVmTransferTrc10(); } catch { PutAllowVmTransferTrc10((int)Args.Instance.Committe.AllowVMTransferTC10); }
+            try { GetAllowVmConstantinople(); } catch { PutAllowVmConstantinople((int)Args.Instance.Committe.AllowVMConstantinople); }
             try { GetAvailableContractType(); } catch { PutAvailableContractType("7fff1fc0037e0000000000000000000000000000000000000000000000000000".HexToBytes()); }
             try { GetActiveDefaultOperations(); } catch { PutActiveDefaultOperations("7fff1fc0033e0000000000000000000000000000000000000000000000000000".HexToBytes()); }
             try { GetAllowSameTokenName(); } catch { PutAllowSameTokenName((int)Args.Instance.Committe.AllowSameTokenName); }
@@ -198,7 +198,7 @@ namespace Mineral.Core.Database
             Put(MAINTENANCE_TIME_INTERVAL, new BytesCapsule(BitConverter.GetBytes(time_interval)));
         }
 
-        public int GetMaintenanceTimeInterval()
+        public long GetMaintenanceTimeInterval()
         {
             return BitConverter.ToInt32(GetUnchecked(MAINTENANCE_TIME_INTERVAL).Data, 0);
         }
@@ -590,7 +590,7 @@ namespace Mineral.Core.Database
             Put(ALLOW_DELEGATE_RESOURCE, new BytesCapsule(BitConverter.GetBytes(value)));
         }
 
-        public int GetAllowDelegateResource()
+        public long GetAllowDelegateResource()
         {
             return BitConverter.ToInt32(GetUnchecked(ALLOW_DELEGATE_RESOURCE).Data, 0);
         }
@@ -600,29 +600,29 @@ namespace Mineral.Core.Database
             Put(ALLOW_ADAPTIVE_ENERGY, new BytesCapsule(BitConverter.GetBytes(value)));
         }
 
-        public int GetAllowAdaptiveEnergy()
+        public long GetAllowAdaptiveEnergy()
         {
             return BitConverter.ToInt32(GetUnchecked(ALLOW_ADAPTIVE_ENERGY).Data, 0);
         }
 
-        public void PutAllowTvmTransferTrc10(int value)
+        public void PutAllowVmTransferTrc10(int value)
         {
-            Put(ALLOW_TVM_TRANSFER_TRC10, new BytesCapsule(BitConverter.GetBytes(value)));
+            Put(ALLOW_VM_TRANSFER_TRC10, new BytesCapsule(BitConverter.GetBytes(value)));
         }
 
-        public int GetAllowTvmTransferTrc10()
+        public long GetAllowVmTransferTrc10()
         {
-            return BitConverter.ToInt32(GetUnchecked(ALLOW_TVM_TRANSFER_TRC10).Data, 0);
+            return BitConverter.ToInt32(GetUnchecked(ALLOW_VM_TRANSFER_TRC10).Data, 0);
         }
 
-        public void PutAllowTvmConstantinople(int value)
+        public void PutAllowVmConstantinople(int value)
         {
-            Put(ALLOW_TVM_CONSTANTINOPLE, new BytesCapsule(BitConverter.GetBytes(value)));
+            Put(ALLOW_VM_CONSTANTINOPLE, new BytesCapsule(BitConverter.GetBytes(value)));
         }
 
-        public int GetAllowTvmConstantinople()
+        public long GetAllowVmConstantinople()
         {
-            return BitConverter.ToInt32(GetUnchecked(ALLOW_TVM_CONSTANTINOPLE).Data, 0);
+            return BitConverter.ToInt32(GetUnchecked(ALLOW_VM_CONSTANTINOPLE).Data, 0);
         }
 
         public void PutAvailableContractType(byte[] value)
@@ -661,7 +661,7 @@ namespace Mineral.Core.Database
             Put(ALLOW_SAME_TOKEN_NAME, new BytesCapsule(BitConverter.GetBytes(rate)));
         }
 
-        public int GetAllowSameTokenName()
+        public long GetAllowSameTokenName()
         {
             return BitConverter.ToInt32(GetUnchecked(ALLOW_SAME_TOKEN_NAME).Data, 0);
         }
@@ -691,7 +691,7 @@ namespace Mineral.Core.Database
             Put(ALLOW_MULTI_SIGN, new BytesCapsule(BitConverter.GetBytes(allow_multi_sing)));
         }
 
-        public int GetAllowMultiSign()
+        public long GetAllowMultiSign()
         {
             return BitConverter.ToInt32(GetUnchecked(ALLOW_MULTI_SIGN).Data, 0);
         }
@@ -807,7 +807,7 @@ namespace Mineral.Core.Database
             Put(ALLOW_PROTO_FILTER_NUM, new BytesCapsule(BitConverter.GetBytes(num)));
         }
 
-        public int GetAllowProtoFilterNum()
+        public long GetAllowProtoFilterNum()
         {
             return BitConverter.ToInt32(GetUnchecked(ALLOW_PROTO_FILTER_NUM).Data, 0);
         }
@@ -817,7 +817,7 @@ namespace Mineral.Core.Database
             Put(ALLOW_ACCOUNT_STATE_ROOT, new BytesCapsule(BitConverter.GetBytes(allow_account_state_root)));
         }
 
-        public int GetAllowAccountStateRoot()
+        public long GetAllowAccountStateRoot()
         {
             return BitConverter.ToInt32(GetUnchecked(ALLOW_ACCOUNT_STATE_ROOT).Data, 0);
         }
@@ -850,7 +850,7 @@ namespace Mineral.Core.Database
             return GetAllowDelegateResource() == 1L;
         }
 
-        public bool SupportVM()
+        public bool SupportVm()
         {
             return GetAllowCreationOfContracts() == 1L;
         }
@@ -870,7 +870,7 @@ namespace Mineral.Core.Database
         {
             if (Args.Instance.Committe.AllowVMConstantinople != 0)
             {
-                PutAllowTvmConstantinople((int)Args.Instance.Committe.AllowVMConstantinople);
+                PutAllowVmConstantinople((int)Args.Instance.Committe.AllowVMConstantinople);
                 AddSystemContractAndSetPermission(48);
             }
         }

@@ -120,6 +120,9 @@ namespace Mineral.Core.Net.RpcHandler
             [CommandLineAttribute(Name = "GetTransactionSignWeight", Description = "")]
             public static readonly string GetTransactionSignWeight = "gettransactionsignweight";
 
+            [CommandLineAttribute(Name = "GetContract", Description = "")]
+            public static readonly string GetContract = "getcontract";
+
             [CommandLineAttribute(Name = "CreateAccount", Description = "")]
             public static readonly string CreateAccount = "createaccount";
 
@@ -129,8 +132,17 @@ namespace Mineral.Core.Net.RpcHandler
             [CommandLineAttribute(Name = "CreateWitness", Description = "")]
             public static readonly string CreateWitness = "createwitness";
 
+            [CommandLineAttribute(Name = "DeployContract", Description = "")]
+            public static readonly string DeployContract = "deploycontract";
+
+            [CommandLineAttribute(Name = "TriggerContract", Description = "")]
+            public static readonly string TriggerContract = "triggercontract";
+
             [CommandLineAttribute(Name = "CreateTransaction", Description = "")]
             public static readonly string CreateTransaction = "createtransaction";
+
+            [CommandLineAttribute(Name = "ApproveProposal", Description = "")]
+            public static readonly string ApproveProposal = "approveproposal";
 
             [CommandLineAttribute(Name = "UpdateAccount", Description = "")]
             public static readonly string UpdateAccount = "updateaccount";
@@ -173,6 +185,9 @@ namespace Mineral.Core.Net.RpcHandler
 
             [CommandLineAttribute(Name = "ListProposalPaginated", Description = "")]
             public static readonly string ListProposalPaginated = "listproposalpaginated";
+
+            [CommandLineAttribute(Name = "GetParameters", Description = "")]
+            public static readonly string GetParameters = "getparameters";
         }
     }
 }

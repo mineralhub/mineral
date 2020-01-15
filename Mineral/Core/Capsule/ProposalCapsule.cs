@@ -56,9 +56,9 @@ namespace Mineral.Core.Capsule
             set { this.proposal.State = value; }
         }
 
-        public List<ByteString> Approvals
+        public IList<ByteString> Approvals
         {
-            get { return new List<ByteString>(this.proposal.Approvals); }
+            get { return this.proposal.Approvals; }
         }
 
         public bool HasProcessed
@@ -117,21 +117,6 @@ namespace Mineral.Core.Capsule
         public static byte[] CalculateDatabaseKey(long number)
         {
             return BitConverter.GetBytes(number);
-        }
-
-        public void AddApproval(ByteString address)
-        {
-            this.Approvals.Add(address);
-        }
-
-        public void RemoveApproval(ByteString address)
-        {
-            this.proposal.Approvals.Remove(address);
-        }
-
-        public void ClearApproval()
-        {
-            this.proposal.Approvals.Clear();
         }
 
         public bool HasExpired(long time)

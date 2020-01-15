@@ -560,15 +560,15 @@ namespace Mineral.Core.Config.Arguments
             #endregion
 
             #region Committee
-            instance.Committe.AllowCreationOfContracts = Config.Instance.Committe?.AllowCreationOfContracts ?? 0;
-            instance.Committe.AllowMultiSign = Config.Instance.Committe?.AllowMultiSign ?? 0;
-            instance.Committe.AllowAdaptiveEnergy = Config.Instance.Committe?.AllowAdaptiveEnergy ?? 0;
-            instance.Committe.AllowDelegateResource = Config.Instance.Committe?.AllowDelegateResource ?? 0;
-            instance.Committe.AllowSameTokenName = Config.Instance.Committe?.AllowSameTokenName ?? 0;
-            instance.Committe.AllowVMTransferTC10 = Config.Instance.Committe?.AllowVMTransferTC10 ?? 0;
-            instance.Committe.AllowVMConstantinople = Config.Instance.Committe?.AllowVMConstantinople ?? 0;
-            instance.Committe.AllowProtoFilterNum = Config.Instance.Committe?.AllowProtoFilterNum ?? 0;
-            instance.Committe.AllowAccountStateRoot = Config.Instance.Committe?.AllowAccountStateRoot ?? 0;
+            instance.Committe.AllowCreationOfContracts = Config.Instance.Committee?.AllowCreationOfContracts ?? 0;
+            instance.Committe.AllowMultiSign = Config.Instance.Committee?.AllowMultiSign ?? 0;
+            instance.Committe.AllowAdaptiveEnergy = Config.Instance.Committee?.AllowAdaptiveEnergy ?? 0;
+            instance.Committe.AllowDelegateResource = Config.Instance.Committee?.AllowDelegateResource ?? 0;
+            instance.Committe.AllowSameTokenName = Config.Instance.Committee?.AllowSameTokenName ?? 0;
+            instance.Committe.AllowVMTransferTC10 = Config.Instance.Committee?.AllowVMTransferTC10 ?? 0;
+            instance.Committe.AllowVMConstantinople = Config.Instance.Committee?.AllowVMConstantinople ?? 0;
+            instance.Committe.AllowProtoFilterNum = Config.Instance.Committee?.AllowProtoFilterNum ?? 0;
+            instance.Committe.AllowAccountStateRoot = Config.Instance.Committee?.AllowAccountStateRoot ?? 0;
             #endregion
 
             #region Transaction

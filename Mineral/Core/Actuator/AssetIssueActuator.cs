@@ -98,7 +98,7 @@ namespace Mineral.Core.Actuator
                 account.AssetIssuedName = ByteString.CopyFrom(asset_issue.CreateDatabaseKey());
                 account.AssetIssuedID = ByteString.CopyFrom(asset_issue.CreateDatabaseKeyV2());
                 account.AddAssetV2(asset_issue_v2.CreateDatabaseKeyV2(), remain_supply);
-                account.FrozenSupplyList.AddRange(frozens);
+                frozens.ForEach(frozen => account.FrozenSupplyList.Add(frozen));
 
                 this.db_manager.Account.Put(owner_address, account);
 

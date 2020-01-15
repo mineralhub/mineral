@@ -332,8 +332,8 @@ namespace Mineral
         public NodeConfig Node { get; set; }
         [JsonProperty("block")]
         public BlockConfig Block { get; set; }
-        [JsonProperty("committe")]
-        public CommitteConfig Committe { get; set; }
+        [JsonProperty("committee")]
+        public CommitteConfig Committee { get; set; }
         [JsonProperty("transaction")]
         public TransactionConfig Transaction { get; set; }
         [JsonProperty("event")]

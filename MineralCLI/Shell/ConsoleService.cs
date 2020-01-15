@@ -35,9 +35,13 @@ namespace MineralCLI.Shell
             { RpcCommand.Transaction.GetTransactionCountByBlockNum, new CommandHandler(TransactionCommand.GetTransactionCountByBlockNum) },
             { RpcCommand.Transaction.GetTransactionsFromThis, new CommandHandler(TransactionCommand.GetTransactionsFromThis) },
             { RpcCommand.Transaction.GetTransactionsToThis, new CommandHandler(TransactionCommand.GetTransactionsToThis) },
+            { RpcCommand.Transaction.GetContract, new CommandHandler(TransactionCommand.GetContract) },
             { RpcCommand.Transaction.CreateAccount, new CommandHandler(TransactionCommand.CreateAccount) },
             { RpcCommand.Transaction.CreateProposal, new CommandHandler(TransactionCommand.CreateProposal) },
             { RpcCommand.Transaction.CreateWitness, new CommandHandler(TransactionCommand.CreateWitness) },
+            { RpcCommand.Transaction.DeployContract, new CommandHandler(TransactionCommand.DeployContract) },
+            { RpcCommand.Transaction.TriggerContract, new CommandHandler(TransactionCommand.TriggerContract) },
+            { RpcCommand.Transaction.ApproveProposal, new CommandHandler(TransactionCommand.ApproveProposal) },
             { RpcCommand.Transaction.UpdateAccount, new CommandHandler(TransactionCommand.UpdateAccount) },
             { RpcCommand.Transaction.UpdateWitness, new CommandHandler(TransactionCommand.UpdateWitness) },
             { RpcCommand.Transaction.UpdateEnergyLimit, new CommandHandler(TransactionCommand.UpdateEnergyLimit) },
@@ -51,6 +55,7 @@ namespace MineralCLI.Shell
             { RpcCommand.Transaction.WithdrawBalance, new CommandHandler(TransactionCommand.WithdrawBalance) },
             { RpcCommand.Transaction.ListProposal, new CommandHandler(TransactionCommand.ListProposal) },
             { RpcCommand.Transaction.ListProposalPaginated, new CommandHandler(TransactionCommand.ListProposalPaginated) },
+            { RpcCommand.Transaction.GetParameters, new CommandHandler(TransactionCommand.GetParameters) },
             
             // BlockCommands
             { RpcCommand.Block.GetBlock, new CommandHandler(BlockCommand.GetBlock) },

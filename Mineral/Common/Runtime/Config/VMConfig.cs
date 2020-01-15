@@ -14,8 +14,8 @@ namespace Mineral.Common.Runtime.Config
         public static readonly int MAX_FEE_LIMIT = 1_000_000_000; //1000 trx
 
         private static bool ENERGY_LIMIT_HARD_FORK = false;
-        private static bool ALLOW_TVM_TRANSFER_TRC10 = false;
-        private static bool ALLOW_TVM_CONSTANTINOPLE = false;
+        private static bool ALLOW_VM_TRANSFER_TRC10 = false;
+        private static bool ALLOW_VM_CONSTANTINOPLE = false;
         private static bool ALLOW_MULTI_SIGN = false;
 
         private static VMConfig instance = null;
@@ -44,14 +44,14 @@ namespace Mineral.Common.Runtime.Config
             get { return ENERGY_LIMIT_HARD_FORK; }
         }
 
-        public static bool AllowTvmTransferTrc10
+        public static bool AllowVmTransferTrc10
         {
-            get { return ALLOW_TVM_TRANSFER_TRC10; }
+            get { return ALLOW_VM_TRANSFER_TRC10; }
         }
 
-        public static bool AllowTvmConstantinople
+        public static bool AllowVmConstantinople
         {
-            get { return ALLOW_TVM_CONSTANTINOPLE; }
+            get { return ALLOW_VM_CONSTANTINOPLE; }
         }
 
         public static bool AllowMultiSign
@@ -75,7 +75,7 @@ namespace Mineral.Common.Runtime.Config
 
 
         #region External Method
-        public static void InitVmHardFork()
+        public static void IniVmHardFork()
         {
             ENERGY_LIMIT_HARD_FORK = ForkController.Instance.Pass(Parameter.ForkBlockVersionParameters.ENERGY_LIMIT);
         }
@@ -85,14 +85,14 @@ namespace Mineral.Common.Runtime.Config
             ALLOW_MULTI_SIGN = allow == 1;
         }
 
-        public static void InitAllowTvmTransferTrc10(long allow)
+        public static void InitAllowVmTransferTrc10(long allow)
         {
-            ALLOW_TVM_TRANSFER_TRC10 = allow == 1;
+            ALLOW_VM_TRANSFER_TRC10 = allow == 1;
         }
 
-        public static void InitAllowTvmConstantinople(long allow)
+        public static void InitAllowVmConstantinople(long allow)
         {
-            ALLOW_TVM_CONSTANTINOPLE = allow == 1;
+            ALLOW_VM_CONSTANTINOPLE = allow == 1;
         }
         #endregion
     }

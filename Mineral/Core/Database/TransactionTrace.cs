@@ -162,7 +162,7 @@ namespace Mineral.Core.Database
 
         public void CheckIsConstant()
         {
-            if (VMConfig.AllowTvmConstantinople)
+            if (VMConfig.AllowVmConstantinople)
             {
                 return;
             }

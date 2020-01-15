@@ -73,7 +73,7 @@ namespace Mineral.Core.Actuator
 
         public override bool Validate()
         {
-            if (!Common.Runtime.Config.VMConfig.AllowTvmConstantinople)
+            if (!Common.Runtime.Config.VMConfig.AllowVmConstantinople)
             {
                 throw new ContractValidateException(
                     "contract type error,unexpected type [ClearABIContract]");

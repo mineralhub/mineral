@@ -1685,10 +1685,10 @@ namespace Mineral.Core.Database
             ConsumeBandwidth(transaction, trace);
             ConsumeMultiSignFee(transaction, trace);
 
-            Common.Runtime.Config.VMConfig.InitVmHardFork();
+            Common.Runtime.Config.VMConfig.IniVmHardFork();
             Common.Runtime.Config.VMConfig.InitAllowMultiSign(this.dynamic_properties_store.GetAllowMultiSign());
-            Common.Runtime.Config.VMConfig.InitAllowTvmTransferTrc10(this.dynamic_properties_store.GetAllowTvmTransferTrc10());
-            Common.Runtime.Config.VMConfig.InitAllowTvmConstantinople(this.dynamic_properties_store.GetAllowTvmConstantinople());
+            Common.Runtime.Config.VMConfig.InitAllowVmTransferTrc10(this.dynamic_properties_store.GetAllowVmTransferTrc10());
+            Common.Runtime.Config.VMConfig.InitAllowVmConstantinople(this.dynamic_properties_store.GetAllowVmConstantinople());
             trace.Init(block, IsEventPluginLoaded);
             trace.CheckIsConstant();
             trace.Execute();
@@ -1716,7 +1716,7 @@ namespace Mineral.Core.Database
             }
 
             trace.Finalization();
-            if (block != null && this.dynamic_properties_store.SupportVM())
+            if (block != null && this.dynamic_properties_store.SupportVm())
             {
                 transaction.SetResultCode(trace.Receipt.Result);
             }
@@ -1745,40 +1745,40 @@ namespace Mineral.Core.Database
                 return;
             }
 
-            int i = 0;
-            ManualResetEvent[] handles = new ManualResetEvent[tx_size];
-
-            foreach (TransactionCapsule tx in block.Transactions)
+            using (ManualResetEvent mre = new ManualResetEvent(false))
             {
-                handles[i] = new ManualResetEvent(false);
-
-                ThreadPool.QueueUserWorkItem((object state) =>
+                foreach (TransactionCapsule tx in block.Transactions)
                 {
-                    object[] parameter = state as object[];
-
-                    DatabaseManager manager = (DatabaseManager)parameter[0];
-                    TransactionCapsule transaction = (TransactionCapsule)parameter[1];
-                    ManualResetEvent mre = (ManualResetEvent)parameter[2];
-
-                    try
+                    ThreadPool.QueueUserWorkItem((object state) =>
                     {
-                        if (!transaction.ValidateSignature(manager))
+                        object[] parameter = state as object[];
+
+                        DatabaseManager manager = (DatabaseManager)parameter[0];
+                        TransactionCapsule transaction = (TransactionCapsule)parameter[1];
+
+                        try
                         {
-                            throw new ValidateSignatureException();
+                            if (!transaction.ValidateSignature(manager))
+                            {
+                                throw new ValidateSignatureException();
+                            }
                         }
-                    }
-                    catch (System.Exception e)
-                    {
-                        throw e;
-                    }
-                    finally
-                    {
-                        mre.Set();
-                    }
-                }, new object[] { this, tx, handles[i] } );
+                        catch (System.Exception e)
+                        {
+                            Logger.Error(e.Message, e);
+                            throw e;
+                        }
+                        finally
+                        {
+                            if (Interlocked.Decrement(ref tx_size) == 0)
+                            {
+                                mre.Set();
+                            }
+                        }
+                    }, new object[] { this, tx });
+                }
+                mre.WaitOne();
             }
-
-            WaitHandle.WaitAll(handles);
         }
 
         public void ValidateTapos(TransactionCapsule transaction)

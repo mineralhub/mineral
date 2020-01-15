@@ -96,11 +96,5 @@ namespace MineralCLI.Shell
             IsRunning = false;
         }
         #endregion
-
-
-
-
-
-
     }
 }

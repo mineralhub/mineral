@@ -286,7 +286,7 @@ namespace Mineral.Core.Witness
             IEnumerator<KeyValuePair<byte[], VotesCapsule>> it = votes_store.GetEnumerator();
             while (it.MoveNext())
             {
-                it.Current.Value.OldVotes.ForEach(vote =>
+                foreach (var vote in it.Current.Value.OldVotes)
                 {
                     ByteString vote_address = vote.VoteAddress;
                     long vote_count = vote.VoteCount;
@@ -300,9 +300,9 @@ namespace Mineral.Core.Witness
                     {
                         count_witness.Put(vote_address, -vote_count);
                     }
-                });
+                }
 
-                it.Current.Value.NewVotes.ForEach(vote =>
+                foreach (var vote in it.Current.Value.NewVotes)
                 {
                     ByteString vote_address = vote.VoteAddress;
                     long vote_count = vote.VoteCount;
@@ -316,7 +316,7 @@ namespace Mineral.Core.Witness
                     {
                         count_witness.Put(vote_address, vote_count);
                     }
-                });
+                }
 
                 count++;
                 votes_store.Delete(it.Current.Key);

@@ -74,7 +74,7 @@ namespace Mineral.Core.Actuator
             List<ByteString> to_accounts = new List<ByteString>(delegate_account_index.ToAccounts);
             if (!to_accounts.Contains(ByteString.CopyFrom(receiver_address)))
             {
-                delegate_account_index.AddToAccount(ByteString.CopyFrom(receiver_address));
+                delegate_account_index.ToAccounts.Add(ByteString.CopyFrom(receiver_address));
             }
             this.db_manager.DelegateResourceAccountIndex.Put(owner_address, delegate_account_index);
 
@@ -85,10 +85,10 @@ namespace Mineral.Core.Actuator
                 delegate_account_index = new DelegatedResourceAccountIndexCapsule(
                     ByteString.CopyFrom(receiver_address));
             }
-            List<ByteString> fromAccountsList = delegate_account_index.FromAccounts;
+            IList<ByteString> fromAccountsList = delegate_account_index.FromAccounts;
             if (!fromAccountsList.Contains(ByteString.CopyFrom(owner_address)))
             {
-                delegate_account_index.AddFromAccount(ByteString.CopyFrom(owner_address));
+                delegate_account_index.FromAccounts.Add(ByteString.CopyFrom(owner_address));
             }
             this.db_manager.DelegateResourceAccountIndex.Put(receiver_address, delegate_account_index);
 

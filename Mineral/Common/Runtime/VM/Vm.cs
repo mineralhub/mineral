@@ -129,12 +129,12 @@ namespace Mineral.Common.Runtime.VM
 
             try
             {
-                if (Enum.IsDefined(typeof(OpCode), program.CurrentOp))
+                if (!Enum.IsDefined(typeof(OpCode), (byte)program.CurrentOp))
                     throw VMExceptions.InvalidOpCode(program.CurrentOp);
 
                 OpCode op = (OpCode)program.CurrentOp;
 
-                if (!VMConfig.AllowTvmTransferTrc10)
+                if (!VMConfig.AllowVmTransferTrc10)
                 {
                     if (op == OpCode.CALLTOKEN || op == OpCode.TOKENBALANCE || op == OpCode.CALLTOKENVALUE || op == OpCode.CALLTOKENID)
                     {
@@ -142,7 +142,7 @@ namespace Mineral.Common.Runtime.VM
                     }
                 }
 
-                if (!VMConfig.AllowTvmConstantinople)
+                if (!VMConfig.AllowVmConstantinople)
                 {
                     if (op == OpCode.SHL || op == OpCode.SHR || op == OpCode.SAR || op == OpCode.CREATE2 || op == OpCode.EXTCODEHASH)
                     {

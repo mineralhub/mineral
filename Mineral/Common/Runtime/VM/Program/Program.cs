@@ -35,11 +35,11 @@ namespace Mineral.Common.Runtime.VM.Program
         private byte[] root_transaction_id = null;
         private InternalTransaction internal_transaction = null;
         private IProgramInvoke invoke = null;
-        private IProgramInvokeFactory invoke_factory = null;
+        private IProgramInvokeFactory invoke_factory = new ProgramInvokeFactory();
         private IProgramOutListener listener = null;
         private ProgramTraceListener trace_listener = null;
-        private ProgramStorageChangeListener storage_diff_listener = null;
-        private CompositeProgramListener program_listener = null;
+        private ProgramStorageChangeListener storage_diff_listener = new ProgramStorageChangeListener();
+        private CompositeProgramListener program_listener = new CompositeProgramListener();
 
         private DataWordStack stack = null;
         private Memory memory = null;
@@ -726,7 +726,7 @@ namespace Mineral.Common.Runtime.VM.Program
             }
             catch (ArithmeticException e)
             {
-                if (VMConfig.AllowTvmConstantinople)
+                if (VMConfig.AllowVmConstantinople)
                     throw new TransferException("endowment out of long range");
                 else
                     throw e;
@@ -781,7 +781,7 @@ namespace Mineral.Common.Runtime.VM.Program
                     }
                     catch (ContractValidateException e)
                     {
-                        if (VMConfig.AllowTvmConstantinople)
+                        if (VMConfig.AllowVmConstantinople)
                         {
                             RefundEnergy(msg.Energy.ToLong(), "refund energy from message call");
                             throw new TransferException("transfer trx failed: " + e.Message);
@@ -799,7 +799,7 @@ namespace Mineral.Common.Runtime.VM.Program
                     }
                     catch (ContractValidateException e)
                     {
-                        if (VMConfig.AllowTvmConstantinople)
+                        if (VMConfig.AllowVmConstantinople)
                         {
                             RefundEnergy(msg.Energy.ToLong(), "refund energy from message call");
                             throw new TransferException("transfer trc10 failed: " + e.Message);
@@ -1062,7 +1062,7 @@ namespace Mineral.Common.Runtime.VM.Program
                 this.contract_state.AddBalance(owner, -balance);
                 byte[] blackhole_address = this.contract_state.GetBlackHoleAddress();
 
-                if (VMConfig.AllowTvmTransferTrc10)
+                if (VMConfig.AllowVmTransferTrc10)
                 {
                     this.contract_state.AddBalance(blackhole_address, balance);
                     MUtil.TransferAllToken(this.contract_state, owner, blackhole_address);
@@ -1073,14 +1073,14 @@ namespace Mineral.Common.Runtime.VM.Program
                 try
                 {
                     MUtil.Transfer(this.contract_state, owner, obtainer, balance);
-                    if (VMConfig.AllowTvmTransferTrc10)
+                    if (VMConfig.AllowVmTransferTrc10)
                     {
                         MUtil.TransferAllToken(this.contract_state, owner, obtainer);
                     }
                 }
                 catch (ContractValidateException e)
                 {
-                    if (VMConfig.AllowTvmConstantinople)
+                    if (VMConfig.AllowVmConstantinople)
                     {
                         throw new TransferException(string.Format(
                             "transfer all token or transfer all trx failed in suicide: %s", e.Message));

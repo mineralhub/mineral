@@ -10,7 +10,7 @@ namespace Mineral.Common.Storage
         public static readonly int VALUE_TYPE_NORMAL = 0;
         public static readonly int VALUE_TYPE_DIRTY = 1 << 0;
         public static readonly int VALUE_TYPE_CREATE = 1 << 1;
-        public static readonly int VALUE_TYPE_UNKNOWN = Convert.ToInt32(0xFFFFFFFC);
+        public static readonly int VALUE_TYPE_UNKNOWN = unchecked((int)0xFFFFFFFC);
 
         protected int type = VALUE_TYPE_NORMAL;
         #endregion

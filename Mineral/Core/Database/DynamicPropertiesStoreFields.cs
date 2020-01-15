@@ -77,8 +77,8 @@ namespace Mineral.Core.Database
         private static readonly byte[] ALLOW_MULTI_SIGN = "ALLOW_MULTI_SIGN".ToBytes();
         private static readonly byte[] TOKEN_ID_NUM = "TOKEN_ID_NUM".ToBytes();
         private static readonly byte[] TOKEN_UPDATE_DONE = "TOKEN_UPDATE_DONE".ToBytes();
-        private static readonly byte[] ALLOW_TVM_TRANSFER_TRC10 = "ALLOW_TVM_TRANSFER_TRC10".ToBytes();
-        private static readonly byte[] ALLOW_TVM_CONSTANTINOPLE = "ALLOW_TVM_CONSTANTINOPLE".ToBytes();
+        private static readonly byte[] ALLOW_VM_TRANSFER_TRC10 = "ALLOW_VM_TRANSFER_TRC10".ToBytes();
+        private static readonly byte[] ALLOW_VM_CONSTANTINOPLE = "ALLOW_VM_CONSTANTINOPLE".ToBytes();
         private static readonly byte[] ALLOW_PROTO_FILTER_NUM = "ALLOW_PROTO_FILTER_NUM".ToBytes();
         private static readonly byte[] AVAILABLE_CONTRACT_TYPE = "AVAILABLE_CONTRACT_TYPE".ToBytes();
         private static readonly byte[] ACTIVE_DEFAULT_OPERATIONS = "ACTIVE_DEFAULT_OPERATIONS".ToBytes();

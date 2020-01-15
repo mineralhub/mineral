@@ -110,9 +110,9 @@ namespace Mineral.Core.Capsule
             get { return this.account.Frozen.Count; }
         }
 
-        public List<Account.Types.Frozen> FrozenList
+        public IList<Account.Types.Frozen> FrozenList
         {
-            get { return new List<Account.Types.Frozen>(this.account.Frozen); }
+            get { return this.account.Frozen; }
         }
 
         public long Allowance
@@ -225,9 +225,9 @@ namespace Mineral.Core.Capsule
             get { return FrozenBalance + AcquiredDelegatedFrozenBalanceForBandwidth; }
         }
 
-        public List<Account.Types.Frozen> FrozenSupplyList
+        public IList<Account.Types.Frozen> FrozenSupplyList
         {
-            get { return new List<Account.Types.Frozen>(this.account.FrozenSupply); }
+            get { return this.account.FrozenSupply; }
         }
 
         public int FrozenSupplyCount
@@ -240,7 +240,10 @@ namespace Mineral.Core.Capsule
             get
             {
                 long frozen_supply_balance = 0;
-                FrozenSupplyList.ForEach(frozen => frozen_supply_balance += frozen.FrozenBalance);
+                foreach (var frozen in FrozenSupplyList)
+                {
+                    frozen_supply_balance += frozen.FrozenBalance;
+                }
                 return frozen_supply_balance;
             }
         }

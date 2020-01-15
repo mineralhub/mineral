@@ -38,10 +38,14 @@ namespace Mineral.Core.Net.RpcHandler
             { RpcCommand.Transaction.GetTransactionsFromThis, new RpcHandler(OnGetTransactionsFromThis) },
             { RpcCommand.Transaction.GetTransactionsToThis, new RpcHandler(OnGetTransactionsToThis) },
             { RpcCommand.Transaction.GetTransactionSignWeight, new RpcHandler(OnGetTransactionSignWeight) },
+            { RpcCommand.Transaction.GetContract, new RpcHandler(OnGetContract) },
             { RpcCommand.Transaction.CreateTransaction, new RpcHandler(OnCreateContract) },
             { RpcCommand.Transaction.BroadcastTransaction, new RpcHandler(OnBroadcastTransaction) },
+            { RpcCommand.Transaction.DeployContract, new RpcHandler(OnDeployContract) },
+            { RpcCommand.Transaction.TriggerContract, new RpcHandler(OnTriggerContract) },
             { RpcCommand.Transaction.ListProposal, new RpcHandler(OnListProposal) },
             { RpcCommand.Transaction.ListProposalPaginated, new RpcHandler(OnListProposalPaginated) },
+            { RpcCommand.Transaction.GetParameters, new RpcHandler(OnGetParameters) },
 
             { RpcCommand.AssetIssue.AssetIssueByAccount, new RpcHandler(OnAssetIssueByAccount) },
             { RpcCommand.AssetIssue.AssetIssueById, new RpcHandler(OnAssetIssueById) },
@@ -100,7 +104,7 @@ namespace Mineral.Core.Net.RpcHandler
 
             try
             {
-                result = JToken.FromObject(RpcApiService.GetListNode());
+                result = JToken.FromObject(RpcApiService.GetListNode().ToByteArray());
             }
             catch (System.Exception e)
             {
@@ -487,7 +491,72 @@ namespace Mineral.Core.Net.RpcHandler
             return true;
         }
 
+        public static bool OnGetContract(JToken id, string method, JArray parameters, out JToken result)
+        {
+            result = new JObject();
+
+            if (parameters == null || parameters.Count != 1)
+            {
+                result = RpcMessage.CreateErrorResult(id, RpcMessage.INVALID_PARAMS, "Invalid parameters");
+                return false;
+            }
+
+            byte[] address = parameters[0].ToObject<byte[]>();
+            if (Manager.Instance.DBManager.Account.Get(address) == null)
+            {
+                result = RpcMessage.CreateErrorResult(id, RpcMessage.INVALID_PARAMS, "Address is empty in account store");
+                return false;
+            }
+
+            ContractCapsule contract = Manager.Instance.DBManager.Contract.Get(address);
+            if (contract == null)
+            {
+                result = RpcMessage.CreateErrorResult(id, RpcMessage.INVALID_PARAMS, "Contract is empty");
+                return false;
+            }
+
+            result = JToken.FromObject(contract.Instance.ToByteArray());
+
+            return true;
+        }
+
         public static bool OnBroadcastTransaction(JToken id, string method, JArray parameters, out JToken result)
+        {
+            result = new JObject();
+
+            if (parameters == null || parameters.Count != 1)
+            {
+                result = RpcMessage.CreateErrorResult(id, RpcMessage.INVALID_PARAMS, "Invalid parameters");
+                return false;
+            }
+
+            Transaction transaction = Transaction.Parser.ParseFrom(parameters[0].ToObject<byte[]>());
+            Return ret = RpcApiService.BroadcastTransaction(transaction);
+
+            result = JToken.FromObject(ret.ToByteArray());
+
+            return true;
+        }
+
+        public static bool OnDeployContract(JToken id, string method, JArray parameters, out JToken result)
+        {
+            result = new JObject();
+
+            if (parameters == null || parameters.Count != 1)
+            {
+                result = RpcMessage.CreateErrorResult(id, RpcMessage.INVALID_PARAMS, "Invalid parameters");
+                return false;
+            }
+
+            CreateSmartContract contract = CreateSmartContract.Parser.ParseFrom(parameters[0].ToObject<byte[]>());
+            TransactionExtention transaction = RpcApiService.CreateTransactionExtention(contract, ContractType.CreateSmartContract);
+
+            result = JToken.FromObject(transaction.ToByteArray());
+
+            return true;
+        }
+
+        public static bool OnTriggerContract(JToken id, string method, JArray parameters, out JToken result)
         {
             result = new JObject();
 
@@ -551,6 +620,25 @@ namespace Mineral.Core.Net.RpcHandler
             {
                 result = RpcMessage.CreateErrorResult(id, RpcMessage.INVALID_PARAMS, e.Message);
                 return false;
+            }
+            catch (System.Exception e)
+            {
+                result = RpcMessage.CreateErrorResult(id, RpcMessage.UNKNOWN_ERROR, e.Message);
+                return false;
+            }
+
+            return true;
+        }
+
+        public static bool OnGetParameters(JToken id, string method, JArray parameters, out JToken result)
+        {
+            result = new JObject();
+
+            try
+            {
+                Protocol.ChainParameters chain_parameters = RpcApiService.GetParameters();
+
+                result = JToken.FromObject(chain_parameters.ToByteArray());
             }
             catch (System.Exception e)
             {

@@ -67,7 +67,7 @@ namespace Mineral.Common.Runtime.VM.Program.Invoke
                     case ExecutorType.ET_NORMAL_TYPE:
                     case ExecutorType.ET_PRE_TYPE:
                         {
-                            if (null != block)
+                            if (block.BlockHeader != null)
                             {
                                 last_hash = block.BlockHeader.RawData.ParentHash.ToByteArray();
                                 coinbase = block.BlockHeader.RawData.WitnessAddress.ToByteArray();

@@ -1539,6 +1539,19 @@ namespace MineralCLI.Util
             return result;
         }
 
+        public static string PrintProposalParameter(ChainParameters parameters)
+        {
+            string result = "\n";
+            foreach (var parameter in parameters.ChainParameter)
+            {
+                result += parameter.Key;
+                result += "  :  ";
+                result += parameter.Value;
+                result += "\n";
+            }
+
+            return result;
+        }
         #endregion
 
         #region AssetIssue
@@ -1701,9 +1714,10 @@ namespace MineralCLI.Util
             {
                 result += "IP::";
                 result += node.Address.Host.ToStringUtf8();
-                result += "\n";
+                result += ",   ";
                 result += "Port::";
                 result += node.Address.Port;
+                result += "\n";
             }
             return result;
         }
