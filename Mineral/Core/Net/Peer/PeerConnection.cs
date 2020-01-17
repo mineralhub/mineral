@@ -34,8 +34,8 @@ namespace Mineral.Core.Net.Peer
         private KeyValuePair<Deque<BlockId>, long> sync_chain_request = default(KeyValuePair<Deque<BlockId>, long>);
         private HashSet<BlockId> sync_block_process = new HashSet<BlockId>();
         private ConcurrentDeque<BlockId> sync_block_fetch = new ConcurrentDeque<BlockId>();
-        private ConcurrentDictionary<BlockId, long> sync_block_request = new ConcurrentDictionary<BlockId, long>();
-        private ConcurrentDictionary<Item, long> inventory_request = new ConcurrentDictionary<Item, long>();
+        private ConcurrentDictionary<BlockId, long> sync_block_request = new ConcurrentDictionary<BlockId, long>(Environment.ProcessorCount * 2, 50000);
+        private ConcurrentDictionary<Item, long> inventory_request = new ConcurrentDictionary<Item, long>(Environment.ProcessorCount * 2, 50000);
 
         private int inventory_cache_size = 100_000;
         private long block_both_have_timestamp = Helper.CurrentTimeMillis();

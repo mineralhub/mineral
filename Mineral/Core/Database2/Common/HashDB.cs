@@ -9,7 +9,7 @@ namespace Mineral.Core.Database2.Common
     public class HashDB : IBaseDB<Key, Value>
     {
         #region Field
-        private ConcurrentDictionary<Key, Value> db = new ConcurrentDictionary<Key, Value>(new KeyEqualComparer());
+        private ConcurrentDictionary<Key, Value> db = new ConcurrentDictionary<Key, Value>(Environment.ProcessorCount * 2, 50000, new KeyEqualComparer());
         #endregion
 
 
