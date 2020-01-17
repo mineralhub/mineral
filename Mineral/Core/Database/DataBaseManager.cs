@@ -1479,47 +1479,42 @@ namespace Mineral.Core.Database
             {
             }
 
-            lock (this.push_transactions)
+            if (this.owner_addresses.IsNotNullOrEmpty())
             {
-                if (this.owner_addresses.IsNotNullOrEmpty())
+                HashSet<string> results = new HashSet<string>();
+                foreach (TransactionCapsule tx in this.repush_transactions)
                 {
-                    HashSet<string> results = new HashSet<string>();
-                    foreach (TransactionCapsule tx in this.repush_transactions)
-                    {
-                        FilterOwnerAddress(tx, results);
-                    }
+                    FilterOwnerAddress(tx, results);
+                }
 
-                    foreach (TransactionCapsule tx in this.push_transactions)
-                    {
-                        FilterOwnerAddress(tx, results);
-                    }
-                    this.owner_addresses.Clear();
+                foreach (TransactionCapsule tx in this.push_transactions)
+                {
+                    FilterOwnerAddress(tx, results);
+                }
 
-                    foreach (string result in results)
-                    {
-                        this.owner_addresses.Add(result);
-                    }
+                this.owner_addresses.Clear();
+                foreach (string result in results)
+                {
+                    this.owner_addresses.Add(result);
                 }
             }
 
             Logger.Info(
-                string.Format("PushBlock block number:{0}, IsGenerateMyself : {1} cost/txs:{2}/{3}",
-                              block.Num,
-                              block.IsGenerateMyself,
-                              Helper.CurrentTimeMillis() - start,
-                              block.Transactions.Count));
+            string.Format("PushBlock block number:{0}, IsGenerateMyself : {1} cost/txs:{2}/{3}",
+                          block.Num,
+                          block.IsGenerateMyself,
+                          Helper.CurrentTimeMillis() - start,
+                          block.Transactions.Count));
         }
 
         public bool PushTransaction(TransactionCapsule transaction)
         {
             bool result = false;
-            lock (this.push_transactions)
-            {
-                this.push_transactions.Enqueue(transaction);
-            }
 
             try
             {
+                this.push_transactions.Enqueue(transaction);
+
                 if (!transaction.ValidateSignature(this))
                 {
                     throw new ValidateSignatureException("Transaction signature validate failed");
