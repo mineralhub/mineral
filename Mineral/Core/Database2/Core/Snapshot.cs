@@ -27,10 +27,7 @@ namespace Mineral.Core.Database2.Core
             this.root = snapshot.GetRoot();
             this.previous = snapshot;
             snapshot.SetNext(this);
-            lock (this)
-            {
-                this.db = new HashDB();
-            }
+            this.db = new HashDB();
         }
         #endregion
 

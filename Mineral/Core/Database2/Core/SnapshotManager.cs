@@ -31,6 +31,7 @@ namespace Mineral.Core.Database2.Core
 
         private List<RevokingDBWithCaching> databases = new List<RevokingDBWithCaching>();
         private Dictionary<string, Task> flush_service = new Dictionary<string, Task>();
+        private object locker = new object();
         private int max_size = DEFAULT_STACK_MAX_SIZE;
         private int size = 0;
         private bool is_disable = true;
@@ -51,7 +52,7 @@ namespace Mineral.Core.Database2.Core
             }
             set
             {
-                lock (this)
+                lock (this.locker)
                 {
                     this.max_size = value;
                 }
