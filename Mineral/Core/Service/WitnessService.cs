@@ -210,7 +210,7 @@ namespace Mineral.Core.Service
             {
                 BlockCapsule block = null;
 
-                lock (this.db_manager)
+                //lock (this.db_manager)
                 {
                     long slot = this.controller.GetSlotAtTime(now);
                     Logger.Debug("Slot : " + slot);
