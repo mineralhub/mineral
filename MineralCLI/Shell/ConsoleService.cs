@@ -13,6 +13,9 @@ namespace MineralCLI.Shell
         #region Field
         private Dictionary<string, CommandHandler> commands = new Dictionary<string, CommandHandler>()
         {
+            // For transaction test
+            { "test", new CommandHandler(BenchMarkCommand.BenchMarkTransaction) },
+
             // NodeCommands
             { RpcCommand.Node.ListNode, new CommandHandler(NodeCommand.ListNode) },
 
