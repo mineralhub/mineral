@@ -73,7 +73,6 @@ namespace Mineral.Core.Net.Service
                     if (peer.GetInventoryReceive(spread.Key) == null
                         && peer.GetInventorySpread(spread.Key) == null)
                     {
-
                         peer.AddInventorySpread(spread.Key, Helper.CurrentTimeMillis());
                         sender.Add(spread.Key, peer);
                     }
