@@ -942,7 +942,7 @@ namespace Mineral.Core.Database
             {
                 slot = this.witness_controller.GetSlotAtTime(block.Timestamp);
                 Logger.Refactoring(
-                    string.Format("Slot {0} Block {1}", slot.ToString(), block.Num.ToString()));
+                    string.Format("Slot {0} Block {1} Tx {2}", slot.ToString(), block.Num.ToString(), block.Transactions.Count));
             }
             for (int i = 1; i < slot; ++i)
             {
