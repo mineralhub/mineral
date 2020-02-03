@@ -1657,7 +1657,7 @@ namespace Mineral.Core.Database
             TransactionInfo result;
 
             Profiler.SetLogger(Logger.Refactoring);
-            using (Profiler.Measure("ProcessTransaction"))
+            using (Profiler.Measure(debug_message + "ProcessTransaction"))
             {
                 if (transaction == null)
                 {
