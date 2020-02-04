@@ -37,7 +37,6 @@ namespace Mineral.Core.Net.Peer
         private ConcurrentDictionary<BlockId, long> sync_block_request = new ConcurrentDictionary<BlockId, long>(Environment.ProcessorCount * 2, 50000);
         private ConcurrentDictionary<Item, long> inventory_request = new ConcurrentDictionary<Item, long>(Environment.ProcessorCount * 2, 50000);
 
-        private int inventory_cache_size = 100_000;
         private long block_both_have_timestamp = Helper.CurrentTimeMillis();
         private long remain_num = 0;
         private bool need_sync_peer = false;

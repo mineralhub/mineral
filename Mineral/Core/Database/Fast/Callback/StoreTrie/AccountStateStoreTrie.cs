@@ -16,7 +16,6 @@ namespace Mineral.Core.Database.Fast.Callback.StoreTrie
 
 
         #region Property
-#pragma warning disable CS0108
         public long Size => throw new NotImplementedException();
         public bool IsEmpty => base.Size <= 0;
         #endregion
