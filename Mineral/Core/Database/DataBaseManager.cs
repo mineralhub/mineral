@@ -522,109 +522,123 @@ namespace Mineral.Core.Database
                                                 long postponed_tx_Count,
                                                 bool is_pendding_transaction)
         {
-            if (Helper.CurrentTimeMillis() - when
-                > Parameter.ChainParameters.BLOCK_PRODUCED_INTERVAL * 0.5 * Args.Instance.Node.BlockProducedTimeout / 100)
+            using (Profiler.Measure("Inner process"))
             {
-                Logger.Warning("Processing transaction time exceeds the 50% producing time。");
-                return false;
-            }
-
-            if ((block.Instance.CalculateSize() + transaction.Instance.CalculateSize() + 3) > Parameter.ChainParameters.BLOCK_SIZE)
-            {
-                postponed_tx_Count++;
-                return true;
-            }
-
-            Contract contract = transaction.Instance.RawData.Contract[0];
-            byte[] owner = TransactionCapsule.GetOwner(contract);
-            string owner_address = owner.ToHexString();
-
-            if (accounts.Contains(owner_address))
-            {
-                return true;
-            }
-            else
-            {
-                if (IsMultSignTransaction(transaction.Instance))
+                Profiler.PushFrame("Step-1");
+                if (Helper.CurrentTimeMillis() - when
+                    > Parameter.ChainParameters.BLOCK_PRODUCED_INTERVAL * 0.5 * Args.Instance.Node.BlockProducedTimeout / 100)
                 {
-                    accounts.Add(owner_address);
+                    Logger.Warning("Processing transaction time exceeds the 50% producing time。");
+                    return false;
                 }
-            }
 
-            if (this.owner_addresses.Contains(owner_address))
-            {
-                transaction.IsVerified = false;
-            }
-
-            try
-            {
-                using (ISession temp_session = this.revoking_store.BuildSession())
+                Profiler.NextFrame("Step-2");
+                if ((block.Instance.CalculateSize() + transaction.Instance.CalculateSize() + 3) > Parameter.ChainParameters.BLOCK_SIZE)
                 {
-                    Manager.Instance.FastSyncCallback.PreExecuteTrans();
-                    ProcessTransaction(transaction, block, "Pending");
-                    Manager.Instance.FastSyncCallback.ExecuteTransFinish();
+                    postponed_tx_Count++;
+                    return true;
+                }
 
-                    temp_session.Merge();
-                    block.AddTransaction(transaction);
-                    if (is_pendding_transaction)
+                Profiler.NextFrame("Step-3");
+                Contract contract = transaction.Instance.RawData.Contract[0];
+                byte[] owner = TransactionCapsule.GetOwner(contract);
+                string owner_address = owner.ToHexString();
+
+                if (accounts.Contains(owner_address))
+                {
+                    return true;
+                }
+                else
+                {
+                    if (IsMultSignTransaction(transaction.Instance))
                     {
-                        this.pending_transactions.TryTake(out _);
+                        accounts.Add(owner_address);
                     }
                 }
-            }
-            catch (ContractExeException e)
-            {
-                Logger.Info("Contract not processed during execute");
-                Logger.Debug(e.Message);
-            }
-            catch (ContractValidateException e)
-            {
-                Logger.Info("Contract not processed during validate");
-                Logger.Debug(e.Message);
-            }
-            catch (TaposException e)
-            {
-                Logger.Info("Contract not processed during TaposException");
-                Logger.Debug(e.Message);
-            }
-            catch (DupTransactionException e)
-            {
-                Logger.Info("Contract not processed during DupTransactionException");
-                Logger.Debug(e.Message);
-            }
-            catch (TooBigTransactionException e)
-            {
-                Logger.Info("Contract not processed during TooBigTransactionException");
-                Logger.Debug(e.Message);
-            }
-            catch (TooBigTransactionResultException e)
-            {
-                Logger.Info("Contract not processed during TooBigTransactionResultException");
-                Logger.Debug(e.Message);
-            }
-            catch (TransactionExpirationException e)
-            {
-                Logger.Info("Contract not processed during TransactionExpirationException");
-                Logger.Debug(e.Message);
-            }
-            catch (AccountResourceInsufficientException e)
-            {
-                Logger.Info("Contract not processed during AccountResourceInsufficientException");
-                Logger.Debug(e.Message);
-            }
-            catch (ValidateSignatureException e)
-            {
-                Logger.Info("Contract not processed during ValidateSignatureException");
-                Logger.Debug(e.Message);
-            }
-            catch (ReceiptCheckErrorException e)
-            {
-                Logger.Info("OutOfSlotTime exception : " + e.Message);
-                Logger.Debug(e.Message);
-            }
-            catch (VMIllegalException e)
-            {
-                Logger.Warning(e.Message);
+
+                Profiler.NextFrame("Step-4");
+                if (this.owner_addresses.Contains(owner_address))
+                {
+                    transaction.IsVerified = false;
+                }
+
+                try
+                {
+                    using (ISession temp_session = this.revoking_store.BuildSession())
+                    {
+                        Profiler.NextFrame("Step-5");
+                        Manager.Instance.FastSyncCallback.PreExecuteTrans();
+                        Profiler.NextFrame("Step-6");
+                        ProcessTransaction(transaction, block, "Pending");
+                        Profiler.NextFrame("Step-7");
+                        Manager.Instance.FastSyncCallback.ExecuteTransFinish();
+
+                        Profiler.NextFrame("Step-8");
+                        temp_session.Merge();
+                        Profiler.NextFrame("Step-9");
+                        block.AddTransaction(transaction);
+                        Profiler.NextFrame("Step-10");
+                        if (is_pendding_transaction)
+                        {
+                            this.pending_transactions.TryTake(out _);
+                        }
+                        Profiler.PopFrame();
+                    }
+                }
+                catch (ContractExeException e)
+                {
+                    Logger.Info("Contract not processed during execute");
+                    Logger.Debug(e.Message);
+                }
+                catch (ContractValidateException e)
+                {
+                    Logger.Info("Contract not processed during validate");
+                    Logger.Debug(e.Message);
+                }
+                catch (TaposException e)
+                {
+                    Logger.Info("Contract not processed during TaposException");
+                    Logger.Debug(e.Message);
+                }
+                catch (DupTransactionException e)
+                {
+                    Logger.Info("Contract not processed during DupTransactionException");
+                    Logger.Debug(e.Message);
+                }
+                catch (TooBigTransactionException e)
+                {
+                    Logger.Info("Contract not processed during TooBigTransactionException");
+                    Logger.Debug(e.Message);
+                }
+                catch (TooBigTransactionResultException e)
+                {
+                    Logger.Info("Contract not processed during TooBigTransactionResultException");
+                    Logger.Debug(e.Message);
+                }
+                catch (TransactionExpirationException e)
+                {
+                    Logger.Info("Contract not processed during TransactionExpirationException");
+                    Logger.Debug(e.Message);
+                }
+                catch (AccountResourceInsufficientException e)
+                {
+                    Logger.Info("Contract not processed during AccountResourceInsufficientException");
+                    Logger.Debug(e.Message);
+                }
+                catch (ValidateSignatureException e)
+                {
+                    Logger.Info("Contract not processed during ValidateSignatureException");
+                    Logger.Debug(e.Message);
+                }
+                catch (ReceiptCheckErrorException e)
+                {
+                    Logger.Info("OutOfSlotTime exception : " + e.Message);
+                    Logger.Debug(e.Message);
+                }
+                catch (VMIllegalException e)
+                {
+                    Logger.Warning(e.Message);
+                }
             }
 
             return true;
@@ -1279,9 +1293,8 @@ namespace Mineral.Core.Database
                         break;
                     }
                 }
-                Profiler.PopFrame();
 
-                Profiler.PushFrame("RePush transaction");
+                Profiler.NextFrame("RePush transaction");
                 while (this.repush_transactions.Count > 0)
                 {
                     if (this.repush_transactions.TryDequeue(out TransactionCapsule transaction))
