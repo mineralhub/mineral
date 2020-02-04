@@ -1644,6 +1644,7 @@ namespace Mineral.Core.Database
                 processor.UpdateTotalEnergyAverageUsage();
                 processor.UpdateAdaptiveTotalEnergyLimit();
             }
+
             UpdateSignedWitness(block);
             UpdateLatestSolidifiedBlock();
             UpdateTransHashCache(block);
