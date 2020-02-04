@@ -300,8 +300,8 @@ namespace Mineral.Core.Service
                 Logger.Refactoring(
                     string.Format("Produce block successfully, block number {0}", block.Num));
 
-                ThreadPool.GetMinThreads(out int worker, out int io);
-                Logger.Refactoring(string.Format("ThreadPool count worker {0}, io {1}", worker, io));
+                ThreadPool.GetAvailableThreads(out int worker, out int io);
+                Logger.Refactoring(string.Format("ThreadPool available count worker {0}, io {1}", worker, io));
 
                 BroadcastBlock(block);
 

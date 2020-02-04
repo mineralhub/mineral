@@ -1264,33 +1264,40 @@ namespace Mineral.Core.Database
             }
 
             HashSet<string> accounts = new HashSet<string>();
-            foreach (var transaction in this.pending_transactions)
+            using (Profiler.Measure("GenerateBlock Transaction Pending"))
             {
-                if (!ProcessPenddingTransaction(transaction,
-                                                when,
-                                                block,
-                                                accounts,
-                                                postponed_tx_count,
-                                                true))
-                {
-                    break;
-                }
-            }
-
-            while (this.repush_transactions.Count > 0)
-            {
-                if (this.repush_transactions.TryDequeue(out TransactionCapsule transaction))
+                Profiler.PushFrame("Pendign transaction");
+                foreach (var transaction in this.pending_transactions)
                 {
                     if (!ProcessPenddingTransaction(transaction,
-                                when,
-                                block,
-                                accounts,
-                                postponed_tx_count,
-                                true))
+                                                    when,
+                                                    block,
+                                                    accounts,
+                                                    postponed_tx_count,
+                                                    true))
                     {
                         break;
                     }
                 }
+                Profiler.PopFrame();
+
+                Profiler.PushFrame("RePush transaction");
+                while (this.repush_transactions.Count > 0)
+                {
+                    if (this.repush_transactions.TryDequeue(out TransactionCapsule transaction))
+                    {
+                        if (!ProcessPenddingTransaction(transaction,
+                                    when,
+                                    block,
+                                    accounts,
+                                    postponed_tx_count,
+                                    true))
+                        {
+                            break;
+                        }
+                    }
+                }
+                Profiler.PopFrame();
             }
 
             Manager.Instance.FastSyncCallback.ExecuteGenerateFinish();
@@ -1655,88 +1662,81 @@ namespace Mineral.Core.Database
 
         public TransactionInfo ProcessTransaction(TransactionCapsule transaction, BlockCapsule block, string debug_message)
         {
-            TransactionInfo result;
-
-            Profiler.SetLogger(Logger.Refactoring);
-            using (Profiler.Measure(debug_message + "ProcessTransaction"))
+            if (transaction == null)
             {
-                if (transaction == null)
-                {
-                    return null;
-                }
-
-                ValidateTapos(transaction);
-                ValidateCommon(transaction);
-
-                if (transaction.Instance.RawData.Contract.Count != 1)
-                {
-                    throw new ContractSizeNotEqualToOneException("Act size should be exactly 1, this is extend feature");
-                }
-
-                ValidateDup(transaction);
-
-                if (!transaction.ValidateSignature(this))
-                {
-                    throw new ValidateSignatureException("Transaction signature validate failed");
-                }
-
-                TransactionTrace trace = new TransactionTrace(transaction, this);
-                transaction.TransactionTrace = trace;
-
-                ConsumeBandwidth(transaction, trace);
-                ConsumeMultiSignFee(transaction, trace);
-
-                Common.Runtime.Config.VMConfig.IniVmHardFork();
-                Common.Runtime.Config.VMConfig.InitAllowMultiSign(this.dynamic_properties_store.GetAllowMultiSign());
-                Common.Runtime.Config.VMConfig.InitAllowVmTransferTrc10(this.dynamic_properties_store.GetAllowVmTransferTrc10());
-                Common.Runtime.Config.VMConfig.InitAllowVmConstantinople(this.dynamic_properties_store.GetAllowVmConstantinople());
-                trace.Init(block, IsEventPluginLoaded);
-                trace.CheckIsConstant();
-                trace.Execute();
-
-                if (block != null)
-                {
-                    trace.SetResult();
-                    if (!block.Instance.BlockHeader.WitnessSignature.IsEmpty)
-                    {
-                        if (trace.CheckNeedRetry())
-                        {
-                            string tx_id = transaction.Id.Hash.ToHexString();
-                            Logger.Info("Retry for tx id : " + tx_id);
-                            trace.Init(block, IsEventPluginLoaded);
-                            trace.CheckIsConstant();
-                            trace.Execute();
-                            trace.SetResult();
-                            Logger.Info(
-                                string.Format("Retry result for tx id: {0}, tx result code in receipt: {1}",
-                                              tx_id,
-                                              trace.Receipt.Result));
-                        }
-                        trace.Check();
-                    }
-                }
-
-                trace.Finalization();
-                if (block != null && this.dynamic_properties_store.SupportVm())
-                {
-                    transaction.SetResultCode(trace.Receipt.Result);
-                }
-
-                this.transaction_store.Put(transaction.Id.Hash, transaction);
-                this.transaction_cache?.Put(transaction.Id.Hash, new BytesCapsule(BitConverter.GetBytes(transaction.BlockNum)));
-
-                TransactionInfoCapsule transaction_info = TransactionInfoCapsule.BuildInstance(transaction, block, trace);
-                this.transaction_history_store.Put(transaction.Id.Hash, transaction_info);
-
-                PostContractTrigger(trace, false);
-                if (IsMultSignTransaction(transaction.Instance))
-                {
-                    this.owner_addresses.Add(TransactionCapsule.GetOwner(transaction.Instance.RawData.Contract[0]).ToHexString());
-                }
-                result = transaction_info.Instance;
+                return null;
             }
 
-            return result;
+            ValidateTapos(transaction);
+            ValidateCommon(transaction);
+
+            if (transaction.Instance.RawData.Contract.Count != 1)
+            {
+                throw new ContractSizeNotEqualToOneException("Act size should be exactly 1, this is extend feature");
+            }
+
+            ValidateDup(transaction);
+
+            if (!transaction.ValidateSignature(this))
+            {
+                throw new ValidateSignatureException("Transaction signature validate failed");
+            }
+
+            TransactionTrace trace = new TransactionTrace(transaction, this);
+            transaction.TransactionTrace = trace;
+
+            ConsumeBandwidth(transaction, trace);
+            ConsumeMultiSignFee(transaction, trace);
+
+            Common.Runtime.Config.VMConfig.IniVmHardFork();
+            Common.Runtime.Config.VMConfig.InitAllowMultiSign(this.dynamic_properties_store.GetAllowMultiSign());
+            Common.Runtime.Config.VMConfig.InitAllowVmTransferTrc10(this.dynamic_properties_store.GetAllowVmTransferTrc10());
+            Common.Runtime.Config.VMConfig.InitAllowVmConstantinople(this.dynamic_properties_store.GetAllowVmConstantinople());
+            trace.Init(block, IsEventPluginLoaded);
+            trace.CheckIsConstant();
+            trace.Execute();
+
+            if (block != null)
+            {
+                trace.SetResult();
+                if (!block.Instance.BlockHeader.WitnessSignature.IsEmpty)
+                {
+                    if (trace.CheckNeedRetry())
+                    {
+                        string tx_id = transaction.Id.Hash.ToHexString();
+                        Logger.Info("Retry for tx id : " + tx_id);
+                        trace.Init(block, IsEventPluginLoaded);
+                        trace.CheckIsConstant();
+                        trace.Execute();
+                        trace.SetResult();
+                        Logger.Info(
+                            string.Format("Retry result for tx id: {0}, tx result code in receipt: {1}",
+                                          tx_id,
+                                          trace.Receipt.Result));
+                    }
+                    trace.Check();
+                }
+            }
+
+            trace.Finalization();
+            if (block != null && this.dynamic_properties_store.SupportVm())
+            {
+                transaction.SetResultCode(trace.Receipt.Result);
+            }
+
+            this.transaction_store.Put(transaction.Id.Hash, transaction);
+            this.transaction_cache?.Put(transaction.Id.Hash, new BytesCapsule(BitConverter.GetBytes(transaction.BlockNum)));
+
+            TransactionInfoCapsule transaction_info = TransactionInfoCapsule.BuildInstance(transaction, block, trace);
+            this.transaction_history_store.Put(transaction.Id.Hash, transaction_info);
+
+            PostContractTrigger(trace, false);
+            if (IsMultSignTransaction(transaction.Instance))
+            {
+                this.owner_addresses.Add(TransactionCapsule.GetOwner(transaction.Instance.RawData.Contract[0]).ToHexString());
+            }
+
+            return transaction_info.Instance;
         }
 
         public void PreValidateTransactionSign(BlockCapsule block)
