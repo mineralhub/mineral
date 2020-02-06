@@ -556,7 +556,6 @@ namespace Mineral.Core.Database
                     }
                 }
 
-                Profiler.NextFrame("Step-4");
                 if (this.owner_addresses.Contains(owner_address))
                 {
                     transaction.IsVerified = false;
@@ -564,6 +563,8 @@ namespace Mineral.Core.Database
 
                 try
                 {
+
+                    Profiler.NextFrame("Step-4");
                     using (ISession temp_session = this.revoking_store.BuildSession())
                     {
                         Profiler.NextFrame("Step-5");

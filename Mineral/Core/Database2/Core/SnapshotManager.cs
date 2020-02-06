@@ -242,25 +242,40 @@ namespace Mineral.Core.Database2.Core
         [MethodImpl(MethodImplOptions.Synchronized)]
         public ISession BuildSession(bool force_enable)
         {
-            if (this.is_disable && !force_enable)
-                return new Session(this);
+            ISession session = null;
 
-            bool disable_exit = this.is_disable && force_enable;
-            if (force_enable)
-                this.is_disable = false;
-
-            if (this.size > this.max_size)
+            using (Profiler.Measure("BuildSession"))
             {
-                this.flush_count = this.flush_count + (this.size - this.max_size);
-                UpdateSolidity(this.size - this.max_size);
-                this.size = this.max_size;
-                Flush();
+                Profiler.PushFrame("Step-4-1");
+                if (this.is_disable && !force_enable)
+                    return new Session(this);
+
+                Profiler.NextFrame("Step-4-2");
+                bool disable_exit = this.is_disable && force_enable;
+                if (force_enable)
+                    this.is_disable = false;
+
+                if (this.size > this.max_size)
+                {
+                    Profiler.NextFrame("Step-4-3");
+                    this.flush_count = this.flush_count + (this.size - this.max_size);
+                    UpdateSolidity(this.size - this.max_size);
+                    Profiler.NextFrame("Step-4-4");
+                    this.size = this.max_size;
+                    Flush();
+                }
+
+                Profiler.NextFrame("Step-4-5");
+                Advance();
+                Profiler.NextFrame("Step-4-6");
+                ++this.active_session;
+
+                Profiler.NextFrame("Step-4-7");
+                session = new Session(this, disable_exit);
+                Profiler.PopFrame();
             }
 
-            Advance();
-            ++this.active_session;
-
-            return new Session(this, disable_exit);
+            return session;
         }
 
         public void Add(IRevokingDB revoking_db)

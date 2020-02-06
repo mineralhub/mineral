@@ -98,10 +98,9 @@ namespace Mineral.Core.Database2.Core
 
         public override void Merge(ISnapshot snapshot)
         {
-            HashDB hash_db = null;
             if (((Snapshot)snapshot).db is HashDB)
             {
-                hash_db = (HashDB)((Snapshot)snapshot).db;
+                HashDB hash_db = (HashDB)((Snapshot)snapshot).db;
                 IEnumerator<KeyValuePair<Key, Value>> it = hash_db.GetEnumerator();
 
                 while (it.MoveNext())
