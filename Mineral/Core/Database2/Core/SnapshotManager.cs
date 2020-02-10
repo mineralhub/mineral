@@ -296,9 +296,9 @@ namespace Mineral.Core.Database2.Core
             {
                 Profiler.PushFrame("step-1");
                 this.databases.ForEach(db => db.GetHead().GetPrevious().Merge(db.GetHead()));
-                Profiler.PushFrame("step-2");
+                Profiler.NextFrame("step-2");
                 Retreat();
-                Profiler.PushFrame("step-3");
+                Profiler.NextFrame("step-3");
                 --this.active_session;
                 Profiler.PopFrame();
             }
