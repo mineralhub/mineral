@@ -292,9 +292,15 @@ namespace Mineral.Core.Database2.Core
             if (this.size < 2)
                 return;
 
-            this.databases.ForEach(db => db.GetHead().GetPrevious().Merge(db.GetHead()));
-            Retreat();
-            --this.active_session;
+            using (Profiler.Measure("Snapshot-Merge"))
+            {
+                Profiler.PushFrame("step-1");
+                this.databases.ForEach(db => db.GetHead().GetPrevious().Merge(db.GetHead()));
+                Profiler.PushFrame("step-2");
+                Retreat();
+                Profiler.PushFrame("step-3");
+                --this.active_session;
+            }
         }
 
         [MethodImpl(MethodImplOptions.Synchronized)]
