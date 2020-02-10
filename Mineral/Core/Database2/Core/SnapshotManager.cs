@@ -309,15 +309,12 @@ namespace Mineral.Core.Database2.Core
                     Profiler.NextFrame(string.Format("{0} step{1}", i, 4));
                     snap.Merge(head);
                     i++;
+                    Profiler.PopFrame();
                 }
 
                 //this.databases.ForEach(db => db.GetHead().GetPrevious().Merge(db.GetHead()));
                 Retreat();
                 --this.active_session;
-                if (i > 0)
-                {
-                    Profiler.PopFrame();
-                }
             }
         }
 
