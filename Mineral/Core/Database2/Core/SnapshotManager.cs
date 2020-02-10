@@ -73,21 +73,13 @@ namespace Mineral.Core.Database2.Core
         #region Internal Method
         private void Advance()
         {
-            int length = this.databases.Count;
-            for (int i = 0; i < length; i++)
-            {
-                this.databases[i].SetHead(this.databases[i].GetHead().Advance());
-            }
+            this.databases.ForEach(db => db.SetHead(db.GetHead().Advance()));
             ++size;
         }
 
         private void Retreat()
         {
-            int length = this.databases.Count;
-            for (int i = 0; i < length; i++)
-            {
-                this.databases[i].SetHead(this.databases[i].GetHead().Retreat());
-            }
+            this.databases.ForEach(db => db.SetHead(db.GetHead().Retreat()));
             --size;
         }
 
@@ -95,12 +87,11 @@ namespace Mineral.Core.Database2.Core
         {
             try
             {
+                int i = 0;
                 ManualResetEvent[] handles = new ManualResetEvent[this.databases.Count];
 
-                int length = this.databases.Count;
-                for (int i = 0; i < length; i++)
+                foreach (RevokingDBWithCaching db in this.databases)
                 {
-                    RevokingDBWithCaching db = this.databases[i];
                     handles[i] = new ManualResetEvent(false);
                     RefreshData data = new RefreshData()
                     {
@@ -125,6 +116,7 @@ namespace Mineral.Core.Database2.Core
                             item.MRE.Set();
                         }
                     }, data);
+                    i++;
                 }
 
                 WaitHandle.WaitAll(handles);
@@ -199,10 +191,8 @@ namespace Mineral.Core.Database2.Core
         {
             // Do not use compare
             Dictionary<byte[], byte[]> batch = new Dictionary<byte[], byte[]>();
-            int length = this.databases.Count;
-            for (int j = 0; j < length; j++)
+            foreach (RevokingDBWithCaching db in this.databases)
             {
-                RevokingDBWithCaching db = this.databases[j];
                 ISnapshot head = db.GetHead();
                 if (Snapshot.IsRoot(head))
                     return;
@@ -305,13 +295,7 @@ namespace Mineral.Core.Database2.Core
             using (Profiler.Measure("Snapshot-Merge"))
             {
                 Profiler.PushFrame("Merge");
-                int length = this.databases.Count;
-                for (int i = 0; i < length; i++)
-                {
-                    RevokingDBWithCaching db = this.databases[i];
-                    db.GetHead().GetPrevious().Merge(db.GetHead());
-                }
-                //this.databases.ForEach(db => db.GetHead().GetPrevious().Merge(db.GetHead()));
+                this.databases.ForEach(db => db.GetHead().GetPrevious().Merge(db.GetHead()));
                 Profiler.NextFrame("Retreat");
                 Retreat();
                 Profiler.NextFrame("active session");
@@ -424,13 +408,7 @@ namespace Mineral.Core.Database2.Core
 
                 }
 
-
-                int length = this.databases.Count;
-                for (int i = 0; i < length; i++)
-                {
-                    RevokingDBWithCaching db = this.databases[i];
-                    db.GetHead().GetRoot().Merge(db.GetHead());
-                }
+                this.databases.ForEach(db => db.GetHead().GetRoot().Merge(db.GetHead()));
                 Retreat();
             }
 
