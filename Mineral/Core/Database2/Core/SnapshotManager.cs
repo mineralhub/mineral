@@ -314,7 +314,10 @@ namespace Mineral.Core.Database2.Core
                 //this.databases.ForEach(db => db.GetHead().GetPrevious().Merge(db.GetHead()));
                 Retreat();
                 --this.active_session;
-                Profiler.PopFrame();
+                if (i > 0)
+                {
+                    Profiler.PopFrame();
+                }
             }
         }
 
