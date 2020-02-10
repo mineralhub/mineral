@@ -297,6 +297,17 @@ namespace Mineral.Core.Database2.Core
                 int i = 0;
                 ISnapshot snap = null;
                 ISnapshot head = null;
+
+
+                Profiler.PushFrame("loop");
+                foreach (var db in this.databases)
+                {
+
+                }
+                Profiler.PopFrame();
+
+
+
                 foreach (var db in this.databases)
                 {
                     Profiler.PushFrame(string.Format("{0} step{1}", i, 1));
