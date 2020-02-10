@@ -100,11 +100,20 @@ namespace Mineral.Core.Database2.Core
         {
             if (((Snapshot)snapshot).db is HashDB)
             {
-                HashDB hash_db = (HashDB)((Snapshot)snapshot).db;
-                IEnumerator<KeyValuePair<Key, Value>> it = hash_db.GetEnumerator();
+                using (Profiler.Measure("Merge"))
+                {
+                    Profiler.PushFrame("Step-1");
+                    HashDB hash_db = (HashDB)((Snapshot)snapshot).db;
+                    IEnumerator<KeyValuePair<Key, Value>> it = hash_db.GetEnumerator();
 
-                while (it.MoveNext())
-                    this.db.Put(it.Current.Key, it.Current.Value);
+                    Profiler.NextFrame("Step-2");
+                    while (it.MoveNext())
+                    {
+                        Profiler.NextFrame("step-3");
+                        this.db.Put(it.Current.Key, it.Current.Value);
+                    }
+                    Profiler.PopFrame();
+                }
             }
         }
 
