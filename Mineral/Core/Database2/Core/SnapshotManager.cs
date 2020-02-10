@@ -299,14 +299,14 @@ namespace Mineral.Core.Database2.Core
                 ISnapshot head = null;
                 foreach (var db in this.databases)
                 {
-                    Profiler.PushFrame(i + "step-1");
+                    Profiler.PushFrame(string.Format("{0} step{1}", i, 1));
                     head = db.GetHead();
-                    Profiler.NextFrame(i + "step-2");
-                    
+                    Profiler.NextFrame(string.Format("{0} step{1}", i, 2));
+
                     snap = db.GetHead();
-                    Profiler.NextFrame(i + "step-2");
+                    Profiler.NextFrame(string.Format("{0} step{1}", i, 3));
                     snap = snap.GetPrevious();
-                    Profiler.NextFrame(i + "step-2");
+                    Profiler.NextFrame(string.Format("{0} step{1}", i, 4));
                     snap.Merge(head);
                     i++;
                 }
