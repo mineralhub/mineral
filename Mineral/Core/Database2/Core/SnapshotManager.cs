@@ -294,37 +294,9 @@ namespace Mineral.Core.Database2.Core
 
             using (Profiler.Measure("Snapshot-Merge"))
             {
-                int i = 0;
-                ISnapshot snap = null;
-                ISnapshot head = null;
-
-
-                Profiler.PushFrame("loop");
-                foreach (var db in this.databases)
-                {
-
-                }
-                Profiler.PopFrame();
-
-
-
-                foreach (var db in this.databases)
-                {
-                    Profiler.PushFrame(string.Format("{0} step{1}", i, 1));
-                    head = db.GetHead();
-                    Profiler.NextFrame(string.Format("{0} step{1}", i, 2));
-
-                    snap = db.GetHead();
-                    Profiler.NextFrame(string.Format("{0} step{1}", i, 3));
-                    snap = snap.GetPrevious();
-                    Profiler.NextFrame(string.Format("{0} step{1}", i, 4));
-                    snap.Merge(head);
-                    i++;
-                    Profiler.PopFrame();
-                }
-
-                //this.databases.ForEach(db => db.GetHead().GetPrevious().Merge(db.GetHead()));
-                Profiler.PushFrame("Retreat");
+                Profiler.PushFrame("Merge");
+                this.databases.ForEach(db => db.GetHead().GetPrevious().Merge(db.GetHead()));
+                Profiler.NextFrame("Retreat");
                 Retreat();
                 Profiler.NextFrame("active session");
                 --this.active_session;
