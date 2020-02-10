@@ -300,6 +300,7 @@ namespace Mineral.Core.Database2.Core
                 Retreat();
                 Profiler.PushFrame("step-3");
                 --this.active_session;
+                Profiler.PopFrame();
             }
         }
 
