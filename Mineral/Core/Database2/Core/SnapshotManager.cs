@@ -295,7 +295,7 @@ namespace Mineral.Core.Database2.Core
             using (Profiler.Measure("Snapshot-Merge"))
             {
                 Profiler.PushFrame("Merge");
-                this.databases.ForEach(db => db.GetHead().GetPrevious().Merge(db.GetHead()));
+                //this.databases.ForEach(db => db.GetHead().GetPrevious().Merge(db.GetHead()));
                 Profiler.NextFrame("Retreat");
                 Retreat();
                 Profiler.NextFrame("active session");
