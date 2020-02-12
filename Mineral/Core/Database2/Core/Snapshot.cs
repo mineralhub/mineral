@@ -99,7 +99,6 @@ namespace Mineral.Core.Database2.Core
         public override void Merge(ISnapshot snapshot)
         {
             Snapshot from = (Snapshot)snapshot;
-
             foreach (KeyValuePair<Key, Value> pair in from.db)
             {
                 this.db.Put(pair.Key, pair.Value);

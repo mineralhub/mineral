@@ -295,12 +295,23 @@ namespace Mineral.Core.Database2.Core
             using (Profiler.Measure("Snapshot-Merge"))
             {
                 Profiler.PushFrame("Merge");
-                this.databases.ForEach(db => db.GetHead().GetPrevious().Merge(db.GetHead()));
-                Profiler.NextFrame("Retreat");
-                Retreat();
-                Profiler.NextFrame("active session");
-                --this.active_session;
+                int length = this.databases.Count;
+
+                ISnapshot src, dst;
+                RevokingDBWithCaching db = null;
+                for (int i = 0; i < length; i++)
+                {
+                    Profiler.NextFrame(string.Format("{0} db - 1", i));
+                    db = this.databases[i];
+                    src = db.GetHead().GetPrevious();
+                    dst = db.GetHead();
+                    Profiler.NextFrame(string.Format("{0} db - 2", i));
+                    src.Merge(dst);
+                }
                 Profiler.PopFrame();
+                //this.databases.ForEach(db => db.GetHead().GetPrevious().Merge(db.GetHead()));
+                Retreat();
+                --this.active_session;
             }
         }
 
