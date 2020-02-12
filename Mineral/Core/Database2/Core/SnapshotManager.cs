@@ -73,13 +73,19 @@ namespace Mineral.Core.Database2.Core
         #region Internal Method
         private void Advance()
         {
-            this.databases.ForEach(db => db.SetHead(db.GetHead().Advance()));
+            Parallel.ForEach(this.databases, db =>
+            {
+                db.SetHead(db.GetHead().Advance());
+            });
             ++size;
         }
 
         private void Retreat()
         {
-            this.databases.ForEach(db => db.SetHead(db.GetHead().Retreat()));
+            Parallel.ForEach(this.databases, db =>
+            {
+                db.SetHead(db.GetHead().Retreat());
+            });
             --size;
         }
 
@@ -412,7 +418,10 @@ namespace Mineral.Core.Database2.Core
 
                 }
 
-                this.databases.ForEach(db => db.GetHead().GetRoot().Merge(db.GetHead()));
+                Parallel.ForEach(this.databases, db =>
+                {
+                    db.GetHead().GetRoot().Merge(db.GetHead());
+                });
                 Retreat();
             }
 
@@ -444,7 +453,10 @@ namespace Mineral.Core.Database2.Core
 
         public void SetMode(bool mode)
         {
-            this.databases.ForEach(db => db.SetMode(mode));
+            Parallel.ForEach(this.databases, db =>
+            {
+                db.SetMode(mode);
+            });
         }
         #endregion
 
