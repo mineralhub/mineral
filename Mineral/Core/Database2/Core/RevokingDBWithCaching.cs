@@ -56,7 +56,7 @@ namespace Mineral.Core.Database2.Core
 
 
         #region External Method
-        //[MethodImpl(MethodImplOptions.Synchronized)]
+        [MethodImpl(MethodImplOptions.Synchronized)]
         public ISnapshot GetHead()
         {
             if (this.mode.Value == null || this.mode.Value == true)

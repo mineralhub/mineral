@@ -297,18 +297,22 @@ namespace Mineral.Core.Database2.Core
                 Profiler.PushFrame("Merge");
                 int length = this.databases.Count;
 
-                ISnapshot src, dst;
+                //ISnapshot src, dst;
                 RevokingDBWithCaching db = null;
-                for (int i = 0; i < length; i++)
+                Parallel.For(0, length, i =>
                 {
-                    Profiler.NextFrame(string.Format("{0} db - 1", i));
-                    db = this.databases[i];
-                    src = db.GetHead().GetPrevious();
-                    dst = db.GetHead();
-                    Profiler.NextFrame(string.Format("{0} db - 2", i));
-                    src.Merge(dst);
-                    Profiler.NextFrame(string.Format("{0} db - 3", i));
-                }
+                    db.GetHead().GetPrevious().Merge(db.GetHead());
+                });
+                //for (int i = 0; i < length; i++)
+                //{
+                //    Profiler.NextFrame(string.Format("{0} db - 1", i));
+                //    db = this.databases[i];
+                //    src = db.GetHead().GetPrevious();
+                //    dst = db.GetHead();
+                //    Profiler.NextFrame(string.Format("{0} db - 2", i));
+                //    src.Merge(dst);
+                //    Profiler.NextFrame(string.Format("{0} db - 3", i));
+                //}
                 Profiler.PopFrame();
                 //this.databases.ForEach(db => db.GetHead().GetPrevious().Merge(db.GetHead()));
                 Retreat();
