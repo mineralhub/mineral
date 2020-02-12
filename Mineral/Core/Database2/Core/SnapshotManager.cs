@@ -307,6 +307,7 @@ namespace Mineral.Core.Database2.Core
                     dst = db.GetHead();
                     Profiler.NextFrame(string.Format("{0} db - 2", i));
                     src.Merge(dst);
+                    Profiler.NextFrame(string.Format("{0} db - 3", i));
                 }
                 Profiler.PopFrame();
                 //this.databases.ForEach(db => db.GetHead().GetPrevious().Merge(db.GetHead()));
