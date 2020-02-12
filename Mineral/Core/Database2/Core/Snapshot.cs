@@ -98,22 +98,11 @@ namespace Mineral.Core.Database2.Core
 
         public override void Merge(ISnapshot snapshot)
         {
-            if (((Snapshot)snapshot).db is HashDB)
-            {
-                using (Profiler.Measure("Merge"))
-                {
-                    Profiler.PushFrame("Step-1");
-                    HashDB hash_db = (HashDB)((Snapshot)snapshot).db;
-                    IEnumerator<KeyValuePair<Key, Value>> it = hash_db.GetEnumerator();
+            Snapshot from = (Snapshot)snapshot;
 
-                    Profiler.NextFrame("Step-2");
-                    while (it.MoveNext())
-                    {
-                        Profiler.NextFrame("step-3");
-                        this.db.Put(it.Current.Key, it.Current.Value);
-                    }
-                    Profiler.PopFrame();
-                }
+            foreach (KeyValuePair<Key, Value> pair in from.db)
+            {
+                this.db.Put(pair.Key, pair.Value);
             }
         }
 
