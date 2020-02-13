@@ -213,14 +213,14 @@ namespace Mineral.Core.Database2.Core
                         next = next.GetNext();
                         Snapshot snapshot = (Snapshot)next;
                         IBaseDB<Common.Key, Common.Value> key_value_db = snapshot.DB;
-                        Parallel.ForEach(key_value_db, pair =>
+                        foreach (KeyValuePair<Common.Key, Common.Value> pair in key_value_db)
                         {
                             byte[] name = SimpleEncode(db_name);
                             byte[] key = new byte[name.Length + pair.Key.Data.Length];
                             Array.Copy(name, 0, key, 0, name.Length);
                             Array.Copy(pair.Key.Data, 0, key, name.Length, pair.Key.Data.Length);
                             batch.Add(key, pair.Value.Encode());
-                        });
+                        }
                     }
                 });
 
