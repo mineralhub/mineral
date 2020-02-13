@@ -233,10 +233,10 @@ namespace Mineral.Core.Database2.Core
         private void DeleteCheckPoint()
         {
             Dictionary<byte[], byte[]> collection = new Dictionary<byte[], byte[]>();
-            Parallel.ForEach(CheckTempStore.Instance.DBSource, entry =>
+            foreach (KeyValuePair<byte[], byte[]> entry in CheckTempStore.Instance.DBSource)
             {
                 collection.Add(entry.Key, null);
-            });
+            }
 
             CheckTempStore.Instance.DBSource.UpdateByBatch(collection, new WriteOptions() { Sync = Args.Instance.Storage.Sync });
         }
