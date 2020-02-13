@@ -478,18 +478,27 @@ namespace Mineral.Core.Database2.Core
 
             if (ShouldBeRefreshed())
             {
-                long start = Helper.CurrentTimeMillis();
-                DeleteCheckPoint();
-                CreateCheckPoint();
-                long end = Helper.CurrentTimeMillis();
-                Refresh();
-                this.flush_count = 0;
-                Logger.Info(
-                    string.Format("flush cost:{0}, create checkpoint cost:{1}, refresh cost:{2}",
-                                Helper.CurrentTimeMillis() - start,
-                                end - start,
-                                Helper.CurrentTimeMillis() - end
-                ));
+                using (Profiler.Measure("Flush"))
+                {
+                    long start = Helper.CurrentTimeMillis();
+                    Profiler.PushFrame("step-1");
+                    DeleteCheckPoint();
+                    Profiler.NextFrame("step-2");
+                    CreateCheckPoint();
+                    Profiler.NextFrame("step-3");
+                    long end = Helper.CurrentTimeMillis();
+                    Profiler.NextFrame("step-4");
+                    Refresh();
+                    Profiler.NextFrame("step-5");
+                    this.flush_count = 0;
+                    Logger.Info(
+                        string.Format("flush cost:{0}, create checkpoint cost:{1}, refresh cost:{2}",
+                                    Helper.CurrentTimeMillis() - start,
+                                    end - start,
+                                    Helper.CurrentTimeMillis() - end
+                    ));
+                    Profiler.PopFrame();
+                }
             }
         }
 
