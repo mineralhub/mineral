@@ -24,10 +24,18 @@ namespace Mineral.Core.Database2.Core
         #region Constructor
         public Snapshot(ISnapshot snapshot)
         {
-            this.root = snapshot.GetRoot();
-            this.previous = snapshot;
-            snapshot.SetNext(this);
-            this.db = new HashDB();
+            using (Profiler.Measure("Create instance Snapshot"))
+            {
+                Profiler.PushFrame("step-1");
+                this.root = snapshot.GetRoot();
+                Profiler.PushFrame("step-2");
+                this.previous = snapshot;
+                Profiler.PushFrame("step-3");
+                snapshot.SetNext(this);
+                Profiler.PushFrame("step-4");
+                this.db = new HashDB();
+                Profiler.PopFrame();
+            }
         }
         #endregion
 
