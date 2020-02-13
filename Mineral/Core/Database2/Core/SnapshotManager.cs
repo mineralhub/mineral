@@ -197,7 +197,7 @@ namespace Mineral.Core.Database2.Core
         {
             // Do not use compare
             Dictionary<byte[], byte[]> batch = new Dictionary<byte[], byte[]>();
-            foreach (RevokingDBWithCaching db in this.databases)
+            Parallel.ForEach(this.databases, db =>
             {
                 ISnapshot head = db.GetHead();
                 if (Snapshot.IsRoot(head))
@@ -219,7 +219,7 @@ namespace Mineral.Core.Database2.Core
                         batch.Add(key, pair.Value.Encode());
                     }
                 }
-            }
+            });
 
             // TODO : temp 계속 저장만 하는지 확인해야봐야함
             CheckTempStore.Instance.DBSource.UpdateByBatch(batch, new WriteOptions() { Sync = Args.Instance.Storage.Sync });
