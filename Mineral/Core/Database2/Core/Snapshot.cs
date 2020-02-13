@@ -28,11 +28,11 @@ namespace Mineral.Core.Database2.Core
             {
                 Profiler.PushFrame("step-1");
                 this.root = snapshot.GetRoot();
-                Profiler.PushFrame("step-2");
+                Profiler.NextFrame("step-2");
                 this.previous = snapshot;
-                Profiler.PushFrame("step-3");
+                Profiler.NextFrame("step-3");
                 snapshot.SetNext(this);
-                Profiler.PushFrame("step-4");
+                Profiler.NextFrame("step-4");
                 this.db = new HashDB();
                 Profiler.PopFrame();
             }
