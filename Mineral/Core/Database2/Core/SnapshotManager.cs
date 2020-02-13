@@ -195,43 +195,48 @@ namespace Mineral.Core.Database2.Core
 
         private void CreateCheckPoint()
         {
-            // Do not use compare
-            Dictionary<byte[], byte[]> batch = new Dictionary<byte[], byte[]>();
-            Parallel.ForEach(this.databases, db =>
+            using (Profiler.Measure("CheckPoint"))
             {
-                ISnapshot head = db.GetHead();
-                if (Snapshot.IsRoot(head))
-                    return;
-
-                string db_name = db.DBName;
-                ISnapshot next = head.GetRoot();
-                for (int i = 0; i < this.flush_count; ++i)
+                Profiler.PushFrame("Step1");
+                // TODO: check intiailize capacity
+                Dictionary<byte[], byte[]> batch = new Dictionary<byte[], byte[]>();
+                Parallel.ForEach(this.databases, db =>
                 {
-                    next = next.GetNext();
-                    Snapshot snapshot = (Snapshot)next;
-                    IBaseDB<Common.Key, Common.Value> key_value_db = snapshot.DB;
-                    foreach (KeyValuePair<Common.Key, Common.Value> pair in key_value_db)
-                    {
-                        byte[] name = SimpleEncode(db_name);
-                        byte[] key = new byte[name.Length + pair.Key.Data.Length];
-                        Array.Copy(name, 0, key, 0, name.Length);
-                        Array.Copy(pair.Key.Data, 0, key, name.Length, pair.Key.Data.Length);
-                        batch.Add(key, pair.Value.Encode());
-                    }
-                }
-            });
+                    ISnapshot head = db.GetHead();
+                    if (Snapshot.IsRoot(head))
+                        return;
 
-            // TODO : temp 계속 저장만 하는지 확인해야봐야함
-            CheckTempStore.Instance.DBSource.UpdateByBatch(batch, new WriteOptions() { Sync = Args.Instance.Storage.Sync });
+                    string db_name = db.DBName;
+                    ISnapshot next = head.GetRoot();
+                    for (int i = 0; i < this.flush_count; ++i)
+                    {
+                        next = next.GetNext();
+                        Snapshot snapshot = (Snapshot)next;
+                        IBaseDB<Common.Key, Common.Value> key_value_db = snapshot.DB;
+                        Parallel.ForEach(key_value_db, pair =>
+                        {
+                            byte[] name = SimpleEncode(db_name);
+                            byte[] key = new byte[name.Length + pair.Key.Data.Length];
+                            Array.Copy(name, 0, key, 0, name.Length);
+                            Array.Copy(pair.Key.Data, 0, key, name.Length, pair.Key.Data.Length);
+                            batch.Add(key, pair.Value.Encode());
+                        });
+                    }
+                });
+
+                Profiler.NextFrame("step2");
+                CheckTempStore.Instance.DBSource.UpdateByBatch(batch, new WriteOptions() { Sync = Args.Instance.Storage.Sync });
+                Profiler.PopFrame();
+            }
         }
 
         private void DeleteCheckPoint()
         {
             Dictionary<byte[], byte[]> collection = new Dictionary<byte[], byte[]>();
-            foreach (var entry in CheckTempStore.Instance.DBSource)
+            Parallel.ForEach(CheckTempStore.Instance.DBSource, entry =>
             {
-                collection.Add(entry.Key, entry.Value);
-            }
+                collection.Add(entry.Key, null);
+            });
 
             CheckTempStore.Instance.DBSource.UpdateByBatch(collection, new WriteOptions() { Sync = Args.Instance.Storage.Sync });
         }
