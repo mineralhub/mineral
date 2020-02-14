@@ -6,6 +6,8 @@ using Mineral.Core.Config.Arguments;
 using Mineral.Core;
 using Mineral.Common.Application;
 using Mineral.Core.Service;
+using System.Threading;
+using Mineral.Utils;
 
 namespace MineralNode
 {
@@ -30,6 +32,9 @@ namespace MineralNode
 
             if (Args.Instance.SetParam(args, DefineParameter.CONF_FILE))
             {
+                ThreadPool.SetMinThreads(128, 128);
+                ThreadPool.GetAvailableThreads(out int worker, out int io);
+                Logger.Refactoring(string.Format("ThreadPool available count worker {0}, io {1}", worker, io));
                 Manager.Instance.Init();
 
                 Application app = new Application();
