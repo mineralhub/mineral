@@ -23,9 +23,10 @@ namespace Mineral.Core.Net.Service
     public class SyncService
     {
         #region Field
-        private ConcurrentDictionary<BlockMessage, PeerConnection> block_wait_process = new ConcurrentDictionary<BlockMessage, PeerConnection>();
-        private ConcurrentDictionary<BlockMessage, PeerConnection> block_just_receive = new ConcurrentDictionary<BlockMessage, PeerConnection>();
+        private ConcurrentDictionary<BlockMessage, PeerConnection> block_wait_process = new ConcurrentDictionary<BlockMessage, PeerConnection>(Environment.ProcessorCount * 2, 50000);
+        private ConcurrentDictionary<BlockMessage, PeerConnection> block_just_receive = new ConcurrentDictionary<BlockMessage, PeerConnection>(Environment.ProcessorCount * 2, 50000);
         private MemoryCache request_ids = MemoryCache.Default;
+        private object lock_receive = new object();
 
         private ScheduledExecutorHandle fetch_handle = null;
         private ScheduledExecutorHandle block_handle = null;
@@ -107,7 +108,7 @@ namespace Mineral.Core.Net.Service
         [MethodImpl(MethodImplOptions.Synchronized)]
         private void HandleSyncBlock()
         {
-            lock (this.block_just_receive)
+            lock (this.lock_receive)
             {
                 foreach (var received in this.block_just_receive)
                 {
@@ -350,7 +351,7 @@ namespace Mineral.Core.Net.Service
 
         public void ProcessBlock(PeerConnection peer, BlockMessage message)
         {
-            lock (this.block_just_receive)
+            lock (this.lock_receive)
             {
                 this.block_just_receive.TryAdd(message, peer);
             }
