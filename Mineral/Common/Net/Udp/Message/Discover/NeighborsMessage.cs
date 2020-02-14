@@ -48,7 +48,7 @@ namespace Mineral.Common.Net.Udp.Message.Discover
         #endregion
 
 
-            #region Contructor
+        #region Contructor
         public NeighborsMessage(byte[] data)
             : base(UdpMessageType.DISCOVER_NEIGHBORS, data)
         {

@@ -33,6 +33,7 @@ namespace Mineral.Core.Net.MessageHandler
             {
                 this.peer = peer;
                 this.message = message;
+                this.time = Helper.CurrentTimeMillis();
             }
         }
 
