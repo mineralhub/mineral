@@ -1282,6 +1282,7 @@ namespace Mineral.Core.Database
             using (Profiler.Measure("GenerateBlock Transaction Pending"))
             {
                 Profiler.PushFrame("Pendign transaction");
+                Logger.Refactoring("Pending transaction count : " + this.pending_transactions.Count);
                 foreach (var transaction in this.pending_transactions)
                 {
                     if (!ProcessPenddingTransaction(transaction,
@@ -1296,6 +1297,7 @@ namespace Mineral.Core.Database
                 }
 
                 Profiler.NextFrame("RePush transaction");
+                Logger.Refactoring("Repush transaction count : " + this.repush_transactions.Count);
                 while (this.repush_transactions.Count > 0)
                 {
                     if (this.repush_transactions.TryDequeue(out TransactionCapsule transaction))
