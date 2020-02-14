@@ -54,7 +54,7 @@ namespace Mineral.Core.Config.Arguments
             {
                 CreateIfMissing = true,
                 ParanoidChecks = true,
-                CompressionLevel = DEFAULT_COMPRESSION_TYPE,
+                CompressionLevel = CompressionLevel.SnappyCompression,
                 BlockSize = DEFAULT_BLOCK_SIZE,
                 WriteBufferSize = DEFAULT_WRITE_BUFFER_SIZE,
                 Cache = new LevelDB.Cache((int)DEFAULT_CACHE_SIZE),

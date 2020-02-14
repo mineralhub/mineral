@@ -87,7 +87,6 @@ namespace Mineral.Common.Overlay.Discover.Node
         private List<Node> boot_nodes = new List<Node>();
         private Timer timer_node_manager = null;
         private ScheduledExecutorHandle timer_pong = null;
-        private readonly object locker = new object();
 
         private bool is_inited = false;
         private bool is_inbound_known_node = false;
@@ -191,7 +190,7 @@ namespace Mineral.Common.Overlay.Discover.Node
         {
             HashSet<Node> batch = new HashSet<Node>();
 
-            lock (this.locker)
+            lock (this)
             {
                 foreach (NodeHandler handler in this.node_handlers.Values)
                 {
@@ -332,7 +331,7 @@ namespace Mineral.Common.Overlay.Discover.Node
         {
             List<NodeHandler> result = new List<NodeHandler>();
 
-            lock (this.locker)
+            lock (this)
             {
                 foreach (NodeHandler handler in this.node_handlers.Values)
                 {

@@ -16,7 +16,6 @@ namespace Mineral.Core.Witness
     {
         #region Field
         private DatabaseManager db_manager = null;
-        private object locker = new object();
         private bool is_generating_block = false;
         #endregion
 
@@ -24,17 +23,8 @@ namespace Mineral.Core.Witness
         #region Property
         public bool IsGeneratingBlock
         {
-            get
-            {
-                return this.is_generating_block;
-            }
-            set
-            {
-                lock (locker)
-                {
-                    this.is_generating_block = value;
-                }
-            }
+            get { return this.is_generating_block; }
+            set { lock (this) { this.is_generating_block = value; } }
         }
         #endregion
 

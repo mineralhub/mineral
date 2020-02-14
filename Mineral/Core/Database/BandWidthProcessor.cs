@@ -55,7 +55,7 @@ namespace Mineral.Core.Database
             }
         }
 
-        private void ConsumeForCreateNewAccount(AccountCapsule account, long bytes, long now, TransactionTrace trace)
+        private void ConsumeForCreateNewAccount(AccountCapsule account, long bytes,long now, TransactionTrace trace)
         {
             bool ret = ConsumeBandwidthForCreateNewAccount(account, bytes, now);
 
@@ -310,7 +310,7 @@ namespace Mineral.Core.Database
 
                 if (account == null)
                 {
-                    throw new ContractValidateException("Account is not exists");
+                    throw new ContractValidateException("account not exists");
                 }
 
                 long now = this.db_manager.WitnessController.GetHeadSlot();

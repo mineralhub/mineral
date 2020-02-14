@@ -31,7 +31,6 @@ namespace Mineral.Core.Database2.Core
 
         private List<RevokingDBWithCaching> databases = new List<RevokingDBWithCaching>();
         private Dictionary<string, Task> flush_service = new Dictionary<string, Task>();
-        private object locker = new object();
         private int max_size = DEFAULT_STACK_MAX_SIZE;
         private int size = 0;
         private bool is_disable = true;
@@ -52,7 +51,7 @@ namespace Mineral.Core.Database2.Core
             }
             set
             {
-                lock (this.locker)
+                lock (this)
                 {
                     this.max_size = value;
                 }
@@ -73,19 +72,13 @@ namespace Mineral.Core.Database2.Core
         #region Internal Method
         private void Advance()
         {
-            Parallel.ForEach(this.databases, db =>
-            {
-                db.SetHead(db.GetHead().Advance());
-            });
+            this.databases.ForEach(db => db.SetHead(db.GetHead().Advance()));
             ++size;
         }
 
         private void Retreat()
         {
-            Parallel.ForEach(this.databases, db =>
-            {
-                db.SetHead(db.GetHead().Retreat());
-            });
+            this.databases.ForEach(db => db.SetHead(db.GetHead().Retreat()));
             --size;
         }
 
@@ -195,47 +188,42 @@ namespace Mineral.Core.Database2.Core
 
         private void CreateCheckPoint()
         {
-            using (Profiler.Measure("CheckPoint"))
+            // Do not use compare
+            Dictionary<byte[], byte[]> batch = new Dictionary<byte[], byte[]>();
+            foreach (RevokingDBWithCaching db in this.databases)
             {
-                Profiler.PushFrame("Step1");
-                // TODO: check intiailize capacity
-                Dictionary<byte[], byte[]> batch = new Dictionary<byte[], byte[]>();
-                Parallel.ForEach(this.databases, db =>
+                ISnapshot head = db.GetHead();
+                if (Snapshot.IsRoot(head))
+                    return;
+
+                string db_name = db.DBName;
+                ISnapshot next = head.GetRoot();
+                for (int i = 0; i < this.flush_count; ++i)
                 {
-                    ISnapshot head = db.GetHead();
-                    if (Snapshot.IsRoot(head))
-                        return;
-
-                    string db_name = db.DBName;
-                    ISnapshot next = head.GetRoot();
-                    for (int i = 0; i < this.flush_count; ++i)
+                    next = next.GetNext();
+                    Snapshot snapshot = (Snapshot)next;
+                    IBaseDB<Common.Key, Common.Value> key_value_db = snapshot.DB;
+                    foreach (KeyValuePair<Common.Key, Common.Value> pair in key_value_db)
                     {
-                        next = next.GetNext();
-                        Snapshot snapshot = (Snapshot)next;
-                        IBaseDB<Common.Key, Common.Value> key_value_db = snapshot.DB;
-                        foreach (KeyValuePair<Common.Key, Common.Value> pair in key_value_db)
-                        {
-                            byte[] name = SimpleEncode(db_name);
-                            byte[] key = new byte[name.Length + pair.Key.Data.Length];
-                            Array.Copy(name, 0, key, 0, name.Length);
-                            Array.Copy(pair.Key.Data, 0, key, name.Length, pair.Key.Data.Length);
-                            batch.Add(key, pair.Value.Encode());
-                        }
+                        byte[] name = SimpleEncode(db_name);
+                        byte[] key = new byte[name.Length + pair.Key.Data.Length];
+                        Array.Copy(name, 0, key, 0, name.Length);
+                        Array.Copy(pair.Key.Data, 0, key, name.Length, pair.Key.Data.Length);
+                        batch.Add(key, pair.Value.Encode());
                     }
-                });
-
-                Profiler.NextFrame("step2");
-                CheckTempStore.Instance.DBSource.UpdateByBatch(batch, new WriteOptions() { Sync = Args.Instance.Storage.Sync });
-                Profiler.PopFrame();
+                }
             }
+
+            // TODO : temp 계속 저장만 하는지 확인해야봐야함
+            CheckTempStore.Instance.DBSource.UpdateByBatch(batch, new WriteOptions() { Sync = Args.Instance.Storage.Sync });
         }
 
         private void DeleteCheckPoint()
         {
             Dictionary<byte[], byte[]> collection = new Dictionary<byte[], byte[]>();
-            foreach (KeyValuePair<byte[], byte[]> entry in CheckTempStore.Instance.DBSource)
+            foreach (var entry in CheckTempStore.Instance.DBSource)
             {
-                collection.Add(entry.Key, null);
+                collection.Add(entry.Key, entry.Value);
             }
 
             CheckTempStore.Instance.DBSource.UpdateByBatch(collection, new WriteOptions() { Sync = Args.Instance.Storage.Sync });
@@ -253,40 +241,25 @@ namespace Mineral.Core.Database2.Core
         [MethodImpl(MethodImplOptions.Synchronized)]
         public ISession BuildSession(bool force_enable)
         {
-            ISession session = null;
+            if (this.is_disable && !force_enable)
+                return new Session(this);
 
-            using (Profiler.Measure("BuildSession"))
+            bool disable_exit = this.is_disable && force_enable;
+            if (force_enable)
+                this.is_disable = false;
+
+            if (this.size > this.max_size)
             {
-                Profiler.PushFrame("Step-4-1");
-                if (this.is_disable && !force_enable)
-                    return new Session(this);
-
-                Profiler.NextFrame("Step-4-2");
-                bool disable_exit = this.is_disable && force_enable;
-                if (force_enable)
-                    this.is_disable = false;
-
-                if (this.size > this.max_size)
-                {
-                    Profiler.NextFrame("Step-4-3");
-                    this.flush_count = this.flush_count + (this.size - this.max_size);
-                    UpdateSolidity(this.size - this.max_size);
-                    Profiler.NextFrame("Step-4-4");
-                    this.size = this.max_size;
-                    Flush();
-                }
-
-                Profiler.NextFrame("Step-4-5");
-                Advance();
-                Profiler.NextFrame("Step-4-6");
-                ++this.active_session;
-
-                Profiler.NextFrame("Step-4-7");
-                session = new Session(this, disable_exit);
-                Profiler.PopFrame();
+                this.flush_count = this.flush_count + (this.size - this.max_size);
+                UpdateSolidity(this.size - this.max_size);
+                this.size = this.max_size;
+                Flush();
             }
 
-            return session;
+            Advance();
+            ++this.active_session;
+
+            return new Session(this, disable_exit);
         }
 
         public void Add(IRevokingDB revoking_db)
@@ -303,20 +276,9 @@ namespace Mineral.Core.Database2.Core
             if (this.size < 2)
                 return;
 
-            using (Profiler.Measure("Snapshot-Merge"))
-            {
-                Profiler.PushFrame("Merge");
-                int length = this.databases.Count;
-
-                Parallel.ForEach(this.databases, db =>
-                {
-                    db.GetHead().GetPrevious().Merge(db.GetHead());
-                });
-                Profiler.PopFrame();
-                //this.databases.ForEach(db => db.GetHead().GetPrevious().Merge(db.GetHead()));
-                Retreat();
-                --this.active_session;
-            }
+            this.databases.ForEach(db => db.GetHead().GetPrevious().Merge(db.GetHead()));
+            Retreat();
+            --this.active_session;
         }
 
         [MethodImpl(MethodImplOptions.Synchronized)]
@@ -423,10 +385,7 @@ namespace Mineral.Core.Database2.Core
 
                 }
 
-                Parallel.ForEach(this.databases, db =>
-                {
-                    db.GetHead().GetRoot().Merge(db.GetHead());
-                });
+                this.databases.ForEach(db => db.GetHead().GetRoot().Merge(db.GetHead()));
                 Retreat();
             }
 
@@ -458,10 +417,7 @@ namespace Mineral.Core.Database2.Core
 
         public void SetMode(bool mode)
         {
-            Parallel.ForEach(this.databases, db =>
-            {
-                db.SetMode(mode);
-            });
+            this.databases.ForEach(db => db.SetMode(mode));
         }
         #endregion
 
@@ -483,27 +439,18 @@ namespace Mineral.Core.Database2.Core
 
             if (ShouldBeRefreshed())
             {
-                using (Profiler.Measure("Flush"))
-                {
-                    long start = Helper.CurrentTimeMillis();
-                    Profiler.PushFrame("step-1");
-                    DeleteCheckPoint();
-                    Profiler.NextFrame("step-2");
-                    CreateCheckPoint();
-                    Profiler.NextFrame("step-3");
-                    long end = Helper.CurrentTimeMillis();
-                    Profiler.NextFrame("step-4");
-                    Refresh();
-                    Profiler.NextFrame("step-5");
-                    this.flush_count = 0;
-                    Logger.Info(
-                        string.Format("flush cost:{0}, create checkpoint cost:{1}, refresh cost:{2}",
-                                    Helper.CurrentTimeMillis() - start,
-                                    end - start,
-                                    Helper.CurrentTimeMillis() - end
-                    ));
-                    Profiler.PopFrame();
-                }
+                long start = Helper.CurrentTimeMillis();
+                DeleteCheckPoint();
+                CreateCheckPoint();
+                long end = Helper.CurrentTimeMillis();
+                Refresh();
+                this.flush_count = 0;
+                Logger.Info(
+                    string.Format("flush cost:{0}, create checkpoint cost:{1}, refresh cost:{2}",
+                                Helper.CurrentTimeMillis() - start,
+                                end - start,
+                                Helper.CurrentTimeMillis() - end
+                ));
             }
         }
 

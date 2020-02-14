@@ -11,7 +11,7 @@ namespace Mineral.Core.Database2.Common
     public class ConcurrentHashDB : IBaseDB<byte[], BytesCapsule>
     {
         #region Field
-        private ConcurrentDictionary<byte[], BytesCapsule> db = new ConcurrentDictionary<byte[], BytesCapsule>(Environment.ProcessorCount * 2, 50000, new ByteArrayEqualComparer());
+        private ConcurrentDictionary<byte[], BytesCapsule> db = new ConcurrentDictionary<byte[], BytesCapsule>(new ByteArrayEqualComparer());
         #endregion
 
 

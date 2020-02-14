@@ -21,8 +21,8 @@ namespace Mineral.Core.Net.Service
     public class AdvanceService
     {
         #region Field
-        private ConcurrentDictionary<Item, long> inventory_fetch = new ConcurrentDictionary<Item, long>(Environment.ProcessorCount * 2, 50000);
-        private ConcurrentDictionary<Item, long> inventory_spread = new ConcurrentDictionary<Item, long>(Environment.ProcessorCount * 2, 50000);
+        private ConcurrentDictionary<Item, long> inventory_fetch = new ConcurrentDictionary<Item, long>();
+        private ConcurrentDictionary<Item, long> inventory_spread = new ConcurrentDictionary<Item, long>();
 
         private Cache<Message> block_cache = new Cache<Message>("advance_block").MaxCapacity(10).ExpireTime(TimeSpan.FromMinutes(1));
         private Cache<Message> transaction_cache = new Cache<Message>("advance_transaction").MaxCapacity(50000).ExpireTime(TimeSpan.FromHours(1));
@@ -73,6 +73,7 @@ namespace Mineral.Core.Net.Service
                     if (peer.GetInventoryReceive(spread.Key) == null
                         && peer.GetInventorySpread(spread.Key) == null)
                     {
+
                         peer.AddInventorySpread(spread.Key, Helper.CurrentTimeMillis());
                         sender.Add(spread.Key, peer);
                     }
