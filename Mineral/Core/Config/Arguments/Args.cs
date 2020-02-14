@@ -124,9 +124,6 @@ namespace Mineral.Core.Config.Arguments
         [Parameter("--storage-transactionHistory-switch", Description = "Storage transaction history switch.(on or off)")]
         private string storage_transaction_history_switch = "";
 
-        [Parameter("--storage-db-version", Description = "Storage db version.(1 or 2)")]
-        private string storage_version = "";
-
         [Parameter("--support-constant")]
         private bool support_constanct = false;
 
@@ -235,22 +232,19 @@ namespace Mineral.Core.Config.Arguments
             if (Config.Instance.Node.Discovery.ExternalIP.IsNullOrEmpty())
             {
                 Logger.Info("External IP wasn't set, using checkip.amazonaws.com to identify it...");
-                lock (this)
+                try
                 {
-                    try
+                    string ip = new WebClient().DownloadString(new Uri(@"http://checkip.amazonaws.com"));
+                    if (ip.EndsWith("\n"))
                     {
-                        string ip = new WebClient().DownloadString(new Uri(@"http://checkip.amazonaws.com"));
-                        if (ip.EndsWith("\n"))
-                        {
-                            ip = ip.Remove(ip.Length - 1);
-                        }
+                        ip = ip.Remove(ip.Length - 1);
+                    }
 
-                        instance.Node.Discovery.ExternalIP = ip;
-                    }
-                    catch (System.Exception e)
-                    {
-                        Logger.Debug(e.Message);
-                    }
+                    instance.Node.Discovery.ExternalIP = ip;
+                }
+                catch (System.Exception e)
+                {
+                    Logger.Debug(e.Message);
                 }
             }
             else

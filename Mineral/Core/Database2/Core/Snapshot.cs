@@ -27,10 +27,7 @@ namespace Mineral.Core.Database2.Core
             this.root = snapshot.GetRoot();
             this.previous = snapshot;
             snapshot.SetNext(this);
-            lock (this)
-            {
-                this.db = new HashDB();
-            }
+            this.db = new HashDB();
         }
         #endregion
 
@@ -101,14 +98,10 @@ namespace Mineral.Core.Database2.Core
 
         public override void Merge(ISnapshot snapshot)
         {
-            HashDB hash_db = null;
-            if (((Snapshot)snapshot).db is HashDB)
+            Snapshot from = (Snapshot)snapshot;
+            foreach (KeyValuePair<Key, Value> pair in from.db)
             {
-                hash_db = (HashDB)((Snapshot)snapshot).db;
-                IEnumerator<KeyValuePair<Key, Value>> it = hash_db.GetEnumerator();
-
-                while (it.MoveNext())
-                    this.db.Put(it.Current.Key, it.Current.Value);
+                this.db.Put(pair.Key, pair.Value);
             }
         }
 

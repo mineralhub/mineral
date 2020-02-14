@@ -31,6 +31,7 @@ namespace Mineral.Core.Database2.Core
 
         private List<RevokingDBWithCaching> databases = new List<RevokingDBWithCaching>();
         private Dictionary<string, Task> flush_service = new Dictionary<string, Task>();
+        private object locker = new object();
         private int max_size = DEFAULT_STACK_MAX_SIZE;
         private int size = 0;
         private bool is_disable = true;
@@ -51,7 +52,7 @@ namespace Mineral.Core.Database2.Core
             }
             set
             {
-                lock (this)
+                lock (this.locker)
                 {
                     this.max_size = value;
                 }
@@ -72,13 +73,19 @@ namespace Mineral.Core.Database2.Core
         #region Internal Method
         private void Advance()
         {
-            this.databases.ForEach(db => db.SetHead(db.GetHead().Advance()));
+            Parallel.ForEach(this.databases, db =>
+            {
+                db.SetHead(db.GetHead().Advance());
+            });
             ++size;
         }
 
         private void Retreat()
         {
-            this.databases.ForEach(db => db.SetHead(db.GetHead().Retreat()));
+            Parallel.ForEach(this.databases, db =>
+            {
+                db.SetHead(db.GetHead().Retreat());
+            });
             --size;
         }
 
@@ -190,7 +197,7 @@ namespace Mineral.Core.Database2.Core
         {
             // Do not use compare
             Dictionary<byte[], byte[]> batch = new Dictionary<byte[], byte[]>();
-            foreach (RevokingDBWithCaching db in this.databases)
+            Parallel.ForEach(this.databases, db =>
             {
                 ISnapshot head = db.GetHead();
                 if (Snapshot.IsRoot(head))
@@ -212,7 +219,7 @@ namespace Mineral.Core.Database2.Core
                         batch.Add(key, pair.Value.Encode());
                     }
                 }
-            }
+            });
 
             // TODO : temp 계속 저장만 하는지 확인해야봐야함
             CheckTempStore.Instance.DBSource.UpdateByBatch(batch, new WriteOptions() { Sync = Args.Instance.Storage.Sync });
@@ -221,9 +228,9 @@ namespace Mineral.Core.Database2.Core
         private void DeleteCheckPoint()
         {
             Dictionary<byte[], byte[]> collection = new Dictionary<byte[], byte[]>();
-            foreach (var entry in CheckTempStore.Instance.DBSource)
+            foreach (KeyValuePair<byte[], byte[]> entry in CheckTempStore.Instance.DBSource)
             {
-                collection.Add(entry.Key, entry.Value);
+                collection.Add(entry.Key, null);
             }
 
             CheckTempStore.Instance.DBSource.UpdateByBatch(collection, new WriteOptions() { Sync = Args.Instance.Storage.Sync });
@@ -276,7 +283,12 @@ namespace Mineral.Core.Database2.Core
             if (this.size < 2)
                 return;
 
-            this.databases.ForEach(db => db.GetHead().GetPrevious().Merge(db.GetHead()));
+            int length = this.databases.Count;
+
+            Parallel.ForEach(this.databases, db =>
+            {
+                db.GetHead().GetPrevious().Merge(db.GetHead());
+            });
             Retreat();
             --this.active_session;
         }
@@ -385,7 +397,10 @@ namespace Mineral.Core.Database2.Core
 
                 }
 
-                this.databases.ForEach(db => db.GetHead().GetRoot().Merge(db.GetHead()));
+                Parallel.ForEach(this.databases, db =>
+                {
+                    db.GetHead().GetRoot().Merge(db.GetHead());
+                });
                 Retreat();
             }
 
