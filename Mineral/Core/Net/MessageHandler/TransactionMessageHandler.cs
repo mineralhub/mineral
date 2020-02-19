@@ -105,6 +105,7 @@ namespace Mineral.Core.Net.MessageHandler
         {
             using (Profiler.Measure("Handle Transaction"))
             {
+                Profiler.PushFrame("Step-1");
                 object[] parameter = state as object[];
                 PeerConnection peer = (PeerConnection)parameter[0];
                 TransactionMessage message = (TransactionMessage)parameter[1];
@@ -119,7 +120,7 @@ namespace Mineral.Core.Net.MessageHandler
                     return;
                 }
 
-                Profiler.PushFrame("Step-1");
+                Profiler.PushFrame("Step-2");
                 if (Manager.Instance.AdvanceService.GetMessage(new Item(message.MessageId, InventoryType.Trx)) != null)
                 {
                     return;
@@ -127,9 +128,9 @@ namespace Mineral.Core.Net.MessageHandler
 
                 try
                 {
-                    Profiler.NextFrame("Step-2");
-                    Manager.Instance.NetDelegate.PushTransaction(message.Transaction);
                     Profiler.NextFrame("Step-3");
+                    Manager.Instance.NetDelegate.PushTransaction(message.Transaction);
+                    Profiler.NextFrame("Step-4");
                     Manager.Instance.AdvanceService.Broadcast(message);
                 }
                 catch (P2pException e)
