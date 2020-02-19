@@ -522,9 +522,13 @@ namespace Mineral.Core.Database
                                                 long postponed_tx_Count,
                                                 bool is_pendding_transaction)
         {
+#if (PROFILE)
             using (Profiler.Measure("Inner process"))
             {
+#endif
+#if (PROFILE)
                 Profiler.PushFrame("Step-1");
+#endif
                 if (Helper.CurrentTimeMillis() - when
                     > Parameter.ChainParameters.BLOCK_PRODUCED_INTERVAL * 0.5 * Args.Instance.Node.BlockProducedTimeout / 100)
                 {
@@ -532,14 +536,18 @@ namespace Mineral.Core.Database
                     return false;
                 }
 
+#if (PROFILE)
                 Profiler.NextFrame("Step-2");
+#endif
                 if ((block.Instance.CalculateSize() + transaction.Instance.CalculateSize() + 3) > Parameter.ChainParameters.BLOCK_SIZE)
                 {
                     postponed_tx_Count++;
                     return true;
                 }
 
+#if (PROFILE)
                 Profiler.NextFrame("Step-3");
+#endif
                 Contract contract = transaction.Instance.RawData.Contract[0];
                 byte[] owner = TransactionCapsule.GetOwner(contract);
                 string owner_address = owner.ToHexString();
@@ -563,27 +571,39 @@ namespace Mineral.Core.Database
 
                 try
                 {
-
+#if (PROFILE)
                     Profiler.NextFrame("Step-4");
+#endif
                     using (ISession temp_session = this.revoking_store.BuildSession())
                     {
+#if (PROFILE)
                         Profiler.NextFrame("Step-5");
+#endif
                         Manager.Instance.FastSyncCallback.PreExecuteTrans();
+#if (PROFILE)
                         Profiler.NextFrame("Step-6");
+#endif
                         ProcessTransaction(transaction, block, "Pending");
+#if (PROFILE)
                         Profiler.NextFrame("Step-7");
+#endif
                         Manager.Instance.FastSyncCallback.ExecuteTransFinish();
+#if (PROFILE)
 
                         Profiler.NextFrame("Step-8");
+#endif
                         temp_session.Merge();
+#if (PROFILE)
                         Profiler.NextFrame("Step-9");
+#endif
                         block.AddTransaction(transaction);
+#if (PROFILE)
                         Profiler.NextFrame("Step-10");
+#endif
                         if (is_pendding_transaction)
                         {
                             this.pending_transactions.TryTake(out _);
                         }
-                        Profiler.PopFrame();
                     }
                 }
                 catch (ContractExeException e)
@@ -640,7 +660,12 @@ namespace Mineral.Core.Database
                 {
                     Logger.Warning(e.Message);
                 }
+#if (PROFILE)
+                Profiler.PopFrame();
+#endif
+#if (PROFILE)
             }
+#endif
 
             return true;
         }
@@ -1021,10 +1046,10 @@ namespace Mineral.Core.Database
                 Logger.Info("******** End to close " + database.Name + " ********");
             }
         }
-        #endregion
+#endregion
 
 
-        #region External Method
+#region External Method
         public void Init()
         {
             this.revoking_store.Disable();
@@ -1279,9 +1304,13 @@ namespace Mineral.Core.Database
             }
 
             HashSet<string> accounts = new HashSet<string>();
+#if (PROFILE)
             using (Profiler.Measure("GenerateBlock Transaction Pending"))
             {
+#endif
+#if (PROFILE)
                 Profiler.PushFrame("Pending transaction");
+#endif
                 Logger.Refactoring("Pending transaction count : " + this.pending_transactions.Count);
                 foreach (var transaction in this.pending_transactions)
                 {
@@ -1295,8 +1324,9 @@ namespace Mineral.Core.Database
                         break;
                     }
                 }
-
+#if (PROFILE)
                 Profiler.NextFrame("RePush transaction");
+#endif
                 Logger.Refactoring("Repush transaction count : " + this.repush_transactions.Count);
                 while (this.repush_transactions.Count > 0)
                 {
@@ -1313,8 +1343,12 @@ namespace Mineral.Core.Database
                         }
                     }
                 }
+#if (PROFILE)
                 Profiler.PopFrame();
+#endif
+#if (PROFILE)
             }
+#endif
 
             Manager.Instance.FastSyncCallback.ExecuteGenerateFinish();
             this.session.Reset();
@@ -1922,6 +1956,6 @@ namespace Mineral.Core.Database
             CloseStore(this.exchange_v2_store);
             Logger.Info("------------------ End to close store ------------------");
         }
-        #endregion
+#endregion
     }
 }

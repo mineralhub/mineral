@@ -103,9 +103,13 @@ namespace Mineral.Core.Net.MessageHandler
 
         private static void HandleTransaction(object state)
         {
+#if (PROFILE)
             using (Profiler.Measure("Handle Transaction"))
             {
+#endif
+#if (PROFILE)
                 Profiler.PushFrame("Step-1");
+#endif
                 object[] parameter = state as object[];
                 PeerConnection peer = (PeerConnection)parameter[0];
                 TransactionMessage message = (TransactionMessage)parameter[1];
@@ -119,8 +123,9 @@ namespace Mineral.Core.Net.MessageHandler
 
                     return;
                 }
-
+#if (PROFILE)
                 Profiler.PushFrame("Step-2");
+#endif
                 if (Manager.Instance.AdvanceService.GetMessage(new Item(message.MessageId, InventoryType.Trx)) != null)
                 {
                     return;
@@ -128,9 +133,13 @@ namespace Mineral.Core.Net.MessageHandler
 
                 try
                 {
+#if (PROFILE)
                     Profiler.NextFrame("Step-3");
+#endif
                     Manager.Instance.NetDelegate.PushTransaction(message.Transaction);
+#if (PROFILE)
                     Profiler.NextFrame("Step-4");
+#endif
                     Manager.Instance.AdvanceService.Broadcast(message);
                 }
                 catch (P2pException e)
@@ -156,9 +165,12 @@ namespace Mineral.Core.Net.MessageHandler
                                       message.MessageId.ToString(),
                                       peer.Address.ToString()));
                 }
-
+#if (PROFILE)
                 Profiler.PopFrame();
+#endif
+#if (PROFILE)
             }
+#endif
         }
         #endregion
 
@@ -171,12 +183,18 @@ namespace Mineral.Core.Net.MessageHandler
 
         public void ProcessMessage(PeerConnection peer, MineralMessage message)
         {
+#if (PROFILE)
             using (Profiler.Measure("ProcessMessage : TX"))
             {
+#endif
+#if (PROFILE)
                 Profiler.PushFrame("step-1");
+#endif
                 TransactionsMessage tx_message = (TransactionsMessage)message;
                 Check(peer, tx_message);
+#if (PROFILE)
                 Profiler.NextFrame(string.Format("step-2, Txs : [{0}]", tx_message.Transactions.Transactions_.Count));
+#endif
 
                 foreach (Transaction tx in tx_message.Transactions.Transactions_)
                 {
@@ -191,8 +209,12 @@ namespace Mineral.Core.Net.MessageHandler
                         ThreadPool.QueueUserWorkItem(new WaitCallback(HandleTransaction), new object[] { peer, new TransactionMessage(tx) });
                     }
                 }
+#if (PROFILE)
                 Profiler.PopFrame();
+#endif
+#if (PROFILE)
             }
+#endif
         }
 
         public void Close()
