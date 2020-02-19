@@ -1281,7 +1281,7 @@ namespace Mineral.Core.Database
             HashSet<string> accounts = new HashSet<string>();
             using (Profiler.Measure("GenerateBlock Transaction Pending"))
             {
-                Profiler.PushFrame("Pendign transaction");
+                Profiler.PushFrame("Pending transaction");
                 Logger.Refactoring("Pending transaction count : " + this.pending_transactions.Count);
                 foreach (var transaction in this.pending_transactions)
                 {

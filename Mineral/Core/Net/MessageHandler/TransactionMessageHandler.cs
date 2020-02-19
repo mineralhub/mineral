@@ -103,52 +103,60 @@ namespace Mineral.Core.Net.MessageHandler
 
         private static void HandleTransaction(object state)
         {
-            object[] parameter = state as object[];
-            PeerConnection peer = (PeerConnection)parameter[0];
-            TransactionMessage message = (TransactionMessage)parameter[1];
-
-            if (peer.IsDisconnect)
+            using (Profiler.Measure("Handle Transaction"))
             {
-                Logger.Warning(
-                    string.Format("Drop tx {0} from {1}, peer is disconnect.",
-                                  message.MessageId,
-                                  peer.Address));
+                object[] parameter = state as object[];
+                PeerConnection peer = (PeerConnection)parameter[0];
+                TransactionMessage message = (TransactionMessage)parameter[1];
 
-                return;
-            }
-
-            if (Manager.Instance.AdvanceService.GetMessage(new Item(message.MessageId, InventoryType.Trx)) != null)
-            {
-                return;
-            }
-
-            try
-            {
-                Manager.Instance.NetDelegate.PushTransaction(message.Transaction);
-                Manager.Instance.AdvanceService.Broadcast(message);
-            }
-            catch (P2pException e)
-            {
-                string reason = string.Format("Tx {0} from peer {1} process failed. type: {2}, reason: {3}",
-                                              message.MessageId.ToString(),
-                                              peer.Address.ToString(),
-                                              e.Type.ToString(),
-                                              e.Message.ToString());
-
-
-                Logger.Warning(reason);
-
-                if (e.Type == P2pException.ErrorType.BAD_TRX)
+                if (peer.IsDisconnect)
                 {
-                    peer.Disconnect(ReasonCode.BadTx, reason);
+                    Logger.Warning(
+                        string.Format("Drop tx {0} from {1}, peer is disconnect.",
+                                      message.MessageId,
+                                      peer.Address));
+
+                    return;
                 }
-            }
-            catch
-            {
-                Logger.Error(
-                    string.Format("Tx {0} from peer {1} process failed.",
-                                  message.MessageId.ToString(),
-                                  peer.Address.ToString()));
+
+                Profiler.PushFrame("Step-1");
+                if (Manager.Instance.AdvanceService.GetMessage(new Item(message.MessageId, InventoryType.Trx)) != null)
+                {
+                    return;
+                }
+
+                try
+                {
+                    Profiler.NextFrame("Step-2");
+                    Manager.Instance.NetDelegate.PushTransaction(message.Transaction);
+                    Profiler.NextFrame("Step-3");
+                    Manager.Instance.AdvanceService.Broadcast(message);
+                }
+                catch (P2pException e)
+                {
+                    string reason = string.Format("Tx {0} from peer {1} process failed. type: {2}, reason: {3}",
+                                                  message.MessageId.ToString(),
+                                                  peer.Address.ToString(),
+                                                  e.Type.ToString(),
+                                                  e.Message.ToString());
+
+
+                    Logger.Warning(reason);
+
+                    if (e.Type == P2pException.ErrorType.BAD_TRX)
+                    {
+                        peer.Disconnect(ReasonCode.BadTx, reason);
+                    }
+                }
+                catch
+                {
+                    Logger.Error(
+                        string.Format("Tx {0} from peer {1} process failed.",
+                                      message.MessageId.ToString(),
+                                      peer.Address.ToString()));
+                }
+
+                Profiler.PopFrame();
             }
         }
         #endregion
@@ -162,21 +170,27 @@ namespace Mineral.Core.Net.MessageHandler
 
         public void ProcessMessage(PeerConnection peer, MineralMessage message)
         {
-            TransactionsMessage tx_message = (TransactionsMessage)message;
-            Check(peer, tx_message);
-
-            foreach (Transaction tx in tx_message.Transactions.Transactions_)
+            using (Profiler.Measure("ProcessMessage : TX"))
             {
-                ContractType type = tx.RawData.Contract[0].Type;
+                Profiler.PushFrame("step-1");
+                TransactionsMessage tx_message = (TransactionsMessage)message;
+                Check(peer, tx_message);
+                Profiler.NextFrame(string.Format("step-2, Txs : [{0}]", tx_message.Transactions.Transactions_.Count));
 
-                if (type == ContractType.TriggerSmartContract || type == ContractType.CreateSmartContract)
+                foreach (Transaction tx in tx_message.Transactions.Transactions_)
                 {
-                    this.contract_queue.Enqueue(new TxEvent(peer, new TransactionMessage(tx)));
+                    ContractType type = tx.RawData.Contract[0].Type;
+
+                    if (type == ContractType.TriggerSmartContract || type == ContractType.CreateSmartContract)
+                    {
+                        this.contract_queue.Enqueue(new TxEvent(peer, new TransactionMessage(tx)));
+                    }
+                    else
+                    {
+                        ThreadPool.QueueUserWorkItem(new WaitCallback(HandleTransaction), new object[] { peer, new TransactionMessage(tx) });
+                    }
                 }
-                else
-                {
-                    ThreadPool.QueueUserWorkItem(new WaitCallback(HandleTransaction), new object[] { peer, new TransactionMessage(tx) });
-                }
+                Profiler.PopFrame();
             }
         }
 
