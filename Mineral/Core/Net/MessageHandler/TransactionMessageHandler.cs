@@ -197,20 +197,25 @@ namespace Mineral.Core.Net.MessageHandler
                 TransactionsMessage tx_message = (TransactionsMessage)message;
                 Check(peer, tx_message);
 #if (PROFILE)
-                Profiler.NextFrame(string.Format("step-2, Txs : [{0}]", tx_message.Transactions.Transactions_.Count));
+                
+                Profiler.NextFrame("step-2");
 #endif
 
                 foreach (Transaction tx in tx_message.Transactions.Transactions_)
                 {
+                    TransactionMessage msg = new TransactionMessage(tx);
                     ContractType type = tx.RawData.Contract[0].Type;
+#if (PROFILE)
+                    Profiler.NextFrame(string.Format("Transaction Handler process message. Tx id : {0}", msg.Transaction.Id.Hash.ToHexString());
+#endif
 
                     if (type == ContractType.TriggerSmartContract || type == ContractType.CreateSmartContract)
                     {
-                        this.contract_queue.Enqueue(new TxEvent(peer, new TransactionMessage(tx)));
+                        this.contract_queue.Enqueue(new TxEvent(peer, msg));
                     }
                     else
                     {
-                        ThreadPool.QueueUserWorkItem(new WaitCallback(HandleTransaction), new object[] { peer, new TransactionMessage(tx) });
+                        ThreadPool.QueueUserWorkItem(new WaitCallback(HandleTransaction), new object[] { peer, msg });
                     }
                 }
 #if (PROFILE)
