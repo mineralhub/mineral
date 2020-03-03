@@ -206,7 +206,7 @@ namespace Mineral.Core.Net.MessageHandler
                     TransactionMessage msg = new TransactionMessage(tx);
                     ContractType type = tx.RawData.Contract[0].Type;
 #if (PROFILE)
-                    Profiler.NextFrame(string.Format("Transaction Handler process message. Tx id : {0}", msg.Transaction.Id.Hash.ToHexString());
+                    Profiler.NextFrame(string.Format("Transaction Handler process message. Tx id : {0}", msg.Transaction.Id.Hash.ToHexString()));
 #endif
 
                     if (type == ContractType.TriggerSmartContract || type == ContractType.CreateSmartContract)
