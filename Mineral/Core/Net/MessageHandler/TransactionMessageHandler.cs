@@ -114,6 +114,9 @@ namespace Mineral.Core.Net.MessageHandler
                 PeerConnection peer = (PeerConnection)parameter[0];
                 TransactionMessage message = (TransactionMessage)parameter[1];
 
+#if (PROFILE)
+                Profiler.NextFrame(string.Format("Transaction process start. Tx id : {0}", message.Transaction.Id.Hash.ToHexString()));          
+#endif
                 if (peer.IsDisconnect)
                 {
                     Logger.Warning(
@@ -124,7 +127,7 @@ namespace Mineral.Core.Net.MessageHandler
                     return;
                 }
 #if (PROFILE)
-                Profiler.PushFrame("Step-2");
+                Profiler.NextFrame("Step-2");
 #endif
                 if (Manager.Instance.AdvanceService.GetMessage(new Item(message.MessageId, InventoryType.Trx)) != null)
                 {
@@ -166,6 +169,7 @@ namespace Mineral.Core.Net.MessageHandler
                                       peer.Address.ToString()));
                 }
 #if (PROFILE)
+                Profiler.NextFrame(string.Format("Transaction process end. Tx id : {0}", message.Transaction.Id.Hash.ToHexString()));
                 Profiler.PopFrame();
 #endif
 #if (PROFILE)
@@ -221,6 +225,6 @@ namespace Mineral.Core.Net.MessageHandler
         {
             this.handle_contract.Shutdown();
         }
-        #endregion
+#endregion
     }
 }
