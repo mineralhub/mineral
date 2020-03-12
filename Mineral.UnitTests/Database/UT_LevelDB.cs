@@ -21,6 +21,7 @@ namespace Mineral.UnitTests.Database
         private WriteOptions write_option = new WriteOptions();
         private readonly ReadOptions read_option = new ReadOptions();
 
+        private readonly CompressionLevel DEFAULT_COMPRESSION_TYPE = CompressionLevel.SnappyCompression;
         private readonly int DEFAULT_BLOCK_SIZE = 4 * 1024;
         private readonly int DEFAULT_WRITE_BUFFER_SIZE = 10 * 1024 * 1024;
         private readonly long DEFAULT_CACHE_SIZE = 10 * 1024 * 1024L;

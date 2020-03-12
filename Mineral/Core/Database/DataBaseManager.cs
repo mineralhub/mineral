@@ -552,24 +552,27 @@ namespace Mineral.Core.Database
                 byte[] owner = TransactionCapsule.GetOwner(contract);
                 string owner_address = owner.ToHexString();
 
-                if (accounts.Contains(owner_address))
-                {
-                    return true;
-                }
-                else
-                {
-                    if (IsMultSignTransaction(transaction.Instance))
-                    {
-                        accounts.Add(owner_address);
-                    }
-                }
 
-                if (this.owner_addresses.Contains(owner_address))
+            if (accounts.Contains(owner_address))
+            {
+                return true;
+            }
+            else
+            {
+                if (IsMultSignTransaction(transaction.Instance))
                 {
-                    transaction.IsVerified = false;
+                    accounts.Add(owner_address);
                 }
+            }
 
-                try
+            if (this.owner_addresses.Contains(owner_address))
+            {
+                transaction.IsVerified = false;
+            }
+
+            try
+            {
+                using (ISession temp_session = this.revoking_store.BuildSession())
                 {
 #if (PROFILE)
                     Profiler.NextFrame("Step-4");
@@ -982,7 +985,7 @@ namespace Mineral.Core.Database
             {
                 slot = this.witness_controller.GetSlotAtTime(block.Timestamp);
                 Logger.Refactoring(
-                    string.Format("Slot {0} Block {1} Tx {2}", slot.ToString(), block.Num.ToString(), block.Transactions.Count));
+                    string.Format("Slot {0} Block {1}", slot.ToString(), block.Num.ToString()));
             }
             for (int i = 1; i < slot; ++i)
             {
@@ -1304,6 +1307,7 @@ namespace Mineral.Core.Database
             }
 
             HashSet<string> accounts = new HashSet<string>();
+
 #if (PROFILE)
             using (Profiler.Measure("GenerateBlock Transaction Pending"))
             {
@@ -1330,19 +1334,17 @@ namespace Mineral.Core.Database
                 Logger.Refactoring("Repush transaction count : " + this.repush_transactions.Count);
                 while (this.repush_transactions.Count > 0)
                 {
-                    if (this.repush_transactions.TryDequeue(out TransactionCapsule transaction))
+                    if (!ProcessPenddingTransaction(transaction,
+                                when,
+                                block,
+                                accounts,
+                                postponed_tx_count,
+                                true))
                     {
-                        if (!ProcessPenddingTransaction(transaction,
-                                    when,
-                                    block,
-                                    accounts,
-                                    postponed_tx_count,
-                                    true))
-                        {
-                            break;
-                        }
+                        break;
                     }
                 }
+
 #if (PROFILE)
                 Profiler.PopFrame();
 #endif
@@ -1536,42 +1538,47 @@ namespace Mineral.Core.Database
             {
             }
 
-            if (this.owner_addresses.IsNotNullOrEmpty())
+            lock (this.push_transactions)
             {
-                HashSet<string> results = new HashSet<string>();
-                foreach (TransactionCapsule tx in this.repush_transactions)
+                if (this.owner_addresses.IsNotNullOrEmpty())
                 {
-                    FilterOwnerAddress(tx, results);
-                }
+                    HashSet<string> results = new HashSet<string>();
+                    foreach (TransactionCapsule tx in this.repush_transactions)
+                    {
+                        FilterOwnerAddress(tx, results);
+                    }
 
-                foreach (TransactionCapsule tx in this.push_transactions)
-                {
-                    FilterOwnerAddress(tx, results);
-                }
+                    foreach (TransactionCapsule tx in this.push_transactions)
+                    {
+                        FilterOwnerAddress(tx, results);
+                    }
+                    this.owner_addresses.Clear();
 
-                this.owner_addresses.Clear();
-                foreach (string result in results)
-                {
-                    this.owner_addresses.Add(result);
+                    foreach (string result in results)
+                    {
+                        this.owner_addresses.Add(result);
+                    }
                 }
             }
 
             Logger.Info(
-            string.Format("PushBlock block number:{0}, IsGenerateMyself : {1} cost/txs:{2}/{3}",
-                          block.Num,
-                          block.IsGenerateMyself,
-                          Helper.CurrentTimeMillis() - start,
-                          block.Transactions.Count));
+                string.Format("PushBlock block number:{0}, IsGenerateMyself : {1} cost/txs:{2}/{3}",
+                              block.Num,
+                              block.IsGenerateMyself,
+                              Helper.CurrentTimeMillis() - start,
+                              block.Transactions.Count));
         }
 
         public bool PushTransaction(TransactionCapsule transaction)
         {
             bool result = false;
+            lock (this.push_transactions)
+            {
+                this.push_transactions.Enqueue(transaction);
+            }
 
             try
             {
-                this.push_transactions.Enqueue(transaction);
-
                 if (!transaction.ValidateSignature(this))
                 {
                     throw new ValidateSignatureException("Transaction signature validate failed");
@@ -1588,7 +1595,7 @@ namespace Mineral.Core.Database
                     {
                         using (ISession temp_session = this.revoking_store.BuildSession())
                         {
-                            ProcessTransaction(transaction, null, "CLI ");
+                            ProcessTransaction(transaction, null);
                             this.pending_transactions.Add(transaction);
                             temp_session.Merge();
                         }
@@ -1673,7 +1680,7 @@ namespace Mineral.Core.Database
                     }
 
                     Manager.Instance.FastSyncCallback.PreExecuteTrans();
-                    ProcessTransaction(tx, block, "ProcessBlock");
+                    ProcessTransaction(tx, block);
                     Manager.Instance.FastSyncCallback.ExecuteTransFinish();
                 }
                 Manager.Instance.FastSyncCallback.ExecutePushFinish();
@@ -1701,7 +1708,6 @@ namespace Mineral.Core.Database
                 processor.UpdateTotalEnergyAverageUsage();
                 processor.UpdateAdaptiveTotalEnergyLimit();
             }
-
             UpdateSignedWitness(block);
             UpdateLatestSolidifiedBlock();
             UpdateTransHashCache(block);
@@ -1710,7 +1716,7 @@ namespace Mineral.Core.Database
             UpdateDynamicProperties(block);
         }
 
-        public TransactionInfo ProcessTransaction(TransactionCapsule transaction, BlockCapsule block, string debug_message)
+        public TransactionInfo ProcessTransaction(TransactionCapsule transaction, BlockCapsule block)
         {
             if (transaction == null)
             {

@@ -210,7 +210,7 @@ namespace Mineral.Core.Service
             {
                 BlockCapsule block = null;
 
-                //lock (this.db_manager)
+                lock (this.db_manager)
                 {
                     long slot = this.controller.GetSlotAtTime(now);
                     Logger.Debug("Slot : " + slot);
@@ -299,9 +299,6 @@ namespace Mineral.Core.Service
 
                 Logger.Refactoring(
                     string.Format("Produce block successfully, block number {0}", block.Num));
-
-                ThreadPool.GetAvailableThreads(out int worker, out int io);
-                Logger.Refactoring(string.Format("ThreadPool available count worker {0}, io {1}", worker, io));
 
                 BroadcastBlock(block);
 
