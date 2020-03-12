@@ -210,20 +210,21 @@ namespace Mineral.Core.Database2.Core
                     if (Snapshot.IsRoot(head))
                         return;
 
-                string db_name = db.DBName;
-                ISnapshot next = head.GetRoot();
-                for (int i = 0; i < this.flush_count; ++i)
-                {
-                    next = next.GetNext();
-                    Snapshot snapshot = (Snapshot)next;
-                    IBaseDB<Common.Key, Common.Value> key_value_db = snapshot.DB;
-                    foreach (KeyValuePair<Common.Key, Common.Value> pair in key_value_db)
+                    string db_name = db.DBName;
+                    ISnapshot next = head.GetRoot();
+                    for (int i = 0; i < this.flush_count; ++i)
                     {
-                        byte[] name = SimpleEncode(db_name);
-                        byte[] key = new byte[name.Length + pair.Key.Data.Length];
-                        Array.Copy(name, 0, key, 0, name.Length);
-                        Array.Copy(pair.Key.Data, 0, key, name.Length, pair.Key.Data.Length);
-                        batch.Add(key, pair.Value.Encode());
+                        next = next.GetNext();
+                        Snapshot snapshot = (Snapshot)next;
+                        IBaseDB<Common.Key, Common.Value> key_value_db = snapshot.DB;
+                        foreach (KeyValuePair<Common.Key, Common.Value> pair in key_value_db)
+                        {
+                            byte[] name = SimpleEncode(db_name);
+                            byte[] key = new byte[name.Length + pair.Key.Data.Length];
+                            Array.Copy(name, 0, key, 0, name.Length);
+                            Array.Copy(pair.Key.Data, 0, key, name.Length, pair.Key.Data.Length);
+                            batch.Add(key, pair.Value.Encode());
+                        }
                     }
                 });
 #if (PROFILE)
@@ -262,7 +263,7 @@ namespace Mineral.Core.Database2.Core
         public ISession BuildSession(bool force_enable)
         {
             ISession session = null;
-
+            bool disable_exit = false;
 #if (PROFILE)
             using (Profiler.Measure("BuildSession"))
             {
@@ -276,7 +277,7 @@ namespace Mineral.Core.Database2.Core
 #if (PROFILE)
                 Profiler.NextFrame("Step-4-2");
 #endif
-                bool disable_exit = this.is_disable && force_enable;
+                disable_exit = this.is_disable && force_enable;
                 if (force_enable)
                     this.is_disable = false;
 

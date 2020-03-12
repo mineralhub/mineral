@@ -553,26 +553,24 @@ namespace Mineral.Core.Database
                 string owner_address = owner.ToHexString();
 
 
-            if (accounts.Contains(owner_address))
-            {
-                return true;
-            }
-            else
-            {
-                if (IsMultSignTransaction(transaction.Instance))
+                if (accounts.Contains(owner_address))
                 {
-                    accounts.Add(owner_address);
+                    return true;
                 }
-            }
+                else
+                {
+                    if (IsMultSignTransaction(transaction.Instance))
+                    {
+                        accounts.Add(owner_address);
+                    }
+                }
 
-            if (this.owner_addresses.Contains(owner_address))
-            {
-                transaction.IsVerified = false;
-            }
+                if (this.owner_addresses.Contains(owner_address))
+                {
+                    transaction.IsVerified = false;
+                }
 
-            try
-            {
-                using (ISession temp_session = this.revoking_store.BuildSession())
+                try
                 {
 #if (PROFILE)
                     Profiler.NextFrame("Step-4");
@@ -586,13 +584,12 @@ namespace Mineral.Core.Database
 #if (PROFILE)
                         Profiler.NextFrame("Step-6");
 #endif
-                        ProcessTransaction(transaction, block, "Pending");
+                        ProcessTransaction(transaction, block);
 #if (PROFILE)
                         Profiler.NextFrame("Step-7");
 #endif
                         Manager.Instance.FastSyncCallback.ExecuteTransFinish();
 #if (PROFILE)
-
                         Profiler.NextFrame("Step-8");
 #endif
                         temp_session.Merge();
@@ -669,7 +666,6 @@ namespace Mineral.Core.Database
 #if (PROFILE)
             }
 #endif
-
             return true;
         }
 
@@ -1334,14 +1330,17 @@ namespace Mineral.Core.Database
                 Logger.Refactoring("Repush transaction count : " + this.repush_transactions.Count);
                 while (this.repush_transactions.Count > 0)
                 {
-                    if (!ProcessPenddingTransaction(transaction,
-                                when,
-                                block,
-                                accounts,
-                                postponed_tx_count,
-                                true))
+                    if (this.repush_transactions.TryDequeue(out TransactionCapsule transaction))
                     {
-                        break;
+                        if (!ProcessPenddingTransaction(transaction,
+                                                        when,
+                                                        block,
+                                                        accounts,
+                                                        postponed_tx_count,
+                                                        true))
+                        {
+                            break;
+                        }
                     }
                 }
 
