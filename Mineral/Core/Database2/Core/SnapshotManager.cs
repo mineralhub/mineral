@@ -195,13 +195,20 @@ namespace Mineral.Core.Database2.Core
 
         private void CreateCheckPoint()
         {
-            // Do not use compare
-            Dictionary<byte[], byte[]> batch = new Dictionary<byte[], byte[]>();
-            Parallel.ForEach(this.databases, db =>
+#if (PROFILE)
+            using (Profiler.Measure("CheckPoint"))
             {
-                ISnapshot head = db.GetHead();
-                if (Snapshot.IsRoot(head))
-                    return;
+#endif
+#if (PROFILE)
+                Profiler.PushFrame("Step1");
+#endif
+                // TODO: check intiailize capacity
+                Dictionary<byte[], byte[]> batch = new Dictionary<byte[], byte[]>();
+                Parallel.ForEach(this.databases, db =>
+                {
+                    ISnapshot head = db.GetHead();
+                    if (Snapshot.IsRoot(head))
+                        return;
 
                 string db_name = db.DBName;
                 ISnapshot next = head.GetRoot();
@@ -218,11 +225,17 @@ namespace Mineral.Core.Database2.Core
                         Array.Copy(pair.Key.Data, 0, key, name.Length, pair.Key.Data.Length);
                         batch.Add(key, pair.Value.Encode());
                     }
-                }
-            });
-
-            // TODO : temp 계속 저장만 하는지 확인해야봐야함
-            CheckTempStore.Instance.DBSource.UpdateByBatch(batch, new WriteOptions() { Sync = Args.Instance.Storage.Sync });
+                });
+#if (PROFILE)
+                Profiler.NextFrame("step2");
+#endif
+                CheckTempStore.Instance.DBSource.UpdateByBatch(batch, new WriteOptions() { Sync = Args.Instance.Storage.Sync });
+#if (PROFILE)
+                Profiler.PopFrame();
+#endif
+#if (PROFILE)
+            }
+#endif
         }
 
         private void DeleteCheckPoint()
@@ -248,20 +261,57 @@ namespace Mineral.Core.Database2.Core
         [MethodImpl(MethodImplOptions.Synchronized)]
         public ISession BuildSession(bool force_enable)
         {
-            if (this.is_disable && !force_enable)
-                return new Session(this);
+            ISession session = null;
 
-            bool disable_exit = this.is_disable && force_enable;
-            if (force_enable)
-                this.is_disable = false;
-
-            if (this.size > this.max_size)
+#if (PROFILE)
+            using (Profiler.Measure("BuildSession"))
             {
-                this.flush_count = this.flush_count + (this.size - this.max_size);
-                UpdateSolidity(this.size - this.max_size);
-                this.size = this.max_size;
-                Flush();
+#endif
+#if (PROFILE)
+                Profiler.PushFrame("Step-4-1");
+#endif
+                if (this.is_disable && !force_enable)
+                    return new Session(this);
+
+#if (PROFILE)
+                Profiler.NextFrame("Step-4-2");
+#endif
+                bool disable_exit = this.is_disable && force_enable;
+                if (force_enable)
+                    this.is_disable = false;
+
+                if (this.size > this.max_size)
+                {
+#if (PROFILE)
+                    Profiler.NextFrame("Step-4-3");
+#endif
+                    this.flush_count = this.flush_count + (this.size - this.max_size);
+                    UpdateSolidity(this.size - this.max_size);
+#if (PROFILE)
+                    Profiler.NextFrame("Step-4-4");
+#endif
+                    this.size = this.max_size;
+                    Flush();
+                }
+#if (PROFILE)
+                Profiler.NextFrame("Step-4-5");
+#endif
+                Advance();
+#if (PROFILE)
+                Profiler.NextFrame("Step-4-6");
+#endif
+                ++this.active_session;
+
+#if (PROFILE)
+                Profiler.NextFrame("Step-4-7");
+#endif
+                session = new Session(this, disable_exit);
+#if (PROFILE)
+                Profiler.PopFrame();
+#endif
+#if (PROFILE)
             }
+#endif
 
             Advance();
             ++this.active_session;
@@ -283,14 +333,25 @@ namespace Mineral.Core.Database2.Core
             if (this.size < 2)
                 return;
 
-            int length = this.databases.Count;
-
-            Parallel.ForEach(this.databases, db =>
+#if (PROFILE)
+            using (Profiler.Measure("Snapshot-Merge"))
             {
-                db.GetHead().GetPrevious().Merge(db.GetHead());
-            });
-            Retreat();
-            --this.active_session;
+#endif
+#if (PROFILE)
+                Profiler.PushFrame("Merge");
+#endif
+                int length = this.databases.Count;
+
+                Parallel.ForEach(this.databases, db =>
+                {
+                    db.GetHead().GetPrevious().Merge(db.GetHead());
+                });
+                Profiler.PopFrame();
+                Retreat();
+                --this.active_session;
+#if (PROFILE)
+            }
+#endif
         }
 
         [MethodImpl(MethodImplOptions.Synchronized)]
@@ -434,7 +495,7 @@ namespace Mineral.Core.Database2.Core
         {
             this.databases.ForEach(db => db.SetMode(mode));
         }
-        #endregion
+#endregion
 
         public void UpdateSolidity(int hops)
         {
@@ -454,21 +515,45 @@ namespace Mineral.Core.Database2.Core
 
             if (ShouldBeRefreshed())
             {
-                long start = Helper.CurrentTimeMillis();
-                DeleteCheckPoint();
-                CreateCheckPoint();
-                long end = Helper.CurrentTimeMillis();
-                Refresh();
-                this.flush_count = 0;
-                Logger.Info(
-                    string.Format("flush cost:{0}, create checkpoint cost:{1}, refresh cost:{2}",
-                                Helper.CurrentTimeMillis() - start,
-                                end - start,
-                                Helper.CurrentTimeMillis() - end
-                ));
+#if (PROFILE)
+                using (Profiler.Measure("Flush"))
+                {
+#endif
+                    long start = Helper.CurrentTimeMillis();
+#if (PROFILE)
+                    Profiler.PushFrame("step-1");
+#endif
+                    DeleteCheckPoint();
+#if (PROFILE)
+                    Profiler.NextFrame("step-2");
+#endif
+                    CreateCheckPoint();
+#if (PROFILE)
+                    Profiler.NextFrame("step-3");
+#endif
+                    long end = Helper.CurrentTimeMillis();
+#if (PROFILE)
+                    Profiler.NextFrame("step-4");
+#endif
+                    Refresh();
+#if (PROFILE)
+                    Profiler.NextFrame("step-5");
+#endif
+                    this.flush_count = 0;
+                    Logger.Info(
+                        string.Format("flush cost:{0}, create checkpoint cost:{1}, refresh cost:{2}",
+                                    Helper.CurrentTimeMillis() - start,
+                                    end - start,
+                                    Helper.CurrentTimeMillis() - end
+                    ));
+#if (PROFILE)
+                    Profiler.PopFrame();
+#endif
+#if (PROFILE)
+                }
+#endif
             }
         }
-
         #endregion
     }
 }
