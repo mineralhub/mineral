@@ -6,7 +6,7 @@ using System.Text;
 
 namespace Mineral.Utils
 {
-    public class Cache<T> : IDisposable
+    public class Cache<T> : IEnumerable, IDisposable
     {
         #region Field
         private MemoryCache cache = null;
@@ -52,7 +52,7 @@ namespace Mineral.Utils
             if (this.cache.GetCount() >= this.max_capacity)
                 return false;
 
-            if (this.cache.Contains(key))
+            if (!this.cache.Contains(key))
             {
                 this.cache.Add(key, value, GetPolicy());
             }
@@ -100,6 +100,11 @@ namespace Mineral.Utils
         public void Dispose()
         {
             this.cache.Dispose();
+        }
+
+        IEnumerator IEnumerable.GetEnumerator()
+        {
+            return ((IEnumerable)cache).GetEnumerator();
         }
         #endregion
     }
