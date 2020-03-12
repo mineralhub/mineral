@@ -294,21 +294,21 @@ namespace Mineral.Common.Overlay.Discover.Node
                 return;
             }
 
-            this.node_manager.TimerPong = ScheduledExecutorService.Scheduled(() =>
-            {
-                try
-                {
-                    if (this.wait_pong)
-                    {
-                        this.wait_pong = false;
-                        HandleTimedOut();
-                    }
-                }
-                catch (System.Exception e)
-                {
-                    Logger.Error("Unhandled exception " + e.Message);
-                }
-            }, (int)PingTimeout, (int)PingTimeout);
+            //this.node_manager.TimerPong = ScheduledExecutorService.Scheduled(() =>
+            //{
+            //    try
+            //    {
+            //        if (this.wait_pong)
+            //        {
+            //            this.wait_pong = false;
+            //            HandleTimedOut();
+            //        }
+            //    }
+            //    catch (System.Exception e)
+            //    {
+            //        Logger.Error("Unhandled exception " + e.Message);
+            //    }
+            //}, (int)PingTimeout, (int)PingTimeout);
         }
 
         public void SendPong(long sequence)
