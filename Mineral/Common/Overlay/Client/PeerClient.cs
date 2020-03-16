@@ -88,12 +88,11 @@ namespace Mineral.Common.Overlay.Client
 
         public void Close()
         {
-            if (this.channel != null || this.channel.Active)
+            if (this.channel != null)
             {
+                Logger.Info("Closing peer client...");
                 this.channel.CloseAsync();
             }
-
-            this.worker_group.ShutdownGracefullyAsync();
         }
         #endregion
     }

@@ -54,7 +54,7 @@ namespace Mineral.Common.Overlay.Server
                 bootstrap.Handler(new LoggingHandler());
                 bootstrap.ChildHandler(new NettyChannelInitializer("", false));
 
-                Logger.Info("Tcp listener started, bind port : " + port);
+                Logger.Info("Peer server tcp listener started, bind port : " + port);
 
                 this.channel = await bootstrap.BindAsync(port);
             }
@@ -73,12 +73,12 @@ namespace Mineral.Common.Overlay.Server
             {
                 try
                 {
-                    Logger.Info("Closing TCP server...");
+                    Logger.Info("Closing peer server...");
                     await this.channel.CloseAsync();
                 }
                 catch (Exception e)
                 {
-                    Logger.Warning("Closing TCP server failed." + e.Message);
+                    Logger.Warning("Closing peer server failed." + e.Message);
                 }
             }
         }

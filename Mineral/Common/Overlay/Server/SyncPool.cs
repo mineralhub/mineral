@@ -277,6 +277,7 @@ namespace Mineral.Common.Overlay.Server
         {
             try
             {
+                Logger.Info("Closing sync pool...");
                 this.timer_pool.Shutdown();
                 this.timer_log.Shutdown();
             }
