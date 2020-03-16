@@ -69,7 +69,7 @@ namespace Mineral.Common.Overlay.Server
 
         public async void Close()
         {
-            if (this.channel != null && this.channel.Active)
+            if (this.channel != null)
             {
                 try
                 {
