@@ -228,7 +228,14 @@ namespace Mineral.Common.Overlay.Server
 
         public object GetRecentlyDisconnected(IPAddress key)
         {
-            return this.recently_disconnected.Get(key.ToString());
+            object code = this.recently_disconnected.Get(key.ToString());
+            if (code != null)
+            {
+                Logger.Refactoring(string.Format("Warning !!! {0} is Exist.", key.ToString()));
+            }
+
+            return code;
+            //return this.recently_disconnected.Get(key.ToString());
         }
 
         public int GetConnectionNum(IPAddress address)
