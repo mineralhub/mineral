@@ -347,7 +347,9 @@ namespace Mineral.Core.Database2.Core
                 {
                     db.GetHead().GetPrevious().Merge(db.GetHead());
                 });
+#if (PROFILE)
                 Profiler.PopFrame();
+#endif
                 Retreat();
                 --this.active_session;
 #if (PROFILE)
