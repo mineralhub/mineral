@@ -55,10 +55,12 @@ namespace Mineral.Utils
             if (!this.cache.Contains(key))
             {
                 this.cache.Add(key, value, GetPolicy());
+                Logger.Refactoring(string.Format("Add cache {0}, {1}", key, this.expire_time.TotalMilliseconds));
             }
             else
             {
                 this.cache.Set(key, value, GetPolicy());
+                Logger.Refactoring(string.Format("Set cache {0}, {1}", key, this.expire_time.TotalMilliseconds));
             }
 
             return true;
@@ -74,7 +76,10 @@ namespace Mineral.Utils
 
         public object Get(string key)
         {
-            return this.cache.Get(key);
+            object result = this.cache.Get(key);
+            Logger.Refactoring(string.Format("Get cache {0} : {1}", key, result != null ? "Contain" : "Null"));
+            return result;
+            //return this.cache.Get(key);
         }
 
         public void Remove(string key)
