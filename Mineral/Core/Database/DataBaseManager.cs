@@ -1603,7 +1603,7 @@ namespace Mineral.Core.Database
                     catch (System.Exception e)
                     {
                         result = false;
-                        Logger.Error(e.Message);
+                        Logger.Error(e.Message, e);
                     }
                 }
             }
