@@ -57,14 +57,14 @@ namespace Mineral.Common.Overlay.Discover.Node.Statistics
         public void Add()
         {
             Update();
-            this.message_count[index]++;
+            this.message_count[this.index]++;
             this.total_count++;
         }
 
         public void Add(int count)
         {
             Update();
-            this.message_count[index] += count;
+            this.message_count[this.index] += count;
             this.total_count += count;
         }
 
@@ -80,7 +80,7 @@ namespace Mineral.Common.Overlay.Discover.Node.Statistics
             int count = 0;
             for (int i = 0; i < interval; i++)
             {
-                count += this.message_count[(SIZE + index - i) % SIZE];
+                count += this.message_count[(SIZE + this.index - i) % SIZE];
             }
 
             return count;

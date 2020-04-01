@@ -6,7 +6,7 @@ using System.Text;
 
 namespace Mineral.Utils
 {
-    public class Cache<T> : IEnumerable, IDisposable
+    public class Cache<T> : IEnumerable<KeyValuePair<string, T>>, IDisposable
     {
         #region Field
         private MemoryCache cache = null;
@@ -102,9 +102,17 @@ namespace Mineral.Utils
             this.cache.Dispose();
         }
 
+        public IEnumerator<KeyValuePair<string, T>> GetEnumerator()
+        {
+            foreach (var entry in cache)
+            {
+                yield return new KeyValuePair<string, T>(entry.Key, (T)entry.Value);
+            }
+        }
+
         IEnumerator IEnumerable.GetEnumerator()
         {
-            return ((IEnumerable)cache).GetEnumerator();
+            return this.GetEnumerator();
         }
         #endregion
     }

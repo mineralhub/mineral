@@ -522,13 +522,6 @@ namespace Mineral.Core.Database
                                                 long postponed_tx_Count,
                                                 bool is_pendding_transaction)
         {
-#if (PROFILE)
-            using (Profiler.Measure("Inner process"))
-            {
-#endif
-#if (PROFILE)
-                Profiler.PushFrame("Step-1");
-#endif
                 if (Helper.CurrentTimeMillis() - when
                     > Parameter.ChainParameters.BLOCK_PRODUCED_INTERVAL * 0.5 * Args.Instance.Node.BlockProducedTimeout / 100)
                 {
@@ -536,34 +529,27 @@ namespace Mineral.Core.Database
                     return false;
                 }
 
-#if (PROFILE)
-                Profiler.NextFrame("Step-2");
-#endif
                 if ((block.Instance.CalculateSize() + transaction.Instance.CalculateSize() + 3) > Parameter.ChainParameters.BLOCK_SIZE)
                 {
                     postponed_tx_Count++;
                     return true;
                 }
 
-#if (PROFILE)
-                Profiler.NextFrame("Step-3");
-#endif
                 Contract contract = transaction.Instance.RawData.Contract[0];
                 byte[] owner = TransactionCapsule.GetOwner(contract);
                 string owner_address = owner.ToHexString();
 
-
-            if (accounts.Contains(owner_address))
-            {
-                return true;
-            }
-            else
-            {
-                if (IsMultSignTransaction(transaction.Instance))
+                if (accounts.Contains(owner_address))
                 {
-                    accounts.Add(owner_address);
+                    return true;
                 }
-            }
+                else
+                {
+                    if (IsMultSignTransaction(transaction.Instance))
+                    {
+                        accounts.Add(owner_address);
+                    }
+                }
 
             if (this.owner_addresses.Contains(owner_address))
             {
@@ -572,103 +558,75 @@ namespace Mineral.Core.Database
 
             try
             {
+
                 using (ISession temp_session = this.revoking_store.BuildSession())
                 {
-#if (PROFILE)
-                    Profiler.NextFrame("Step-4");
-#endif
-                    using (ISession temp_session = this.revoking_store.BuildSession())
-                    {
-#if (PROFILE)
-                        Profiler.NextFrame("Step-5");
-#endif
-                        Manager.Instance.FastSyncCallback.PreExecuteTrans();
-#if (PROFILE)
-                        Profiler.NextFrame("Step-6");
-#endif
-                        ProcessTransaction(transaction, block, "Pending");
-#if (PROFILE)
-                        Profiler.NextFrame("Step-7");
-#endif
-                        Manager.Instance.FastSyncCallback.ExecuteTransFinish();
-#if (PROFILE)
+                    Manager.Instance.FastSyncCallback.PreExecuteTrans();
+                    ProcessTransaction(transaction, block);
+                    Manager.Instance.FastSyncCallback.ExecuteTransFinish();
 
-                        Profiler.NextFrame("Step-8");
-#endif
-                        temp_session.Merge();
-#if (PROFILE)
-                        Profiler.NextFrame("Step-9");
-#endif
-                        block.AddTransaction(transaction);
-#if (PROFILE)
-                        Profiler.NextFrame("Step-10");
-#endif
-                        if (is_pendding_transaction)
-                        {
-                            this.pending_transactions.TryTake(out _);
-                        }
+                    temp_session.Merge();
+                    block.AddTransaction(transaction);
+                    if (is_pendding_transaction)
+                    {
+                        this.pending_transactions.TryTake(out _);
                     }
                 }
-                catch (ContractExeException e)
-                {
-                    Logger.Info("Contract not processed during execute");
-                    Logger.Debug(e.Message);
-                }
-                catch (ContractValidateException e)
-                {
-                    Logger.Info("Contract not processed during validate");
-                    Logger.Debug(e.Message);
-                }
-                catch (TaposException e)
-                {
-                    Logger.Info("Contract not processed during TaposException");
-                    Logger.Debug(e.Message);
-                }
-                catch (DupTransactionException e)
-                {
-                    Logger.Info("Contract not processed during DupTransactionException");
-                    Logger.Debug(e.Message);
-                }
-                catch (TooBigTransactionException e)
-                {
-                    Logger.Info("Contract not processed during TooBigTransactionException");
-                    Logger.Debug(e.Message);
-                }
-                catch (TooBigTransactionResultException e)
-                {
-                    Logger.Info("Contract not processed during TooBigTransactionResultException");
-                    Logger.Debug(e.Message);
-                }
-                catch (TransactionExpirationException e)
-                {
-                    Logger.Info("Contract not processed during TransactionExpirationException");
-                    Logger.Debug(e.Message);
-                }
-                catch (AccountResourceInsufficientException e)
-                {
-                    Logger.Info("Contract not processed during AccountResourceInsufficientException");
-                    Logger.Debug(e.Message);
-                }
-                catch (ValidateSignatureException e)
-                {
-                    Logger.Info("Contract not processed during ValidateSignatureException");
-                    Logger.Debug(e.Message);
-                }
-                catch (ReceiptCheckErrorException e)
-                {
-                    Logger.Info("OutOfSlotTime exception : " + e.Message);
-                    Logger.Debug(e.Message);
-                }
-                catch (VMIllegalException e)
-                {
-                    Logger.Warning(e.Message);
-                }
-#if (PROFILE)
-                Profiler.PopFrame();
-#endif
-#if (PROFILE)
             }
-#endif
+            catch (ContractExeException e)
+            {
+                Logger.Info("Contract not processed during execute");
+                Logger.Debug(e.Message);
+            }
+            catch (ContractValidateException e)
+            {
+                Logger.Info("Contract not processed during validate");
+                Logger.Debug(e.Message);
+            }
+            catch (TaposException e)
+            {
+                Logger.Info("Contract not processed during TaposException");
+                Logger.Debug(e.Message);
+            }
+            catch (DupTransactionException e)
+            {
+                Logger.Info("Contract not processed during DupTransactionException");
+                Logger.Debug(e.Message);
+            }
+            catch (TooBigTransactionException e)
+            {
+                Logger.Info("Contract not processed during TooBigTransactionException");
+                Logger.Debug(e.Message);
+            }
+            catch (TooBigTransactionResultException e)
+            {
+                Logger.Info("Contract not processed during TooBigTransactionResultException");
+                Logger.Debug(e.Message);
+            }
+            catch (TransactionExpirationException e)
+            {
+                Logger.Info("Contract not processed during TransactionExpirationException");
+                Logger.Debug(e.Message);
+            }
+            catch (AccountResourceInsufficientException e)
+            {
+                Logger.Info("Contract not processed during AccountResourceInsufficientException");
+                Logger.Debug(e.Message);
+            }
+            catch (ValidateSignatureException e)
+            {
+                Logger.Info("Contract not processed during ValidateSignatureException");
+                Logger.Debug(e.Message);
+            }
+            catch (ReceiptCheckErrorException e)
+            {
+                Logger.Info("OutOfSlotTime exception : " + e.Message);
+                Logger.Debug(e.Message);
+            }
+            catch (VMIllegalException e)
+            {
+                Logger.Warning(e.Message);
+            }
 
             return true;
         }
@@ -1307,32 +1265,22 @@ namespace Mineral.Core.Database
             }
 
             HashSet<string> accounts = new HashSet<string>();
-
-#if (PROFILE)
-            using (Profiler.Measure("GenerateBlock Transaction Pending"))
+            foreach (var transaction in this.pending_transactions)
             {
-#endif
-#if (PROFILE)
-                Profiler.PushFrame("Pending transaction");
-#endif
-                Logger.Refactoring("Pending transaction count : " + this.pending_transactions.Count);
-                foreach (var transaction in this.pending_transactions)
+                if (!ProcessPenddingTransaction(transaction,
+                                                when,
+                                                block,
+                                                accounts,
+                                                postponed_tx_count,
+                                                true))
                 {
-                    if (!ProcessPenddingTransaction(transaction,
-                                                    when,
-                                                    block,
-                                                    accounts,
-                                                    postponed_tx_count,
-                                                    true))
-                    {
-                        break;
-                    }
+                    break;
                 }
-#if (PROFILE)
-                Profiler.NextFrame("RePush transaction");
-#endif
-                Logger.Refactoring("Repush transaction count : " + this.repush_transactions.Count);
-                while (this.repush_transactions.Count > 0)
+            }
+
+            while (this.repush_transactions.Count > 0)
+            {
+                if (this.repush_transactions.TryDequeue(out TransactionCapsule transaction))
                 {
                     if (!ProcessPenddingTransaction(transaction,
                                 when,
@@ -1344,13 +1292,7 @@ namespace Mineral.Core.Database
                         break;
                     }
                 }
-
-#if (PROFILE)
-                Profiler.PopFrame();
-#endif
-#if (PROFILE)
             }
-#endif
 
             Manager.Instance.FastSyncCallback.ExecuteGenerateFinish();
             this.session.Reset();
@@ -1538,47 +1480,42 @@ namespace Mineral.Core.Database
             {
             }
 
-            lock (this.push_transactions)
+            if (this.owner_addresses.IsNotNullOrEmpty())
             {
-                if (this.owner_addresses.IsNotNullOrEmpty())
+                HashSet<string> results = new HashSet<string>();
+                foreach (TransactionCapsule tx in this.repush_transactions)
                 {
-                    HashSet<string> results = new HashSet<string>();
-                    foreach (TransactionCapsule tx in this.repush_transactions)
-                    {
-                        FilterOwnerAddress(tx, results);
-                    }
+                    FilterOwnerAddress(tx, results);
+                }
 
-                    foreach (TransactionCapsule tx in this.push_transactions)
-                    {
-                        FilterOwnerAddress(tx, results);
-                    }
-                    this.owner_addresses.Clear();
+                foreach (TransactionCapsule tx in this.push_transactions)
+                {
+                    FilterOwnerAddress(tx, results);
+                }
 
-                    foreach (string result in results)
-                    {
-                        this.owner_addresses.Add(result);
-                    }
+                this.owner_addresses.Clear();
+                foreach (string result in results)
+                {
+                    this.owner_addresses.Add(result);
                 }
             }
 
             Logger.Info(
-                string.Format("PushBlock block number:{0}, IsGenerateMyself : {1} cost/txs:{2}/{3}",
-                              block.Num,
-                              block.IsGenerateMyself,
-                              Helper.CurrentTimeMillis() - start,
-                              block.Transactions.Count));
+            string.Format("PushBlock block number:{0}, IsGenerateMyself : {1} cost/txs:{2}/{3}",
+                          block.Num,
+                          block.IsGenerateMyself,
+                          Helper.CurrentTimeMillis() - start,
+                          block.Transactions.Count));
         }
 
         public bool PushTransaction(TransactionCapsule transaction)
         {
             bool result = false;
-            lock (this.push_transactions)
-            {
-                this.push_transactions.Enqueue(transaction);
-            }
 
             try
             {
+                this.push_transactions.Enqueue(transaction);
+
                 if (!transaction.ValidateSignature(this))
                 {
                     throw new ValidateSignatureException("Transaction signature validate failed");
@@ -1708,6 +1645,7 @@ namespace Mineral.Core.Database
                 processor.UpdateTotalEnergyAverageUsage();
                 processor.UpdateAdaptiveTotalEnergyLimit();
             }
+
             UpdateSignedWitness(block);
             UpdateLatestSolidifiedBlock();
             UpdateTransHashCache(block);
@@ -1962,6 +1900,6 @@ namespace Mineral.Core.Database
             CloseStore(this.exchange_v2_store);
             Logger.Info("------------------ End to close store ------------------");
         }
-#endregion
+        #endregion
     }
 }

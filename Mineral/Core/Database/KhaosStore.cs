@@ -13,8 +13,8 @@ namespace Mineral.Core.Database
     public class KhaosStore
     {
         #region Field
-        private ConcurrentDictionary<BlockId, KhaosBlock> khaosblock_hashes = new ConcurrentDictionary<BlockId, KhaosBlock>();
-        private ConcurrentDictionary<long, List<KhaosBlock>> khaosblock_numbers = new ConcurrentDictionary<long, List<KhaosBlock>>();
+        private ConcurrentDictionary<BlockId, KhaosBlock> khaosblock_hashes = new ConcurrentDictionary<BlockId, KhaosBlock>(Environment.ProcessorCount * 2, 50000);
+        private ConcurrentDictionary<long, List<KhaosBlock>> khaosblock_numbers = new ConcurrentDictionary<long, List<KhaosBlock>>(Environment.ProcessorCount * 2, 50000);
 
         private KhaosBlock head = null;
         private int max_capacity = 1024;

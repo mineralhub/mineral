@@ -310,7 +310,7 @@ namespace Mineral.Core.Database
 
                 if (account == null)
                 {
-                    throw new ContractValidateException("account not exists");
+                    throw new ContractValidateException("Account is not exists");
                 }
 
                 long now = this.db_manager.WitnessController.GetHeadSlot();
