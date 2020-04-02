@@ -80,8 +80,13 @@ namespace Mineral.Core.Net.MessageHandler
                     {
                         throw new P2pException(
                             P2pException.ErrorType.BAD_MESSAGE,
-                            "OutAdvBlock: " + out_advance_block.TotalCount + "HashList: " + message.GetHashList().Count +
-                            "producedBlockIn2min: " + produced_block_2min + ", outBlockCountIn1min: " + out_block_count_1min);
+                            "OutAdvBlock: " + out_advance_block.TotalCount + ", HashList: " + message.GetHashList().Count +
+                            ", producedBlockIn2min: " + produced_block_2min + ", outBlockCountIn1min: " + out_block_count_1min);
+                    }
+                    else
+                    {
+                        Logger.Refactoring("OutAdvBlock: " + out_advance_block.TotalCount + ", HashList: " + message.GetHashList().Count +
+                            ", producedBlockIn2min: " + produced_block_2min + ", outBlockCountIn1min: " + out_block_count_1min);
                     }
                 }
                 else
